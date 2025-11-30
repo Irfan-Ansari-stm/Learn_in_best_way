@@ -1,0 +1,1534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Module 12 - Microdata and Structured Data</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Bootstrap CSS -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    />
+
+    <style>
+        :root {
+            --bg-main: #050816;
+            --bg-card: #0b1020;
+            --bg-code: #050812;
+            --accent-cyan: #22d3ee;
+            --accent-amber: #fbbf24;
+            --text-main: #e5e7eb;
+            --text-muted: #9ca3af;
+            --border-subtle: #1f2933;
+            --shadow-soft: 0 0 40px rgba(15, 23, 42, 0.95);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: radial-gradient(circle at top, #0b1120 0, #020617 55%);
+            color: var(--text-main);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: var(--accent-amber);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .layout-wrapper {
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .note-container {
+            background: rgba(15, 23, 42, 0.95);
+            border-radius: 1.25rem;
+            box-shadow: var(--shadow-soft);
+            overflow: hidden;
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, #020617, #020617, #020617);
+            border-right: 1px solid var(--border-subtle);
+            padding: 1.25rem 1.1rem;
+            min-height: 100%;
+        }
+
+        .sidebar-inner {
+            position: sticky;
+            top: 0;
+            max-height: 100vh;
+            overflow-y: auto;
+            padding-right: 0.25rem;
+        }
+
+        .sidebar-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--accent-cyan);
+        }
+
+        .sidebar-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .badge-module {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            border-radius: 999px;
+            padding: 0.2rem 0.75rem;
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+
+        .author-block {
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            color: var(--text-muted);
+        }
+
+        .author-name {
+            color: var(--accent-amber);
+            font-weight: 600;
+        }
+
+        .toc-title {
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-muted);
+        }
+
+        .toc-search-input {
+            background-color: #020617;
+            border: 1px solid var(--border-subtle);
+            color: var(--text-main);
+            font-size: 0.8rem;
+        }
+
+        .toc-search-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 1px var(--accent-cyan);
+            border-color: var(--accent-cyan);
+        }
+
+        .toc-list {
+            list-style: none;
+            margin: 0;
+            margin-top: 0.5rem;
+            padding-left: 0;
+            font-size: 0.86rem;
+        }
+
+        .toc-list li {
+            margin-bottom: 0.15rem;
+        }
+
+        .toc-link {
+            display: block;
+            padding: 0.25rem 0.35rem;
+            border-radius: 0.35rem;
+            color: var(--text-muted);
+        }
+
+        .toc-link:hover {
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+
+        .toc-link.main {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .toc-link.sub {
+            padding-left: 0.8rem;
+            font-size: 0.8rem;
+        }
+
+        .toc-link.active {
+            background: rgba(56, 189, 248, 0.09);
+            color: var(--accent-cyan);
+            border-left: 3px solid var(--accent-cyan);
+        }
+
+        .toc-utilities {
+            display: flex;
+            gap: 0.3rem;
+            margin-top: 0.6rem;
+        }
+
+        .btn-util {
+            flex: 1;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            padding: 0.18rem 0.4rem;
+            border: 1px solid var(--border-subtle);
+            background: #020617;
+            color: var(--text-muted);
+        }
+
+        .btn-util:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        /* Content Area */
+        .content-area {
+            background: radial-gradient(circle at top, #020617 0, #020617 60%);
+            padding: 1.25rem 1.35rem 1.6rem;
+            overflow-y: auto;
+            max-height: calc(100vh - 2rem);
+        }
+
+        .content-header-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: var(--accent-amber);
+            margin-bottom: 0.15rem;
+        }
+
+        .content-main-title {
+            font-size: 1.65rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            color: #f9fafb;
+        }
+
+        .content-subtitle {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            max-width: 48rem;
+        }
+
+        .pill-tag {
+            font-size: 0.7rem;
+            padding: 0.15rem 0.6rem;
+            border-radius: 999px;
+            border: 1px solid rgba(248, 250, 252, 0.12);
+            color: var(--text-muted);
+        }
+
+        .section-card {
+            border-radius: 1rem;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid var(--border-subtle);
+            margin-top: 1.1rem;
+            padding: 0.9rem 0.9rem 1rem;
+        }
+
+        .section-heading {
+            font-size: 1.1rem;
+            color: #e5e7eb;
+            font-weight: 600;
+        }
+
+        .section-kicker {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--text-muted);
+        }
+
+        .section-label {
+            font-size: 0.76rem;
+            padding: 0.08rem 0.45rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            color: var(--accent-cyan);
+            background: rgba(15, 23, 42, 0.9);
+            margin-left: 0.35rem;
+        }
+
+        .section-summary-text {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        details {
+            margin-top: 0.5rem;
+            border-radius: 0.75rem;
+            border: 1px solid #111827;
+            background: radial-gradient(circle at top left, #020617 0, #020617 65%);
+        }
+
+        summary {
+            cursor: pointer;
+            padding: 0.55rem 0.75rem;
+            position: relative;
+            list-style: none;
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        summary::marker {
+            display: none;
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary::before {
+            content: "▸";
+            display: inline-block;
+            margin-right: 0.4rem;
+            color: var(--accent-cyan);
+            transition: transform 0.15s ease-out;
+            font-size: 0.8rem;
+        }
+
+        details[open] summary::before {
+            transform: rotate(90deg);
+        }
+
+        .details-body {
+            padding: 0.15rem 0.8rem 0.6rem;
+            border-top: 1px solid #111827;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .details-body ul,
+        .details-body ol {
+            padding-left: 1.1rem;
+        }
+
+        .badge-level {
+            font-size: 0.7rem;
+            padding: 0.04rem 0.35rem;
+            border-radius: 999px;
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            color: var(--accent-cyan);
+            margin-left: 0.35rem;
+        }
+
+        .concept-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.75rem;
+            padding: 0.18rem 0.55rem;
+            border-radius: 999px;
+            border: 1px dashed rgba(156, 163, 175, 0.7);
+            color: var(--text-muted);
+            margin-right: 0.35rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .concept-pill-dot {
+            width: 0.4rem;
+            height: 0.4rem;
+            border-radius: 999px;
+            background: var(--accent-amber);
+        }
+
+        /* Code blocks */
+        pre.code-block {
+            background: var(--bg-code);
+            border-radius: 0.75rem;
+            padding: 0.6rem 0.8rem;
+            font-size: 0.82rem;
+            overflow-x: auto;
+            border: 1px solid #020617;
+            margin-bottom: 0.6rem;
+        }
+
+        pre.code-block code {
+            font-family: "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco,
+                Consolas, "Liberation Mono", "Courier New", monospace;
+            white-space: pre;
+        }
+
+        code.inline-code {
+            background: rgba(15, 23, 42, 0.95);
+            border-radius: 0.35rem;
+            padding: 0.05rem 0.25rem;
+            border: 1px solid #111827;
+            font-size: 0.83rem;
+        }
+
+        /* Syntax highlighting classes (advanced) */
+        .hl-tag {
+            color: #38bdf8;
+        }
+
+        .hl-attr {
+            color: #fbbf24;
+        }
+
+        .hl-string {
+            color: #a5b4fc;
+        }
+
+        .hl-comment {
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        .hl-key {
+            color: #facc15;
+        }
+
+        .hl-number {
+            color: #34d399;
+        }
+
+        .hl-bool {
+            color: #fb7185;
+        }
+
+        .hl-punct {
+            color: #9ca3af;
+        }
+
+        .note-callout {
+            border-radius: 0.75rem;
+            border: 1px dashed rgba(248, 250, 252, 0.1);
+            background: rgba(15, 23, 42, 0.75);
+            padding: 0.45rem 0.7rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .note-callout strong {
+            color: var(--accent-amber);
+        }
+
+        .mini-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 0.4rem;
+            margin-top: 0.3rem;
+        }
+
+        .mini-card {
+            border-radius: 0.75rem;
+            border: 1px solid #111827;
+            background: rgba(15, 23, 42, 0.85);
+            padding: 0.4rem 0.6rem;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 991.98px) {
+            .sidebar-inner {
+                position: static;
+                max-height: none;
+            }
+            .content-area {
+                max-height: none;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="layout-wrapper container-fluid">
+    <div class="note-container row g-0">
+        <!-- SIDEBAR -->
+        <aside class="sidebar col-12 col-lg-3">
+            <div class="sidebar-inner">
+                <div class="d-flex align-items-center justify-content-between">
+                    <span class="badge-module">Module 12</span>
+                    <span class="pill-tag">Microdata &amp; Structured Data</span>
+                </div>
+                <div class="mt-3">
+                    <div class="sidebar-title">Microdata &amp; Structured Data</div>
+                    <div class="sidebar-subtitle">
+                        Embedding machine-readable meaning into HTML so that search
+                        engines, assistants, and knowledge graphs truly understand your content.
+                    </div>
+                </div>
+                <div class="author-block">
+                    <div><span class="author-name">Prepared for:</span> College to
+                        PhD-level learners</div>
+                    <div><span class="author-name">Focus:</span> Microdata, Schema.org,
+                        validation &amp; SEO impact</div>
+                </div>
+
+                <div class="toc-title mt-3">Table of Contents</div>
+                <input
+                    id="tocSearch"
+                    type="text"
+                    class="form-control form-control-sm toc-search-input mt-1"
+                    placeholder="Search sections…"
+                />
+
+                <div class="toc-utilities">
+                    <button id="expandAll" class="btn btn-sm btn-util">
+                        Expand All
+                    </button>
+                    <button id="collapseAll" class="btn btn-sm btn-util">
+                        Collapse All
+                    </button>
+                </div>
+
+                <ul id="tocList" class="toc-list mt-2">
+                    <li>
+                        <a href="#sec-12-1" class="toc-link main">12.1 Introduction to Microdata</a>
+                    </li>
+                    <li>
+                        <a href="#sec-12-1-structured-data" class="toc-link sub">
+                            12.1.1 What is structured data?
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#sec-12-1-schema-vocab" class="toc-link sub">
+                            12.1.2 Schema.org vocabulary
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#sec-12-1-itemscope-itemtype" class="toc-link sub">
+                            12.1.3 itemscope &amp; itemtype
+                        </a>
+                    </li>
+
+                    <li class="mt-2">
+                        <a href="#sec-12-2" class="toc-link main">12.2 Common Schema Types</a>
+                    </li>
+                    <li>
+                        <a href="#sec-12-2-person-org" class="toc-link sub">
+                            12.2.1 Person &amp; Organization
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#sec-12-2-product-review" class="toc-link sub">
+                            12.2.2 Product &amp; Review
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#sec-12-2-event-place" class="toc-link sub">
+                            12.2.3 Event &amp; Place
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#sec-12-2-article-blog" class="toc-link sub">
+                            12.2.4 Article &amp; BlogPosting
+                        </a>
+                    </li>
+
+                    <li class="mt-2">
+                        <a href="#sec-12-3" class="toc-link main">12.3 Testing &amp; Validation</a>
+                    </li>
+                    <li>
+                        <a href="#sec-12-3-rich-results" class="toc-link sub">
+                            12.3.1 Google’s Rich Results Test
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#sec-12-3-validation-tools" class="toc-link sub">
+                            12.3.2 Schema markup validation
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#sec-12-3-seo-benefits" class="toc-link sub">
+                            12.3.3 SEO benefits of structured data
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="note-callout mt-3">
+                    <strong>Intuition:</strong> Microdata is like attaching a research
+                    metadata sheet to your HTML. Same content, but with explicit
+                    labels for “who”, “what”, “where”, and “when”.
+                </div>
+            </div>
+        </aside>
+
+        <!-- CONTENT -->
+        <main class="content-area col-12 col-lg-9">
+            <!-- Header intro -->
+            <header class="mb-2">
+                <div class="content-header-label">Semantic Web · Deep Dive</div>
+                <h1 class="content-main-title">Module 12: Microdata &amp; Structured Data</h1>
+                <p class="content-subtitle mt-1">
+                    In this module we go beyond human-readable HTML and move into
+                    machine-readable annotations. You will learn how to represent
+                    people, organizations, products, events, and articles using
+                    Schema.org microdata and related structured data formats, and how
+                    to validate and leverage them for rich search results and
+                    knowledge-graph integration.
+                </p>
+                <div class="d-flex flex-wrap gap-1 mt-1">
+                    <span class="pill-tag">Semantic Web</span>
+                    <span class="pill-tag">Schema.org</span>
+                    <span class="pill-tag">SEO &amp; Knowledge Graphs</span>
+                </div>
+            </header>
+
+            <!-- EXECUTIVE SUMMARY -->
+            <section class="section-card">
+                <div class="section-kicker">0. Executive Overview</div>
+                <h2 class="section-heading">
+                    Why structured data matters
+                    <span class="section-label">Big Picture</span>
+                </h2>
+                <p class="section-summary-text mt-1">
+                    From a search engine’s perspective, most HTML is just text with a
+                    rough layout. Structured data adds a precise, machine-readable
+                    layer: instead of “some bold text”, you say “this is a
+                    <code class="inline-code">Person</code> with
+                    <code class="inline-code">name</code>,
+                    <code class="inline-code">affiliation</code>, and
+                    <code class="inline-code">email</code>”. Microdata is one way to
+                    embed such semantics directly into existing HTML using attributes
+                    like <code class="inline-code">itemscope</code>,
+                    <code class="inline-code">itemtype</code>, and
+                    <code class="inline-code">itemprop</code>.
+                </p>
+
+                <details open>
+                    <summary>
+                        Executive summary of Module 12
+                        <span class="badge-level">TL;DR</span>
+                    </summary>
+                    <div class="details-body">
+                        <ul>
+                            <li>
+                                <strong>12.1 Introduction:</strong> You learn what
+                                structured data is, how Schema.org defines a shared
+                                vocabulary, and how microdata attributes
+                                (<code class="inline-code">itemscope</code>,
+                                <code class="inline-code">itemtype</code>,
+                                <code class="inline-code">itemprop</code>) map that
+                                vocabulary into HTML.
+                            </li>
+                            <li>
+                                <strong>12.2 Schema Types:</strong> You see concrete
+                                patterns for describing people, organizations,
+                                products, reviews, events, places, and articles using
+                                microdata and JSON-LD, with attention to research-grade
+                                correctness.
+                            </li>
+                            <li>
+                                <strong>12.3 Validation &amp; SEO:</strong> You learn
+                                how to use Google’s Rich Results Test and other
+                                validators to verify your markup, debug errors, and
+                                understand the SEO impact (rich snippets, knowledge
+                                panels, and improved CTR).
+                            </li>
+                        </ul>
+                        <p class="mt-1">
+                            Conceptually, you can think of microdata as attaching
+                            “typed edges” to your HTML nodes, turning your web page
+                            into a small knowledge graph fragment that can be merged
+                            into bigger graphs like those of search engines or digital
+                            assistants.
+                        </p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- 12.1 INTRODUCTION TO MICRODATA -->
+            <section id="sec-12-1" class="section-card mt-2">
+                <div class="section-kicker">12.1</div>
+                <h2 class="section-heading">
+                    Introduction to Microdata
+                    <span class="section-label">Conceptual Foundations</span>
+                </h2>
+                <p class="section-summary-text mt-1">
+                    Microdata is a W3C specification that lets you annotate your HTML
+                    with semantic information using attributes. It is one of several
+                    ways (alongside RDFa and JSON-LD) to express structured data for
+                    search engines and other consumers.
+                </p>
+
+                <!-- 12.1.1 WHAT IS STRUCTURED DATA -->
+                <section id="sec-12-1-structured-data" class="mt-2">
+                    <div class="mini-grid">
+                        <div class="mini-card">
+                            <strong>Unstructured:</strong> Plain text and HTML —
+                            humans understand, machines guess.
+                        </div>
+                        <div class="mini-card">
+                            <strong>Semi-structured:</strong> HTML with headings and
+                            lists — some hints, but still ambiguous.
+                        </div>
+                        <div class="mini-card">
+                            <strong>Structured:</strong> Explicit typed properties
+                            (Person, Event, Product) — machine interpretable.
+                        </div>
+                    </div>
+
+                    <details open class="mt-2">
+                        <summary>
+                            What is structured data?
+                            <span class="badge-level">High-level</span>
+                        </summary>
+                        <div class="details-body">
+                            <ul>
+                                <li>
+                                    <strong>Structured data</strong> is information
+                                    organized according to a fixed schema: there are
+                                    named fields with well-defined meanings (e.g.,
+                                    <code class="inline-code">name</code>,
+                                    <code class="inline-code">startDate</code>,
+                                    <code class="inline-code">price</code>).
+                                </li>
+                                <li>
+                                    In the context of the web, structured data usually
+                                    means markup that identifies entities and their
+                                    properties in a way that search engines and other
+                                    agents can reliably parse.
+                                </li>
+                                <li>
+                                    Historically, HTML tags were designed for
+                                    presentation and basic semantics. Structured data
+                                    adds a <strong>domain-specific layer</strong> on
+                                    top: now your “box of text” is explicitly a
+                                    <code class="inline-code">Product</code> with a
+                                    <code class="inline-code">reviewRating</code>, and
+                                    your “date string” is an
+                                    <code class="inline-code">Event</code>
+                                    <code class="inline-code">startDate</code>.
+                                </li>
+                            </ul>
+                            <p>
+                                You can think of structured data as writing a
+                                <em>mini ontology instance</em> for every relevant
+                                object on the page. At research level, this connects
+                                directly with knowledge graphs, ontologies, and
+                                semantic web standards.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 12.1.2 SCHEMA.ORG VOCABULARY -->
+                <section id="sec-12-1-schema-vocab" class="mt-3">
+                    <h3 class="section-heading" style="font-size: 1rem;">
+                        12.1.2 Schema.org vocabulary
+                    </h3>
+
+                    <details open class="mt-1">
+                        <summary>
+                            Schema.org as a shared dictionary
+                            <span class="badge-level">Concept</span>
+                        </summary>
+                        <div class="details-body">
+                            <ul>
+                                <li>
+                                    <strong>Schema.org</strong> is a collaborative,
+                                    community-driven vocabulary for structured data
+                                    on the web, initiated by major search engines.
+                                </li>
+                                <li>
+                                    It defines <strong>types</strong> (e.g.,
+                                    <code class="inline-code">Person</code>,
+                                    <code class="inline-code">Organization</code>,
+                                    <code class="inline-code">Product</code>,
+                                    <code class="inline-code">Event</code>,
+                                    <code class="inline-code">Article</code>) and
+                                    <strong>properties</strong> (e.g.,
+                                    <code class="inline-code">name</code>,
+                                    <code class="inline-code">jobTitle</code>,
+                                    <code class="inline-code">startDate</code>,
+                                    <code class="inline-code">offers</code>).
+                                </li>
+                                <li>
+                                    Microdata uses Schema.org URLs via the
+                                    <code class="inline-code">itemtype</code>
+                                    attribute, e.g.
+                                    <code class="inline-code">
+                                        itemtype="https://schema.org/Person"
+                                    </code>.
+                                </li>
+                            </ul>
+                            <p>
+                                Conceptually, Schema.org = vocabulary +
+                                relationships; microdata = embedding that vocabulary
+                                into HTML instances.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            Example: simple Person microdata
+                            <span class="badge-level">Example</span>
+                        </summary>
+                        <div class="details-body">
+                            <pre class="code-block"><code class="language-html">
+&lt;div itemscope itemtype=&quot;https://schema.org/Person&quot;&gt;
+  &lt;span itemprop=&quot;name&quot;&gt;Dr. A. Researcher&lt;/span&gt;
+  &lt;span itemprop=&quot;jobTitle&quot;&gt;Assistant Professor&lt;/span&gt;
+  &lt;span itemprop=&quot;affiliation&quot;&gt;
+    National Institute of Technology
+  &lt;/span&gt;
+  &lt;a href=&quot;mailto:a.researcher@example.edu&quot;
+     itemprop=&quot;email&quot;&gt;
+    a.researcher@example.edu
+  &lt;/a&gt;
+&lt;/div&gt;
+</code></pre>
+                            <p>
+                                Here, the <code class="inline-code">&lt;div&gt;</code>
+                                is a <code class="inline-code">Person</code>; nested
+                                elements supply properties like
+                                <code class="inline-code">name</code> and
+                                <code class="inline-code">email</code>.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 12.1.3 ITEMSCOPE & ITEMTYPE -->
+                <section id="sec-12-1-itemscope-itemtype" class="mt-3">
+                    <h3 class="section-heading" style="font-size: 1rem;">
+                        12.1.3 itemscope &amp; itemtype attributes
+                    </h3>
+
+                    <details open class="mt-1">
+                        <summary>
+                            Microdata core attributes
+                            <span class="badge-level">Syntax</span>
+                        </summary>
+                        <div class="details-body">
+                            <ul>
+                                <li>
+                                    <code class="inline-code">itemscope</code>:
+                                    Declares that the element and its descendants form
+                                    a single item (entity).
+                                </li>
+                                <li>
+                                    <code class="inline-code">itemtype</code>:
+                                    Provides one or more URLs that identify the
+                                    <strong>type</strong> of the item, typically a
+                                    Schema.org URL.
+                                </li>
+                                <li>
+                                    <code class="inline-code">itemprop</code>:
+                                    Indicates that the element’s content contributes a
+                                    value for a named property of the enclosing item.
+                                </li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            Example: itemscope, itemtype, itemprop together
+                            <span class="badge-level">Example</span>
+                        </summary>
+                        <div class="details-body">
+                            <pre class="code-block"><code class="language-html">
+&lt;article itemscope itemtype=&quot;https://schema.org/ScholarlyArticle&quot;&gt;
+  &lt;h1 itemprop=&quot;headline&quot;&gt;
+    Microdata for Scientific Publishing
+  &lt;/h1&gt;
+
+  &lt;p&gt;By
+    &lt;span itemprop=&quot;author&quot; itemscope itemtype=&quot;https://schema.org/Person&quot;&gt;
+      &lt;span itemprop=&quot;name&quot;&gt;Dr. A. Researcher&lt;/span&gt;
+    &lt;/span&gt;
+  &lt;/p&gt;
+
+  &lt;time itemprop=&quot;datePublished&quot; datetime=&quot;2025-11-24&quot;&gt;
+    24 November 2025
+  &lt;/time&gt;
+
+  &lt;div itemprop=&quot;publisher&quot; itemscope itemtype=&quot;https://schema.org/Organization&quot;&gt;
+    &lt;span itemprop=&quot;name&quot;&gt;Journal of Web Semantics&lt;/span&gt;
+  &lt;/div&gt;
+&lt;/article&gt;
+</code></pre>
+                            <p>
+                                Notice how multiple items nest: the article itself
+                                (<code class="inline-code">ScholarlyArticle</code>),
+                                an embedded <code class="inline-code">Person</code> as
+                                author, and an <code class="inline-code">Organization</code>
+                                as publisher.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+            </section>
+
+            <!-- 12.2 COMMON SCHEMA TYPES -->
+            <section id="sec-12-2" class="section-card">
+                <div class="section-kicker">12.2</div>
+                <h2 class="section-heading">
+                    Common Schema Types
+                    <span class="section-label">Practical Patterns</span>
+                </h2>
+                <p class="section-summary-text mt-1">
+                    Rather than memorizing the entire Schema.org universe, we focus
+                    on high-impact types that appear frequently in real-world
+                    systems: persons, organizations, products, reviews, events,
+                    places, and articles/blog posts.
+                </p>
+
+            <!-- 12.2.1 PERSON & ORGANIZATION -->
+            <section id="sec-12-2-person-org" class="mt-2">
+                <h3 class="section-heading" style="font-size: 1rem;">
+                    12.2.1 Person &amp; Organization schemas
+                </h3>
+
+                <details open class="mt-1">
+                    <summary>
+                        Modeling people &amp; organizations
+                        <span class="badge-level">Concept + Syntax</span>
+                    </summary>
+                    <div class="details-body">
+                        <p>
+                            <code class="inline-code">Person</code> and
+                            <code class="inline-code">Organization</code> sit at the
+                            core of many knowledge graphs: authors, institutions,
+                            companies, research groups, labs, etc.
+                        </p>
+                        <ul>
+                            <li>
+                                Typical <strong>Person</strong> properties:
+                                <code class="inline-code">name</code>,
+                                <code class="inline-code">jobTitle</code>,
+                                <code class="inline-code">affiliation</code>,
+                                <code class="inline-code">email</code>,
+                                <code class="inline-code">url</code>.
+                            </li>
+                            <li>
+                                Typical <strong>Organization</strong> properties:
+                                <code class="inline-code">name</code>,
+                                <code class="inline-code">url</code>,
+                                <code class="inline-code">logo</code>,
+                                <code class="inline-code">address</code>,
+                                <code class="inline-code">sameAs</code> (links to
+                                profiles, e.g. Wikipedia, LinkedIn).
+                            </li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary>
+                        Example: Person + Organization microdata
+                        <span class="badge-level">Example</span>
+                    </summary>
+                    <div class="details-body">
+                        <pre class="code-block"><code class="language-html">
+&lt;div itemscope itemtype=&quot;https://schema.org/Person&quot;&gt;
+  &lt;span itemprop=&quot;name&quot;&gt;Irfan Khan&lt;/span&gt;
+  &lt;span itemprop=&quot;jobTitle&quot;&gt;Senior Web Engineer&lt;/span&gt;
+
+  &lt;div itemprop=&quot;affiliation&quot; itemscope itemtype=&quot;https://schema.org/Organization&quot;&gt;
+    &lt;span itemprop=&quot;name&quot;&gt;DeepWeb Labs&lt;/span&gt;
+    &lt;a itemprop=&quot;url&quot; href=&quot;https://deepweblabs.example&quot;&gt;
+      deepweblabs.example
+    &lt;/a&gt;
+  &lt;/div&gt;
+
+  &lt;a href=&quot;mailto:irfan@example.com&quot; itemprop=&quot;email&quot;&gt;
+    irfan@example.com
+  &lt;/a&gt;
+&lt;/div&gt;
+</code></pre>
+                    </div>
+                </details>
+            </section>
+
+            <!-- 12.2.2 PRODUCT & REVIEW -->
+            <section id="sec-12-2-product-review" class="mt-3">
+                <h3 class="section-heading" style="font-size: 1rem;">
+                    12.2.2 Product &amp; Review schemas
+                </h3>
+
+                <details open class="mt-1">
+                    <summary>
+                        Why Product &amp; Review matter
+                        <span class="badge-level">Concept</span>
+                    </summary>
+                    <div class="details-body">
+                        <p>
+                            For e-commerce or SaaS, structured data for
+                            <code class="inline-code">Product</code> and
+                            <code class="inline-code">Review</code> unlocks rich
+                            snippets: price, rating stars, availability, etc.
+                        </p>
+                        <ul>
+                            <li>
+                                <strong>Product</strong> properties:
+                                <code class="inline-code">name</code>,
+                                <code class="inline-code">image</code>,
+                                <code class="inline-code">description</code>,
+                                <code class="inline-code">brand</code>,
+                                <code class="inline-code">offers</code>.
+                            </li>
+                            <li>
+                                <strong>Review</strong> properties:
+                                <code class="inline-code">reviewRating</code>,
+                                <code class="inline-code">author</code>,
+                                <code class="inline-code">reviewBody</code>,
+                                <code class="inline-code">itemReviewed</code>.
+                            </li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary>
+                        Example: Product with aggregateRating (microdata)
+                        <span class="badge-level">Example</span>
+                    </summary>
+                    <div class="details-body">
+                        <pre class="code-block"><code class="language-html">
+&lt;div itemscope itemtype=&quot;https://schema.org/Product&quot;&gt;
+  &lt;span itemprop=&quot;name&quot;&gt;Noise-Cancelling Headphones X200&lt;/span&gt;
+
+  &lt;img src=&quot;/img/x200.png&quot;
+       alt=&quot;Headphones X200&quot;
+       itemprop=&quot;image&quot; /&gt;
+
+  &lt;p itemprop=&quot;description&quot;&gt;
+    Over-ear wireless headphones with 35 dB active noise cancellation.
+  &lt;/p&gt;
+
+  &lt;div itemprop=&quot;brand&quot; itemscope itemtype=&quot;https://schema.org/Organization&quot;&gt;
+    &lt;span itemprop=&quot;name&quot;&gt;AudioSphere&lt;/span&gt;
+  &lt;/div&gt;
+
+  &lt;div itemprop=&quot;offers&quot; itemscope itemtype=&quot;https://schema.org/Offer&quot;&gt;
+    Price:
+    &lt;span itemprop=&quot;priceCurrency&quot;&gt;INR&lt;/span&gt;
+    &lt;span itemprop=&quot;price&quot;&gt;8999&lt;/span&gt;
+    &lt;link itemprop=&quot;availability&quot;
+          href=&quot;https://schema.org/InStock&quot; /&gt;
+  &lt;/div&gt;
+
+  &lt;div itemprop=&quot;aggregateRating&quot; itemscope itemtype=&quot;https://schema.org/AggregateRating&quot;&gt;
+    Rated &lt;span itemprop=&quot;ratingValue&quot;&gt;4.6&lt;/span&gt;/5
+    based on &lt;span itemprop=&quot;reviewCount&quot;&gt;128&lt;/span&gt; reviews.
+  &lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
+                    </div>
+                </details>
+            </section>
+
+            <!-- 12.2.3 EVENT & PLACE -->
+            <section id="sec-12-2-event-place" class="mt-3">
+                <h3 class="section-heading" style="font-size: 1rem;">
+                    12.2.3 Event &amp; Place schemas
+                </h3>
+
+                <details open class="mt-1">
+                    <summary>
+                        Modeling events and locations
+                        <span class="badge-level">Concept</span>
+                    </summary>
+                    <div class="details-body">
+                        <p>
+                            For conferences, workshops, concerts, or meetups,
+                            <code class="inline-code">Event</code> and
+                            <code class="inline-code">Place</code> types help search
+                            engines show event cards with dates, locations, and ticket
+                            links.
+                        </p>
+                        <ul>
+                            <li>
+                                <strong>Event</strong> properties:
+                                <code class="inline-code">name</code>,
+                                <code class="inline-code">startDate</code>,
+                                <code class="inline-code">endDate</code>,
+                                <code class="inline-code">location</code>,
+                                <code class="inline-code">organizer</code>,
+                                <code class="inline-code">eventStatus</code>.
+                            </li>
+                            <li>
+                                <strong>Place</strong> properties:
+                                <code class="inline-code">name</code>,
+                                <code class="inline-code">address</code>,
+                                <code class="inline-code">geo</code>
+                                (lat/long), etc.
+                            </li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary>
+                        Example: Event with Place microdata
+                        <span class="badge-level">Example</span>
+                    </summary>
+                    <div class="details-body">
+                        <pre class="code-block"><code class="language-html">
+&lt;div itemscope itemtype=&quot;https://schema.org/Event&quot;&gt;
+  &lt;h2 itemprop=&quot;name&quot;&gt;
+    International Conference on Semantic Web 2026
+  &lt;/h2&gt;
+
+  &lt;time itemprop=&quot;startDate&quot; datetime=&quot;2026-02-15T09:00:00+05:30&quot;&gt;
+    15 February 2026, 9:00 AM IST
+  &lt;/time&gt;
+
+  &lt;div itemprop=&quot;location&quot; itemscope itemtype=&quot;https://schema.org/Place&quot;&gt;
+    &lt;span itemprop=&quot;name&quot;&gt;Bangalore Convention Center&lt;/span&gt;
+    &lt;div itemprop=&quot;address&quot; itemscope itemtype=&quot;https://schema.org/PostalAddress&quot;&gt;
+      &lt;span itemprop=&quot;streetAddress&quot;&gt;123 MG Road&lt;/span&gt;,
+      &lt;span itemprop=&quot;addressLocality&quot;&gt;Bengaluru&lt;/span&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
+                    </div>
+                </details>
+            </section>
+
+            <!-- 12.2.4 ARTICLE & BLOG -->
+            <section id="sec-12-2-article-blog" class="mt-3">
+                <h3 class="section-heading" style="font-size: 1rem;">
+                    12.2.4 Article &amp; BlogPosting schemas
+                </h3>
+
+                <details open class="mt-1">
+                    <summary>
+                        Articles in research &amp; blogs
+                        <span class="badge-level">Concept</span>
+                    </summary>
+                    <div class="details-body">
+                        <p>
+                            <code class="inline-code">Article</code> and
+                            <code class="inline-code">BlogPosting</code> capture
+                            news, blog entries, and research notes. They are central
+                            to academic and technical publishing online.
+                        </p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary>
+                        Example: BlogPosting in JSON-LD (recommended by Google)
+                        <span class="badge-level">JSON-LD</span>
+                    </summary>
+                    <div class="details-body">
+                        <p>
+                            Even though this module focuses on microdata, in practice
+                            JSON-LD is often preferred. You should understand both.
+                        </p>
+                        <pre class="code-block"><code class="language-jsonld">
+&lt;script type=&quot;application/ld+json&quot;&gt;
+{
+  &quot;@context&quot;: &quot;https://schema.org&quot;,
+  &quot;@type&quot;: &quot;BlogPosting&quot;,
+  &quot;headline&quot;: &quot;Understanding Microdata and JSON-LD&quot;,
+  &quot;author&quot;: {
+    &quot;@type&quot;: &quot;Person&quot;,
+    &quot;name&quot;: &quot;Irfan&quot;
+  },
+  &quot;datePublished&quot;: &quot;2025-11-24&quot;,
+  &quot;mainEntityOfPage&quot;: {
+    &quot;@type&quot;: &quot;WebPage&quot;,
+    &quot;@id&quot;: &quot;https://example.com/microdata-vs-jsonld&quot;
+  }
+}
+&lt;/script&gt;
+</code></pre>
+                    </div>
+                </details>
+            </section>
+            </section>
+
+            <!-- 12.3 TESTING & VALIDATION -->
+            <section id="sec-12-3" class="section-card">
+                <div class="section-kicker">12.3</div>
+                <h2 class="section-heading">
+                    Testing &amp; Validation
+                    <span class="section-label">Quality Assurance</span>
+                </h2>
+                <p class="section-summary-text mt-1">
+                    Structured data only helps if it is <strong>valid</strong> and
+                    <strong>interpretable</strong> by consumers. Validation tools
+                    ensure that your microdata/JSON-LD matches Schema.org rules and
+                    search engine requirements.
+                </p>
+
+                <!-- 12.3.1 RICH RESULTS TEST -->
+                <section id="sec-12-3-rich-results" class="mt-2">
+                    <h3 class="section-heading" style="font-size: 1rem;">
+                        12.3.1 Google’s Rich Results Test
+                    </h3>
+
+                    <details open class="mt-1">
+                        <summary>
+                            Purpose of Rich Results Test
+                            <span class="badge-level">Tool</span>
+                        </summary>
+                        <div class="details-body">
+                            <ul>
+                                <li>
+                                    Validates whether your structured data qualifies
+                                    for enhanced results (stars, carousels, event
+                                    cards, etc.).
+                                </li>
+                                <li>
+                                    Can test via <strong>URL</strong> or
+                                    <strong>code snippet</strong>.
+                                </li>
+                                <li>
+                                    Shows which rich result types are detected,
+                                    warnings, and errors.
+                                </li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            Conceptual “algorithm” of validation (pseudocode)
+                            <span class="badge-level">Pseudocode</span>
+                        </summary>
+                        <div class="details-body">
+                            <pre class="code-block"><code class="language-text">
+Given: HTML page P
+
+1. Extract all structured data blocks:
+   - Microdata
+   - RDFa
+   - JSON-LD
+
+2. For each block B:
+   a. Parse B into an internal graph representation.
+   b. Identify the main entity type T (e.g., Product, Event).
+   c. Look up schema specification for T:
+      - Required properties R
+      - Recommended properties S
+
+3. Check constraints:
+   a. Are all required properties in R present?
+   b. Are their value types consistent? (date, URL, text, number)
+   c. Are there any unknown or deprecated properties?
+
+4. Aggregate results:
+   - If any required property missing ⇒ Error
+   - If recommended properties missing ⇒ Warning
+   - Otherwise ⇒ Eligible for rich results (if type supported)
+</code></pre>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 12.3.2 VALIDATION TOOLS -->
+                <section id="sec-12-3-validation-tools" class="mt-3">
+                    <h3 class="section-heading" style="font-size: 1rem;">
+                        12.3.2 Schema markup validation
+                    </h3>
+
+                    <details open class="mt-1">
+                        <summary>
+                            Multiple validators
+                            <span class="badge-level">Tools</span>
+                        </summary>
+                        <div class="details-body">
+                            <ul>
+                                <li>
+                                    <strong>Google Rich Results Test:</strong> Focuses
+                                    on rich result eligibility.
+                                </li>
+                                <li>
+                                    <strong>Schema.org validator / structured data
+                                        testing tools:</strong> Focus on syntax and
+                                    Schema.org vocabulary correctness.
+                                </li>
+                                <li>
+                                    <strong>Search Console:</strong> Gives ongoing
+                                    reports for your entire site, surfacing aggregate
+                                    issues over time.
+                                </li>
+                            </ul>
+                            <p>
+                                In a production pipeline, you would integrate at least
+                                one validator into CI, so that invalid structured
+                                data fails the build or raises alerts.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 12.3.3 SEO BENEFITS -->
+                <section id="sec-12-3-seo-benefits" class="mt-3">
+                    <h3 class="section-heading" style="font-size: 1rem;">
+                        12.3.3 SEO benefits of structured data
+                    </h3>
+
+                    <details open class="mt-1">
+                        <summary>
+                            How structured data affects SEO
+                            <span class="badge-level">Concept</span>
+                        </summary>
+                        <div class="details-body">
+                            <ul>
+                                <li>
+                                    <strong>Rich snippets:</strong> Ratings, price,
+                                    availability, event dates, FAQ accordions, how-to
+                                    steps, breadcrumbs, etc., directly in SERPs.
+                                </li>
+                                <li>
+                                    <strong>Improved CTR:</strong> Richer visual
+                                    appearance leads to higher click-through rates,
+                                    even if ranking position is unchanged.
+                                </li>
+                                <li>
+                                    <strong>Better disambiguation:</strong> Helps
+                                    search engines distinguish between entities with
+                                    similar names (e.g., the researcher “Irfan” vs a
+                                    brand or product with the same name).
+                                </li>
+                                <li>
+                                    <strong>Knowledge graphs:</strong> Clean structured
+                                    data contributes to entity understanding, which
+                                    influences knowledge panels, “People also ask”,
+                                    and assistant answers.
+                                </li>
+                            </ul>
+                        </div>
+                    </details>
+                </section>
+            </section>
+
+            <!-- SUMMARY / CHECKLIST -->
+            <section class="section-card">
+                <div class="section-kicker">Wrap-up</div>
+                <h2 class="section-heading">
+                    Checklist: Microdata &amp; structured data
+                    <span class="section-label">Self-Audit</span>
+                </h2>
+
+                <details open class="mt-1">
+                    <summary>
+                        Quick self-check
+                        <span class="badge-level">Checklist</span>
+                    </summary>
+                    <div class="details-body">
+                        <ul>
+                            <li>
+                                Have you identified the main entities on the page
+                                (Person, Organization, Product, Event, Article, etc.)?
+                            </li>
+                            <li>
+                                Does each entity have
+                                <code class="inline-code">itemscope</code> and a
+                                correct <code class="inline-code">itemtype</code>
+                                (Schema.org URL)?
+                            </li>
+                            <li>
+                                Are required properties for each type present and
+                                correctly typed?
+                            </li>
+                            <li>
+                                Are you using <code class="inline-code">itemprop</code>
+                                only with valid property names for the given type?
+                            </li>
+                            <li>
+                                Have you validated the markup using at least one
+                                structured data testing tool?
+                            </li>
+                            <li>
+                                For SEO-critical pages, have you checked which rich
+                                result types your markup enables?
+                            </li>
+                            <li>
+                                Do your code examples render cleanly, with tags like
+                                <code class="inline-code">&lt;ul&gt;</code> and
+                                <code class="inline-code">&lt;li&gt;</code> visible
+                                and no stray <code class="inline-code">class="hl-tag"</code>
+                                artifacts?
+                            </li>
+                        </ul>
+                        <p class="mt-1">
+                            If you can answer “yes” to these, your structured data is
+                            not just syntactically valid but <strong>semantically
+                            meaningful</strong>, ready for integration into modern
+                            search and knowledge systems.
+                        </p>
+                    </div>
+                </details>
+            </section>
+        </main>
+    </div>
+</div>
+
+<!-- JavaScript: Bootstrap + utilities -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Smooth scrolling for TOC links
+        document.querySelectorAll('a[href^="#"]').forEach(function (anchor) {
+            anchor.addEventListener("click", function (e) {
+                const targetId = this.getAttribute("href");
+                if (targetId.length > 1) {
+                    e.preventDefault();
+                    const target = document.querySelector(targetId);
+                    if (target) {
+                        target.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }
+                }
+            });
+        });
+
+        // Expand / Collapse all <details>
+        const expandBtn = document.getElementById("expandAll");
+        const collapseBtn = document.getElementById("collapseAll");
+
+        if (expandBtn) {
+            expandBtn.addEventListener("click", function () {
+                document.querySelectorAll("details").forEach(function (d) {
+                    d.open = true;
+                });
+            });
+        }
+
+        if (collapseBtn) {
+            collapseBtn.addEventListener("click", function () {
+                document.querySelectorAll("details").forEach(function (d) {
+                    d.open = false;
+                });
+            });
+        }
+
+        // TOC search
+        const tocSearch = document.getElementById("tocSearch");
+        const tocList = document.getElementById("tocList");
+
+        if (tocSearch && tocList) {
+            tocSearch.addEventListener("input", function () {
+                const query = this.value.trim().toLowerCase();
+                const links = tocList.querySelectorAll(".toc-link");
+                links.forEach(function (link) {
+                    const text = link.textContent.toLowerCase();
+                    const li = link.closest("li");
+                    if (!query || text.includes(query)) {
+                        li.style.display = "";
+                    } else {
+                        li.style.display = "none";
+                    }
+                });
+            });
+        }
+
+        // Simple "active" state for TOC when clicking
+        document.querySelectorAll(".toc-link").forEach(function (link) {
+            link.addEventListener("click", function () {
+                document
+                    .querySelectorAll(".toc-link.active")
+                    .forEach(function (l) {
+                        l.classList.remove("active");
+                    });
+                this.classList.add("active");
+            });
+        });
+
+        // ===============================
+        // ADVANCED SYNTAX HIGHLIGHTING
+        // (HTML + JSON-LD) – SAFE VERSION
+        // ===============================
+
+        function highlightHTMLCodeBlock(codeEl) {
+            // Inner HTML contains &lt; and &gt; already – we work on that safely
+            let html = codeEl.innerHTML;
+
+            // Comments: &lt;!-- ... --&gt;
+            html = html.replace(
+                /(&lt;!--[\s\S]*?--&gt;)/g,
+                '<span class="hl-comment">$1</span>'
+            );
+
+            // Strings in attributes: "..."
+            html = html.replace(
+                /(&quot;[^&]*?&quot;)/g,
+                '<span class="hl-string">$1</span>'
+            );
+
+            // Tag opening with attributes: &lt;tag ...&gt;
+            html = html.replace(
+                /(&lt;\/?)([a-zA-Z0-9\-]+)((?:[^&]|&(?!gt;))*)&gt;/g,
+                function (match, open, tagName, rest) {
+                    // Highlight attribute names within rest
+                    const highlightedRest = rest.replace(
+                        /([\s\t\r\n])([a-zA-Z_:][-a-zA-Z0-9_:.]*)(=)/g,
+                        '$1<span class="hl-attr">$2</span>$3'
+                    );
+                    return (
+                        open +
+                        '<span class="hl-tag">' +
+                        tagName +
+                        "</span>" +
+                        highlightedRest +
+                        "&gt;"
+                    );
+                }
+            );
+
+            codeEl.innerHTML = html;
+        }
+
+        function highlightJSONCodeBlock(codeEl) {
+            let html = codeEl.innerHTML;
+
+            // Strings: "..."
+            html = html.replace(
+                /(&quot;[^&]*?&quot;)/g,
+                '<span class="hl-string">$1</span>'
+            );
+
+            // Keys: "key":
+            html = html.replace(
+                /(&quot;[^&]*?&quot;)(\s*:&nbsp;|\s*:)/g,
+                '<span class="hl-key">$1</span>$2'
+            );
+
+            // Numbers
+            html = html.replace(
+                /\b(-?\d+(\.\d+)?)\b/g,
+                '<span class="hl-number">$1</span>'
+            );
+
+            // Booleans and null
+            html = html.replace(
+                /\b(true|false|null)\b/g,
+                '<span class="hl-bool">$1</span>'
+            );
+
+            // Braces and punctuation { } [ ] : ,
+            html = html.replace(
+                /([\{\}\[\]\:\,])/g,
+                '<span class="hl-punct">$1</span>'
+            );
+
+            codeEl.innerHTML = html;
+        }
+
+        // Apply highlighting
+        document
+            .querySelectorAll("pre.code-block code.language-html")
+            .forEach(function (codeEl) {
+                highlightHTMLCodeBlock(codeEl);
+            });
+
+        document
+            .querySelectorAll("pre.code-block code.language-jsonld")
+            .forEach(function (codeEl) {
+                highlightJSONCodeBlock(codeEl);
+            });
+    });
+</script>
+</body>
+</html>

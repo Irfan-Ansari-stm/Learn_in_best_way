@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Module 18 – HTML with JavaScript Integration</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    />
+
+    <style>
+        :root {
+            --bg-main: #050816;
+            --bg-card: #0b1020;
+            --bg-code: #050812;
+            --accent-cyan: #22d3ee;
+            --accent-amber: #fbbf24;
+            --text-main: #e5e7eb;
+            --text-muted: #9ca3af;
+            --border-subtle: #1f2933;
+            --shadow-soft: 0 0 40px rgba(15, 23, 42, 0.95);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: radial-gradient(circle at top, #0b1120 0, #020617 60%);
+            color: var(--text-main);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        a { color: var(--accent-cyan); text-decoration: none; }
+        a:hover { color: var(--accent-amber); text-decoration: underline; }
+
+        .layout-wrapper { min-height: 100vh; padding: 1rem; }
+        .note-container {
+            background: rgba(15, 23, 42, 0.96);
+            border-radius: 1.25rem;
+            box-shadow: var(--shadow-soft);
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: #020617;
+            border-right: 1px solid var(--border-subtle);
+            padding: 1.2rem 1.1rem;
+        }
+        .sidebar-inner {
+            position: sticky;
+            top: 0;
+            max-height: 100vh;
+            overflow-y: auto;
+            padding-right: 0.35rem;
+        }
+        .badge-module {
+            background: rgba(56,189,248,.12);
+            border:1px solid rgba(56,189,248,.4);
+            color:var(--accent-cyan);
+            padding:0.22rem 0.75rem;
+            border-radius:999px;
+            font-size:0.7rem;
+            letter-spacing:0.08em;
+            text-transform:uppercase;
+        }
+        .pill-tag {
+            font-size:.7rem;
+            padding:.15rem .55rem;
+            border-radius:999px;
+            border:1px solid rgba(148,163,184,.4);
+            color:var(--text-muted);
+        }
+        .sidebar-title {
+            font-size:1.3rem;
+            font-weight:700;
+            color:var(--accent-cyan);
+            margin-top:0.7rem;
+        }
+        .sidebar-subtitle {
+            font-size:0.9rem;
+            color:var(--text-muted);
+        }
+        .author-block {
+            font-size:0.8rem;
+            margin-top:0.6rem;
+            color:var(--text-muted);
+        }
+        .author-name { color:var(--accent-amber); font-weight:600; }
+
+        .toc-title {
+            margin-top:1rem;
+            font-size:0.85rem;
+            text-transform:uppercase;
+            letter-spacing:0.12em;
+            color:var(--text-muted);
+        }
+        .toc-search-input {
+            background:#020617;
+            border:1px solid var(--border-subtle);
+            color:var(--text-main);
+            font-size:0.8rem;
+        }
+        .toc-search-input:focus {
+            outline:none;
+            border-color:var(--accent-cyan);
+            box-shadow:0 0 0 1px var(--accent-cyan);
+        }
+        .toc-utilities {
+            display:flex;
+            gap:0.3rem;
+            margin-top:0.45rem;
+        }
+        .btn-util {
+            flex:1;
+            border-radius:999px;
+            border:1px solid var(--border-subtle);
+            background:#020617;
+            color:var(--text-muted);
+            font-size:0.7rem;
+            padding:0.18rem 0.4rem;
+        }
+        .btn-util:hover { border-color:var(--accent-cyan); color:var(--accent-cyan); }
+
+        .toc-list { list-style:none; padding-left:0; margin-top:0.5rem; }
+        .toc-list li { margin-bottom:0.15rem; }
+        .toc-link {
+            display:block;
+            padding:0.26rem 0.4rem;
+            border-radius:0.35rem;
+            font-size:0.86rem;
+            color:var(--text-muted);
+        }
+        .toc-link.main { color:var(--text-main); font-weight:600; }
+        .toc-link.sub { padding-left:0.95rem; font-size:0.8rem; }
+        .toc-link:hover {
+            background:rgba(56,189,248,.08);
+            color:var(--accent-cyan);
+            text-decoration:none;
+        }
+        .toc-link.active {
+            background:rgba(56,189,248,.15);
+            color:var(--accent-cyan);
+            border-left:3px solid var(--accent-cyan);
+        }
+
+        /* Content */
+        .content-area {
+            padding:1.35rem 1.4rem 1.5rem;
+            max-height:calc(100vh - 2rem);
+            overflow-y:auto;
+        }
+        .content-header-label {
+            font-size:0.75rem;
+            text-transform:uppercase;
+            letter-spacing:0.18em;
+            color:var(--accent-amber);
+        }
+        .content-main-title {
+            font-size:1.7rem;
+            font-weight:700;
+            color:#f9fafb;
+        }
+        .content-subtitle {
+            font-size:0.95rem;
+            color:var(--text-muted);
+            max-width:48rem;
+        }
+
+        .section-card {
+            background:rgba(15,23,42,.9);
+            border-radius:1rem;
+            border:1px solid var(--border-subtle);
+            padding:1rem;
+            margin-top:1.1rem;
+        }
+        .section-heading {
+            font-size:1.1rem;
+            font-weight:600;
+            color:#e5e7eb;
+        }
+        .section-summary-text {
+            font-size:0.9rem;
+            color:var(--text-muted);
+        }
+
+        /* details / summary */
+        details {
+            margin-top:0.6rem;
+            border-radius:0.75rem;
+            border:1px solid #111827;
+            background:#020617;
+        }
+        summary {
+            padding:0.55rem 0.75rem;
+            cursor:pointer;
+            list-style:none;
+            font-size:0.9rem;
+            color:var(--text-main);
+        }
+        summary::marker,
+        summary::-webkit-details-marker { display:none; }
+        summary::before {
+            content:"▸";
+            display:inline-block;
+            margin-right:0.45rem;
+            color:var(--accent-cyan);
+            font-size:0.8rem;
+            transition:transform 0.16s ease-out;
+        }
+        details[open] summary::before { transform:rotate(90deg); }
+
+        .details-body {
+            border-top:1px solid #111827;
+            padding:0.55rem 0.9rem 0.85rem;
+            font-size:0.9rem;
+            color:var(--text-muted);
+        }
+        .details-body ul,
+        .details-body ol {
+            padding-left:1.2rem;
+        }
+
+        /* code blocks */
+        pre.code-block {
+            background:var(--bg-code);
+            border-radius:0.75rem;
+            border:1px solid #020617;
+            padding:0.8rem 0.9rem;
+            font-size:0.85rem;
+            overflow-x:auto;
+            margin-bottom:0.65rem;
+        }
+        pre.code-block code {
+            font-family:"Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            white-space:pre;
+        }
+        code.inline-code {
+            background:rgba(15,23,42,.95);
+            border-radius:0.3rem;
+            border:1px solid #111827;
+            padding:0.05rem 0.25rem;
+            font-size:0.83rem;
+        }
+
+        .note-callout {
+            border-radius:0.75rem;
+            border:1px dashed rgba(148,163,184,.6);
+            background:rgba(15,23,42,.8);
+            padding:0.5rem 0.7rem;
+            font-size:0.85rem;
+            color:var(--text-muted);
+            margin-top:0.7rem;
+        }
+        .note-callout strong { color:var(--accent-amber); }
+
+        /* syntax highlighting tokens */
+        .hl-tag   { color:#38bdf8; }
+        .hl-attr  { color:#fbbf24; }
+        .hl-string{ color:#a5b4fc; }
+        .hl-key   { color:#facc15; }
+        .hl-number{ color:#34d399; }
+        .hl-js-keyword { color:#fb923c; }
+        .hl-js-global  { color:#22d3ee; }
+        .hl-js-func    { color:#4ade80; }
+    </style>
+</head>
+<body>
+<div class="layout-wrapper container-fluid">
+    <div class="note-container row g-0">
+        <!-- SIDEBAR -->
+        <aside class="sidebar col-12 col-lg-3">
+            <div class="sidebar-inner">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge-module">Module 18</span>
+                    <span class="pill-tag">JS Integration</span>
+                </div>
+
+                <div class="mt-3">
+                    <div class="sidebar-title">HTML with JavaScript Integration</div>
+                    <div class="sidebar-subtitle">
+                        How to write HTML that is “JavaScript-ready”: data attributes, hooks, templates,
+                        live regions, SPA structure, and component-based thinking for robust progressive enhancement.
+                    </div>
+                </div>
+
+                <div class="author-block">
+                    <div><span class="author-name">Prepared for:</span> College → Master → PhD learners</div>
+                    <div><span class="author-name">Focus:</span> JS hooks · SPA-ready HTML · Progressive enhancement</div>
+                </div>
+
+                <div class="toc-title">Table of Contents</div>
+                <input id="tocSearch" class="form-control form-control-sm toc-search-input" placeholder="Search sections…" />
+
+                <div class="toc-utilities">
+                    <button id="expandAll" class="btn btn-sm btn-util">Expand All</button>
+                    <button id="collapseAll" class="btn btn-sm btn-util">Collapse All</button>
+                </div>
+
+                <ul id="tocList" class="toc-list">
+                    <li><a href="#sec-18-1" class="toc-link main">18.1 JavaScript-Ready HTML</a></li>
+                    <li><a href="#sec-18-1-data" class="toc-link sub">18.1.1 Data attributes for JS hooks</a></li>
+                    <li><a href="#sec-18-1-idclass" class="toc-link sub">18.1.2 ID vs class strategy</a></li>
+                    <li><a href="#sec-18-1-pe" class="toc-link sub">18.1.3 Progressive enhancement</a></li>
+
+                    <li class="mt-2"><a href="#sec-18-2" class="toc-link main">18.2 Dynamic Content Preparation</a></li>
+                    <li><a href="#sec-18-2-template" class="toc-link sub">18.2.1 Template elements</a></li>
+                    <li><a href="#sec-18-2-aria" class="toc-link sub">18.2.2 ARIA live regions</a></li>
+                    <li><a href="#sec-18-2-validation" class="toc-link sub">18.2.3 Form validation integration</a></li>
+
+                    <li class="mt-2"><a href="#sec-18-3" class="toc-link main">18.3 SPA Considerations</a></li>
+                    <li><a href="#sec-18-3-structure" class="toc-link sub">18.3.1 HTML structure for SPAs</a></li>
+                    <li><a href="#sec-18-3-history" class="toc-link sub">18.3.2 History API preparation</a></li>
+                    <li><a href="#sec-18-3-components" class="toc-link sub">18.3.3 Component-based thinking</a></li>
+                </ul>
+
+                <div class="note-callout">
+                    <strong>Mental model:</strong> HTML should be “good enough on its own”, and then JavaScript
+                    progressively upgrades it into richer interactions — never the other way around.
+                </div>
+            </div>
+        </aside>
+
+        <!-- CONTENT -->
+        <main class="content-area col-12 col-lg-9">
+            <header class="mb-2">
+                <div class="content-header-label">Data attributes · Templates · SPA-ready HTML</div>
+                <h1 class="content-main-title">Module 18: HTML with JavaScript Integration</h1>
+                <p class="content-subtitle">
+                    This module shows how to design HTML that cooperates elegantly with JavaScript:
+                    from attribute-level hooks, to dynamic templating, to SPA structures that still
+                    remain accessible and progressive.
+                </p>
+            </header>
+
+            <!-- EXEC SUMMARY -->
+            <section class="section-card">
+                <h2 class="section-heading">Executive Overview</h2>
+                <p class="section-summary-text">
+                    Instead of sprinkling JavaScript randomly into the page, we start with clean, semantic HTML
+                    that exposes “integration points”: data attributes, templates, and semantic regions.
+                    JavaScript then reads those integration points and upgrades functionality.
+                </p>
+                <details open>
+                    <summary>High-level summary</summary>
+                    <div class="details-body">
+                        <ul>
+                            <li><strong>18.1:</strong> How to mark HTML so JS can attach behavior safely (data-*, IDs, classes) without coupling.</li>
+                            <li><strong>18.2:</strong> Preparing dynamic regions with &lt;template&gt;, ARIA live regions, and form hooks.</li>
+                            <li><strong>18.3:</strong> SPA-like structure in HTML: one main region, navigation, History API-friendly anchors, and components.</li>
+                        </ul>
+                    </div>
+                </details>
+            </section>
+
+            <!-- ========================= -->
+            <!-- 18.1 JAVASCRIPT-READY HTML -->
+            <!-- ========================= -->
+            <section id="sec-18-1" class="section-card">
+                <h2 class="section-heading">18.1 JavaScript-Ready HTML</h2>
+                <p class="section-summary-text">
+                    “JavaScript-ready HTML” means you design markup so that behavior can be attached later without
+                    rewriting the HTML structure. The key tools are data attributes, IDs, and classes used with discipline.
+                </p>
+
+                <!-- 18.1.1 Data attributes -->
+                <section id="sec-18-1-data">
+                    <details open>
+                        <summary>18.1.1 Data attributes for JavaScript hooks</summary>
+                        <div class="details-body">
+                            <p>
+                                <code class="inline-code">data-*</code> attributes store small pieces of metadata
+                                that JS can read. They are ideal for behavior hooks because they keep semantics
+                                and styling separate from behavior identifiers.
+                            </p>
+                            <pre class="code-block"><code class="language-html">
+&lt;button
+  type=&quot;button&quot;
+  data-action=&quot;toggle-panel&quot;
+  data-target-id=&quot;details-panel&quot;&gt;
+  Show details
+&lt;/button&gt;
+
+&lt;section id=&quot;details-panel&quot; hidden&gt;
+  &lt;p&gt;Additional dynamic content...&lt;/p&gt;
+&lt;/section&gt;
+                            </code></pre>
+
+                            <pre class="code-block"><code class="language-js">
+document.addEventListener("click", function (event) {
+  const btn = event.target.closest("[data-action='toggle-panel']");
+  if (!btn) return;
+
+  const id = btn.getAttribute("data-target-id");
+  const panel = document.getElementById(id);
+  if (!panel) return;
+
+  const isHidden = panel.hasAttribute("hidden");
+  if (isHidden) panel.removeAttribute("hidden");
+  else panel.setAttribute("hidden", "");
+});
+                            </code></pre>
+
+                            <p>
+                                Note how the JS code does not depend on specific classes like <code class="inline-code">.btn-primary</code>.
+                                Instead, it uses data attributes to express behavior.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 18.1.2 ID vs class -->
+                <section id="sec-18-1-idclass">
+                    <details>
+                        <summary>18.1.2 ID vs class strategy</summary>
+                        <div class="details-body">
+                            <p>
+                                IDs and classes serve different purposes in a JS-integrated design:
+                            </p>
+                            <ul>
+                                <li><strong>ID:</strong> Unique document-level identifier (e.g., one main layout region).</li>
+                                <li><strong>Class:</strong> Reusable style or behavior group (e.g., multiple buttons with same behavior).</li>
+                                <li><strong>Data attribute:</strong> Specific behavior configuration (e.g., target ID, mode).</li>
+                            </ul>
+
+                            <pre class="code-block"><code class="language-html">
+&lt;main id=&quot;app&quot;&gt;&lt;/main&gt;
+
+&lt;button class=&quot;js-load-section&quot; data-section=&quot;home&quot;&gt;Home&lt;/button&gt;
+&lt;button class=&quot;js-load-section&quot; data-section=&quot;about&quot;&gt;About&lt;/button&gt;
+                            </code></pre>
+
+                            <pre class="code-block"><code class="language-js">
+const app = document.getElementById("app");
+
+document.querySelectorAll(".js-load-section").forEach(btn =&gt; {
+  btn.addEventListener("click", () =&gt; {
+    const section = btn.getAttribute("data-section");
+    app.textContent = "Loading section: " + section + "...";
+    // later: fetch + render content
+  });
+});
+                            </code></pre>
+
+                            <p>
+                                The pattern here is: one stable <code class="inline-code">#app</code> region, multiple
+                                <code class="inline-code">.js-load-section</code> elements, and data attributes to configure behavior.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 18.1.3 Progressive enhancement -->
+                <section id="sec-18-1-pe">
+                    <details>
+                        <summary>18.1.3 Progressive enhancement approach</summary>
+                        <div class="details-body">
+                            <p>
+                                Progressive enhancement says: the core experience should work without JavaScript.
+                                JS then upgrades the experience. HTML is written so that:
+                            </p>
+                            <ul>
+                                <li>Navigation links are real links with <code class="inline-code">href</code>.</li>
+                                <li>Forms submit normally without JS.</li>
+                                <li>Content is present even without dynamic rendering.</li>
+                            </ul>
+
+                            <pre class="code-block"><code class="language-html">
+&lt;a href=&quot;/reports/today&quot; data-enhanced-nav&gt;
+  View today's report
+&lt;/a&gt;
+                            </code></pre>
+
+                            <pre class="code-block"><code class="language-js">
+document.addEventListener("click", function (event) {
+  const link = event.target.closest("a[data-enhanced-nav]");
+  if (!link) return;
+
+  // If JS is available, intercept and do SPA-style navigation
+  event.preventDefault();
+  const url = link.getAttribute("href");
+
+  // Example: fetch content and inject instead of full page reload
+  fetch(url, { headers: { "X-Partial": "yes" } })
+    .then(r =&gt; r.text())
+    .then(html =&gt; {
+      document.getElementById("app").innerHTML = html;
+      history.pushState({ partial: true }, "", url);
+    });
+});
+                            </code></pre>
+
+                            <p>
+                                Without JS, the link works as a normal page navigation. With JS, it becomes an SPA-like interaction.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+            </section>
+
+            <!-- ========================= -->
+            <!-- 18.2 DYNAMIC CONTENT PREP -->
+            <!-- ========================= -->
+            <section id="sec-18-2" class="section-card">
+                <h2 class="section-heading">18.2 Dynamic Content Preparation</h2>
+                <p class="section-summary-text">
+                    Dynamic content in modern apps is often created client-side. HTML can prepare the playground
+                    with templates, target containers, and accessibility hints for screen readers.
+                </p>
+
+                <!-- 18.2.1 Template elements -->
+                <section id="sec-18-2-template">
+                    <details open>
+                        <summary>18.2.1 Template elements for JavaScript</summary>
+                        <div class="details-body">
+                            <p>
+                                The <code class="inline-code">&lt;template&gt;</code> element holds inert DOM fragments
+                                that JS can <em>clone</em> and inject. This prevents manual string concatenation.
+                            </p>
+
+                            <pre class="code-block"><code class="language-html">
+&lt;template id=&quot;notification-template&quot;&gt;
+  &lt;div class=&quot;notification&quot; role=&quot;status&quot;&gt;
+    &lt;strong class=&quot;notification-title&quot;&gt;&lt;/strong&gt;
+    &lt;p class=&quot;notification-body&quot;&gt;&lt;/p&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+
+&lt;section id=&quot;notifications&quot; aria-live=&quot;polite&quot;&gt;&lt;/section&gt;
+                            </code></pre>
+
+                            <pre class="code-block"><code class="language-js">
+const tpl = document.getElementById("notification-template");
+const list = document.getElementById("notifications");
+
+function addNotification(title, body) {
+  const fragment = tpl.content.cloneNode(true);
+  fragment.querySelector(".notification-title").textContent = title;
+  fragment.querySelector(".notification-body").textContent = body;
+  list.appendChild(fragment);
+}
+
+addNotification("Build complete", "Your HTML+JS bundle is ready.");
+                            </code></pre>
+
+                            <p>
+                                This pattern is extremely common in component systems, even before using frameworks.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 18.2.2 ARIA live regions -->
+                <section id="sec-18-2-aria">
+                    <details>
+                        <summary>18.2.2 ARIA live regions</summary>
+                        <div class="details-body">
+                            <p>
+                                ARIA live regions tell assistive technologies that dynamic content should be announced.
+                                They are critical for accessible JS-driven interfaces.
+                            </p>
+
+                            <pre class="code-block"><code class="language-html">
+&lt;div id=&quot;status-message&quot; aria-live=&quot;polite&quot; class=&quot;visually-hidden&quot;&gt;&lt;/div&gt;
+                            </code></pre>
+
+                            <pre class="code-block"><code class="language-js">
+function announce(message) {
+  const region = document.getElementById("status-message");
+  region.textContent = message;
+}
+
+announce("Search results updated. 10 items found.");
+                            </code></pre>
+
+                            <p>
+                                HTML defines the region with <code class="inline-code">aria-live</code>,
+                                JavaScript merely updates its text content. This keeps responsibilities clear.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 18.2.3 Form validation integration -->
+                <section id="sec-18-2-validation">
+                    <details>
+                        <summary>18.2.3 Form validation integration</summary>
+                        <div class="details-body">
+                            <p>
+                                HTML5 provides built-in validation attributes, which can be combined with JS enhancements.
+                            </p>
+                            <pre class="code-block"><code class="language-html">
+&lt;form id=&quot;signup-form&quot; novalidate&gt;
+  &lt;label&gt;
+    Email
+    &lt;input type=&quot;email&quot; name=&quot;email&quot; required&gt;
+  &lt;/label&gt;
+  &lt;span class=&quot;error-msg&quot; aria-live=&quot;polite&quot;&gt;&lt;/span&gt;
+  &lt;button type=&quot;submit&quot;&gt;Sign up&lt;/button&gt;
+&lt;/form&gt;
+                            </code></pre>
+
+                            <pre class="code-block"><code class="language-js">
+const form = document.getElementById("signup-form");
+const errorSpan = form.querySelector(".error-msg");
+
+form.addEventListener("submit", function (event) {
+  const emailInput = form.elements.email;
+  if (!emailInput.checkValidity()) {
+    event.preventDefault();
+    errorSpan.textContent = emailInput.validationMessage;
+    emailInput.focus();
+  } else {
+    errorSpan.textContent = "";
+  }
+});
+                            </code></pre>
+
+                            <p>
+                                HTML defines constraints (<code class="inline-code">required</code>, <code class="inline-code">type=&quot;email&quot;</code>);
+                                JS reads those same constraints via <code class="inline-code">checkValidity()</code> and surfaces them nicely.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+            </section>
+
+            <!-- ========================= -->
+            <!-- 18.3 SPA CONSIDERATIONS -->
+            <!-- ========================= -->
+            <section id="sec-18-3" class="section-card">
+                <h2 class="section-heading">18.3 SPA Considerations</h2>
+                <p class="section-summary-text">
+                    Single-page applications (SPAs) often push logic into JavaScript, but good SPA HTML is still
+                    structured, navigable, and history-aware.
+                </p>
+
+                <!-- 18.3.1 SPA structure -->
+                <section id="sec-18-3-structure">
+                    <details open>
+                        <summary>18.3.1 HTML structure for single-page applications</summary>
+                        <div class="details-body">
+                            <p>
+                                A SPA-friendly HTML structure typically includes:
+                            </p>
+                            <ul>
+                                <li>A stable navigation bar with real links.</li>
+                                <li>One or more main “view” containers.</li>
+                                <li>Global regions like header, footer, and status messages.</li>
+                            </ul>
+
+                            <pre class="code-block"><code class="language-html">
+&lt;header&gt;
+  &lt;nav&gt;
+    &lt;a href=&quot;/home&quot; data-enhanced-nav&gt;Home&lt;/a&gt;
+    &lt;a href=&quot;/dashboard&quot; data-enhanced-nav&gt;Dashboard&lt;/a&gt;
+  &lt;/nav&gt;
+&lt;/header&gt;
+
+&lt;main id=&quot;spa-root&quot; aria-live=&quot;polite&quot;&gt;
+  &lt;!-- Initial content rendered from server --&gt;
+&lt;/main&gt;
+                            </code></pre>
+
+                            <p>
+                                JavaScript then treats <code class="inline-code">#spa-root</code> as the main outlet
+                                for client-side routing and rendering.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 18.3.2 History API -->
+                <section id="sec-18-3-history">
+                    <details>
+                        <summary>18.3.2 History API preparation</summary>
+                        <div class="details-body">
+                            <p>
+                                The History API (<code class="inline-code">pushState</code>, <code class="inline-code">popstate</code>)
+                                enables URL changes without full reloads. HTML must still use valid URLs in <code class="inline-code">href</code>
+                                so that reloads work and deep links are shareable.
+                            </p>
+
+                            <pre class="code-block"><code class="language-js">
+const root = document.getElementById("spa-root");
+
+function loadPage(url) {
+  fetch(url, { headers: { "X-Partial": "yes" } })
+    .then(r =&gt; r.text())
+    .then(html =&gt; {
+      root.innerHTML = html;
+      history.pushState({ partial: true }, "", url);
+    });
+}
+
+window.addEventListener("popstate", event =&gt; {
+  // On back/forward, re-fetch content for the current location
+  loadPage(location.pathname);
+});
+                            </code></pre>
+
+                            <p>
+                                The HTML anchors already carry the URLs. We simply intercept and route them
+                                through this loader when JS is active.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 18.3.3 Component-based thinking -->
+                <section id="sec-18-3-components">
+                    <details>
+                        <summary>18.3.3 Component-based thinking</summary>
+                        <div class="details-body">
+                            <p>
+                                Component-based thinking means identifying UI pieces in HTML that can become reusable units:
+                                cards, nav bars, dialogs, forms, etc. Even without a framework, HTML can reflect this modularity.
+                            </p>
+
+                            <pre class="code-block"><code class="language-html">
+&lt;section class=&quot;dashboard&quot;&gt;
+  &lt;article class=&quot;panel&quot; data-component=&quot;stats-panel&quot;&gt;
+    &lt;header&gt;&lt;h2&gt;Stats&lt;/h2&gt;&lt;/header&gt;
+    &lt;div class=&quot;panel-body&quot;&gt;...&lt;/div&gt;
+  &lt;/article&gt;
+
+  &lt;article class=&quot;panel&quot; data-component=&quot;activity-panel&quot;&gt;
+    &lt;header&gt;&lt;h2&gt;Activity&lt;/h2&gt;&lt;/header&gt;
+    &lt;div class=&quot;panel-body&quot;&gt;...&lt;/div&gt;
+  &lt;/article&gt;
+&lt;/section&gt;
+                            </code></pre>
+
+                            <pre class="code-block"><code class="language-js">
+document.querySelectorAll("[data-component='stats-panel']").forEach(panel =&gt; {
+  // Attach JS behavior to stats panel
+});
+
+document.querySelectorAll("[data-component='activity-panel']").forEach(panel =&gt; {
+  // Attach JS behavior to activity panel
+});
+                            </code></pre>
+
+                            <p>
+                                Again, HTML exposes the “what” via data attributes, while JavaScript implements the “how”.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+            </section>
+
+            <!-- WRAP UP -->
+            <section class="section-card">
+                <h2 class="section-heading">Module 18 Checklist</h2>
+                <details open>
+                    <summary>Self-check</summary>
+                    <div class="details-body">
+                        <ul>
+                            <li>Can you design HTML that uses <code class="inline-code">data-*</code> attributes as JS hooks?</li>
+                            <li>Do you know when to use <code class="inline-code">id</code> vs <code class="inline-code">class</code> vs <code class="inline-code">data-*</code>?</li>
+                            <li>Can your pages still function meaningfully without JavaScript enabled?</li>
+                            <li>Do you use &lt;template&gt; to prepare repeated DOM fragments?</li>
+                            <li>Are dynamic updates connected to ARIA live regions for accessibility?</li>
+                            <li>Is your SPA structure based around a clear root element and valid URLs?</li>
+                            <li>Do you think in terms of components when designing HTML, even before choosing a JS framework?</li>
+                        </ul>
+                    </div>
+                </details>
+            </section>
+        </main>
+    </div>
+</div>
+
+<!-- JS: Bootstrap bundle + utilities + simple syntax highlighting -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Smooth scrolling
+    document.querySelectorAll('a[href^="#"]').forEach(function (anchor) {
+        anchor.addEventListener("click", function (e) {
+            const id = this.getAttribute("href");
+            if (!id || id === "#") return;
+            const target = document.querySelector(id);
+            if (!target) return;
+            e.preventDefault();
+            target.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+    });
+
+    // Expand / Collapse all details
+    const expandBtn = document.getElementById("expandAll");
+    const collapseBtn = document.getElementById("collapseAll");
+
+    if (expandBtn) {
+        expandBtn.addEventListener("click", function () {
+            document.querySelectorAll("details").forEach(function (d) { d.open = true; });
+        });
+    }
+    if (collapseBtn) {
+        collapseBtn.addEventListener("click", function () {
+            document.querySelectorAll("details").forEach(function (d) { d.open = false; });
+        });
+    }
+
+    // TOC search
+    const tocSearch = document.getElementById("tocSearch");
+    const tocList = document.getElementById("tocList");
+    if (tocSearch && tocList) {
+        tocSearch.addEventListener("input", function () {
+            const q = this.value.toLowerCase();
+            tocList.querySelectorAll(".toc-link").forEach(function (link) {
+                const li = link.closest("li");
+                if (!q || link.textContent.toLowerCase().includes(q)) {
+                    li.style.display = "";
+                } else {
+                    li.style.display = "none";
+                }
+            });
+        });
+    }
+
+    // Active TOC highlight on click
+    document.querySelectorAll(".toc-link").forEach(function (link) {
+        link.addEventListener("click", function () {
+            document.querySelectorAll(".toc-link.active").forEach(function (l) {
+                l.classList.remove("active");
+            });
+            this.classList.add("active");
+        });
+    });
+
+    // Simple syntax highlighting – HTML
+    function highlightHTML(codeEl) {
+        let html = codeEl.innerHTML;
+
+        // strings "..."
+        html = html.replace(/(&quot;[^&]*?&quot;)/g,
+            '<span class="hl-string">$1</span>'
+        );
+
+        // tags & attributes
+        html = html.replace(/(&lt;\/?)([a-zA-Z0-9\-]+)([^&]*?&gt;)/g,
+            function (match, open, tagName, rest) {
+                const attrs = rest.replace(
+                    / ([a-zA-Z_:][-a-zA-Z0-9_:.]*)(=)/g,
+                    ' <span class="hl-attr">$1</span>$2'
+                );
+                return open + '<span class="hl-tag">' + tagName + '</span>' + attrs;
+            }
+        );
+
+        codeEl.innerHTML = html;
+    }
+
+    // Simple syntax highlighting – JS
+    function highlightJS(codeEl) {
+        let html = codeEl.innerHTML;
+
+        // strings "..." or '...'
+        html = html.replace(/(&quot;[^&]*?&quot;|'.*?')/g,
+            '<span class="hl-string">$1</span>'
+        );
+
+        // keywords
+        html = html.replace(
+            /\b(const|let|var|function|if|else|return|async|await|try|catch|finally|new|class|extends|import|from|export|throw|for|while|break|continue)\b/g,
+            '<span class="hl-js-keyword">$1</span>'
+        );
+
+        // globals
+        html = html.replace(
+            /\b(document|window|history|location|fetch|console|navigator)\b/g,
+            '<span class="hl-js-global">$1</span>'
+        );
+
+        // common methods
+        html = html.replace(
+            /\b(addEventListener|querySelectorAll|querySelector|getElementById|pushState|addEventListener|preventDefault|appendChild|textContent|innerHTML)\b/g,
+            '<span class="hl-js-func">$1</span>'
+        );
+
+        // numbers
+        html = html.replace(/\b(-?\d+(\.\d+)?)\b/g,
+            '<span class="hl-number">$1</span>'
+        );
+
+        codeEl.innerHTML = html;
+    }
+
+    document.querySelectorAll("pre.code-block code.language-html").forEach(highlightHTML);
+    document.querySelectorAll("pre.code-block code.language-js").forEach(highlightJS);
+});
+</script>
+</body>
+</html>

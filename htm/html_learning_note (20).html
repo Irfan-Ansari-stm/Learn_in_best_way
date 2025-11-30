@@ -1,0 +1,1483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Module 15 - Progressive Web Apps (PWA)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Bootstrap CSS -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    />
+
+    <style>
+        :root {
+            --bg-main: #050816;
+            --bg-card: #0b1020;
+            --bg-code: #050812;
+            --accent-cyan: #22d3ee;
+            --accent-amber: #fbbf24;
+            --text-main: #e5e7eb;
+            --text-muted: #9ca3af;
+            --border-subtle: #1f2933;
+            --shadow-soft: 0 0 40px rgba(15, 23, 42, 0.95);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: radial-gradient(circle at top, #0b1120 0, #020617 55%);
+            color: var(--text-main);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: var(--accent-amber);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .layout-wrapper {
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .note-container {
+            background: rgba(15, 23, 42, 0.95);
+            border-radius: 1.25rem;
+            box-shadow: var(--shadow-soft);
+            overflow: hidden;
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, #020617, #020617, #020617);
+            border-right: 1px solid var(--border-subtle);
+            padding: 1.25rem 1.1rem;
+            min-height: 100%;
+        }
+
+        .sidebar-inner {
+            position: sticky;
+            top: 0;
+            max-height: 100vh;
+            overflow-y: auto;
+            padding-right: 0.25rem;
+        }
+
+        .sidebar-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--accent-cyan);
+        }
+
+        .sidebar-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .badge-module {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            border-radius: 999px;
+            padding: 0.2rem 0.75rem;
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+
+        .author-block {
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            color: var(--text-muted);
+        }
+
+        .author-name {
+            color: var(--accent-amber);
+            font-weight: 600;
+        }
+
+        .toc-title {
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-muted);
+        }
+
+        .toc-search-input {
+            background-color: #020617;
+            border: 1px solid var(--border-subtle);
+            color: var(--text-main);
+            font-size: 0.8rem;
+        }
+
+        .toc-search-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 1px var(--accent-cyan);
+            border-color: var(--accent-cyan);
+        }
+
+        .toc-list {
+            list-style: none;
+            margin: 0;
+            margin-top: 0.5rem;
+            padding-left: 0;
+            font-size: 0.86rem;
+        }
+
+        .toc-list li {
+            margin-bottom: 0.15rem;
+        }
+
+        .toc-link {
+            display: block;
+            padding: 0.25rem 0.35rem;
+            border-radius: 0.35rem;
+            color: var(--text-muted);
+        }
+
+        .toc-link:hover {
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+
+        .toc-link.main {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .toc-link.sub {
+            padding-left: 0.8rem;
+            font-size: 0.8rem;
+        }
+
+        .toc-link.active {
+            background: rgba(56, 189, 248, 0.09);
+            color: var(--accent-cyan);
+            border-left: 3px solid var(--accent-cyan);
+        }
+
+        .toc-utilities {
+            display: flex;
+            gap: 0.3rem;
+            margin-top: 0.6rem;
+        }
+
+        .btn-util {
+            flex: 1;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            padding: 0.18rem 0.4rem;
+            border: 1px solid var(--border-subtle);
+            background: #020617;
+            color: var(--text-muted);
+        }
+
+        .btn-util:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        /* Content Area */
+        .content-area {
+            background: radial-gradient(circle at top, #020617 0, #020617 60%);
+            padding: 1.25rem 1.35rem 1.6rem;
+            overflow-y: auto;
+            max-height: calc(100vh - 2rem);
+        }
+
+        .content-header-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: var(--accent-amber);
+            margin-bottom: 0.15rem;
+        }
+
+        .content-main-title {
+            font-size: 1.65rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            color: #f9fafb;
+        }
+
+        .content-subtitle {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            max-width: 48rem;
+        }
+
+        .pill-tag {
+            font-size: 0.7rem;
+            padding: 0.15rem 0.6rem;
+            border-radius: 999px;
+            border: 1px solid rgba(248, 250, 252, 0.12);
+            color: var(--text-muted);
+        }
+
+        .section-card {
+            border-radius: 1rem;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid var(--border-subtle);
+            margin-top: 1.1rem;
+            padding: 0.9rem 0.9rem 1rem;
+        }
+
+        .section-heading {
+            font-size: 1.1rem;
+            color: #e5e7eb;
+            font-weight: 600;
+        }
+
+        .section-kicker {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--text-muted);
+        }
+
+        .section-label {
+            font-size: 0.76rem;
+            padding: 0.08rem 0.45rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            color: var(--accent-cyan);
+            background: rgba(15, 23, 42, 0.9);
+            margin-left: 0.35rem;
+        }
+
+        .section-summary-text {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        details {
+            margin-top: 0.5rem;
+            border-radius: 0.75rem;
+            border: 1px solid #111827;
+            background: radial-gradient(circle at top left, #020617 0, #020617 65%);
+        }
+
+        summary {
+            cursor: pointer;
+            padding: 0.55rem 0.75rem;
+            position: relative;
+            list-style: none;
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        summary::marker {
+            display: none;
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary::before {
+            content: "▸";
+            display: inline-block;
+            margin-right: 0.4rem;
+            color: var(--accent-cyan);
+            transition: transform 0.15s ease-out;
+            font-size: 0.8rem;
+        }
+
+        details[open] summary::before {
+            transform: rotate(90deg);
+        }
+
+        .details-body {
+            padding: 0.15rem 0.8rem 0.6rem;
+            border-top: 1px solid #111827;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .details-body ul,
+        .details-body ol {
+            padding-left: 1.1rem;
+        }
+
+        pre.code-block {
+            background: var(--bg-code);
+            border-radius: 0.75rem;
+            padding: 0.6rem 0.8rem;
+            font-size: 0.82rem;
+            overflow-x: auto;
+            border: 1px solid #020617;
+            margin-bottom: 0.6rem;
+        }
+
+        pre.code-block code {
+            font-family: "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco,
+                Consolas, "Liberation Mono", "Courier New", monospace;
+            white-space: pre;
+        }
+
+        code.inline-code {
+            background: rgba(15, 23, 42, 0.95);
+            border-radius: 0.35rem;
+            padding: 0.05rem 0.25rem;
+            border: 1px solid #111827;
+            font-size: 0.83rem;
+        }
+
+        .note-callout {
+            border-radius: 0.75rem;
+            border: 1px dashed rgba(248, 250, 252, 0.1);
+            background: rgba(15, 23, 42, 0.75);
+            padding: 0.45rem 0.7rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .note-callout strong {
+            color: var(--accent-amber);
+        }
+
+        .mini-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 0.4rem;
+            margin-top: 0.3rem;
+        }
+
+        .mini-card {
+            border-radius: 0.75rem;
+            border: 1px solid #111827;
+            background: rgba(15, 23, 42, 0.85);
+            padding: 0.4rem 0.6rem;
+            font-size: 0.8rem;
+        }
+
+        /* Syntax highlight base (Option B) */
+        .hl-tag { color: #38bdf8; }
+        .hl-attr { color: #fbbf24; }
+        .hl-string { color: #a5b4fc; }
+        .hl-comment { color: #6b7280; font-style: italic; }
+        .hl-key { color: #facc15; }
+        .hl-number { color: #34d399; }
+        .hl-bool { color: #fb7185; }
+        .hl-punct { color: #9ca3af; }
+
+        /* Extra JS highlighting */
+        .hl-js-keyword { color: #fb923c; }
+        .hl-js-func { color: #4ade80; }
+        .hl-js-global { color: #22d3ee; }
+
+        @media (max-width: 991.98px) {
+            .sidebar-inner {
+                position: static;
+                max-height: none;
+            }
+            .content-area {
+                max-height: none;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="layout-wrapper container-fluid">
+    <div class="note-container row g-0">
+        <!-- SIDEBAR -->
+        <aside class="sidebar col-12 col-lg-3">
+            <div class="sidebar-inner">
+                <div class="d-flex align-items-center justify-content-between">
+                    <span class="badge-module">Module 15</span>
+                    <span class="pill-tag">PWA</span>
+                </div>
+
+                <div class="mt-3">
+                    <div class="sidebar-title">Progressive Web Apps</div>
+                    <div class="sidebar-subtitle">
+                        Turn modern websites into installable, offline-capable,
+                        app-like experiences using manifest, service workers, and
+                        mobile web app features.
+                    </div>
+                </div>
+
+                <div class="author-block">
+                    <div><span class="author-name">Prepared for:</span> College to PhD-level learners</div>
+                    <div><span class="author-name">Focus:</span> Web App Manifest · Service Workers · PWA UX</div>
+                </div>
+
+                <div class="toc-title mt-3">Table of Contents</div>
+                <input
+                    id="tocSearch"
+                    type="text"
+                    class="form-control form-control-sm toc-search-input mt-1"
+                    placeholder="Search sections…"
+                />
+
+                <div class="toc-utilities">
+                    <button id="expandAll" class="btn btn-sm btn-util">Expand All</button>
+                    <button id="collapseAll" class="btn btn-sm btn-util">Collapse All</button>
+                </div>
+
+                <ul id="tocList" class="toc-list mt-2">
+                    <li><a href="#sec-15-1" class="toc-link main">15.1 Web App Manifest</a></li>
+                    <li><a href="#sec-15-1-manifest" class="toc-link sub">15.1.1 Creating manifest.json</a></li>
+                    <li><a href="#sec-15-1-icons" class="toc-link sub">15.1.2 App icons &amp; splash screens</a></li>
+                    <li><a href="#sec-15-1-display" class="toc-link sub">15.1.3 Display modes &amp; orientation</a></li>
+
+                    <li class="mt-2"><a href="#sec-15-2" class="toc-link main">15.2 Service Worker Integration</a></li>
+                    <li><a href="#sec-15-2-structure" class="toc-link sub">15.2.1 HTML for offline-first</a></li>
+                    <li><a href="#sec-15-2-cache-strategy" class="toc-link sub">15.2.2 Cache strategies planning</a></li>
+                    <li><a href="#sec-15-2-app-shell" class="toc-link sub">15.2.3 App shell architecture</a></li>
+
+                    <li class="mt-2"><a href="#sec-15-3" class="toc-link main">15.3 Mobile Web App Features</a></li>
+                    <li><a href="#sec-15-3-touch" class="toc-link sub">15.3.1 Touch icons &amp; meta tags</a></li>
+                    <li><a href="#sec-15-3-statusbar" class="toc-link sub">15.3.2 Status bar styling</a></li>
+                    <li><a href="#sec-15-3-viewport" class="toc-link sub">15.3.3 Viewport for PWAs</a></li>
+                </ul>
+
+                <div class="note-callout mt-3">
+                    <strong>Mental model:</strong>
+                    PWA = Web + App: installable, offline-friendly, responsive, fast,
+                    secure (HTTPS), and progressively enhanced.
+                </div>
+            </div>
+        </aside>
+
+        <!-- CONTENT -->
+        <main class="content-area col-12 col-lg-9">
+            <header class="mb-2">
+                <div class="content-header-label">PWA · Manifest · Service Worker</div>
+                <h1 class="content-main-title">Module 15: Progressive Web Apps (PWA)</h1>
+                <p class="content-subtitle mt-1">
+                    This module explores how to transform a traditional website into a
+                    Progressive Web App using the web app manifest, service workers,
+                    offline-first strategies, and mobile-specific meta tags that make
+                    your web app feel native.
+                </p>
+                <div class="d-flex flex-wrap gap-1 mt-1">
+                    <span class="pill-tag">Web App Manifest</span>
+                    <span class="pill-tag">Service Worker</span>
+                    <span class="pill-tag">Offline-first</span>
+                    <span class="pill-tag">Installable Web App</span>
+                </div>
+            </header>
+
+            <!-- EXECUTIVE SUMMARY -->
+            <section class="section-card">
+                <div class="section-kicker">0. Executive Overview</div>
+                <h2 class="section-heading">
+                    Why PWAs matter
+                    <span class="section-label">Big Picture</span>
+                </h2>
+                <p class="section-summary-text mt-1">
+                    Progressive Web Apps bridge the gap between web and native apps:
+                    installable icons, home screen presence, offline support, push
+                    notifications, and app-like navigation — all using web
+                    technologies. PWAs are “progressive” because they enhance
+                    capabilities when the platform allows, while still working as a
+                    normal website in older browsers.
+                </p>
+
+                <details open>
+                    <summary>
+                        Executive summary of Module 15
+                        <span class="badge-level">TL;DR</span>
+                    </summary>
+                    <div class="details-body">
+                        <ul>
+                            <li>
+                                <strong>15.1 Web App Manifest:</strong> A JSON file
+                                describing your PWA (name, icons, theme colors, start
+                                URL, display mode, orientation). It lets browsers
+                                treat your site like an installable app.
+                            </li>
+                            <li>
+                                <strong>15.2 Service Worker:</strong> A background
+                                script for offline caching, network strategies, and
+                                app shell architecture, making your PWA fast and
+                                resilient.
+                            </li>
+                            <li>
+                                <strong>15.3 Mobile Web App Features:</strong> Touch
+                                icons, status bar styling, and viewport meta tags
+                                ensure your PWA looks polished and native on phones.
+                            </li>
+                        </ul>
+                        <p>
+                            At a research-intensive level, PWAs are a case study in
+                            progressive enhancement, capability detection, and
+                            offline-first design — all expressed through HTML, JSON,
+                            and JavaScript.
+                        </p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- =============================== -->
+            <!-- 15.1 WEB APP MANIFEST           -->
+            <!-- =============================== -->
+            <section id="sec-15-1" class="section-card">
+                <div class="section-kicker">15.1</div>
+                <h2 class="section-heading">
+                    Web App Manifest
+                    <span class="section-label">App Identity</span>
+                </h2>
+                <p class="section-summary-text mt-1">
+                    The web app manifest is a simple JSON file that gives your PWA
+                    an identity: name, icons, colors, display mode, and start URL.
+                    Including it in your HTML is what makes your site “installable”
+                    on platforms that support PWAs.
+                </p>
+
+                <!-- 15.1.1 Creating manifest.json -->
+                <section id="sec-15-1-manifest" class="mt-2">
+                    <h3 class="section-heading" style="font-size:1rem;">
+                        15.1.1 Creating <code class="inline-code">manifest.json</code>
+                    </h3>
+
+                    <details open>
+                        <summary>
+                            Manifest fundamentals
+                            <span class="badge-level">Concept</span>
+                        </summary>
+                        <div class="details-body">
+                            <p>
+                                The manifest is a JSON file linked from your HTML.
+                                Browsers read it to understand:
+                            </p>
+                            <ul>
+                                <li>The app’s name and short name</li>
+                                <li>Which icon files to use in different sizes</li>
+                                <li>What URL to open when launched</li>
+                                <li>Which display mode to use (standalone, fullscreen, etc.)</li>
+                                <li>Preferred theme and background colors</li>
+                            </ul>
+                            <p>
+                                Minimum viable manifest fields for an installable PWA
+                                usually include <code class="inline-code">name</code>,
+                                <code class="inline-code">short_name</code>,
+                                <code class="inline-code">start_url</code>,
+                                <code class="inline-code">display</code>, and
+                                <code class="inline-code">icons</code>.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            Example: basic <code class="inline-code">manifest.json</code>
+                            <span class="badge-level">Example</span>
+                        </summary>
+                        <div class="details-body">
+                            <pre class="code-block"><code class="language-jsonld">
+{
+  &quot;name&quot;: &quot;Deep Metrics Dashboard&quot;,
+  &quot;short_name&quot;: &quot;Metrics&quot;,
+  &quot;start_url&quot;: &quot;/dashboard?source=pwa&quot;,
+  &quot;display&quot;: &quot;standalone&quot;,
+  &quot;background_color&quot;: &quot;#020617&quot;,
+  &quot;theme_color&quot;: &quot;#0f172a&quot;,
+  &quot;icons&quot;: [
+    {
+      &quot;src&quot;: &quot;/icons/icon-192.png&quot;,
+      &quot;sizes&quot;: &quot;192x192&quot;,
+      &quot;type&quot;: &quot;image/png&quot;
+    },
+    {
+      &quot;src&quot;: &quot;/icons/icon-512.png&quot;,
+      &quot;sizes&quot;: &quot;512x512&quot;,
+      &quot;type&quot;: &quot;image/png&quot;
+    }
+  ]
+}
+                            </code></pre>
+                            <p>
+                                This manifest defines an app called “Deep Metrics
+                                Dashboard” and specifies app icons and theme colors.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            Linking manifest from HTML
+                            <span class="badge-level">Syntax</span>
+                        </summary>
+                        <div class="details-body">
+                            <pre class="code-block"><code class="language-html">
+&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot; /&gt;
+  &lt;title&gt;Deep Metrics Dashboard&lt;/title&gt;
+
+  &lt;link rel=&quot;manifest&quot; href=&quot;/manifest.json&quot; /&gt;
+
+  &lt;!-- Recommended: theme-color for browser UI --&gt;
+  &lt;meta name=&quot;theme-color&quot; content=&quot;#0f172a&quot; /&gt;
+&lt;/head&gt;
+                            </code></pre>
+                            <p>
+                                Without this <code class="inline-code">&lt;link
+                                rel="manifest"&gt;</code>, the browser will not know
+                                your manifest exists.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 15.1.2 Icons & Splash Screens -->
+                <section id="sec-15-1-icons" class="mt-3">
+                    <h3 class="section-heading" style="font-size:1rem;">
+                        15.1.2 App icons and splash screens
+                    </h3>
+
+                    <details open>
+                        <summary>
+                            Icon requirements &amp; density
+                            <span class="badge-level">Concept</span>
+                        </summary>
+                        <div class="details-body">
+                            <p>
+                                Different devices and OSes need different icon sizes.
+                                PWAs provide a list of icons; the platform chooses the
+                                best match for its requirements.
+                            </p>
+                            <ul>
+                                <li>Common sizes: 48x48, 72x72, 96x96, 144x144, 192x192, 512x512</li>
+                                <li>Use square PNGs with transparent background.</li>
+                                <li>
+                                    Some platforms infer splash screens from the icon
+                                    and theme/background colors, others may use
+                                    additional splash configuration.
+                                </li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            Example: manifest icons declaration
+                            <span class="badge-level">Example</span>
+                        </summary>
+                        <div class="details-body">
+                            <pre class="code-block"><code class="language-jsonld">
+{
+  &quot;name&quot;: &quot;Lab Notebook PWA&quot;,
+  &quot;short_name&quot;: &quot;LabNote&quot;,
+  &quot;icons&quot;: [
+    {
+      &quot;src&quot;: &quot;/icons/lab-48.png&quot;,
+      &quot;sizes&quot;: &quot;48x48&quot;,
+      &quot;type&quot;: &quot;image/png&quot;
+    },
+    {
+      &quot;src&quot;: &quot;/icons/lab-192.png&quot;,
+      &quot;sizes&quot;: &quot;192x192&quot;,
+      &quot;type&quot;: &quot;image/png&quot;
+    },
+    {
+      &quot;src&quot;: &quot;/icons/lab-512.png&quot;,
+      &quot;sizes&quot;: &quot;512x512&quot;,
+      &quot;type&quot;: &quot;image/png&quot;
+    }
+  ],
+  &quot;background_color&quot;: &quot;#020617&quot;,
+  &quot;theme_color&quot;: &quot;#0f172a&quot;
+}
+                            </code></pre>
+                            <p>
+                                With these entries, different platforms can pick the
+                                best icon for home screen, launcher, or app switcher.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            Example: iOS-specific splash fallback (legacy pattern)
+                            <span class="badge-level">Real-world</span>
+                        </summary>
+                        <div class="details-body">
+                            <p>
+                                Historically, iOS required special splash images via
+                                <code class="inline-code">&lt;link rel="apple-touch-startup-image"&gt;</code>.
+                                Many modern deployments rely on theme colors + icons
+                                instead, but you may still see:
+                            </p>
+                            <pre class="code-block"><code class="language-html">
+&lt;head&gt;
+  &lt;link rel=&quot;apple-touch-icon&quot; href=&quot;/icons/lab-192.png&quot; /&gt;
+
+  &lt;!-- Legacy style splash for specific resolutions --&gt;
+  &lt;link rel=&quot;apple-touch-startup-image&quot;
+        href=&quot;/splash/launch-640x1136.png&quot;
+        media=&quot;(device-width: 320px) and (device-height: 568px)&quot; /&gt;
+&lt;/head&gt;
+                            </code></pre>
+                            <p>
+                                For modern projects, focus on good quality manifest
+                                icons and theme/background colors first.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 15.1.3 Display modes & Orientation -->
+                <section id="sec-15-1-display" class="mt-3">
+                    <h3 class="section-heading" style="font-size:1rem;">
+                        15.1.3 Display modes and orientation
+                    </h3>
+
+                    <details open>
+                        <summary>
+                            Display modes: browser vs app-like
+                            <span class="badge-level">Concept</span>
+                        </summary>
+                        <div class="details-body">
+                            <p>
+                                The <code class="inline-code">display</code> property
+                                controls how your PWA appears when launched:
+                            </p>
+                            <ul>
+                                <li><code class="inline-code">browser</code> — normal browser tab with URL bar</li>
+                                <li><code class="inline-code">minimal-ui</code> — small browser UI</li>
+                                <li><code class="inline-code">standalone</code> — app-like window without URL bar</li>
+                                <li><code class="inline-code">fullscreen</code> — rare; hides almost all chrome</li>
+                            </ul>
+                            <p>
+                                Typically, PWAs use
+                                <code class="inline-code">standalone</code> for an
+                                app-like appearance.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            Example: display + orientation settings
+                            <span class="badge-level">Example</span>
+                        </summary>
+                        <div class="details-body">
+                            <pre class="code-block"><code class="language-jsonld">
+{
+  &quot;name&quot;: &quot;Analytics Board&quot;,
+  &quot;short_name&quot;: &quot;Analytics&quot;,
+  &quot;start_url&quot;: &quot;/board&quot;,
+  &quot;display&quot;: &quot;standalone&quot;,
+  &quot;orientation&quot;: &quot;portrait-primary&quot;,
+  &quot;background_color&quot;: &quot;#020617&quot;,
+  &quot;theme_color&quot;: &quot;#0f172a&quot;
+}
+                            </code></pre>
+                            <p>
+                                For games or dashboards designed specifically for
+                                landscape, you might choose
+                                <code class="inline-code">orientation:
+                                "landscape"</code>.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+            </section>
+
+            <!-- =============================== -->
+            <!-- 15.2 SERVICE WORKER INTEGRATION -->
+            <!-- =============================== -->
+            <section id="sec-15-2" class="section-card">
+                <div class="section-kicker">15.2</div>
+                <h2 class="section-heading">
+                    Service Worker Integration
+                    <span class="section-label">Offline &amp; Caching</span>
+                </h2>
+                <p class="section-summary-text mt-1">
+                    A service worker is a special JavaScript file that runs in the
+                    background, intercepts network requests, and can serve responses
+                    from cache. It’s the core of offline-first behavior and app shell
+                    architecture.
+                </p>
+
+                <!-- 15.2.1 HTML structure for offline-first -->
+                <section id="sec-15-2-structure" class="mt-2">
+                    <h3 class="section-heading" style="font-size:1rem;">
+                        15.2.1 HTML structure for offline-first apps
+                    </h3>
+
+                    <details open>
+                        <summary>
+                            Registering a service worker from HTML
+                            <span class="badge-level">Syntax</span>
+                        </summary>
+                        <div class="details-body">
+                            <p>
+                                You register the service worker from your main HTML
+                                (or entry JS) file. Registration itself is progressive:
+                                browsers that don’t support it simply ignore the code.
+                            </p>
+                            <pre class="code-block"><code class="language-html">
+&lt;body&gt;
+  &lt;main&gt;
+    &lt;h1&gt;Offline-capable Dashboard&lt;/h1&gt;
+    &lt;div id=&quot;app&quot;&gt;&lt;/div&gt;
+  &lt;/main&gt;
+
+  &lt;script&gt;
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg =&gt; {
+          console.log('Service worker registered', reg.scope);
+        })
+        .catch(err =&gt; {
+          console.error('Service worker registration failed', err);
+        });
+    }
+  &lt;/script&gt;
+&lt;/body&gt;
+                            </code></pre>
+                            <p>
+                                This code safely checks for service worker support and
+                                registers <code class="inline-code">/sw.js</code>.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            Basic structure of <code class="inline-code">sw.js</code>
+                            <span class="badge-level">JS Overview</span>
+                        </summary>
+                        <div class="details-body">
+                            <pre class="code-block"><code class="language-js">
+const CACHE_NAME = 'pwa-cache-v1';
+const PRECACHE_URLS = [
+  '/',
+  '/offline.html',
+  '/css/styles.css',
+  '/js/app.js'
+];
+
+self.addEventListener('install', event =&gt; {
+  event.waitUntil(
+    caches.open(CACHE_NAME).then(cache =&gt; {
+      return cache.addAll(PRECACHE_URLS);
+    })
+  );
+});
+
+self.addEventListener('activate', event =&gt; {
+  event.waitUntil(
+    caches.keys().then(keys =&gt; {
+      return Promise.all(
+        keys.filter(key =&gt; key !== CACHE_NAME)
+            .map(key =&gt; caches.delete(key))
+      );
+    })
+  );
+});
+
+self.addEventListener('fetch', event =&gt; {
+  event.respondWith(
+    caches.match(event.request).then(response =&gt; {
+      return response || fetch(event.request);
+    })
+  );
+});
+                            </code></pre>
+                            <p>
+                                This skeleton implements a simple “cache-first”
+                                strategy for precached files with a network fallback.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 15.2.2 Cache strategies planning -->
+                <section id="sec-15-2-cache-strategy" class="mt-3">
+                    <h3 class="section-heading" style="font-size:1rem;">
+                        15.2.2 Cache strategies planning
+                    </h3>
+
+                    <details open>
+                        <summary>
+                            Common caching strategies
+                            <span class="badge-level">Concept</span>
+                        </summary>
+                        <div class="details-body">
+                            <ul>
+                                <li><strong>Cache-first:</strong> Use cache if available, network as fallback.</li>
+                                <li><strong>Network-first:</strong> Try network, fallback to cache for offline.</li>
+                                <li><strong>Stale-while-revalidate:</strong> Return cached response immediately, update in background.</li>
+                                <li><strong>Cache-only / Network-only:</strong> Rare, special-purpose strategies.</li>
+                            </ul>
+                            <pre class="code-block"><code class="language-text">
+Design guideline:
+- Static assets (CSS, JS, logos) → cache-first.
+- Dynamic data (API responses) → network-first or stale-while-revalidate.
+- Critical offline page (/offline.html) → precache.
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            Example: network-first for API, cache-first for static
+                            <span class="badge-level">Example JS</span>
+                        </summary>
+                        <div class="details-body">
+                            <pre class="code-block"><code class="language-js">
+const STATIC_CACHE = 'static-v1';
+const API_CACHE = 'api-v1';
+
+self.addEventListener('fetch', event =&gt; {
+  const url = new URL(event.request.url);
+
+  if (url.origin === self.location.origin) {
+    // Static assets: CSS/JS/images
+    if (url.pathname.startsWith('/css') ||
+        url.pathname.startsWith('/js') ||
+        url.pathname.startsWith('/img')) {
+      event.respondWith(cacheFirst(event.request, STATIC_CACHE));
+      return;
+    }
+  }
+
+  if (url.pathname.startsWith('/api/')) {
+    // API calls: network-first
+    event.respondWith(networkFirst(event.request, API_CACHE));
+    return;
+  }
+});
+
+function cacheFirst(request, cacheName) {
+  return caches.match(request).then(cached =&gt; {
+    if (cached) return cached;
+    return fetch(request).then(response =&gt; {
+      const copy = response.clone();
+      caches.open(cacheName).then(cache =&gt; cache.put(request, copy));
+      return response;
+    });
+  });
+}
+
+function networkFirst(request, cacheName) {
+  return fetch(request)
+    .then(response =&gt; {
+      const copy = response.clone();
+      caches.open(cacheName).then(cache =&gt; cache.put(request, copy));
+      return response;
+    })
+    .catch(() =&gt; caches.match(request));
+}
+                            </code></pre>
+                            <p>
+                                This pattern shows different strategies applied
+                                selectively based on URL.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 15.2.3 App shell architecture -->
+                <section id="sec-15-2-app-shell" class="mt-3">
+                    <h3 class="section-heading" style="font-size:1rem;">
+                        15.2.3 App shell architecture
+                    </h3>
+
+                    <details open>
+                        <summary>
+                            App shell concept
+                            <span class="badge-level">Concept</span>
+                        </summary>
+                        <div class="details-body">
+                            <p>
+                                The “app shell” is the minimal set of HTML, CSS, and
+                                JS required to render the UI shell (navigation, frame,
+                                header, footer) without content. The idea is to cache
+                                this shell so it loads instantly, even offline, while
+                                content (data) loads separately.
+                            </p>
+                            <ul>
+                                <li>Shell: layout, navigation, logo, basic JS.</li>
+                                <li>Content: user-specific or dynamic data (API).</li>
+                                <li>
+                                    The service worker precaches the shell; data is
+                                    fetched at runtime and cached using separate
+                                    strategies.
+                                </li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            Example: HTML app shell + offline fallback
+                            <span class="badge-level">HTML + JS</span>
+                        </summary>
+                        <div class="details-body">
+                            <pre class="code-block"><code class="language-html">
+&lt;body&gt;
+  &lt;header&gt;
+    &lt;h1&gt;PWA Research Notebook&lt;/h1&gt;
+    &lt;nav&gt;
+      &lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;
+      &lt;a href=&quot;/notes&quot;&gt;Notes&lt;/a&gt;
+    &lt;/nav&gt;
+  &lt;/header&gt;
+
+  &lt;main id=&quot;app&quot;&gt;
+    &lt;!-- Shell loads instantly, content injected via JS --&gt;
+  &lt;/main&gt;
+
+  &lt;noscript&gt;
+    Please enable JavaScript for the full PWA experience.
+  &lt;/noscript&gt;
+
+  &lt;script src=&quot;/js/app-shell.js&quot; defer&gt;&lt;/script&gt;
+&lt;/body&gt;
+                            </code></pre>
+
+                            <pre class="code-block"><code class="language-js">
+const SHELL_CACHE = 'shell-v1';
+const SHELL_ASSETS = [
+  '/',
+  '/offline.html',
+  '/css/app.css',
+  '/js/app-shell.js'
+];
+
+self.addEventListener('install', event =&gt; {
+  event.waitUntil(
+    caches.open(SHELL_CACHE).then(cache =&gt; cache.addAll(SHELL_ASSETS))
+  );
+});
+
+self.addEventListener('fetch', event =&gt; {
+  if (event.request.mode === 'navigate') {
+    // Navigation requests: serve shell or offline fallback
+    event.respondWith(
+      fetch(event.request).catch(() =&gt; {
+        return caches.match('/offline.html');
+      })
+    );
+  }
+});
+                            </code></pre>
+                            <p>
+                                In a more advanced variant, you can serve the cached
+                                shell HTML itself and let the client-side JS fetch
+                                content.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+            </section>
+
+            <!-- =============================== -->
+            <!-- 15.3 MOBILE WEB APP FEATURES   -->
+            <!-- =============================== -->
+            <section id="sec-15-3" class="section-card">
+                <div class="section-kicker">15.3</div>
+                <h2 class="section-heading">
+                    Mobile Web App Features
+                    <span class="section-label">Look &amp; Feel</span>
+                </h2>
+                <p class="section-summary-text mt-1">
+                    PWAs should feel at home on mobile devices: correct icons, status
+                    bar colors, and viewports that avoid awkward scaling or letterboxing.
+                    These details strongly influence perceived quality.
+                </p>
+
+                <!-- 15.3.1 Touch icons & meta tags -->
+                <section id="sec-15-3-touch" class="mt-2">
+                    <h3 class="section-heading" style="font-size:1rem;">
+                        15.3.1 Touch icons and meta tags
+                    </h3>
+
+                    <details open>
+                        <summary>
+                            Touch icons for iOS and others
+                            <span class="badge-level">Concept</span>
+                        </summary>
+                        <div class="details-body">
+                            <p>
+                                While the manifest covers most platforms, historically
+                                iOS required <code class="inline-code">apple-touch-icon</code>
+                                links. Many projects still include them for broader
+                                compatibility.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            Example: touch icons &amp; manifest link
+                            <span class="badge-level">HTML</span>
+                        </summary>
+                        <div class="details-body">
+                            <pre class="code-block"><code class="language-html">
+&lt;head&gt;
+  &lt;link rel=&quot;manifest&quot; href=&quot;/manifest.json&quot; /&gt;
+
+  &lt;!-- Apple touch icon (iOS home screen) --&gt;
+  &lt;link rel=&quot;apple-touch-icon&quot; sizes=&quot;180x180&quot;
+        href=&quot;/icons/apple-touch-icon-180.png&quot; /&gt;
+
+  &lt;!-- Favicon fallbacks --&gt;
+  &lt;link rel=&quot;icon&quot; type=&quot;image/png&quot; sizes=&quot;32x32&quot;
+        href=&quot;/icons/favicon-32.png&quot; /&gt;
+  &lt;link rel=&quot;icon&quot; type=&quot;image/png&quot; sizes=&quot;16x16&quot;
+        href=&quot;/icons/favicon-16.png&quot; /&gt;
+&lt;/head&gt;
+                            </code></pre>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 15.3.2 Status bar styling -->
+                <section id="sec-15-3-statusbar" class="mt-3">
+                    <h3 class="section-heading" style="font-size:1rem;">
+                        15.3.2 Status bar styling
+                    </h3>
+
+                    <details open>
+                        <summary>
+                            Controlling browser UI colors
+                            <span class="badge-level">Concept</span>
+                        </summary>
+                        <div class="details-body">
+                            <p>
+                                On many mobile browsers, you can hint status bar /
+                                address bar colors via meta tags, improving integration
+                                with your app’s theme.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            Example: theme-color and Apple status bar
+                            <span class="badge-level">HTML</span>
+                        </summary>
+                        <div class="details-body">
+                            <pre class="code-block"><code class="language-html">
+&lt;head&gt;
+  &lt;!-- Browser UI/theme color --&gt;
+  &lt;meta name=&quot;theme-color&quot; content=&quot;#0f172a&quot; /&gt;
+
+  &lt;!-- iOS status bar style in standalone mode --&gt;
+  &lt;meta name=&quot;apple-mobile-web-app-capable&quot; content=&quot;yes&quot; /&gt;
+  &lt;meta name=&quot;apple-mobile-web-app-status-bar-style&quot;
+        content=&quot;black-translucent&quot; /&gt;
+&lt;/head&gt;
+                            </code></pre>
+                            <p>
+                                Values like <code class="inline-code">default</code>,
+                                <code class="inline-code">black</code> or
+                                <code class="inline-code">black-translucent</code>
+                                affect how content appears behind the status bar
+                                area.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 15.3.3 Viewport considerations -->
+                <section id="sec-15-3-viewport" class="mt-3">
+                    <h3 class="section-heading" style="font-size:1rem;">
+                        15.3.3 Viewport considerations for PWAs
+                    </h3>
+
+                    <details open>
+                        <summary>
+                            Proper viewport meta tag
+                            <span class="badge-level">Concept</span>
+                        </summary>
+                        <div class="details-body">
+                            <p>
+                                The viewport meta tag tells mobile browsers how to
+                                scale your layout. PWAs generally use a responsive
+                                design with:
+                            </p>
+                            <ul>
+                                <li><code class="inline-code">width=device-width</code> — match device width</li>
+                                <li><code class="inline-code">initial-scale=1</code> — no zooming by default</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            Example: typical viewport for PWA
+                            <span class="badge-level">HTML</span>
+                        </summary>
+                        <div class="details-body">
+                            <pre class="code-block"><code class="language-html">
+&lt;head&gt;
+  &lt;meta name=&quot;viewport&quot;
+        content=&quot;width=device-width, initial-scale=1, viewport-fit=cover&quot; /&gt;
+&lt;/head&gt;
+                            </code></pre>
+                            <p>
+                                <code class="inline-code">viewport-fit=cover</code>
+                                helps when dealing with notches and safe areas on
+                                modern devices.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+            </section>
+
+            <!-- SUMMARY / CHECKLIST -->
+            <section class="section-card">
+                <div class="section-kicker">Wrap-up</div>
+                <h2 class="section-heading">
+                    Checklist: Progressive Web Apps
+                    <span class="section-label">Self-Audit</span>
+                </h2>
+
+                <details open class="mt-1">
+                    <summary>
+                        Quick self-check
+                        <span class="badge-level">Checklist</span>
+                    </summary>
+                    <div class="details-body">
+                        <ul>
+                            <li>Is there a valid <code class="inline-code">manifest.json</code> linked via &lt;link rel=&quot;manifest&quot;&gt;?</li>
+                            <li>Are app icons defined in multiple sizes with correct paths?</li>
+                            <li>Does the manifest specify sensible <code class="inline-code">start_url</code>, <code class="inline-code">display</code>, and <code class="inline-code">orientation</code>?</li>
+                            <li>Is a service worker registered only when supported?</li>
+                            <li>Do you have a considered caching strategy (what is cache-first vs network-first)?</li>
+                            <li>Is there an offline fallback page or shell for navigation requests?</li>
+                            <li>Do mobile meta tags (viewport, theme-color, touch icons) make the app look polished on phones?</li>
+                        </ul>
+                        <p class="mt-1">
+                            If you can confidently say “yes” to these, you are not
+                            just building a website; you are shipping a robust,
+                            offline-aware Progressive Web App.
+                        </p>
+                    </div>
+                </details>
+            </section>
+        </main>
+    </div>
+</div>
+
+<!-- JavaScript: Bootstrap + utilities + advanced syntax highlighting -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Smooth scrolling for TOC links
+    document.querySelectorAll('a[href^="#"]').forEach(function (anchor) {
+        anchor.addEventListener("click", function (e) {
+            const targetId = this.getAttribute("href");
+            if (targetId.length > 1) {
+                e.preventDefault();
+                const target = document.querySelector(targetId);
+                if (target) {
+                    target.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+            }
+        });
+    });
+
+    // Expand / Collapse all <details>
+    const expandBtn = document.getElementById("expandAll");
+    const collapseBtn = document.getElementById("collapseAll");
+
+    if (expandBtn) {
+        expandBtn.addEventListener("click", function () {
+            document.querySelectorAll("details").forEach(function (d) {
+                d.open = true;
+            });
+        });
+    }
+
+    if (collapseBtn) {
+        collapseBtn.addEventListener("click", function () {
+            document.querySelectorAll("details").forEach(function (d) {
+                d.open = false;
+            });
+        });
+    }
+
+    // TOC search
+    const tocSearch = document.getElementById("tocSearch");
+    const tocList = document.getElementById("tocList");
+
+    if (tocSearch && tocList) {
+        tocSearch.addEventListener("input", function () {
+            const query = this.value.trim().toLowerCase();
+            const links = tocList.querySelectorAll(".toc-link");
+            links.forEach(function (link) {
+                const text = link.textContent.toLowerCase();
+                const li = link.closest("li");
+                if (!query || text.includes(query)) {
+                    li.style.display = "";
+                } else {
+                    li.style.display = "none";
+                }
+            });
+        });
+    }
+
+    // Simple "active" state for TOC when clicking
+    document.querySelectorAll(".toc-link").forEach(function (link) {
+        link.addEventListener("click", function () {
+            document.querySelectorAll(".toc-link.active").forEach(function (l) {
+                l.classList.remove("active");
+            });
+            this.classList.add("active");
+        });
+    });
+
+    // ===============================
+    // ADVANCED SYNTAX HIGHLIGHTING
+    // ===============================
+
+    // HTML highlighter (works on &lt; &gt; encoded HTML)
+    function highlightHTMLCodeBlock(codeEl) {
+        let html = codeEl.innerHTML;
+
+        // Comments: &lt;!-- ... --&gt;
+        html = html.replace(
+            /(&lt;!--[\s\S]*?--&gt;)/g,
+            '<span class="hl-comment">$1</span>'
+        );
+
+        // Strings in attributes: "..."
+        html = html.replace(
+            /(&quot;[^&]*?&quot;)/g,
+            '<span class="hl-string">$1</span>'
+        );
+
+        // Tag opening with attributes: &lt;tag ...&gt;
+        html = html.replace(
+            /(&lt;\/?)([a-zA-Z0-9\-]+)((?:[^&]|&(?!gt;))*)&gt;/g,
+            function (match, open, tagName, rest) {
+                // Highlight attribute names
+                const highlightedRest = rest.replace(
+                    /([\s\t\r\n])([a-zA-Z_:][-a-zA-Z0-9_:.]*)(=)/g,
+                    '$1<span class="hl-attr">$2</span>$3'
+                );
+                return (
+                    open +
+                    '<span class="hl-tag">' +
+                    tagName +
+                    "</span>" +
+                    highlightedRest +
+                    "&gt;"
+                );
+            }
+        );
+
+        codeEl.innerHTML = html;
+    }
+
+    // JSON / manifest highlighter
+    function highlightJSONCodeBlock(codeEl) {
+        let html = codeEl.innerHTML;
+
+        // Strings: "..."
+        html = html.replace(
+            /(&quot;[^&]*?&quot;)/g,
+            '<span class="hl-string">$1</span>'
+        );
+
+        // Keys: "key":
+        html = html.replace(
+            /(&quot;[^&]*?&quot;)(\s*:&nbsp;|\s*:)/g,
+            '<span class="hl-key">$1</span>$2'
+        );
+
+        // Numbers
+        html = html.replace(
+            /\b(-?\d+(\.\d+)?)\b/g,
+            '<span class="hl-number">$1</span>'
+        );
+
+        // Booleans and null
+        html = html.replace(
+            /\b(true|false|null)\b/g,
+            '<span class="hl-bool">$1</span>'
+        );
+
+        // Punctuation { } [ ] : ,
+        html = html.replace(
+            /([\{\}\[\]\:\,])/g,
+            '<span class="hl-punct">$1</span>'
+        );
+
+        codeEl.innerHTML = html;
+    }
+
+    // JavaScript / Service Worker highlighter
+    function highlightJSCodeBlock(codeEl) {
+        let html = codeEl.innerHTML;
+
+        // Strings: "..." or '...'
+        html = html.replace(
+            /(&quot;[^&]*?&quot;|'.*?')/g,
+            '<span class="hl-string">$1</span>'
+        );
+
+        // JS keywords
+        html = html.replace(
+            /\b(const|let|var|function|if|else|return|async|await|try|catch|finally|new|class|extends|import|from|export|throw)\b/g,
+            '<span class="hl-js-keyword">$1</span>'
+        );
+
+        // Globals / key objects
+        html = html.replace(
+            /\b(self|caches|fetch|Promise|navigator|window|event|console)\b/g,
+            '<span class="hl-js-global">$1</span>'
+        );
+
+        // Common SW methods
+        html = html.replace(
+            /\b(addEventListener|waitUntil|respondWith|open|match|put|keys|delete|register|skipWaiting)\b/g,
+            '<span class="hl-js-func">$1</span>'
+        );
+
+        // Numbers
+        html = html.replace(
+            /\b(-?\d+(\.\d+)?)\b/g,
+            '<span class="hl-number">$1</span>'
+        );
+
+        codeEl.innerHTML = html;
+    }
+
+    // Apply highlighting
+    document
+        .querySelectorAll("pre.code-block code.language-html")
+        .forEach(function (codeEl) {
+            highlightHTMLCodeBlock(codeEl);
+        });
+
+    document
+        .querySelectorAll("pre.code-block code.language-jsonld")
+        .forEach(function (codeEl) {
+            highlightJSONCodeBlock(codeEl);
+        });
+
+    document
+        .querySelectorAll("pre.code-block code.language-js")
+        .forEach(function (codeEl) {
+            highlightJSCodeBlock(codeEl);
+        });
+});
+</script>
+</body>
+</html>

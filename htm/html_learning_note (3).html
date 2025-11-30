@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>1.3 Basic HTML Syntax & Structure - Deep Learning Notes</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    />
+
+    <style>
+        :root {
+            --bg-main: #05080f;
+            --bg-sidebar: #0b111c;
+            --bg-card: #111927;
+            --bg-code: #050b12;
+            --border-soft: #1e2a38;
+            --accent-cyan: #4dd0e1;
+            --accent-amber: #ffca28;
+            --text-main: #e0e6f0;
+            --text-muted: #9aa4b3;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background: radial-gradient(circle at top, #07101f 0, #05080f 45%, #020308 100%);
+            color: var(--text-main);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            display: flex;
+        }
+
+        .layout-wrapper {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 320px;
+            background: linear-gradient(180deg, #050b16 0, #05080f 40%, #020308 100%);
+            border-right: 1px solid var(--border-soft);
+            position: fixed;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            padding: 1.5rem 1.4rem;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .sidebar::-webkit-scrollbar-track {
+            background: #05080f;
+        }
+        .sidebar::-webkit-scrollbar-thumb {
+            background: #1f2933;
+            border-radius: 100px;
+        }
+
+        .content {
+            margin-left: 320px;
+            flex: 1;
+            max-width: calc(100% - 320px);
+            padding: 1.8rem 2.2rem 2.4rem;
+            overflow-y: auto;
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                position: fixed;
+                width: 260px;
+                transform: translateX(-100%);
+                transition: transform 0.25s ease-out;
+            }
+            .sidebar.open {
+                transform: translateX(0);
+            }
+            .content {
+                margin-left: 0;
+                max-width: 100%;
+                padding-top: 4.5rem;
+            }
+            .sidebar-toggle-btn {
+                display: inline-flex !important;
+            }
+        }
+
+        /* Sidebar content */
+        .brand-title {
+            font-size: 1.2rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+        }
+
+        .page-title {
+            font-size: 1.3rem;
+            margin-top: 0.4rem;
+            color: var(--accent-cyan);
+            font-weight: 600;
+        }
+
+        .badge-topic {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            padding: .18rem .55rem;
+            border-radius: 999px;
+            font-size: .72rem;
+            text-transform: uppercase;
+            letter-spacing: .09em;
+            background: rgba(77, 208, 225, 0.1);
+            border: 1px solid rgba(77, 208, 225, 0.6);
+            color: var(--accent-cyan);
+        }
+
+        .badge-topic span {
+            color: var(--accent-amber);
+        }
+
+        .author-block {
+            margin-top: 1rem;
+            padding: .9rem 1rem;
+            border-radius: .8rem;
+            background: radial-gradient(circle at top left, rgba(77, 208, 225, .12), transparent 60%);
+            border: 1px solid rgba(31, 41, 55, 0.9);
+        }
+
+        .author-name {
+            font-weight: 600;
+        }
+
+        .author-meta {
+            font-size: .78rem;
+            color: var(--text-muted);
+        }
+
+        .section-label {
+            text-transform: uppercase;
+            letter-spacing: .14em;
+            font-size: .7rem;
+            color: var(--text-muted);
+        }
+
+        .toc-title {
+            font-size: .85rem;
+            text-transform: uppercase;
+            letter-spacing: .16em;
+            color: var(--text-muted);
+            margin-bottom: .45rem;
+        }
+
+        #tocSearch {
+            background: #050a12;
+            border-color: #1e2936;
+            color: var(--text-main);
+            font-size: .85rem;
+        }
+
+        #tocSearch::placeholder {
+            color: #616b78;
+        }
+
+        #toc {
+            list-style: none;
+            padding-left: 0;
+            margin: 0;
+        }
+
+        #toc li {
+            margin-bottom: .25rem;
+        }
+
+        #toc a {
+            display: block;
+            padding: .35rem .55rem;
+            border-radius: .5rem;
+            font-size: .85rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            border: 1px solid transparent;
+        }
+
+        #toc a:hover {
+            background: rgba(77, 208, 225, 0.08);
+            color: var(--accent-cyan);
+            border-color: rgba(77, 208, 225, 0.4);
+        }
+
+        #toc a.active {
+            background: rgba(255, 202, 40, 0.1);
+            color: var(--accent-amber);
+            border-color: rgba(255, 202, 40, 0.6);
+        }
+
+        .sidebar-tools {
+            margin-top: 1rem;
+            display: flex;
+            gap: .5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-pill {
+            border-radius: 999px;
+            font-size: .75rem;
+            padding: .15rem .7rem;
+            border-width: 1px;
+            display: inline-flex;
+            align-items: center;
+            gap: .25rem;
+        }
+
+        .btn-outline-cyan {
+            border-color: rgba(77, 208, 225, .6);
+            color: var(--accent-cyan);
+            background: transparent;
+        }
+        .btn-outline-cyan:hover {
+            background: rgba(77, 208, 225, .16);
+            color: var(--accent-cyan);
+        }
+
+        .btn-outline-amber {
+            border-color: rgba(255, 202, 40, .7);
+            color: var(--accent-amber);
+            background: transparent;
+        }
+        .btn-outline-amber:hover {
+            background: rgba(255, 202, 40, .14);
+            color: var(--accent-amber);
+        }
+
+        .btn-outline-light-soft {
+            border-color: #2a3442;
+            color: var(--text-muted);
+            background: transparent;
+        }
+        .btn-outline-light-soft:hover {
+            background: #101722;
+            color: var(--text-main);
+        }
+
+        .sidebar-toggle-btn {
+            position: fixed;
+            top: .6rem;
+            left: .8rem;
+            z-index: 1100;
+            display: none;
+            border-radius: 999px;
+            padding: .25rem .7rem;
+            font-size: .8rem;
+        }
+
+        /* Content header */
+        .content-header {
+            border-bottom: 1px solid rgba(148, 163, 184, 0.15);
+            padding-bottom: .8rem;
+            margin-bottom: 1.6rem;
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .content-header h1 {
+            font-size: 1.5rem;
+            color: var(--accent-cyan);
+            margin: 0;
+        }
+
+        .content-subtitle {
+            font-size: .9rem;
+            color: var(--text-muted);
+            max-width: 40rem;
+        }
+
+        .difficulty-pill {
+            font-size: .78rem;
+            padding: .15rem .6rem;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.6);
+            color: var(--text-muted);
+        }
+
+        /* Sections */
+        .section-block {
+            margin-bottom: 2rem;
+            border-radius: 1rem;
+            background: radial-gradient(circle at top left, rgba(77, 208, 225, .09), transparent 55%);
+            border: 1px solid rgba(31, 41, 55, .9);
+            padding: 1.2rem 1.3rem 1.3rem;
+        }
+
+        .section-block.alt {
+            background: radial-gradient(circle at top left, rgba(255, 202, 40, .06), transparent 55%);
+        }
+
+        .section-block-header {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            gap: .75rem;
+            margin-bottom: .7rem;
+        }
+
+        .section-index {
+            font-size: .8rem;
+            color: var(--accent-amber);
+            font-weight: 500;
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            color: var(--accent-cyan);
+            margin: 0;
+        }
+
+        .section-meta {
+            font-size: .75rem;
+            color: var(--text-muted);
+        }
+
+        /* details/summary */
+        details {
+            background: #0a101a;
+            border-radius: .8rem;
+            margin-top: .7rem;
+            margin-bottom: .4rem;
+            border: 1px solid #1a2636;
+            padding: .4rem .9rem .7rem;
+        }
+
+        details[open] {
+            border-color: rgba(77, 208, 225, 0.6);
+            background: radial-gradient(circle at top left, rgba(77, 208, 225, 0.15), #070c14);
+        }
+
+        summary {
+            cursor: pointer;
+            list-style: none;
+            position: relative;
+            padding-right: 1.4rem;
+            font-size: .9rem;
+            color: var(--accent-cyan);
+            font-weight: 500;
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary::after {
+            content: "▸";
+            position: absolute;
+            right: .1rem;
+            top: -.05rem;
+            font-size: .8rem;
+            color: var(--accent-amber);
+            transition: transform .18s ease-out;
+        }
+
+        details[open] summary::after {
+            transform: rotate(90deg);
+        }
+
+        details p, details ul, details ol {
+            margin-top: .45rem;
+            font-size: .9rem;
+            color: var(--text-main);
+        }
+
+        details ul {
+            padding-left: 1.2rem;
+        }
+
+        /* Code blocks */
+        pre {
+            background: var(--bg-code);
+            border-radius: .7rem;
+            padding: .75rem .9rem;
+            border: 1px solid #1b2838;
+            overflow-x: auto;
+            font-size: .86rem;
+            line-height: 1.5;
+            margin-bottom: .4rem;
+        }
+
+        pre::-webkit-scrollbar {
+            height: 6px;
+        }
+        pre::-webkit-scrollbar-track {
+            background: #05080f;
+        }
+        pre::-webkit-scrollbar-thumb {
+            background: #263241;
+            border-radius: 999px;
+        }
+
+        code {
+            font-family: "JetBrains Mono", "Fira Code", Menlo, Monaco, Consolas, monospace;
+            color: var(--accent-amber);
+            white-space: pre;
+        }
+
+        .code-caption {
+            font-size: .75rem;
+            color: var(--text-muted);
+            margin-bottom: .2rem;
+        }
+
+        /* Simple syntax highlighting colors */
+        .hl-tag {
+            color: #80e8ff;
+        }
+        .hl-attr {
+            color: #ffd166;
+        }
+        .hl-value {
+            color: #c3f584;
+        }
+        .hl-keyword {
+            color: #ffb3ba;
+        }
+        .hl-func {
+            color: #b4f5ff;
+        }
+        .hl-comment {
+            color: #5c6b80;
+            font-style: italic;
+        }
+
+        .inline-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: .25rem;
+            padding: .1rem .45rem;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.45);
+            font-size: .72rem;
+            color: var(--text-muted);
+        }
+
+        .callout {
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: .75rem;
+            padding: .6rem .7rem;
+            border: 1px solid #243143;
+            font-size: .86rem;
+            color: var(--text-muted);
+        }
+
+        .callout strong {
+            color: var(--accent-cyan);
+        }
+
+        .small-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            gap: .6rem;
+        }
+
+        @media (min-width: 900px) {
+            .small-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        .text-amber { color: var(--accent-amber); }
+        .text-cyan { color: var(--accent-cyan); }
+    </style>
+</head>
+<body>
+
+<button class="btn btn-dark btn-sm sidebar-toggle-btn" id="sidebarToggle">
+    ☰ TOC
+</button>
+
+<div class="layout-wrapper">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+        <div class="mb-3">
+            <div class="brand-title">Deep Web Foundations</div>
+            <div class="page-title">1.3 Basic HTML Syntax &amp; Structure</div>
+            <div class="mt-1">
+                <span class="badge-topic">
+                    ● HTML Core
+                    <span>●</span>
+                    Syntax Focus
+                </span>
+            </div>
+        </div>
+
+        <div class="author-block">
+            <div class="author-name">AI Tutor for Irfan</div>
+            <div class="author-meta">
+                From zero to master-level clarity<br>
+                with layered explanations &amp; real dev examples.
+            </div>
+        </div>
+
+        <div class="mt-3">
+            <div class="section-label mb-1">Study Controls</div>
+            <div class="sidebar-tools">
+                <button class="btn btn-outline-cyan btn-pill" id="expandAllBtn">
+                    ⤢ Expand all
+                </button>
+                <button class="btn btn-outline-amber btn-pill" id="collapseAllBtn">
+                    ⤡ Collapse all
+                </button>
+                <button class="btn btn-outline-light-soft btn-pill" id="highlightToggleBtn">
+                    ✨ Syntax hi-lite
+                </button>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <div class="toc-title">Table of Contents</div>
+            <input
+                id="tocSearch"
+                type="text"
+                class="form-control form-control-sm mb-2"
+                placeholder="Filter topics (tags, nesting, comments)..."
+            >
+            <ul id="toc">
+                <li><a href="#sec-overview" data-scroll>0. Why syntax matters</a></li>
+                <li><a href="#sec-doc-structure" data-scroll>1. HTML document structure</a></li>
+                <li><a href="#sec-doc-boilerplate" data-scroll>1.1 Minimal HTML5 boilerplate</a></li>
+                <li><a href="#sec-tags-elements" data-scroll>2. Tags, elements &amp; attributes</a></li>
+                <li><a href="#sec-open-close" data-scroll>3. Opening &amp; closing tags</a></li>
+                <li><a href="#sec-self-closing" data-scroll>4. Self-closing tags</a></li>
+                <li><a href="#sec-nesting" data-scroll>5. Nesting &amp; hierarchy</a></li>
+                <li><a href="#sec-comments" data-scroll>6. Comments in HTML</a></li>
+            </ul>
+        </div>
+
+        <div class="mt-4">
+            <div class="section-label mb-1">Reading Tip</div>
+            <p class="author-meta mb-1">
+                First skim all <span class="text-amber">Executive summaries</span>,
+                then open deeper layers when revising or practicing.
+            </p>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="content">
+        <header class="content-header">
+            <div>
+                <h1>1.3 Basic HTML Syntax &amp; Structure</h1>
+                <div class="content-subtitle">
+                    In this note you will build a deep mental model of how an HTML document is
+                    structured: document skeleton, tags vs elements vs attributes, proper opening
+                    and closing, self-closing tags, nesting hierarchy, and how comments work.
+                    Designed for college students up to master-level learners.
+                </div>
+            </div>
+            <div class="d-flex flex-column align-items-start gap-1">
+                <span class="difficulty-pill">
+                    Level: Beginner syntax → strong professional discipline
+                </span>
+                <span class="difficulty-pill">
+                    Topics: document structure, tags, attributes, nesting, comments
+                </span>
+            </div>
+        </header>
+
+        <!-- 0. OVERVIEW -->
+        <section id="sec-overview" class="section-block alt">
+            <div class="section-block-header">
+                <div>
+                    <div class="section-index">0 · Big Picture</div>
+                    <h2 class="section-title">Why basic syntax &amp; structure matters</h2>
+                </div>
+                <div class="section-meta">
+                    “Small” syntax mistakes often break whole pages or make bugs invisible.
+                </div>
+            </div>
+
+            <details>
+                <summary>Executive summary</summary>
+                <p>
+                    HTML syntax is like grammar in a language: you can speak with broken grammar,
+                    but serious writing requires correctness. Browsers are forgiving, but as a
+                    developer you must be <strong>strict</strong>, because:
+                </p>
+                <ul>
+                    <li>Broken nesting can ruin layouts in unpredictable ways.</li>
+                    <li>Missing closing tags can merge sections that should be separate.</li>
+                    <li>Wrong attribute usage can break links, images, or accessibility.</li>
+                    <li>Messy structure makes CSS &amp; JavaScript harder to reason about.</li>
+                </ul>
+                <p>
+                    Mastering basic HTML syntax once gives you a foundation that holds for the
+                    rest of your web-development journey.
+                </p>
+            </details>
+
+            <details>
+                <summary>Simple mental model for this chapter</summary>
+                <p>
+                    Keep these questions in your head as you read:
+                </p>
+                <ul>
+                    <li>“What is the <strong>skeleton</strong> of a valid HTML document?”</li>
+                    <li>“What exactly is a <strong>tag</strong>, an <strong>element</strong>,
+                        and an <strong>attribute</strong>?”</li>
+                    <li>“How do opening / closing / self-closing tags behave?”</li>
+                    <li>“How does <strong>nesting</strong> create a hierarchical tree?”</li>
+                    <li>“How do I write comments that are safe and clean?”</li>
+                </ul>
+            </details>
+        </section>
+
+        <!-- 1. HTML DOCUMENT STRUCTURE -->
+        <section id="sec-doc-structure" class="section-block">
+            <div class="section-block-header">
+                <div>
+                    <div class="section-index">1 · Document Skeleton</div>
+                    <h2 class="section-title">HTML document structure</h2>
+                </div>
+                <div class="section-meta">
+                    The outermost structure every valid HTML page should respect.
+                </div>
+            </div>
+
+            <details>
+                <summary>Executive summary</summary>
+                <p>
+                    Every HTML document follows the same high-level structure:
+                </p>
+                <ul>
+                    <li>A <strong>doctype</strong> declaration.</li>
+                    <li>A root <code>&lt;html&gt;</code> element.</li>
+                    <li>A <code>&lt;head&gt;</code> section for metadata.</li>
+                    <li>A <code>&lt;body&gt;</code> section for visible content.</li>
+                </ul>
+                <p>
+                    When the browser sees this skeleton, it knows how to interpret and render
+                    the rest of your code.
+                </p>
+            </details>
+
+            <details id="sec-doc-boilerplate">
+                <summary>Minimal HTML5 skeleton (syntax and explanation)</summary>
+                <p class="code-caption">Standard HTML5 document structure</p>
+                <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+
+  &lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot; /&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+    &lt;title&gt;My HTML Page&lt;/title&gt;
+  &lt;/head&gt;
+
+  &lt;body&gt;
+    &lt;h1&gt;Hello, world!&lt;/h1&gt;
+    &lt;p&gt;This is my first properly structured page.&lt;/p&gt;
+  &lt;/body&gt;
+
+&lt;/html&gt;</code></pre>
+
+                <p>
+                    Line by line:
+                </p>
+                <ul>
+                    <li><code>&lt;!DOCTYPE html&gt;</code> tells the browser that this document
+                        uses HTML5.</li>
+                    <li><code>&lt;html lang=&quot;en&quot;&gt;</code> is the root element; the
+                        <code>lang</code> attribute specifies the language for accessibility and SEO.</li>
+                    <li><code>&lt;head&gt;</code> contains metadata: encoding, viewport, title, styles, etc.</li>
+                    <li><code>&lt;body&gt;</code> contains all visible content: headings, paragraphs,
+                        images, buttons, forms, etc.</li>
+                </ul>
+            </details>
+
+            <details>
+                <summary>Real-world notes &amp; common mistakes</summary>
+                <div class="callout">
+                    <strong>Typical beginner mistakes:</strong>
+                    forgetting <code>&lt;!DOCTYPE html&gt;</code>, putting visible text
+                    inside <code>&lt;head&gt;</code>, or creating multiple
+                    <code>&lt;html&gt;</code>/<code>&lt;body&gt;</code> tags.
+                </div>
+            </details>
+        </section>
+
+        <!-- 2. TAGS, ELEMENTS, ATTRIBUTES -->
+        <section id="sec-tags-elements" class="section-block alt">
+            <div class="section-block-header">
+                <div>
+                    <div class="section-index">2 · Building Blocks</div>
+                    <h2 class="section-title">Tags, elements, and attributes</h2>
+                </div>
+                <div class="section-meta">
+                    The vocabulary and grammar of HTML.
+                </div>
+            </div>
+
+            <details>
+                <summary>Executive summary: difference between tag, element &amp; attribute</summary>
+                <ul>
+                    <li><strong>Tag</strong> – the actual text between angle brackets,
+                        e.g. <code>&lt;p&gt;</code> or <code>&lt;/p&gt;</code>.</li>
+                    <li><strong>Element</strong> – the complete structure:
+                        opening tag + content + closing tag.</li>
+                    <li><strong>Attribute</strong> – extra information placed inside the
+                        opening tag, in <code>name=&quot;value&quot;</code> form.</li>
+                </ul>
+
+                <p class="code-caption">Visual example</p>
+                <pre><code>&lt;p class=&quot;intro&quot;&gt;Hello, Irfan!&lt;/p&gt;
+^ ^^^^^^^^^^^^^^^        ^^^^^^^^
+| |                      |
+| +-- opening tag with an attribute
++---- element name (&quot;p&quot;)
+
+Whole thing = one &lt;p&gt; element.</code></pre>
+            </details>
+
+            <details>
+                <summary>Deep explanation with more examples</summary>
+                <p>
+                    Consider this small snippet:
+                </p>
+                <pre><code>&lt;a href=&quot;https://example.com&quot; target=&quot;_blank&quot;&gt;
+  Visit Example
+&lt;/a&gt;</code></pre>
+
+                <ul>
+                    <li><code>&lt;a&gt;</code> = opening <strong>tag</strong>.</li>
+                    <li><code>&lt;/a&gt;</code> = closing <strong>tag</strong>.</li>
+                    <li>
+                        Together with the text <code>Visit Example</code>, they form an
+                        <strong>&lt;a&gt; element</strong>.
+                    </li>
+                    <li>
+                        <code>href</code> and <code>target</code> are
+                        <strong>attributes</strong>. Their values are given in quotes.
+                    </li>
+                </ul>
+
+                <p class="code-caption">Attribute syntax pattern</p>
+                <pre><code>&lt;tag-name attribute1=&quot;value1&quot; attribute2=&quot;value2&quot;&gt;
+  content
+&lt;/tag-name&gt;</code></pre>
+            </details>
+
+            <details>
+                <summary>Real use cases: why attributes matter</summary>
+                <ul>
+                    <li><code>id</code>, <code>class</code> – used heavily by CSS &amp; JS.</li>
+                    <li><code>src</code> – tells the browser where to load an image or script from.</li>
+                    <li><code>alt</code> – provides alternative text for images (accessibility &amp; SEO).</li>
+                    <li><code>title</code> – small tooltip text on hover.</li>
+                    <li><code>data-*</code> – custom attributes for JavaScript logic.</li>
+                </ul>
+                <p>
+                    In modern development, writing clean, meaningful attributes is a big part
+                    of writing clean HTML.
+                </p>
+            </details>
+        </section>
+
+        <!-- 3. OPENING & CLOSING TAGS -->
+        <section id="sec-open-close" class="section-block">
+            <div class="section-block-header">
+                <div>
+                    <div class="section-index">3 · Tag Pairs</div>
+                    <h2 class="section-title">Opening and closing tags</h2>
+                </div>
+                <div class="section-meta">
+                    How HTML wraps content and defines boundaries.
+                </div>
+            </div>
+
+            <details>
+                <summary>Executive summary</summary>
+                <p>
+                    Most HTML elements use a <strong>pair of tags</strong>:
+                    an opening tag and a closing tag.
+                    The opening tag looks like <code>&lt;tagname&gt;</code>,
+                    and the closing tag looks like <code>&lt;/tagname&gt;</code>.
+                    All content for that element must sit between them.
+                </p>
+            </details>
+
+            <details>
+                <summary>Syntax &amp; examples</summary>
+                <p class="code-caption">Basic pattern</p>
+                <pre><code>&lt;tagname&gt;content goes here&lt;/tagname&gt;</code></pre>
+
+                <p class="code-caption">Examples</p>
+                <pre><code>&lt;p&gt;This is a paragraph.&lt;/p&gt;
+
+&lt;strong&gt;Important text&lt;/strong&gt;
+
+&lt;h1&gt;Main heading&lt;/h1&gt;</code></pre>
+
+                <p>
+                    The <strong>closing tag must match exactly</strong>:
+                    same name, same spelling, same case (browsers are case-insensitive for
+                    HTML, but consistency is a good habit).
+                </p>
+            </details>
+
+            <details>
+                <summary>Common mistakes &amp; how browsers “fix” them</summary>
+                <p class="code-caption">Missing closing tag</p>
+                <pre><code>&lt;p&gt;First paragraph
+&lt;p&gt;Second paragraph&lt;/p&gt;</code></pre>
+                <p>
+                    Browsers often auto-close the first paragraph when a second <code>&lt;p&gt;</code>
+                    appears, but this can cause unexpected layout, especially with nested elements.
+                </p>
+
+                <div class="callout">
+                    <strong>Rule of thumb:</strong>
+                    Always type both opening and closing tags explicitly; use your editor’s
+                    auto-completion to avoid mistakes.
+                </div>
+            </details>
+        </section>
+
+        <!-- 4. SELF-CLOSING TAGS -->
+        <section id="sec-self-closing" class="section-block alt">
+            <div class="section-block-header">
+                <div>
+                    <div class="section-index">4 · Void Elements</div>
+                    <h2 class="section-title">Self-closing tags</h2>
+                </div>
+                <div class="section-meta">
+                    Elements that do not wrap content.
+                </div>
+            </div>
+
+            <details>
+                <summary>Executive summary</summary>
+                <p>
+                    Some HTML elements are <strong>void elements</strong>:
+                    they do not have any inner content, so they do not need a closing tag.
+                    Examples: <code>&lt;img&gt;</code>, <code>&lt;br&gt;</code>,
+                    <code>&lt;hr&gt;</code>, <code>&lt;meta&gt;</code>, <code>&lt;link&gt;</code>.
+                </p>
+                <p>
+                    In HTML5, you typically write them as <code>&lt;br&gt;</code> or
+                    <code>&lt;img src=&quot;...&quot; alt=&quot;...&quot;&gt;
+                    </code> (without the trailing <code>/</code>).
+                </p>
+            </details>
+
+            <details>
+                <summary>Syntax patterns (HTML vs XHTML style)</summary>
+                <div class="small-grid">
+                    <div>
+                        <div class="inline-pill">HTML5 style (recommended)</div>
+                        <pre><code>&lt;br&gt;
+&lt;hr&gt;
+&lt;img src=&quot;photo.jpg&quot; alt=&quot;Profile photo&quot;&gt;</code></pre>
+                    </div>
+                    <div>
+                        <div class="inline-pill">XHTML style (still seen in old code)</div>
+                        <pre><code>&lt;br /&gt;
+&lt;hr /&gt;
+&lt;img src=&quot;photo.jpg&quot; alt=&quot;Profile photo&quot; /&gt;</code></pre>
+                    </div>
+                </div>
+
+                <p>
+                    Browsers accept both syntaxes, but in pure HTML5, the space and slash
+                    before <code>&gt;</code> are optional and not required.
+                </p>
+            </details>
+
+            <details>
+                <summary>Real examples &amp; practical notes</summary>
+                <p class="code-caption">Line breaks &amp; horizontal rules</p>
+                <pre><code>&lt;p&gt;First line&lt;br&gt;Second line&lt;/p&gt;
+
+&lt;h2&gt;Section 1&lt;/h2&gt;
+&lt;p&gt;Content...&lt;/p&gt;
+&lt;hr&gt;
+&lt;h2&gt;Section 2&lt;/h2&gt;</code></pre>
+
+                <p>
+                    Because these elements don’t have children, you never write
+                    <code>&lt;/br&gt;</code> or <code>&lt;/img&gt;</code>. Doing so is invalid HTML.
+                </p>
+            </details>
+        </section>
+
+        <!-- 5. NESTING & HIERARCHY -->
+        <section id="sec-nesting" class="section-block">
+            <div class="section-block-header">
+                <div>
+                    <div class="section-index">5 · Tree Structure</div>
+                    <h2 class="section-title">Nesting and hierarchy</h2>
+                </div>
+                <div class="section-meta">
+                    How elements contain other elements to form a DOM tree.
+                </div>
+            </div>
+
+            <details>
+                <summary>Executive summary</summary>
+                <p>
+                    HTML is inherently <strong>hierarchical</strong>. Elements can contain
+                    other elements, forming a nested tree. This nested structure:
+                </p>
+                <ul>
+                    <li>Defines which content belongs together.</li>
+                    <li>Affects how CSS selectors work (parent/child relationships).</li>
+                    <li>Impacts how JavaScript traverses the DOM.</li>
+                </ul>
+            </details>
+
+            <details>
+                <summary>Correct vs incorrect nesting</summary>
+                <p class="code-caption">Correct nesting</p>
+                <pre><code>&lt;p&gt;
+  This is a &lt;strong&gt;very important&lt;/strong&gt; sentence.
+&lt;/p&gt;</code></pre>
+
+                <p class="code-caption">Incorrect nesting</p>
+                <pre><code>&lt;p&gt;
+  This is a &lt;strong&gt;very important&lt;/p&gt; sentence.&lt;/strong&gt;</code></pre>
+
+                <p>
+                    In the incorrect example, the <code>&lt;p&gt;</code> tag is closed
+                    <em>inside</em> the <code>&lt;strong&gt;</code> tag, so the tree becomes
+                    inconsistent. Browsers try to auto-correct, but the result may not match
+                    what you expect.
+                </p>
+            </details>
+
+            <details>
+                <summary>Visualizing the DOM tree</summary>
+                <p class="code-caption">HTML snippet</p>
+                <pre><code>&lt;ul&gt;
+  &lt;li&gt;HTML&lt;/li&gt;
+  &lt;li&gt;CSS&lt;/li&gt;
+  &lt;li&gt;JavaScript&lt;/li&gt;
+&lt;/ul&gt;</code></pre>
+
+                <p class="code-caption">Conceptual tree</p>
+                <pre><code>UL
+├── LI (&quot;HTML&quot;)
+├── LI (&quot;CSS&quot;)
+└── LI (&quot;JavaScript&quot;)</code></pre>
+
+                <p>
+                    Every time you nest tags inside one another, you are building this tree.
+                    Thinking in tree-structure terms is crucial for mastering DOM, CSS, and JS.
+                </p>
+            </details>
+        </section>
+
+        <!-- 6. COMMENTS IN HTML -->
+        <section id="sec-comments" class="section-block alt">
+            <div class="section-block-header">
+                <div>
+                    <div class="section-index">6 · Comments</div>
+                    <h2 class="section-title">Comments in HTML</h2>
+                </div>
+                <div class="section-meta">
+                    Explaining your code to your future self &amp; your team.
+                </div>
+            </div>
+
+            <details>
+                <summary>Executive summary</summary>
+                <p>
+                    Comments in HTML are pieces of text ignored by the browser.
+                    They help you:
+                </p>
+                <ul>
+                    <li>Explain sections of your code.</li>
+                    <li>Temporarily disable elements during debugging.</li>
+                    <li>Mark TODOs or important notes.</li>
+                </ul>
+                <p>
+                    Syntax: <code>&lt;!-- comment text here --&gt;</code>
+                </p>
+            </details>
+
+            <details>
+                <summary>Comment syntax and examples</summary>
+                <p class="code-caption">Basic comment</p>
+                <pre><code>&lt;!-- Main navigation bar starts here --&gt;
+&lt;nav&gt;...&lt;/nav&gt;</code></pre>
+
+                <p class="code-caption">Commenting out a block temporarily</p>
+                <pre><code>&lt;!--
+&lt;section id=&quot;old-hero&quot;&gt;
+  &lt;h1&gt;Old Landing Section&lt;/h1&gt;
+&lt;/section&gt;
+--&gt;</code></pre>
+
+                <p>
+                    Everything between <code>&lt;!--</code> and <code>--&gt;</code>
+                    is ignored by the browser and not displayed on the page.
+                </p>
+            </details>
+
+            <details>
+                <summary>Best practices &amp; warnings</summary>
+                <ul>
+                    <li>Do not put sensitive information (passwords, keys) in comments:
+                        they are still visible in page source.</li>
+                    <li>Use comments to clarify <strong>why</strong> something is done,
+                        not just <strong>what</strong> it does.</li>
+                    <li>Keep comments short and meaningful; avoid cluttering the HTML.</li>
+                </ul>
+
+                <div class="callout">
+                    <strong>Pro-tip:</strong>
+                    In collaborative projects, comments help align the team’s understanding.
+                    But once code is stable and obvious, you can clean up old comments.
+                </div>
+            </details>
+        </section>
+    </main>
+</div>
+
+<!-- Bootstrap JS -->
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+></script>
+
+<script>
+    // Sidebar toggle (for mobile)
+    const sidebar = document.getElementById("sidebar");
+    const sidebarToggle = document.getElementById("sidebarToggle");
+
+    sidebarToggle.addEventListener("click", () => {
+        sidebar.classList.toggle("open");
+    });
+
+    // Smooth scrolling for TOC links
+    document.querySelectorAll("#toc a[data-scroll]").forEach(link => {
+        link.addEventListener("click", function (e) {
+            e.preventDefault();
+            const targetId = this.getAttribute("href").substring(1);
+            const target = document.getElementById(targetId);
+            if (target) {
+                target.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+            document.querySelectorAll("#toc a").forEach(a => a.classList.remove("active"));
+            this.classList.add("active");
+            if (window.innerWidth <= 992) {
+                sidebar.classList.remove("open");
+            }
+        });
+    });
+
+    // Expand / collapse all details
+    const expandAllBtn = document.getElementById("expandAllBtn");
+    const collapseAllBtn = document.getElementById("collapseAllBtn");
+
+    expandAllBtn.addEventListener("click", () => {
+        document.querySelectorAll("details").forEach(d => d.open = true);
+    });
+
+    collapseAllBtn.addEventListener("click", () => {
+        document.querySelectorAll("details").forEach(d => d.open = false);
+    });
+
+    // TOC search filter
+    const tocSearch = document.getElementById("tocSearch");
+    tocSearch.addEventListener("input", function () {
+        const term = this.value.trim().toLowerCase();
+        document.querySelectorAll("#toc li").forEach(li => {
+            const text = li.textContent.toLowerCase();
+            li.style.display = text.includes(term) ? "" : "none";
+        });
+    });
+
+    // Simple syntax highlighting for <pre><code>
+    let highlightEnabled = true;
+    const highlightToggleBtn = document.getElementById("highlightToggleBtn");
+
+    // Store original text before highlighting
+    document.querySelectorAll("pre code").forEach(code => {
+        code.dataset.originalText = code.innerHTML;
+    });
+
+    function applySimpleHighlighting() {
+        document.querySelectorAll("pre code").forEach(code => {
+            if (code.dataset.highlighted === "true") return;
+
+            let html = code.innerHTML;
+
+            // Tags like &lt;html&gt;
+            html = html.replace(/(&lt;\/?[a-zA-Z0-9\-]+)(?=\s|&gt;)/g,
+                '<span class="hl-tag">$1</span>');
+            // Attributes: class=, id=, etc.
+            html = html.replace(/(\s)([a-zA-Z\-:]+)(=)/g,
+                '$1<span class="hl-attr">$2</span>$3');
+            // Attribute values in quotes
+            html = html.replace(/(&quot;[^&]*&quot;)/g,
+                '<span class="hl-value">$1</span>');
+            // HTML comments
+            html = html.replace(/(&lt;!--[\s\S]*?--&gt;)/g,
+                '<span class="hl-comment">$1</span>');
+            // Simple JS-like keywords
+            html = html.replace(/\b(const|let|var|function|return|if|else|for|while|async|await)\b/g,
+                '<span class="hl-keyword">$1</span>');
+            // Function calls foo()
+            html = html.replace(/([a-zA-Z_$][a-zA-Z0-9_$]*)\s*(?=\()/g,
+                '<span class="hl-func">$1</span>');
+
+            code.innerHTML = html;
+            code.dataset.highlighted = "true";
+        });
+    }
+
+    function clearSimpleHighlighting() {
+        document.querySelectorAll("pre code").forEach(code => {
+            if (code.dataset.originalText) {
+                code.innerHTML = code.dataset.originalText;
+                code.dataset.highlighted = "false";
+            }
+        });
+    }
+
+    // Initial highlight
+    applySimpleHighlighting();
+
+    highlightToggleBtn.addEventListener("click", () => {
+        highlightEnabled = !highlightEnabled;
+        if (highlightEnabled) {
+            applySimpleHighlighting();
+            highlightToggleBtn.textContent = "✨ Syntax hi-lite";
+        } else {
+            clearSimpleHighlighting();
+            highlightToggleBtn.textContent = "✖ Plain code";
+        }
+    });
+</script>
+</body>
+</html>

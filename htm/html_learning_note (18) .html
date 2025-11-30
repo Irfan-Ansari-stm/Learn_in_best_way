@@ -1,0 +1,1371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Module 13 - Accessibility (WCAG Guidelines)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Bootstrap CSS -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    />
+
+    <style>
+        :root {
+            --bg-main: #050816;
+            --bg-card: #0b1020;
+            --bg-code: #050812;
+            --accent-cyan: #22d3ee;
+            --accent-amber: #fbbf24;
+            --text-main: #e5e7eb;
+            --text-muted: #9ca3af;
+            --border-subtle: #1f2933;
+            --shadow-soft: 0 0 40px rgba(15, 23, 42, 0.95);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: radial-gradient(circle at top, #0b1120 0, #020617 55%);
+            color: var(--text-main);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: var(--accent-amber);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .layout-wrapper {
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .note-container {
+            background: rgba(15, 23, 42, 0.95);
+            border-radius: 1.25rem;
+            box-shadow: var(--shadow-soft);
+            overflow: hidden;
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, #020617, #020617, #020617);
+            border-right: 1px solid var(--border-subtle);
+            padding: 1.25rem 1.1rem;
+            min-height: 100%;
+        }
+
+        .sidebar-inner {
+            position: sticky;
+            top: 0;
+            max-height: 100vh;
+            overflow-y: auto;
+            padding-right: 0.25rem;
+        }
+
+        .sidebar-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--accent-cyan);
+        }
+
+        .sidebar-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .badge-module {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            border-radius: 999px;
+            padding: 0.2rem 0.75rem;
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+
+        .author-block {
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            color: var(--text-muted);
+        }
+
+        .author-name {
+            color: var(--accent-amber);
+            font-weight: 600;
+        }
+
+        .toc-title {
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-muted);
+        }
+
+        .toc-search-input {
+            background-color: #020617;
+            border: 1px solid var(--border-subtle);
+            color: var(--text-main);
+            font-size: 0.8rem;
+        }
+
+        .toc-search-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 1px var(--accent-cyan);
+            border-color: var(--accent-cyan);
+        }
+
+        .toc-list {
+            list-style: none;
+            margin: 0;
+            margin-top: 0.5rem;
+            padding-left: 0;
+            font-size: 0.86rem;
+        }
+
+        .toc-list li {
+            margin-bottom: 0.15rem;
+        }
+
+        .toc-link {
+            display: block;
+            padding: 0.25rem 0.35rem;
+            border-radius: 0.35rem;
+            color: var(--text-muted);
+        }
+
+        .toc-link:hover {
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+
+        .toc-link.main {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .toc-link.sub {
+            padding-left: 0.8rem;
+            font-size: 0.8rem;
+        }
+
+        .toc-link.active {
+            background: rgba(56, 189, 248, 0.09);
+            color: var(--accent-cyan);
+            border-left: 3px solid var(--accent-cyan);
+        }
+
+        .toc-utilities {
+            display: flex;
+            gap: 0.3rem;
+            margin-top: 0.6rem;
+        }
+
+        .btn-util {
+            flex: 1;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            padding: 0.18rem 0.4rem;
+            border: 1px solid var(--border-subtle);
+            background: #020617;
+            color: var(--text-muted);
+        }
+
+        .btn-util:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        /* Content Area */
+        .content-area {
+            background: radial-gradient(circle at top, #020617 0, #020617 60%);
+            padding: 1.25rem 1.35rem 1.6rem;
+            overflow-y: auto;
+            max-height: calc(100vh - 2rem);
+        }
+
+        .content-header-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: var(--accent-amber);
+            margin-bottom: 0.15rem;
+        }
+
+        .content-main-title {
+            font-size: 1.65rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            color: #f9fafb;
+        }
+
+        .content-subtitle {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            max-width: 48rem;
+        }
+
+        .pill-tag {
+            font-size: 0.7rem;
+            padding: 0.15rem 0.6rem;
+            border-radius: 999px;
+            border: 1px solid rgba(248, 250, 252, 0.12);
+            color: var(--text-muted);
+        }
+
+        .section-card {
+            border-radius: 1rem;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid var(--border-subtle);
+            margin-top: 1.1rem;
+            padding: 0.9rem 0.9rem 1rem;
+        }
+
+        .section-heading {
+            font-size: 1.1rem;
+            color: #e5e7eb;
+            font-weight: 600;
+        }
+
+        .section-kicker {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--text-muted);
+        }
+
+        .section-label {
+            font-size: 0.76rem;
+            padding: 0.08rem 0.45rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            color: var(--accent-cyan);
+            background: rgba(15, 23, 42, 0.9);
+            margin-left: 0.35rem;
+        }
+
+        .section-summary-text {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        details {
+            margin-top: 0.5rem;
+            border-radius: 0.75rem;
+            border: 1px solid #111827;
+            background: radial-gradient(circle at top left, #020617 0, #020617 65%);
+        }
+
+        summary {
+            cursor: pointer;
+            padding: 0.55rem 0.75rem;
+            position: relative;
+            list-style: none;
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        summary::marker {
+            display: none;
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary::before {
+            content: "▸";
+            display: inline-block;
+            margin-right: 0.4rem;
+            color: var(--accent-cyan);
+            transition: transform 0.15s ease-out;
+            font-size: 0.8rem;
+        }
+
+        details[open] summary::before {
+            transform: rotate(90deg);
+        }
+
+        .details-body {
+            padding: 0.15rem 0.8rem 0.6rem;
+            border-top: 1px solid #111827;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        pre.code-block {
+            background: var(--bg-code);
+            border-radius: 0.75rem;
+            padding: 0.6rem 0.8rem;
+            font-size: 0.82rem;
+            overflow-x: auto;
+            border: 1px solid #020617;
+            margin-bottom: 0.6rem;
+        }
+
+        code.inline-code {
+            background: rgba(15, 23, 42, 0.95);
+            border-radius: 0.35rem;
+            padding: 0.05rem 0.25rem;
+            border: 1px solid #111827;
+            font-size: 0.83rem;
+        }
+
+        /* Syntax highlight */ 
+        .hl-tag { color: #38bdf8; }
+        .hl-attr { color: #fbbf24; }
+        .hl-string { color: #a5b4fc; }
+        .hl-comment { color: #6b7280; font-style:italic; }
+        .hl-key { color: #facc15; }
+        .hl-number { color: #34d399; }
+        .hl-bool { color: #fb7185; }
+        .hl-punct { color:#9ca3af; }
+    </style>
+</head>
+
+<body>
+<div class="layout-wrapper container-fluid">
+    <div class="note-container row g-0">
+        <!-- SIDEBAR -->
+        <aside class="sidebar col-12 col-lg-3">
+            <div class="sidebar-inner">
+                <div class="d-flex align-items-center justify-content-between">
+                    <span class="badge-module">Module 13</span>
+                    <span class="pill-tag">Accessibility</span>
+                </div>
+
+                <div class="mt-3">
+                    <div class="sidebar-title">WCAG 2.1 Accessibility</div>
+                    <div class="sidebar-subtitle">
+                        Deep understanding of disabilities, assistive tech, ARIA,
+                        semantic structure, and inclusive design principles.
+                    </div>
+                </div>
+
+                <div class="author-block">
+                    <div><span class="author-name">Prepared for:</span> College to PhD-level learners</div>
+                    <div><span class="author-name">Focus:</span> WCAG 2.1 · A11y · ARIA · Real-world patterns</div>
+                </div>
+
+                <div class="toc-title mt-3">Table of Contents</div>
+                <input id="tocSearch" type="text" class="form-control form-control-sm toc-search-input mt-1" placeholder="Search sections…"/>
+
+                <div class="toc-utilities">
+                    <button id="expandAll" class="btn btn-sm btn-util">Expand All</button>
+                    <button id="collapseAll" class="btn btn-sm btn-util">Collapse All</button>
+                </div>
+
+                <ul id="tocList" class="toc-list mt-2">
+                    <li><a href="#sec-13-1" class="toc-link main">13.1 Accessibility Fundamentals</a></li>
+                    <li><a href="#sec-13-1-disabilities" class="toc-link sub">13.1.1 Disabilities & Assistive Tech</a></li>
+                    <li><a href="#sec-13-1-wcag" class="toc-link sub">13.1.2 WCAG 2.1 Overview</a></li>
+                    <li><a href="#sec-13-1-testing" class="toc-link sub">13.1.3 Accessibility Testing Tools</a></li>
+
+                    <li class="mt-2"><a href="#sec-13-2" class="toc-link main">13.2 Semantic HTML for Accessibility</a></li>
+                    <li><a href="#sec-13-2-headings" class="toc-link sub">13.2.1 Proper Heading Structure</a></li>
+                    <li><a href="#sec-13-2-landmarks" class="toc-link sub">13.2.2 Landmark Roles</a></li>
+                    <li><a href="#sec-13-2-focus" class="toc-link sub">13.2.3 Focus Management</a></li>
+                    <li><a href="#sec-13-2-screenreaders" class="toc-link sub">13.2.4 Screen Reader Notes</a></li>
+
+                    <li class="mt-2"><a href="#sec-13-3" class="toc-link main">13.3 ARIA Attributes</a></li>
+                    <li><a href="#sec-13-3-when" class="toc-link sub">13.3.1 When to Use ARIA</a></li>
+                    <li><a href="#sec-13-3-label" class="toc-link sub">13.3.2 aria-label & aria-labelledby</a></li>
+                    <li><a href="#sec-13-3-describedby" class="toc-link sub">13.3.3 aria-describedby</a></li>
+                    <li><a href="#sec-13-3-live" class="toc-link sub">13.3.4 Live Regions</a></li>
+                    <li><a href="#sec-13-3-states" class="toc-link sub">13.3.5 ARIA States & Properties</a></li>
+                </ul>
+
+                <div class="note-callout mt-3">
+                    <strong>Key idea:</strong>
+                    Accessibility means designing for *everyone* — including users with visual, auditory, motor, cognitive, or situational limitations.
+                </div>
+            </div>
+        </aside>
+
+        <!-- CONTENT -->
+        <main class="content-area col-12 col-lg-9">
+            <header class="mb-2">
+                <div class="content-header-label">A11Y · WCAG 2.1 · ARIA</div>
+                <h1 class="content-main-title">Module 13: Accessibility (WCAG Guidelines)</h1>
+                <p class="content-subtitle mt-1">
+                    This module explores the foundations of digital accessibility,
+                    including disabilities, assistive technologies, WCAG 2.1
+                    principles, semantic HTML, focus control, and advanced ARIA usage.
+                </p>
+                <div class="d-flex flex-wrap gap-1 mt-1">
+                    <span class="pill-tag">WCAG 2.1</span>
+                    <span class="pill-tag">Screen Readers</span>
+                    <span class="pill-tag">ARIA</span>
+                    <span class="pill-tag">Inclusive Design</span>
+                </div>
+            </header>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+            <!-- ============================== -->
+            <!--       SECTION 13.1 START       -->
+            <!-- ============================== -->
+            <section id="sec-13-1" class="section-card">
+                <div class="section-kicker">13.1</div>
+                <h2 class="section-heading">
+                    Accessibility Fundamentals
+                    <span class="section-label">Foundations</span>
+                </h2>
+
+                <p class="section-summary-text mt-1">
+                    Accessibility (A11y) is the practice of designing digital
+                    experiences that are usable by everyone, including people with
+                    disabilities. WCAG (Web Content Accessibility Guidelines) provide
+                    the global standard for inclusive, perceivable, operable,
+                    understandable, and robust interfaces.
+                </p>
+
+
+
+                <!-- 13.1.1 Disabilities & Assistive Tech -->
+                <section id="sec-13-1-disabilities" class="mt-2">
+                    <details open>
+                        <summary>
+                            Understanding disabilities and assistive technologies
+                            <span class="badge-level">Concept</span>
+                        </summary>
+
+                        <div class="details-body">
+                            <p>
+                                Disabilities can be permanent (blindness), temporary
+                                (arm injury), or situational (holding a baby, driving).
+                                Designing inclusively benefits <strong>all users</strong>.
+                            </p>
+
+                            <ul>
+                                <li><strong>Visual:</strong> blindness, low vision, color blindness</li>
+                                <li><strong>Auditory:</strong> deafness, hearing loss</li>
+                                <li><strong>Motor:</strong> tremors, paralysis, limited fine motor control</li>
+                                <li><strong>Cognitive:</strong> dyslexia, ADHD, memory impairments</li>
+                            </ul>
+
+                            <p>
+                                Users interact via assistive technologies:
+                            </p>
+
+                            <ul>
+                                <li><strong>Screen readers:</strong> NVDA, JAWS, VoiceOver</li>
+                                <li><strong>Screen magnifiers</strong></li>
+                                <li><strong>Speech recognition:</strong> Dragon NaturallySpeaking</li>
+                                <li><strong>Switch access / alternate input devices</strong></li>
+                            </ul>
+
+                            <p>
+                                Your HTML must expose proper semantics so assistive
+                                tech can interpret structure, landmarks, roles,
+                                labels, and states.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+
+
+                <!-- 13.1.2 WCAG -->
+                <section id="sec-13-1-wcag" class="mt-3">
+                    <h3 class="section-heading" style="font-size:1rem;">
+                        13.1.2 WCAG 2.1 Guidelines Overview
+                    </h3>
+
+                    <details open class="mt-1">
+                        <summary>
+                            The four WCAG principles (POUR)
+                            <span class="badge-level">Concept</span>
+                        </summary>
+
+                        <div class="details-body">
+                            <p>
+                                WCAG 2.1 organizes accessibility requirements under four principles:
+                            </p>
+
+                            <ul>
+                                <li><strong>P</strong>erceivable — information must be presented in ways users can perceive</li>
+                                <li><strong>O</strong>perable — interface elements must be usable via different inputs</li>
+                                <li><strong>U</strong>nderstandable — content must be readable, predictable, consistent</li>
+                                <li><strong>R</strong>obust — compatible with assistive technologies</li>
+                            </ul>
+
+                            <p>
+                                WCAG is divided into:
+                            </p>
+
+                            <ul>
+                                <li><strong>A</strong> (minimum compliance)</li>
+                                <li><strong>AA</strong> (industry standard — most required)</li>
+                                <li><strong>AAA</strong> (highest, not always practical)</li>
+                            </ul>
+
+                            <p>
+                                WCAG is intentionally *technology-agnostic* — it tells
+                                “what must be true” rather than “how to code it”.
+                            </p>
+
+                            <pre class="code-block"><code class="language-text">
+Pseudocode summary of WCAG checks:
+
+For each interface component C:
+    Check if C is perceivable:
+        - Has text alternative?
+        - Has sufficient color contrast?
+
+    Check if C is operable:
+        - Keyboard-accessible?
+        - Focus visible?
+        - Timing adjustable?
+
+    Check if C is understandable:
+        - Consistent navigation?
+        - Predictable behavior?
+
+    Check if C is robust:
+        - Correct HTML semantics?
+        - ARIA states conveyed?
+                            </code></pre>
+                        </div>
+                    </details>
+                </section>
+
+
+
+                <!-- 13.1.3 Testing Tools -->
+                <section id="sec-13-1-testing" class="mt-3">
+                    <h3 class="section-heading" style="font-size:1rem;">
+                        13.1.3 Accessibility Testing Tools
+                    </h3>
+
+                    <details open>
+                        <summary>
+                            Manual + automated testing tools
+                            <span class="badge-level">Tools</span>
+                        </summary>
+                        <div class="details-body">
+                            <ul>
+                                <li><strong>Axe DevTools</strong> (browser extension)</li>
+                                <li><strong>Lighthouse A11y audits</strong></li>
+                                <li><strong>NVDA</strong> (free Windows screen reader)</li>
+                                <li><strong>VoiceOver</strong> (Mac/iOS)</li>
+                                <li><strong>WAVE Tool</strong></li>
+                                <li><strong>Keyboard-only testing</strong> (Tab, Shift+Tab, Enter, Space)</li>
+                            </ul>
+
+                            <pre class="code-block"><code class="language-text">
+Accessibility testing workflow:
+
+1. Automated scan (Lighthouse, Axe)
+2. Keyboard navigation test
+3. Screen reader test
+4. Color contrast check
+5. ARIA validation
+6. Manual review of headings, landmarks, labels
+                            </code></pre>
+                        </div>
+                    </details>
+                </section>
+
+            </section>
+            <!-- ============================== -->
+            <!--       SECTION 13.2 START       -->
+            <!-- ============================== -->
+            <section id="sec-13-2" class="section-card">
+                <div class="section-kicker">13.2</div>
+                <h2 class="section-heading">
+                    Semantic HTML for Accessibility
+                    <span class="section-label">Structure &amp; Behavior</span>
+                </h2>
+
+                <p class="section-summary-text mt-1">
+                    Semantic HTML is the foundation of accessibility. If the
+                    underlying DOM correctly expresses document structure, landmarks,
+                    relationships, and control types, assistive technologies can
+                    interpret your UI without hacks.
+                </p>
+
+                <!-- 13.2.1 Proper Heading Structure -->
+                <section id="sec-13-2-headings" class="mt-2">
+                    <h3 class="section-heading" style="font-size:1rem;">
+                        13.2.1 Proper heading structure
+                    </h3>
+
+                    <details open>
+                        <summary>
+                            Why heading hierarchy matters
+                            <span class="badge-level">Concept</span>
+                        </summary>
+                        <div class="details-body">
+                            <p>
+                                Screen readers allow users to navigate by headings,
+                                like a “table of contents overlay”. If your headings
+                                are logical, users can skim efficiently.
+                            </p>
+                            <ul>
+                                <li>Exactly one logical top-level heading (often &lt;h1&gt;)</li>
+                                <li>Subtopics use &lt;h2&gt;, sub-subtopics use &lt;h3&gt;, etc.</li>
+                                <li>Do not skip levels purely for visual styling.</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            Example: good vs bad heading hierarchy
+                            <span class="badge-level">Example</span>
+                        </summary>
+                        <div class="details-body">
+                            <pre class="code-block"><code class="language-html">
+&lt;!-- ✅ Good: logical outline --&gt;
+&lt;main&gt;
+  &lt;h1&gt;Accessibility Documentation&lt;/h1&gt;
+
+  &lt;section&gt;
+    &lt;h2&gt;Getting Started&lt;/h2&gt;
+    &lt;h3&gt;Keyboard Navigation&lt;/h3&gt;
+    &lt;h3&gt;Screen Reader Basics&lt;/h3&gt;
+  &lt;/section&gt;
+
+  &lt;section&gt;
+    &lt;h2&gt;Advanced Topics&lt;/h2&gt;
+    &lt;h3&gt;ARIA Roles&lt;/h3&gt;
+    &lt;h3&gt;Live Regions&lt;/h3&gt;
+  &lt;/section&gt;
+&lt;/main&gt;
+
+&lt;!-- ❌ Bad: skipping levels and visual-only headings --&gt;
+&lt;main&gt;
+  &lt;h1&gt;Accessibility Documentation&lt;/h1&gt;
+  &lt;h4&gt;Getting Started&lt;/h4&gt; &lt;!-- visually smaller but structurally wrong --&gt;
+  &lt;h6&gt;Keyboard Navigation&lt;/h6&gt;
+&lt;/main&gt;
+</code></pre>
+                            <p>
+                                Visual size should be controlled via CSS, not by
+                                abusing heading levels.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 13.2.2 Landmark Roles -->
+                <section id="sec-13-2-landmarks" class="mt-3">
+                    <h3 class="section-heading" style="font-size:1rem;">
+                        13.2.2 Landmark roles and navigation
+                    </h3>
+
+                    <details open>
+                        <summary>
+                            Native landmarks &amp; ARIA roles
+                            <span class="badge-level">Concept</span>
+                        </summary>
+                        <div class="details-body">
+                            <p>
+                                Landmarks let screen reader users jump to high-level
+                                regions: navigation, main content, search, etc.
+                            </p>
+                            <ul>
+                                <li>Native landmarks: &lt;header&gt;, &lt;nav&gt;, &lt;main&gt;, &lt;aside&gt;, &lt;footer&gt;</li>
+                                <li>Complementary roles: <code class="inline-code">role="main"</code>, <code class="inline-code">role="navigation"</code>, <code class="inline-code">role="banner"</code>, <code class="inline-code">role="contentinfo"</code></li>
+                                <li>
+                                    Use ARIA landmarks when you cannot use native
+                                    elements (e.g. legacy markup, div-heavy layouts).
+                                </li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            Example: landmarks with skip link
+                            <span class="badge-level">Example</span>
+                        </summary>
+                        <div class="details-body">
+                            <pre class="code-block"><code class="language-html">
+&lt;body&gt;
+  &lt;a href=&quot;#main-content&quot; class=&quot;skip-link&quot;&gt;
+    Skip to main content
+  &lt;/a&gt;
+
+  &lt;header&gt;
+    &lt;h1&gt;Accessible Application&lt;/h1&gt;
+  &lt;/header&gt;
+
+  &lt;nav aria-label=&quot;Primary navigation&quot;&gt;
+    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;/docs&quot;&gt;Docs&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/nav&gt;
+
+  &lt;main id=&quot;main-content&quot;&gt;
+    &lt;h2&gt;Dashboard&lt;/h2&gt;
+    &lt;!-- Page-specific content --&gt;
+  &lt;/main&gt;
+
+  &lt;footer&gt;
+    &amp;copy; 2025 Irfan Corp
+  &lt;/footer&gt;
+&lt;/body&gt;
+</code></pre>
+                            <p>
+                                Many screen readers provide a “Landmarks” or “Regions”
+                                rotor allowing users to jump between these sections.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 13.2.3 Focus Management -->
+                <section id="sec-13-2-focus" class="mt-3">
+                    <h3 class="section-heading" style="font-size:1rem;">
+                        13.2.3 Focus management
+                    </h3>
+
+                    <details open>
+                        <summary>
+                            Keyboard focus rules
+                            <span class="badge-level">Concept</span>
+                        </summary>
+                        <div class="details-body">
+                            <p>
+                                Many users rely on keyboard-only navigation. Focus
+                                must move in a predictable, logical order, and never
+                                get “trapped”.
+                            </p>
+                            <ul>
+                                <li>
+                                    All interactive elements must be focusable (links, buttons, inputs).
+                                </li>
+                                <li>
+                                    Avoid using <code class="inline-code">tabindex</code> &gt; 0 (it breaks natural order).
+                                </li>
+                                <li>
+                                    Ensure visible focus styling (WCAG 2.4.7).
+                                </li>
+                                <li>
+                                    When opening dialogs, move focus inside the dialog and restore it on close.
+                                </li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            Example: managing focus in a dialog
+                            <span class="badge-level">Example + JS</span>
+                        </summary>
+                        <div class="details-body">
+                            <pre class="code-block"><code class="language-html">
+&lt;button id=&quot;openDialog&quot;&gt;Open Settings&lt;/button&gt;
+
+&lt;div id=&quot;dialog&quot; role=&quot;dialog&quot; aria-modal=&quot;true&quot;
+     aria-labelledby=&quot;dialog-title&quot; hidden&gt;
+  &lt;h2 id=&quot;dialog-title&quot;&gt;Settings&lt;/h2&gt;
+  &lt;button id=&quot;closeDialog&quot;&gt;Close&lt;/button&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+  const openBtn = document.getElementById('openDialog');
+  const closeBtn = document.getElementById('closeDialog');
+  const dialog = document.getElementById('dialog');
+  let lastFocusedElement = null;
+
+  openBtn.addEventListener('click', () =&gt; {
+    lastFocusedElement = document.activeElement;
+    dialog.hidden = false;
+    closeBtn.focus(); // move focus into dialog
+  });
+
+  closeBtn.addEventListener('click', () =&gt; {
+    dialog.hidden = true;
+    if (lastFocusedElement) lastFocusedElement.focus(); // restore focus
+  });
+&lt;/script&gt;
+</code></pre>
+                            <p>
+                                This pattern prevents keyboard users from “losing
+                                themselves” when dialogs open and close.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 13.2.4 Screen Reader Considerations -->
+                <section id="sec-13-2-screenreaders" class="mt-3">
+                    <h3 class="section-heading" style="font-size:1rem;">
+                        13.2.4 Screen reader considerations
+                    </h3>
+
+                    <details open>
+                        <summary>
+                            How screen readers interpret your HTML
+                            <span class="badge-level">Concept</span>
+                        </summary>
+                        <div class="details-body">
+                            <p>
+                                Screen readers create a <em>virtual accessibility
+                                tree</em> from the DOM, influenced by:
+                            </p>
+                            <ul>
+                                <li>Element names (role)</li>
+                                <li>Relationships (labels, descriptions, ownership)</li>
+                                <li>States and properties (expanded, checked, disabled)</li>
+                            </ul>
+                            <p>
+                                Avoid hiding important content visually-only or
+                                screen-reader-only without clear reason.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            Example: visually hidden text for SR users
+                            <span class="badge-level">Example</span>
+                        </summary>
+                        <div class="details-body">
+                            <pre class="code-block"><code class="language-html">
+&lt;style&gt;
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+&lt;/style&gt;
+
+&lt;button&gt;
+  &lt;span class=&quot;sr-only&quot;&gt;Close notification&lt;/span&gt;
+  &lt;span aria-hidden=&quot;true&quot;&gt;&times;&lt;/span&gt;
+&lt;/button&gt;
+</code></pre>
+                            <p>
+                                Screen reader users hear “Close notification”, while
+                                sighted users see only the × icon.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+            </section>
+
+            <!-- ============================== -->
+            <!--       SECTION 13.3 START       -->
+            <!-- ============================== -->
+            <section id="sec-13-3" class="section-card">
+                <div class="section-kicker">13.3</div>
+                <h2 class="section-heading">
+                    ARIA Attributes
+                    <span class="section-label">Enhancing Semantics</span>
+                </h2>
+
+                <p class="section-summary-text mt-1">
+                    Accessible Rich Internet Applications (ARIA) is a specification
+                    that lets you describe roles, states, and properties for complex
+                    UI components. ARIA must be used carefully:
+                    <strong>“No ARIA is better than bad ARIA.”</strong>
+                </p>
+
+                <!-- 13.3.1 When to use ARIA -->
+                <section id="sec-13-3-when" class="mt-2">
+                    <h3 class="section-heading" style="font-size:1rem;">
+                        13.3.1 When to use ARIA
+                    </h3>
+
+                    <details open>
+                        <summary>
+                            Use native first, ARIA second
+                            <span class="badge-level">Guideline</span>
+                        </summary>
+                        <div class="details-body">
+                            <ul>
+                                <li>
+                                    Prefer native HTML elements (&lt;button&gt;, &lt;a&gt;, &lt;input&gt;) because they come with built-in semantics and keyboard behavior.
+                                </li>
+                                <li>
+                                    Use ARIA when:
+                                    <ul>
+                                        <li>You build custom components (tabs, accordions, menus).</li>
+                                        <li>You need to expose dynamic state (expanded, selected, busy).</li>
+                                        <li>You want to label or describe controls beyond what visible text allows.</li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    Never use ARIA to “fake” a button on a &lt;div&gt; without also implementing keyboard support.
+                                </li>
+                            </ul>
+                            <pre class="code-block"><code class="language-text">
+ARIA decision rule:
+
+If native element exists that expresses the same semantics:
+    Use native element.
+Else:
+    Use ARIA role + keyboard handling + state management.
+                            </code></pre>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 13.3.2 aria-label & aria-labelledby -->
+                <section id="sec-13-3-label" class="mt-3">
+                    <h3 class="section-heading" style="font-size:1rem;">
+                        13.3.2 aria-label and aria-labelledby
+                    </h3>
+
+                    <details open>
+                        <summary>
+                            Naming controls for assistive tech
+                            <span class="badge-level">Concept</span>
+                        </summary>
+                        <div class="details-body">
+                            <ul>
+                                <li><code class="inline-code">aria-label</code>: string label applied directly on the element.</li>
+                                <li><code class="inline-code">aria-labelledby</code>: references one or more elements whose text forms the label.</li>
+                                <li>
+                                    Prefer <code class="inline-code">aria-labelledby</code> when there is visible text on the screen.
+                                </li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            Example: icon-only button with aria-label
+                            <span class="badge-level">Example</span>
+                        </summary>
+                        <div class="details-body">
+                            <pre class="code-block"><code class="language-html">
+&lt;button type=&quot;button&quot; aria-label=&quot;Open navigation menu&quot;&gt;
+  &lt;span aria-hidden=&quot;true&quot;&gt;☰&lt;/span&gt;
+&lt;/button&gt;
+</code></pre>
+                            <p>
+                                Screen reader users hear “Open navigation menu”, not
+                                “☰”.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            Example: using aria-labelledby with visible text
+                            <span class="badge-level">Example</span>
+                        </summary>
+                        <div class="details-body">
+                            <pre class="code-block"><code class="language-html">
+&lt;h2 id=&quot;profile-heading&quot;&gt;User Profile&lt;/h2&gt;
+
+&lt;section aria-labelledby=&quot;profile-heading&quot;&gt;
+  &lt;p&gt;Profile details and preferences.&lt;/p&gt;
+&lt;/section&gt;
+</code></pre>
+                            <p>
+                                The section is labeled by the heading’s text. This
+                                pattern is also common with dialogs, groups, and
+                                complex widgets.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 13.3.3 aria-describedby -->
+                <section id="sec-13-3-describedby" class="mt-3">
+                    <h3 class="section-heading" style="font-size:1rem;">
+                        13.3.3 aria-describedby
+                    </h3>
+
+                    <details open>
+                        <summary>
+                            Providing extra descriptive context
+                            <span class="badge-level">Concept</span>
+                        </summary>
+                        <div class="details-body">
+                            <p>
+                                <code class="inline-code">aria-describedby</code>
+                                points to elements that offer <em>additional
+                                description</em>, not the main label. Common for form
+                                hints, error messages, and detailed instructions.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            Example: input with description and error
+                            <span class="badge-level">Example</span>
+                        </summary>
+                        <div class="details-body">
+                            <pre class="code-block"><code class="language-html">
+&lt;label for=&quot;email&quot;&gt;Email address&lt;/label&gt;
+&lt;input id=&quot;email&quot; name=&quot;email&quot; type=&quot;email&quot;
+       aria-describedby=&quot;email-hint email-error&quot; /&gt;
+
+&lt;p id=&quot;email-hint&quot;&gt;
+  We will never share your email with anyone else.
+&lt;/p&gt;
+
+&lt;p id=&quot;email-error&quot; role=&quot;alert&quot;&gt;
+  Please enter a valid email address.
+&lt;/p&gt;
+</code></pre>
+                            <p>
+                                A screen reader will announce: “Email address, edit,
+                                We will never share your email…, Please enter a valid
+                                email address”.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 13.3.4 Live Regions -->
+                <section id="sec-13-3-live" class="mt-3">
+                    <h3 class="section-heading" style="font-size:1rem;">
+                        13.3.4 Live regions and dynamic content
+                    </h3>
+
+                    <details open>
+                        <summary>
+                            Announcing dynamic changes
+                            <span class="badge-level">Concept</span>
+                        </summary>
+                        <div class="details-body">
+                            <p>
+                                Live regions let you notify screen reader users when
+                                content updates without moving focus.
+                            </p>
+                            <ul>
+                                <li><code class="inline-code">aria-live="polite"</code> — announce when convenient</li>
+                                <li><code class="inline-code">aria-live="assertive"</code> — interrupt immediately (use sparingly)</li>
+                                <li><code class="inline-code">role="status"</code> and <code class="inline-code">role="alert"</code> imply live behavior</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            Example: async status messages
+                            <span class="badge-level">Example + JS</span>
+                        </summary>
+                        <div class="details-body">
+                            <pre class="code-block"><code class="language-html">
+&lt;button id=&quot;saveBtn&quot;&gt;Save changes&lt;/button&gt;
+
+&lt;div id=&quot;status&quot; role=&quot;status&quot; aria-live=&quot;polite&quot;&gt;
+  &lt;!-- Status messages will appear here --&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+  const saveBtn = document.getElementById('saveBtn');
+  const status = document.getElementById('status');
+
+  saveBtn.addEventListener('click', () =&gt; {
+    status.textContent = 'Saving...';
+
+    setTimeout(() =&gt; {
+      status.textContent = 'Changes saved successfully.';
+    }, 1500);
+  });
+&lt;/script&gt;
+</code></pre>
+                            <p>
+                                Sighted users see the text change; screen reader users
+                                hear “Saving…” then “Changes saved successfully.”
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 13.3.5 ARIA States & Properties -->
+                <section id="sec-13-3-states" class="mt-3">
+                    <h3 class="section-heading" style="font-size:1rem;">
+                        13.3.5 ARIA states and properties
+                    </h3>
+
+                    <details open>
+                        <summary>
+                            Common ARIA states
+                            <span class="badge-level">Reference</span>
+                        </summary>
+                        <div class="details-body">
+                            <ul>
+                                <li><code class="inline-code">aria-expanded</code> — expanded/collapsed state of a control</li>
+                                <li><code class="inline-code">aria-pressed</code> — pressed state of toggle buttons</li>
+                                <li><code class="inline-code">aria-selected</code> — selected state in listbox, tabs, etc.</li>
+                                <li><code class="inline-code">aria-hidden</code> — whether the element is exposed to the accessibility tree</li>
+                                <li><code class="inline-code">aria-disabled</code> — unavailable but visible state</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            Example: custom accordion with aria-expanded
+                            <span class="badge-level">Example + JS</span>
+                        </summary>
+                        <div class="details-body">
+                            <pre class="code-block"><code class="language-html">
+&lt;button class=&quot;accordion-trigger&quot;
+        aria-expanded=&quot;false&quot;
+        aria-controls=&quot;panel-1&quot;
+        id=&quot;accordion-1&quot;&gt;
+  Accessibility FAQ
+&lt;/button&gt;
+
+&lt;div id=&quot;panel-1&quot; role=&quot;region&quot;
+     aria-labelledby=&quot;accordion-1&quot; hidden&gt;
+  &lt;p&gt;Here goes the answer about accessibility.&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+  const trigger = document.querySelector('.accordion-trigger');
+  const panel = document.getElementById('panel-1');
+
+  trigger.addEventListener('click', () =&gt; {
+    const isExpanded = trigger.getAttribute('aria-expanded') === 'true';
+    trigger.setAttribute('aria-expanded', String(!isExpanded));
+    panel.hidden = isExpanded; // hide if it was expanded, show otherwise
+  });
+&lt;/script&gt;
+</code></pre>
+                            <p>
+                                This pattern makes the state of the accordion
+                                accessible both visually and via assistive
+                                technologies.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+            </section>
+
+            <!-- SUMMARY / CHECKLIST -->
+            <section class="section-card">
+                <div class="section-kicker">Wrap-up</div>
+                <h2 class="section-heading">
+                    Checklist: Accessibility (WCAG + ARIA)
+                    <span class="section-label">Self-Audit</span>
+                </h2>
+
+                <details open class="mt-1">
+                    <summary>
+                        Quick self-check
+                        <span class="badge-level">Checklist</span>
+                    </summary>
+                    <div class="details-body">
+                        <ul>
+                            <li>Do all images have appropriate alt text?</li>
+                            <li>Is your heading structure logical and nested correctly?</li>
+                            <li>Are landmarks (&lt;header&gt;, &lt;nav&gt;, &lt;main&gt;, &lt;footer&gt;, etc.) used properly?</li>
+                            <li>Can every interactive component be reached and used via keyboard only?</li>
+                            <li>Is focus visible and managed when dialogs/overlays appear?</li>
+                            <li>Do custom components use appropriate ARIA roles, states, and properties?</li>
+                            <li>Have you tested with at least one screen reader and one automated tool?</li>
+                        </ul>
+                        <p class="mt-1">
+                            If you can answer “yes” to these, you are aligning with
+                            WCAG principles and building truly inclusive experiences.
+                        </p>
+                    </div>
+                </details>
+            </section>
+
+        </main> <!-- end content-area -->
+    </div> <!-- end note-container -->
+</div> <!-- end layout-wrapper -->
+
+<!-- JavaScript: Bootstrap + utilities + syntax highlighting -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Smooth scrolling for TOC links
+    document.querySelectorAll('a[href^="#"]').forEach(function (anchor) {
+        anchor.addEventListener("click", function (e) {
+            const targetId = this.getAttribute("href");
+            if (targetId.length > 1) {
+                e.preventDefault();
+                const target = document.querySelector(targetId);
+                if (target) {
+                    target.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+            }
+        });
+    });
+
+    // Expand / Collapse all <details>
+    const expandBtn = document.getElementById("expandAll");
+    const collapseBtn = document.getElementById("collapseAll");
+
+    if (expandBtn) {
+        expandBtn.addEventListener("click", function () {
+            document.querySelectorAll("details").forEach(function (d) {
+                d.open = true;
+            });
+        });
+    }
+
+    if (collapseBtn) {
+        collapseBtn.addEventListener("click", function () {
+            document.querySelectorAll("details").forEach(function (d) {
+                d.open = false;
+            });
+        });
+    }
+
+    // TOC search
+    const tocSearch = document.getElementById("tocSearch");
+    const tocList = document.getElementById("tocList");
+
+    if (tocSearch && tocList) {
+        tocSearch.addEventListener("input", function () {
+            const query = this.value.trim().toLowerCase();
+            const links = tocList.querySelectorAll(".toc-link");
+            links.forEach(function (link) {
+                const text = link.textContent.toLowerCase();
+                const li = link.closest("li");
+                if (!query || text.includes(query)) {
+                    li.style.display = "";
+                } else {
+                    li.style.display = "none";
+                }
+            });
+        });
+    }
+
+    // Simple "active" state for TOC when clicking
+    document.querySelectorAll(".toc-link").forEach(function (link) {
+        link.addEventListener("click", function () {
+            document.querySelectorAll(".toc-link.active").forEach(function (l) {
+                l.classList.remove("active");
+            });
+            this.classList.add("active");
+        });
+    });
+
+    // ==============
+    // SYNTAX HIGHLIGHTING (safe; no hl-tag leaks)
+    // ==============
+    function highlightHTMLCodeBlock(codeEl) {
+        let html = codeEl.innerHTML;
+
+        // Comments: &lt;!-- ... --&gt;
+        html = html.replace(
+            /(&lt;!--[\s\S]*?--&gt;)/g,
+            '<span class="hl-comment">$1</span>'
+        );
+
+        // Strings in attributes: "..."
+        html = html.replace(
+            /(&quot;[^&]*?&quot;)/g,
+            '<span class="hl-string">$1</span>'
+        );
+
+        // Tag opening with attributes: &lt;tag ...&gt;
+        html = html.replace(
+            /(&lt;\/?)([a-zA-Z0-9\-]+)((?:[^&]|&(?!gt;))*)&gt;/g,
+            function (match, open, tagName, rest) {
+                // Highlight attribute names
+                const highlightedRest = rest.replace(
+                    /([\s\t\r\n])([a-zA-Z_:][-a-zA-Z0-9_:.]*)(=)/g,
+                    '$1<span class="hl-attr">$2</span>$3'
+                );
+                return (
+                    open +
+                    '<span class="hl-tag">' +
+                    tagName +
+                    "</span>" +
+                    highlightedRest +
+                    "&gt;"
+                );
+            }
+        );
+
+        codeEl.innerHTML = html;
+    }
+
+    function highlightJSONCodeBlock(codeEl) {
+        let html = codeEl.innerHTML;
+
+        // Strings: "..."
+        html = html.replace(
+            /(&quot;[^&]*?&quot;)/g,
+            '<span class="hl-string">$1</span>'
+        );
+
+        // Keys: "key":
+        html = html.replace(
+            /(&quot;[^&]*?&quot;)(\s*:&nbsp;|\s*:)/g,
+            '<span class="hl-key">$1</span>$2'
+        );
+
+        // Numbers
+        html = html.replace(
+            /\b(-?\d+(\.\d+)?)\b/g,
+            '<span class="hl-number">$1</span>'
+        );
+
+        // Booleans and null
+        html = html.replace(
+            /\b(true|false|null)\b/g,
+            '<span class="hl-bool">$1</span>'
+        );
+
+        // Punctuation { } [ ] : ,
+        html = html.replace(
+            /([\{\}\[\]\:\,])/g,
+            '<span class="hl-punct">$1</span>'
+        );
+
+        codeEl.innerHTML = html;
+    }
+
+    // Apply highlighting
+    document
+        .querySelectorAll("pre.code-block code.language-html")
+        .forEach(function (codeEl) {
+            highlightHTMLCodeBlock(codeEl);
+        });
+
+    document
+        .querySelectorAll("pre.code-block code.language-jsonld")
+        .forEach(function (codeEl) {
+            highlightJSONCodeBlock(codeEl);
+        });
+});
+</script>
+</body>
+</html>

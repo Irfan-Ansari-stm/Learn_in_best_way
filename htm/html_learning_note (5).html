@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>2.1 Meta Information - Deep Learning Notes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg-main: #05080f;
+      --bg-sidebar: #0b111c;
+      --bg-card: #111927;
+      --bg-code: #050b12;
+      --border-soft: #1e2a38;
+      --accent-cyan: #4dd0e1;
+      --accent-amber: #ffca28;
+      --text-main: #e0e6f0;
+      --text-muted: #9aa4b3;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: radial-gradient(circle at top, #07101f 0, #05080f 45%, #020308 100%);
+      color: var(--text-main);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      scroll-behavior: smooth;
+    }
+
+    body { display: flex; }
+
+    .layout-wrapper {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 320px;
+      background: linear-gradient(180deg, #050b16 0, #05080f 40%, #020308 100%);
+      border-right: 1px solid var(--border-soft);
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      padding: 1.5rem 1.4rem;
+      overflow-y: auto;
+      z-index: 1000;
+    }
+
+    .sidebar::-webkit-scrollbar { width: 6px; }
+    .sidebar::-webkit-scrollbar-track { background: #05080f; }
+    .sidebar::-webkit-scrollbar-thumb { background: #1f2933; border-radius: 999px; }
+
+    .content {
+      margin-left: 320px;
+      flex: 1;
+      max-width: calc(100% - 320px);
+      padding: 1.8rem 2.2rem 2.4rem;
+      overflow-y: auto;
+    }
+
+    @media (max-width: 992px) {
+      .sidebar {
+        width: 260px;
+        transform: translateX(-100%);
+        transition: transform .25s ease-out;
+      }
+      .sidebar.open { transform: translateX(0); }
+      .content {
+        margin-left: 0;
+        max-width: 100%;
+        padding-top: 4.2rem;
+      }
+      .sidebar-toggle-btn { display: inline-flex !important; }
+    }
+
+    .sidebar-toggle-btn {
+      position: fixed;
+      top: .6rem;
+      left: .8rem;
+      z-index: 1100;
+      display: none;
+      border-radius: 999px;
+      padding: .25rem .7rem;
+      font-size: .8rem;
+    }
+
+    .brand-title {
+      font-size: 1.2rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .page-title {
+      font-size: 1.3rem;
+      margin-top: .4rem;
+      color: var(--accent-cyan);
+      font-weight: 600;
+    }
+
+    .badge-topic {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      padding: .18rem .55rem;
+      border-radius: 999px;
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .09em;
+      background: rgba(77, 208, 225, .1);
+      border: 1px solid rgba(77, 208, 225, .6);
+      color: var(--accent-cyan);
+    }
+
+    .badge-topic span { color: var(--accent-amber); }
+
+    .author-block {
+      margin-top: 1rem;
+      padding: .9rem 1rem;
+      border-radius: .8rem;
+      background: radial-gradient(circle at top left, rgba(77, 208, 225, .12), transparent 60%);
+      border: 1px solid rgba(31, 41, 55, .9);
+    }
+
+    .author-name { font-weight: 600; }
+    .author-meta { font-size: .78rem; color: var(--text-muted); }
+
+    .section-label {
+      text-transform: uppercase;
+      letter-spacing: .14em;
+      font-size: .7rem;
+      color: var(--text-muted);
+    }
+
+    .toc-title {
+      font-size: .85rem;
+      text-transform: uppercase;
+      letter-spacing: .16em;
+      color: var(--text-muted);
+      margin-bottom: .45rem;
+    }
+
+    #tocSearch {
+      background: #050a12;
+      border-color: #1e2936;
+      color: var(--text-main);
+      font-size: .85rem;
+    }
+    #tocSearch::placeholder { color: #616b78; }
+
+    #toc { list-style: none; padding-left: 0; margin: 0; }
+    #toc li { margin-bottom: .25rem; }
+
+    #toc a {
+      display: block;
+      padding: .35rem .55rem;
+      border-radius: .5rem;
+      font-size: .85rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      border: 1px solid transparent;
+    }
+    #toc a:hover {
+      background: rgba(77, 208, 225, .08);
+      color: var(--accent-cyan);
+      border-color: rgba(77, 208, 225, .4);
+    }
+    #toc a.active {
+      background: rgba(255, 202, 40, .1);
+      color: var(--accent-amber);
+      border-color: rgba(255, 202, 40, .6);
+    }
+
+    .sidebar-tools {
+      margin-top: 1rem;
+      display: flex;
+      gap: .5rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-pill {
+      border-radius: 999px;
+      font-size: .75rem;
+      padding: .15rem .7rem;
+      border-width: 1px;
+      display: inline-flex;
+      align-items: center;
+      gap: .25rem;
+    }
+
+    .btn-outline-cyan {
+      border-color: rgba(77, 208, 225, .6);
+      color: var(--accent-cyan);
+      background: transparent;
+    }
+    .btn-outline-cyan:hover {
+      background: rgba(77, 208, 225, .16);
+      color: var(--accent-cyan);
+    }
+
+    .btn-outline-amber {
+      border-color: rgba(255, 202, 40, .7);
+      color: var(--accent-amber);
+      background: transparent;
+    }
+    .btn-outline-amber:hover {
+      background: rgba(255, 202, 40, .14);
+      color: var(--accent-amber);
+    }
+
+    .btn-outline-light-soft {
+      border-color: #2a3442;
+      color: var(--text-muted);
+      background: transparent;
+    }
+    .btn-outline-light-soft:hover {
+      background: #101722;
+      color: var(--text-main);
+    }
+
+    .content-header {
+      border-bottom: 1px solid rgba(148, 163, 184, .15);
+      padding-bottom: .8rem;
+      margin-bottom: 1.6rem;
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .content-header h1 {
+      font-size: 1.5rem;
+      color: var(--accent-cyan);
+      margin: 0;
+    }
+
+    .content-subtitle {
+      font-size: .9rem;
+      color: var(--text-muted);
+      max-width: 40rem;
+    }
+
+    .difficulty-pill {
+      font-size: .78rem;
+      padding: .15rem .6rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, .6);
+      color: var(--text-muted);
+    }
+
+    .section-block {
+      margin-bottom: 2rem;
+      border-radius: 1rem;
+      background: radial-gradient(circle at top left, rgba(77, 208, 225, .09), transparent 55%);
+      border: 1px solid rgba(31, 41, 55, .9);
+      padding: 1.2rem 1.3rem 1.3rem;
+    }
+
+    .section-block.alt {
+      background: radial-gradient(circle at top left, rgba(255, 202, 40, .06), transparent 55%);
+    }
+
+    .section-block-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: .75rem;
+      margin-bottom: .7rem;
+    }
+
+    .section-index {
+      font-size: .8rem;
+      color: var(--accent-amber);
+      font-weight: 500;
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+      color: var(--accent-cyan);
+      margin: 0;
+    }
+
+    .section-meta {
+      font-size: .75rem;
+      color: var(--text-muted);
+    }
+
+    details {
+      background: #0a101a;
+      border-radius: .8rem;
+      margin-top: .7rem;
+      margin-bottom: .4rem;
+      border: 1px solid #1a2636;
+      padding: .4rem .9rem .7rem;
+    }
+
+    details[open] {
+      border-color: rgba(77, 208, 225, .6);
+      background: radial-gradient(circle at top left, rgba(77, 208, 225, .15), #070c14);
+    }
+
+    summary {
+      cursor: pointer;
+      list-style: none;
+      position: relative;
+      padding-right: 1.4rem;
+      font-size: .9rem;
+      color: var(--accent-cyan);
+      font-weight: 500;
+    }
+
+    summary::-webkit-details-marker { display: none; }
+
+    summary::after {
+      content: "▸";
+      position: absolute;
+      right: .1rem;
+      top: -.05rem;
+      font-size: .8rem;
+      color: var(--accent-amber);
+      transition: transform .18s ease-out;
+    }
+
+    details[open] summary::after { transform: rotate(90deg); }
+
+    details p, details ul, details ol {
+      margin-top: .45rem;
+      font-size: .9rem;
+      color: var(--text-main);
+    }
+
+    details ul { padding-left: 1.2rem; }
+
+    pre {
+      background: var(--bg-code);
+      border-radius: .7rem;
+      padding: .75rem .9rem;
+      border: 1px solid #1b2838;
+      overflow-x: auto;
+      font-size: .86rem;
+      line-height: 1.5;
+      margin-bottom: .4rem;
+    }
+
+    pre::-webkit-scrollbar { height: 6px; }
+    pre::-webkit-scrollbar-track { background: #05080f; }
+    pre::-webkit-scrollbar-thumb { background: #263241; border-radius: 999px; }
+
+    code {
+      font-family: "JetBrains Mono", "Fira Code", Menlo, Monaco, Consolas, monospace;
+      color: var(--accent-amber);
+      white-space: pre;
+    }
+
+    .code-caption {
+      font-size: .75rem;
+      color: var(--text-muted);
+      margin-bottom: .2rem;
+    }
+
+    /* SAFE syntax highlighting – NO HTML TAG HIGHLIGHTING */
+    .hl-js-keyword { color: #ff8fb7; }
+    .hl-js-func    { color: #9ae6ff; }
+    .hl-css-prop   { color: #8bd8ff; }
+    .hl-css-value  { color: #c5ff8a; }
+    .hl-comment    { color: #607089; font-style: italic; }
+
+    .inline-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: .25rem;
+      padding: .1rem .45rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, .45);
+      font-size: .72rem;
+      color: var(--text-muted);
+    }
+
+    .callout {
+      background: rgba(15, 23, 42, .9);
+      border-radius: .75rem;
+      padding: .6rem .7rem;
+      border: 1px solid #243143;
+      font-size: .86rem;
+      color: var(--text-muted);
+    }
+
+    .callout strong { color: var(--accent-cyan); }
+    .text-amber { color: var(--accent-amber); }
+    .text-cyan { color: var(--accent-cyan); }
+
+  </style>
+</head>
+
+<body>
+
+<button class="btn btn-dark btn-sm sidebar-toggle-btn" id="sidebarToggle">
+  ☰ TOC
+</button>
+
+<div class="layout-wrapper">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="mb-3">
+      <div class="brand-title">Deep Web Foundations</div>
+      <div class="page-title">2.1 Meta Information</div>
+      <div class="mt-1">
+        <span class="badge-topic">
+          ● HTML Head
+          <span>●</span>
+          Meta &amp; SEO
+        </span>
+      </div>
+    </div>
+
+    <div class="author-block">
+      <div class="author-name">AI Tutor for Irfan</div>
+      <div class="author-meta">
+        From college level to master/PhD-level<br>
+        understanding of meta, SEO &amp; social cards.
+      </div>
+    </div>
+
+    <div class="mt-3">
+      <div class="section-label mb-1">Study Controls</div>
+      <div class="sidebar-tools">
+        <button class="btn btn-outline-cyan btn-pill" id="expandAllBtn">⤢ Expand all</button>
+        <button class="btn btn-outline-amber btn-pill" id="collapseAllBtn">⤡ Collapse all</button>
+        <button class="btn btn-outline-light-soft btn-pill" id="highlightToggleBtn">✨ Syntax hi-lite</button>
+      </div>
+    </div>
+
+    <div class="mt-4">
+      <div class="toc-title">Table of Contents</div>
+      <input id="tocSearch" type="text" class="form-control form-control-sm mb-2"
+             placeholder="Filter (title, OG, viewport, SEO)...">
+      <ul id="toc">
+        <li><a href="#sec-overview" data-scroll>0. Why meta information matters</a></li>
+        <li><a href="#sec-title" data-scroll>&lt;title&gt; element</a></li>
+        <li><a href="#sec-meta-basic" data-scroll>Meta: description, keywords, author</a></li>
+        <li><a href="#sec-viewport" data-scroll>Viewport meta (responsive design)</a></li>
+        <li><a href="#sec-social" data-scroll>Social meta: Open Graph &amp; Twitter</a></li>
+        <li><a href="#sec-seo" data-scroll>SEO-friendly meta practices</a></li>
+      </ul>
+    </div>
+
+    <div class="mt-4">
+      <div class="section-label mb-1">Reading Tip</div>
+      <p class="author-meta mb-1">
+        First read all <span class="text-amber">Executive summaries</span>, then dive into
+        detailed syntax &amp; examples during implementation or research.
+      </p>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="content">
+
+    <header class="content-header">
+      <div>
+        <h1>2.1 Meta Information (Head Section)</h1>
+        <div class="content-subtitle">
+          Meta information in HTML is not directly visible on the page, but it heavily influences
+          how browsers render, how search engines index, and how social platforms preview your site.
+          This note builds a deep mental model of <code>&lt;title&gt;</code>, core
+          <code>&lt;meta&gt;</code> tags, viewport, Open Graph, Twitter Cards, and SEO-friendly patterns.
+        </div>
+      </div>
+      <div class="d-flex flex-column align-items-start gap-1">
+        <span class="difficulty-pill">
+          Level: College → Advanced (Master/PhD mindset)
+        </span>
+        <span class="difficulty-pill">
+          Focus: Information retrieval, SERP snippets, preview cards, responsive behavior
+        </span>
+      </div>
+    </header>
+
+    <!-- 0. OVERVIEW -->
+    <section id="sec-overview" class="section-block alt">
+      <div class="section-block-header">
+        <div>
+          <div class="section-index">0 · Big Picture</div>
+          <h2 class="section-title">Why meta information is strategically important</h2>
+        </div>
+        <div class="section-meta">
+          You are not writing meta tags for the browser only, but for search engines, social graphs &amp; users.
+        </div>
+      </div>
+
+      <details>
+        <summary>Executive summary</summary>
+        <p>
+          Meta information in the <code>&lt;head&gt;</code> of an HTML document plays three main roles:
+        </p>
+        <ul>
+          <li><strong>Rendering:</strong> viewport, charset, and compatibility meta tags influence layout and character display.</li>
+          <li><strong>Information retrieval &amp; ranking:</strong> title and description heavily affect how your page appears on search engines.</li>
+          <li><strong>Social embedding:</strong> Open Graph &amp; Twitter Card tags define link previews on platforms like WhatsApp, X (Twitter), Facebook, LinkedIn.</li>
+        </ul>
+        <p>
+          At a research mindset level, you can see these tags as <em>metadata features</em> that feed into
+          ranking models (IR/ML) and social platforms’ preview generation systems.
+        </p>
+      </details>
+    </section>
+
+    <!-- 1. TITLE ELEMENT -->
+    <section id="sec-title" class="section-block">
+      <div class="section-block-header">
+        <div>
+          <div class="section-index">1 · Title</div>
+          <h2 class="section-title">&lt;title&gt; element</h2>
+        </div>
+        <div class="section-meta">
+          The single most important on-page text signal for search engines.
+        </div>
+      </div>
+
+      <details>
+        <summary>Executive summary</summary>
+        <p>
+          The <code>&lt;title&gt;</code> element:
+        </p>
+        <ul>
+          <li>Appears in the browser tab and bookmarks.</li>
+          <li>Is usually used as the main blue link text on search results pages.</li>
+          <li>Should be concise, descriptive, and unique for each page.</li>
+        </ul>
+        <p>
+          Think of it as a one-line abstract of the page, optimized for both <strong>humans</strong> and
+          <strong>ranking algorithms</strong>.
+        </p>
+      </details>
+
+      <details>
+        <summary>Syntax &amp; examples</summary>
+        <p class="code-caption">Basic syntax</p>
+        <pre><code>&lt;head&gt;
+  &lt;title&gt;HTML Meta Tags: Complete Guide&lt;/title&gt;
+&lt;/head&gt;</code></pre>
+
+        <p class="code-caption">SEO-oriented but user-friendly title</p>
+        <pre><code>&lt;title&gt;
+  Learn HTML Meta Tags (Title, Description, Open Graph) - Irfan Academy
+&lt;/title&gt;</code></pre>
+
+        <p>
+          Here we combine:
+        </p>
+        <ul>
+          <li>Primary topic: “HTML Meta Tags”</li>
+          <li>Supporting keywords: “Title, Description, Open Graph”</li>
+          <li>Brand: “Irfan Academy”</li>
+        </ul>
+      </details>
+
+      <details>
+        <summary>Best practices (short, unique, meaningful)</summary>
+        <ul>
+          <li>Target length: roughly <strong>40–60 characters</strong> (not a hard rule, but good range).</li>
+          <li>Important terms near the beginning.</li>
+          <li>No keyword stuffing (repeating the same term unnaturally).</li>
+          <li>Each page should have a unique <code>&lt;title&gt;</code>.</li>
+        </ul>
+        <div class="callout">
+          <strong>Research angle:</strong> Many ranking models treat the title as a
+          high-weight field in the scoring function (like a “title field” in BM25F or similar
+          IR models), so clarity and relevance here are crucial.
+        </div>
+      </details>
+    </section>
+
+    <!-- 2. BASIC META TAGS -->
+    <section id="sec-meta-basic" class="section-block alt">
+      <div class="section-block-header">
+        <div>
+          <div class="section-index">2 · Core Meta Tags</div>
+          <h2 class="section-title">Meta: description, keywords, author</h2>
+        </div>
+        <div class="section-meta">
+          Classic meta tags: some still very relevant, some mostly historical.
+        </div>
+      </div>
+
+      <details>
+        <summary>Executive summary</summary>
+        <p>
+          Common meta tags in many projects:
+        </p>
+        <ul>
+          <li><code>description</code> – short summary of the page, often used as the search snippet.</li>
+          <li><code>keywords</code> – historical; modern search engines mostly ignore it.</li>
+          <li><code>author</code> – indicates content author; useful for documentation, blogs, academic work.</li>
+        </ul>
+      </details>
+
+      <details>
+        <summary>Syntax: description, keywords, author</summary>
+        <p class="code-caption">Example block</p>
+        <pre><code>&lt;head&gt;
+  &lt;meta name=&quot;description&quot;
+        content=&quot;Deep guide to HTML meta tags including title, description, Open Graph and Twitter Cards.&quot; /&gt;
+
+  &lt;meta name=&quot;keywords&quot;
+        content=&quot;HTML, meta tags, title, description, Open Graph, Twitter Cards, SEO&quot; /&gt;
+
+  &lt;meta name=&quot;author&quot; content=&quot;Irfan&quot; /&gt;
+&lt;/head&gt;</code></pre>
+      </details>
+
+      <details>
+        <summary>Deep explanation &amp; practical view</summary>
+        <ul>
+          <li>
+            <strong>description:</strong> Search engines may use this as the snippet text,
+            but they often override it if they find a better matching fragment on the page.
+          </li>
+          <li>
+            <strong>keywords:</strong> Largely ignored by modern engines due to abuse
+            (keyword stuffing). Can still be used for internal search or legacy systems.
+          </li>
+          <li>
+            <strong>author:</strong> Useful for attribution, multi-author blogs, or academic publishing.
+          </li>
+        </ul>
+        <div class="callout">
+          <strong>Good practice:</strong> always write a human-friendly, truthful
+          <code>description</code> that genuinely reflects the content; avoid treating it
+          as a “hack” to trick search engines.
+        </div>
+      </details>
+    </section>
+
+    <!-- 3. VIEWPORT META TAG -->
+    <section id="sec-viewport" class="section-block">
+      <div class="section-block-header">
+        <div>
+          <div class="section-index">3 · Responsive</div>
+          <h2 class="section-title">Viewport meta tag for responsive design</h2>
+        </div>
+        <div class="section-meta">
+          The bridge between CSS layout and real device screens.
+        </div>
+      </div>
+
+      <details>
+        <summary>Executive summary</summary>
+        <p>
+          The viewport meta tag controls how a page is scaled and sized on mobile devices.
+          Without it, many mobile browsers render as if on a “zoomed-out desktop screen”.
+        </p>
+      </details>
+
+      <details>
+        <summary>Essential syntax</summary>
+        <p class="code-caption">Standard responsive viewport tag</p>
+        <pre><code>&lt;meta name=&quot;viewport&quot;
+      content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;</code></pre>
+
+        <ul>
+          <li><code>width=device-width</code> → match layout width to actual device width in CSS pixels.</li>
+          <li><code>initial-scale=1.0</code> → do not zoom in or out by default.</li>
+        </ul>
+      </details>
+
+      <details>
+        <summary>Advanced notes &amp; common mistakes</summary>
+        <ul>
+          <li>Avoid disabling zoom completely (e.g., <code>user-scalable=no</code>) – harms accessibility.</li>
+          <li>Combined with responsive CSS (flexbox, grid, media queries), this gives a true mobile-first layout.</li>
+          <li>On high-DPI devices, the browser maps device pixels to CSS pixels using the devicePixelRatio.</li>
+        </ul>
+        <div class="callout">
+          <strong>Research angle:</strong> From a human–computer interaction view, viewport
+          configuration influences readability, interaction comfort, and perceived performance
+          on small screens.
+        </div>
+      </details>
+    </section>
+
+    <!-- 4. SOCIAL META TAGS -->
+    <section id="sec-social" class="section-block alt">
+      <div class="section-block-header">
+        <div>
+          <div class="section-index">4 · Social Graph</div>
+          <h2 class="section-title">Social media meta tags (Open Graph &amp; Twitter Cards)</h2>
+        </div>
+        <div class="section-meta">
+          Controlling how your page looks when shared on WhatsApp, X, Facebook, LinkedIn, etc.
+        </div>
+      </div>
+
+      <details>
+        <summary>Executive summary</summary>
+        <p>
+          Social platforms do not render your full page; they read specific meta tags to create
+          a preview card:
+        </p>
+        <ul>
+          <li><strong>Open Graph (OG):</strong> originally from Facebook, used widely.</li>
+          <li><strong>Twitter Cards:</strong> Twitter/X-specific tags, but very similar structure.</li>
+        </ul>
+      </details>
+
+      <details>
+        <summary>Core Open Graph tags</summary>
+        <p class="code-caption">Typical OG block</p>
+        <pre><code>&lt;head&gt;
+  &lt;meta property=&quot;og:title&quot; content=&quot;HTML Meta Tags: Complete Guide&quot; /&gt;
+  &lt;meta property=&quot;og:description&quot;
+        content=&quot;Learn how to use HTML meta tags for SEO, social sharing, and responsive design.&quot; /&gt;
+  &lt;meta property=&quot;og:type&quot; content=&quot;article&quot; /&gt;
+  &lt;meta property=&quot;og:url&quot; content=&quot;https://example.com/html-meta-guide&quot; /&gt;
+  &lt;meta property=&quot;og:image&quot;
+        content=&quot;https://example.com/assets/meta-cover.png&quot; /&gt;
+&lt;/head&gt;</code></pre>
+
+        <ul>
+          <li><code>og:title</code> – title for the social card.</li>
+          <li><code>og:description</code> – short summary.</li>
+          <li><code>og:type</code> – e.g., <code>website</code>, <code>article</code>, <code>video</code>.</li>
+          <li><code>og:url</code> – canonical URL of the page.</li>
+          <li><code>og:image</code> – URL of preview image (should be absolute).</li>
+        </ul>
+      </details>
+
+      <details>
+        <summary>Twitter Cards</summary>
+        <p class="code-caption">Common Twitter Card tags</p>
+        <pre><code>&lt;head&gt;
+  &lt;meta name=&quot;twitter:card&quot; content=&quot;summary_large_image&quot; /&gt;
+  &lt;meta name=&quot;twitter:title&quot;
+        content=&quot;HTML Meta Tags: Complete Guide&quot; /&gt;
+  &lt;meta name=&quot;twitter:description&quot;
+        content=&quot;A deep, practical guide to HTML meta tags for SEO and social platforms.&quot; /&gt;
+  &lt;meta name=&quot;twitter:image&quot;
+        content=&quot;https://example.com/assets/meta-cover-twitter.png&quot; /&gt;
+  &lt;meta name=&quot;twitter:site&quot; content=&quot;@YourHandle&quot; /&gt;
+&lt;/head&gt;</code></pre>
+
+        <ul>
+          <li><code>twitter:card</code> – type of card (e.g., <code>summary</code>, <code>summary_large_image</code>).</li>
+          <li><code>twitter:title</code>, <code>twitter:description</code>, <code>twitter:image</code> – similar to OG.</li>
+          <li><code>twitter:site</code> – your account handle, useful for branding.</li>
+        </ul>
+      </details>
+
+      <details>
+        <summary>Practical notes &amp; debugging</summary>
+        <ul>
+          <li>Use absolute URLs for <code>og:url</code> and <code>og:image</code>.</li>
+          <li>Use platform tools to debug:
+            <ul>
+              <li>Facebook Sharing Debugger</li>
+              <li>Twitter Card Validator</li>
+            </ul>
+          </li>
+          <li>Keep OG/Twitter titles &amp; descriptions aligned with your main title/description.</li>
+        </ul>
+        <div class="callout">
+          <strong>UX &amp; growth view:</strong> High-quality social previews can significantly
+          improve click-through rates when links are shared in chats and feeds.
+        </div>
+      </details>
+    </section>
+
+    <!-- 5. SEO-FRIENDLY META PRACTICES -->
+    <section id="sec-seo" class="section-block">
+      <div class="section-block-header">
+        <div>
+          <div class="section-index">5 · SEO Practices</div>
+          <h2 class="section-title">SEO-friendly meta practices</h2>
+        </div>
+        <div class="section-meta">
+          Turning meta tags into a coherent information signal.
+        </div>
+      </div>
+
+      <details>
+        <summary>Executive summary</summary>
+        <p>
+          SEO-friendly meta is not about tricks; it's about providing clean, consistent,
+          high-quality signals:
+        </p>
+        <ul>
+          <li>Descriptive, unique titles.</li>
+          <li>Honest, useful descriptions.</li>
+          <li>Consistent URLs and canonicalization (if needed).</li>
+          <li>Social tags that match on-page content.</li>
+        </ul>
+      </details>
+
+      <details>
+        <summary>Example: full &lt;head&gt; for a real page</summary>
+        <p class="code-caption">Putting it all together</p>
+        <pre><code>&lt;head&gt;
+  &lt;meta charset=&quot;UTF-8&quot; /&gt;
+  &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+
+  &lt;title&gt;HTML Meta Tags: Complete Guide for SEO &amp; Social&lt;/title&gt;
+
+  &lt;meta name=&quot;description&quot;
+        content=&quot;Deep, practical guide to HTML meta tags: title, description, Open Graph, Twitter Cards, and responsive viewport.&quot; /&gt;
+  &lt;meta name=&quot;author&quot; content=&quot;Irfan&quot; /&gt;
+
+  &lt;!-- Open Graph --&gt;
+  &lt;meta property=&quot;og:title&quot; content=&quot;HTML Meta Tags: Complete Guide&quot; /&gt;
+  &lt;meta property=&quot;og:description&quot;
+        content=&quot;Learn how meta tags affect SEO, social previews, and mobile rendering.&quot; /&gt;
+  &lt;meta property=&quot;og:type&quot; content=&quot;article&quot; /&gt;
+  &lt;meta property=&quot;og:url&quot; content=&quot;https://example.com/html-meta-guide&quot; /&gt;
+  &lt;meta property=&quot;og:image&quot;
+        content=&quot;https://example.com/assets/html-meta-cover.png&quot; /&gt;
+
+  &lt;!-- Twitter Card --&gt;
+  &lt;meta name=&quot;twitter:card&quot; content=&quot;summary_large_image&quot; /&gt;
+  &lt;meta name=&quot;twitter:title&quot;
+        content=&quot;HTML Meta Tags: Complete Guide&quot; /&gt;
+  &lt;meta name=&quot;twitter:description&quot;
+        content=&quot;A deep guide to HTML meta tags for SEO and social platforms.&quot; /&gt;
+  &lt;meta name=&quot;twitter:image&quot;
+        content=&quot;https://example.com/assets/html-meta-cover-twitter.png&quot; /&gt;
+  &lt;meta name=&quot;twitter:site&quot; content=&quot;@IrfanDev&quot; /&gt;
+&lt;/head&gt;</code></pre>
+      </details>
+
+      <details>
+        <summary>Conceptual checklist (for serious projects)</summary>
+        <pre><code>- Does every page have a unique &lt;title&gt;?
+- Does every important page have a helpful meta description?
+- Is viewport meta correctly set for responsive design?
+- Are Open Graph/Twitter tags set on pages likely to be shared?
+- Are meta tags consistent with on-page content (no clickbait mismatch)?</code></pre>
+        <div class="callout">
+          <strong>Master/PhD perspective:</strong>
+          you can think of meta tags as manually curated features for the
+          information retrieval and recommendation systems that operate on your site.
+          High signal-to-noise ratio here improves alignment between your intentions
+          and how algorithms interpret your pages.
+        </div>
+      </details>
+    </section>
+
+  </main>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  // Sidebar toggle (mobile)
+  const sidebar = document.getElementById("sidebar");
+  const sidebarToggle = document.getElementById("sidebarToggle");
+
+  sidebarToggle.addEventListener("click", () => {
+    sidebar.classList.toggle("open");
+  });
+
+  // Smooth scroll for TOC links
+  document.querySelectorAll("#toc a[data-scroll]").forEach(link => {
+    link.addEventListener("click", function (e) {
+      e.preventDefault();
+      const targetId = this.getAttribute("href").substring(1);
+      const target = document.getElementById(targetId);
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+      document.querySelectorAll("#toc a").forEach(a => a.classList.remove("active"));
+      this.classList.add("active");
+      if (window.innerWidth <= 992) {
+        sidebar.classList.remove("open");
+      }
+    });
+  });
+
+  // Expand / collapse all
+  document.getElementById("expandAllBtn").addEventListener("click", () => {
+    document.querySelectorAll("details").forEach(d => d.open = true);
+  });
+  document.getElementById("collapseAllBtn").addEventListener("click", () => {
+    document.querySelectorAll("details").forEach(d => d.open = false);
+  });
+
+  // TOC search
+  const tocSearch = document.getElementById("tocSearch");
+  tocSearch.addEventListener("input", function () {
+    const term = this.value.trim().toLowerCase();
+    document.querySelectorAll("#toc li").forEach(li => {
+      const text = li.textContent.toLowerCase();
+      li.style.display = text.includes(term) ? "" : "none";
+    });
+  });
+
+  // ==== SAFE SIMPLE SYNTAX HIGHLIGHTING (NO HTML TAGS TOUCHED) ====
+  let highlightEnabled = true;
+  const highlightToggleBtn = document.getElementById("highlightToggleBtn");
+
+  // Store original text
+  document.querySelectorAll("pre code").forEach(code => {
+    code.dataset.originalText = code.innerHTML;
+  });
+
+  function applySimpleHighlighting() {
+    document.querySelectorAll("pre code").forEach(code => {
+      if (code.dataset.highlighted === "true") return;
+      let text = code.dataset.originalText; // keep original entities
+
+      // Highlight JS keywords
+      text = text.replace(/\b(const|let|var|function|return|if|else|for|while|async|await|class|new)\b/g,
+        '<span class="hl-js-keyword">$1</span>');
+
+      // Highlight JS-like function names (foo())
+      text = text.replace(/([a-zA-Z_$][a-zA-Z0-9_$]*)\s*(?=\()/g,
+        '<span class="hl-js-func">$1</span>');
+
+      // Highlight CSS property: value;  (very simple heuristic)
+      text = text.replace(/([a-zA-Z-]+)\s*:\s*([^;]+);/g,
+        '<span class="hl-css-prop">$1</span>: <span class="hl-css-value">$2</span>;');
+
+      // Simple HTML-style comments, but we don't touch tags like &lt;ul&gt;
+      text = text.replace(/(&lt;!--[\s\S]*?--&gt;)/g,
+        '<span class="hl-comment">$1</span>');
+
+      code.innerHTML = text;
+      code.dataset.highlighted = "true";
+    });
+  }
+
+  function clearSimpleHighlighting() {
+    document.querySelectorAll("pre code").forEach(code => {
+      if (code.dataset.originalText) {
+        code.innerHTML = code.dataset.originalText;
+        code.dataset.highlighted = "false";
+      }
+    });
+  }
+
+  // Initial highlight
+  applySimpleHighlighting();
+
+  highlightToggleBtn.addEventListener("click", () => {
+    highlightEnabled = !highlightEnabled;
+    if (highlightEnabled) {
+      applySimpleHighlighting();
+      highlightToggleBtn.textContent = "✨ Syntax hi-lite";
+    } else {
+      clearSimpleHighlighting();
+      highlightToggleBtn.textContent = "✖ Plain code";
+    }
+  });
+</script>
+
+</body>
+</html>

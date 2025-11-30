@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Module 4 – Lists & Navigation | Deep HTML Notes</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <!-- Bootstrap -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+
+  <style>
+    :root {
+      --bg-main: #05080f;
+      --bg-sidebar: #0b111c;
+      --bg-card: #111927;
+      --bg-code: #050b12;
+      --border-soft: #1e2a38;
+      --accent-cyan: #4dd0e1;
+      --accent-amber: #ffca28;
+      --text-main: #e0e6f0;
+      --text-muted: #9aa4b3;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background: radial-gradient(circle at top, #07101f 0, #05080f 45%, #020308 100%);
+      color: var(--text-main);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      scroll-behavior: smooth;
+    }
+
+    body { display: flex; }
+
+    .layout-wrapper {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 320px;
+      background: linear-gradient(180deg, #050b16 0, #05080f 40%, #020308 100%);
+      border-right: 1px solid var(--border-soft);
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      padding: 1.5rem 1.4rem;
+      overflow-y: auto;
+      z-index: 1000;
+    }
+
+    .sidebar::-webkit-scrollbar { width: 6px; }
+    .sidebar::-webkit-scrollbar-track { background: #05080f; }
+    .sidebar::-webkit-scrollbar-thumb { background: #1f2933; border-radius: 999px; }
+
+    .content {
+      margin-left: 320px;
+      flex: 1;
+      max-width: calc(100% - 320px);
+      padding: 1.8rem 2.2rem 2.4rem;
+      overflow-y: auto;
+    }
+
+    @media (max-width: 992px) {
+      .sidebar {
+        width: 260px;
+        transform: translateX(-100%);
+        transition: transform .25s ease-out;
+      }
+      .sidebar.open { transform: translateX(0); }
+      .content {
+        margin-left: 0;
+        max-width: 100%;
+        padding-top: 4.2rem;
+      }
+      .sidebar-toggle-btn { display: inline-flex !important; }
+    }
+
+    .sidebar-toggle-btn {
+      position: fixed;
+      top: .6rem;
+      left: .8rem;
+      z-index: 1100;
+      display: none;
+      border-radius: 999px;
+      padding: .25rem .7rem;
+      font-size: .8rem;
+    }
+
+    .brand-title {
+      font-size: 1.2rem;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .page-title {
+      font-size: 1.3rem;
+      margin-top: .4rem;
+      color: var(--accent-cyan);
+      font-weight: 600;
+    }
+
+    .badge-topic {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      padding: .18rem .55rem;
+      border-radius: 999px;
+      font-size: .72rem;
+      text-transform: uppercase;
+      letter-spacing: .09em;
+      background: rgba(77, 208, 225, .1);
+      border: 1px solid rgba(77, 208, 225, .6);
+      color: var(--accent-cyan);
+    }
+
+    .badge-topic span { color: var(--accent-amber); }
+
+    .author-block {
+      margin-top: 1rem;
+      padding: .9rem 1rem;
+      border-radius: .8rem;
+      background: radial-gradient(circle at top left, rgba(77, 208, 225, .12), transparent 60%);
+      border: 1px solid rgba(31, 41, 55, .9);
+    }
+
+    .author-name { font-weight: 600; }
+    .author-meta { font-size: .78rem; color: var(--text-muted); }
+
+    .section-label {
+      text-transform: uppercase;
+      letter-spacing: .14em;
+      font-size: .7rem;
+      color: var(--text-muted);
+    }
+
+    .toc-title {
+      font-size: .85rem;
+      text-transform: uppercase;
+      letter-spacing: .16em;
+      color: var(--text-muted);
+      margin-bottom: .45rem;
+    }
+
+    #tocSearch {
+      background: #050a12;
+      border-color: #1e2936;
+      color: var(--text-main);
+      font-size: .85rem;
+    }
+    #tocSearch::placeholder { color: #616b78; }
+
+    #toc { list-style: none; padding-left: 0; margin: 0; }
+    #toc li { margin-bottom: .25rem; }
+
+    #toc a {
+      display: block;
+      padding: .35rem .55rem;
+      border-radius: .5rem;
+      font-size: .85rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      border: 1px solid transparent;
+    }
+    #toc a:hover {
+      background: rgba(77, 208, 225, .08);
+      color: var(--accent-cyan);
+      border-color: rgba(77, 208, 225, .4);
+    }
+    #toc a.active {
+      background: rgba(255, 202, 40, .1);
+      color: var(--accent-amber);
+      border-color: rgba(255, 202, 40, .6);
+    }
+
+    .sidebar-tools {
+      margin-top: 1rem;
+      display: flex;
+      gap: .5rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-pill {
+      border-radius: 999px;
+      font-size: .75rem;
+      padding: .15rem .7rem;
+      border-width: 1px;
+      display: inline-flex;
+      align-items: center;
+      gap: .25rem;
+    }
+
+    .btn-outline-cyan {
+      border-color: rgba(77, 208, 225, .6);
+      color: var(--accent-cyan);
+      background: transparent;
+    }
+    .btn-outline-cyan:hover {
+      background: rgba(77, 208, 225, .16);
+      color: var(--accent-cyan);
+    }
+
+    .btn-outline-amber {
+      border-color: rgba(255, 202, 40, .7);
+      color: var(--accent-amber);
+      background: transparent;
+    }
+    .btn-outline-amber:hover {
+      background: rgba(255, 202, 40, .14);
+      color: var(--accent-amber);
+    }
+
+    .btn-outline-light-soft {
+      border-color: #2a3442;
+      color: var(--text-muted);
+      background: transparent;
+    }
+    .btn-outline-light-soft:hover {
+      background: #101722;
+      color: var(--text-main);
+    }
+
+    .content-header {
+      border-bottom: 1px solid rgba(148, 163, 184, .15);
+      padding-bottom: .8rem;
+      margin-bottom: 1.6rem;
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .content-header h1 {
+      font-size: 1.5rem;
+      color: var(--accent-cyan);
+      margin: 0;
+    }
+
+    .content-subtitle {
+      font-size: .9rem;
+      color: var(--text-muted);
+      max-width: 40rem;
+    }
+
+    .difficulty-pill {
+      font-size: .78rem;
+      padding: .15rem .6rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, .6);
+      color: var(--text-muted);
+    }
+
+    .section-block {
+      margin-bottom: 2rem;
+      border-radius: 1rem;
+      background: radial-gradient(circle at top left, rgba(77, 208, 225, .09), transparent 55%);
+      border: 1px solid rgba(31, 41, 55, .9);
+      padding: 1.2rem 1.3rem 1.3rem;
+    }
+
+    .section-block.alt {
+      background: radial-gradient(circle at top left, rgba(255, 202, 40, .06), transparent 55%);
+    }
+
+    .section-block-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: .75rem;
+      margin-bottom: .7rem;
+    }
+
+    .section-index {
+      font-size: .8rem;
+      color: var(--accent-amber);
+      font-weight: 500;
+    }
+
+    .section-title {
+      font-size: 1.1rem;
+      color: var(--accent-cyan);
+      margin: 0;
+    }
+
+    .section-meta {
+      font-size: .75rem;
+      color: var(--text-muted);
+    }
+
+    details {
+      background: #0a101a;
+      border-radius: .8rem;
+      margin-top: .7rem;
+      margin-bottom: .4rem;
+      border: 1px solid #1a2636;
+      padding: .4rem .9rem .7rem;
+    }
+
+    details[open] {
+      border-color: rgba(77, 208, 225, .6);
+      background: radial-gradient(circle at top left, rgba(77, 208, 225, .15), #070c14);
+    }
+
+    summary {
+      cursor: pointer;
+      list-style: none;
+      position: relative;
+      padding-right: 1.4rem;
+      font-size: .9rem;
+      color: var(--accent-cyan);
+      font-weight: 500;
+    }
+
+    summary::-webkit-details-marker { display: none; }
+
+    summary::after {
+      content: "▸";
+      position: absolute;
+      right: .1rem;
+      top: -.05rem;
+      font-size: .8rem;
+      color: var(--accent-amber);
+      transition: transform .18s ease-out;
+    }
+
+    details[open] summary::after { transform: rotate(90deg); }
+
+    details p, details ul, details ol {
+      margin-top: .45rem;
+      font-size: .9rem;
+      color: var(--text-main);
+    }
+
+    details ul, details ol { padding-left: 1.2rem; }
+
+    pre {
+      background: var(--bg-code);
+      border-radius: .7rem;
+      padding: .75rem .9rem;
+      border: 1px solid #1b2838;
+      overflow-x: auto;
+      font-size: .86rem;
+      line-height: 1.5;
+      margin-bottom: .4rem;
+    }
+
+    pre::-webkit-scrollbar { height: 6px; }
+    pre::-webkit-scrollbar-track { background: #05080f; }
+    pre::-webkit-scrollbar-thumb { background: #263241; border-radius: 999px; }
+
+    code {
+      font-family: "JetBrains Mono", "Fira Code", Menlo, Monaco, Consolas, monospace;
+      color: var(--accent-amber);
+      white-space: pre;
+    }
+
+    .code-caption {
+      font-size: .75rem;
+      color: var(--text-muted);
+      margin-bottom: .2rem;
+    }
+
+    /* SAFE syntax highlight – NO HTML TAG WRAPPING */
+    .hl-js-keyword { color: #ff8fb7; }
+    .hl-js-func    { color: #9ae6ff; }
+    .hl-css-prop   { color: #8bd8ff; }
+    .hl-css-value  { color: #c5ff8a; }
+    .hl-comment    { color: #607089; font-style: italic; }
+
+    .inline-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: .25rem;
+      padding: .1rem .45rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, .45);
+      font-size: .72rem;
+      color: var(--text-muted);
+    }
+
+    .callout {
+      background: rgba(15, 23, 42, .9);
+      border-radius: .75rem;
+      padding: .6rem .7rem;
+      border: 1px solid #243143;
+      font-size: .86rem;
+      color: var(--text-muted);
+    }
+
+    .callout strong { color: var(--accent-cyan); }
+    .text-amber { color: var(--accent-amber); }
+    .text-cyan  { color: var(--accent-cyan); }
+  </style>
+</head>
+
+<body>
+
+<button class="btn btn-dark btn-sm sidebar-toggle-btn" id="sidebarToggle">
+  ☰ TOC
+</button>
+
+<div class="layout-wrapper">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="mb-3">
+      <div class="brand-title">Deep Web Foundations</div>
+      <div class="page-title">Module 4: Lists &amp; Navigation</div>
+      <div class="mt-1">
+        <span class="badge-topic">
+          ● HTML Structure
+          <span>●</span>
+          Lists &amp; Nav
+        </span>
+      </div>
+    </div>
+
+    <div class="author-block">
+      <div class="author-name">AI Tutor for Irfan</div>
+      <div class="author-meta">
+        From college learner to master/PhD-level<br>
+        understanding of list semantics &amp; navigation patterns.
+      </div>
+    </div>
+
+    <div class="mt-3">
+      <div class="section-label mb-1">Study Controls</div>
+      <div class="sidebar-tools">
+        <button class="btn btn-outline-cyan btn-pill" id="expandAllBtn">⤢ Expand all</button>
+        <button class="btn btn-outline-amber btn-pill" id="collapseAllBtn">⤡ Collapse all</button>
+        <button class="btn btn-outline-light-soft btn-pill" id="highlightToggleBtn">✨ Syntax hi-lite</button>
+      </div>
+    </div>
+
+    <div class="mt-4">
+      <div class="toc-title">Table of Contents</div>
+      <input
+        id="tocSearch"
+        type="text"
+        class="form-control form-control-sm mb-2"
+        placeholder="Filter (ul, ol, dl, nav...)"
+      >
+      <ul id="toc">
+        <li><a href="#sec-overview" data-scroll>0. Why lists &amp; nav matter</a></li>
+        <li><a href="#sec-ul" data-scroll>4.1 Unordered lists (&lt;ul&gt;)</a></li>
+        <li><a href="#sec-ol" data-scroll>4.2 Ordered lists (&lt;ol&gt;)</a></li>
+        <li><a href="#sec-dl" data-scroll>4.3 Description lists (&lt;dl&gt;)</a></li>
+        <li><a href="#sec-nav" data-scroll>4.4 Navigation patterns</a></li>
+      </ul>
+    </div>
+
+    <div class="mt-4">
+      <div class="section-label mb-1">Reading Tip</div>
+      <p class="author-meta mb-1">
+        Treat lists as data structures (sets, sequences, pairs) and navigation
+        as a graph over your information space.
+      </p>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="content">
+
+    <header class="content-header">
+      <div>
+        <h1>Module 4: Lists and Navigation</h1>
+        <div class="content-subtitle">
+          Lists are not just bullets and numbers; they represent collections, sequences, and term–definition
+          pairs. Navigation structures transform these lists into paths through your site’s information graph.
+          This module explores unordered, ordered, and description lists, and shows how they power menus,
+          breadcrumbs, and pagination in real-world applications.
+        </div>
+      </div>
+      <div class="d-flex flex-column align-items-start gap-1">
+        <span class="difficulty-pill">
+          Level: Conceptual basics → information architecture
+        </span>
+        <span class="difficulty-pill">
+          Topics: &lt;ul&gt;, &lt;ol&gt;, &lt;dl&gt;, nav bars, breadcrumbs, pagination
+        </span>
+      </div>
+    </header>
+
+    <!-- 0. OVERVIEW -->
+    <section id="sec-overview" class="section-block alt">
+      <div class="section-block-header">
+        <div>
+          <div class="section-index">0 · Big Picture</div>
+          <h2 class="section-title">Lists as data structures for content &amp; navigation</h2>
+        </div>
+        <div class="section-meta">
+          From bullet points to menus and breadcrumbs: same HTML primitives.
+        </div>
+      </div>
+
+      <details>
+        <summary>Executive summary</summary>
+        <p>
+          In HTML, lists provide a structured way to represent collections:
+        </p>
+        <ul>
+          <li><strong>Unordered lists</strong> <code>&lt;ul&gt;</code> – items without inherent order (sets).</li>
+          <li><strong>Ordered lists</strong> <code>&lt;ol&gt;</code> – items with a meaningful sequence.</li>
+          <li><strong>Description lists</strong> <code>&lt;dl&gt;</code> – term–description pairs (like dictionaries).</li>
+        </ul>
+        <p>
+          Navigation UI (menus, breadcrumbs, pagination) is usually built on top of these list elements, because they are:
+        </p>
+        <ul>
+          <li>Accessible (screen readers understand the “list of items” semantics).</li>
+          <li>Easy to style with CSS.</li>
+          <li>Semantically correct from an information-architecture perspective.</li>
+        </ul>
+      </details>
+    </section>
+
+    <!-- 4.1 UNORDERED LISTS -->
+    <section id="sec-ul" class="section-block">
+      <div class="section-block-header">
+        <div>
+          <div class="section-index">4.1 · Unordered Lists</div>
+          <h2 class="section-title">Basic &amp; nested unordered lists (&lt;ul&gt;, &lt;li&gt;)</h2>
+        </div>
+        <div class="section-meta">
+          Representing collections where order does not matter.
+        </div>
+      </div>
+
+      <details>
+        <summary>Executive summary</summary>
+        <p>
+          Unordered lists use <code>&lt;ul&gt;</code> as a container and <code>&lt;li&gt;</code> (list item)
+          for each item. They are ideal when the sequence of items is not semantically important:
+          features, shopping list, bullet points, navigation menus, etc.
+        </p>
+      </details>
+
+      <details>
+        <summary>Basic &lt;ul&gt; and &lt;li&gt; structure</summary>
+        <p class="code-caption">Syntax pattern</p>
+        <pre><code>&lt;ul&gt;
+  &lt;li&gt;First item&lt;/li&gt;
+  &lt;li&gt;Second item&lt;/li&gt;
+  &lt;li&gt;Third item&lt;/li&gt;
+&lt;/ul&gt;</code></pre>
+
+        <p class="code-caption">Example: technologies list</p>
+        <pre><code>&lt;ul&gt;
+  &lt;li&gt;HTML&lt;/li&gt;
+  &lt;li&gt;CSS&lt;/li&gt;
+  &lt;li&gt;JavaScript&lt;/li&gt;
+&lt;/ul&gt;</code></pre>
+
+        <p>
+          Browsers render bullets by default, but the underlying semantic is “a list of related items”.
+        </p>
+      </details>
+
+      <details>
+        <summary>Nested lists</summary>
+        <p>
+          A list item can contain another list to represent hierarchy or grouping.
+        </p>
+        <p class="code-caption">Example: nested unordered lists</p>
+        <pre><code>&lt;ul&gt;
+  &lt;li&gt;Frontend
+    &lt;ul&gt;
+      &lt;li&gt;HTML&lt;/li&gt;
+      &lt;li&gt;CSS&lt;/li&gt;
+      &lt;li&gt;JavaScript&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;Backend
+    &lt;ul&gt;
+      &lt;li&gt;Node.js&lt;/li&gt;
+      &lt;li&gt;Python&lt;/li&gt;
+      &lt;li&gt;Java&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;</code></pre>
+
+        <div class="callout">
+          <strong>Best practice:</strong> keep nested levels reasonable (usually up to 2–3) for readability and accessibility.
+        </div>
+      </details>
+
+      <details>
+        <summary>Styling list markers</summary>
+        <p>
+          CSS provides control over marker style using <code>list-style-type</code>, <code>list-style-position</code>, and custom bullets.
+        </p>
+        <p class="code-caption">Common marker styles</p>
+        <pre><code>ul {
+  list-style-type: disc;      /* default solid bullet */
+}
+
+ul.square {
+  list-style-type: square;    /* ■ */
+}
+
+ul.circle {
+  list-style-type: circle;    /* ○ */
+}</code></pre>
+
+        <p class="code-caption">Custom marker with background icon</p>
+        <pre><code>ul.custom-bullets {
+  list-style: none;           /* remove default bullet */
+  padding-left: 1.2rem;
+}
+
+ul.custom-bullets li {
+  position: relative;
+  padding-left: 1.1rem;
+}
+
+ul.custom-bullets li::before {
+  content: &quot;◆&quot;;              /* custom symbol */
+  position: absolute;
+  left: 0;
+  top: 0;
+  color: #4dd0e1;
+}</code></pre>
+
+        <p>
+          In advanced UI, lists in navigation bars often have their bullets removed entirely and are styled as horizontal menus.
+        </p>
+      </details>
+    </section>
+
+    <!-- 4.2 ORDERED LISTS -->
+    <section id="sec-ol" class="section-block alt">
+      <div class="section-block-header">
+        <div>
+          <div class="section-index">4.2 · Ordered Lists</div>
+          <h2 class="section-title">Numbered lists (&lt;ol&gt;), start &amp; type</h2>
+        </div>
+        <div class="section-meta">
+          Representing sequences, steps, or rankings.
+        </div>
+      </div>
+
+      <details>
+        <summary>Executive summary</summary>
+        <p>
+          Ordered lists <code>&lt;ol&gt;</code> are used when order matters:
+          steps in a process, ranking, instructions, timelines, etc.
+          Items are still <code>&lt;li&gt;</code>, but markers are numbers, letters, or Roman numerals.
+        </p>
+      </details>
+
+      <details>
+        <summary>Basic &lt;ol&gt; numbered lists</summary>
+        <p class="code-caption">Syntax</p>
+        <pre><code>&lt;ol&gt;
+  &lt;li&gt;Gather requirements&lt;/li&gt;
+  &lt;li&gt;Design the UI&lt;/li&gt;
+  &lt;li&gt;Implement the features&lt;/li&gt;
+  &lt;li&gt;Test and deploy&lt;/li&gt;
+&lt;/ol&gt;</code></pre>
+
+        <p>
+          Browser default markers are <strong>1, 2, 3, ...</strong>.
+        </p>
+      </details>
+
+      <details>
+        <summary>Custom numbering with the start attribute</summary>
+        <p>
+          You can start numbering from a custom value using the <code>start</code> attribute.
+        </p>
+        <p class="code-caption">Example: continuing a list from 5</p>
+        <pre><code>&lt;ol start=&quot;5&quot;&gt;
+  &lt;li&gt;Fifth step&lt;/li&gt;
+  &lt;li&gt;Sixth step&lt;/li&gt;
+&lt;/ol&gt;</code></pre>
+
+        <p>
+          Useful when you split a long list into multiple parts on the page but want consistent numbering.
+        </p>
+      </details>
+
+      <details>
+        <summary>Different numbering types (roman, alphabetical)</summary>
+        <p>
+          The <code>type</code> attribute controls marker style:
+        </p>
+        <ul>
+          <li><code>type=&quot;1&quot;</code> – 1, 2, 3 (default)</li>
+          <li><code>type=&quot;a&quot;</code> – a, b, c</li>
+          <li><code>type=&quot;A&quot;</code> – A, B, C</li>
+          <li><code>type=&quot;i&quot;</code> – i, ii, iii (roman)</li>
+          <li><code>type=&quot;I&quot;</code> – I, II, III</li>
+        </ul>
+
+        <p class="code-caption">Example: mixed types</p>
+        <pre><code>&lt;ol type=&quot;A&quot;&gt;
+  &lt;li&gt;Introduction&lt;/li&gt;
+  &lt;li&gt;Literature Review&lt;/li&gt;
+  &lt;li&gt;Methodology&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;ol type=&quot;i&quot;&gt;
+  &lt;li&gt;Sub-point one&lt;/li&gt;
+  &lt;li&gt;Sub-point two&lt;/li&gt;
+&lt;/ol&gt;</code></pre>
+      </details>
+    </section>
+
+    <!-- 4.3 DESCRIPTION LISTS -->
+    <section id="sec-dl" class="section-block">
+      <div class="section-block-header">
+        <div>
+          <div class="section-index">4.3 · Description Lists</div>
+          <h2 class="section-title">Definition lists (&lt;dl&gt;, &lt;dt&gt;, &lt;dd&gt;)</h2>
+        </div>
+        <div class="section-meta">
+          Pairing terms with their descriptions or definitions.
+        </div>
+      </div>
+
+      <details>
+        <summary>Executive summary</summary>
+        <p>
+          Description lists represent <strong>term–description</strong> pairs, like a dictionary or glossary:
+        </p>
+        <ul>
+          <li><code>&lt;dl&gt;</code> – container (description list).</li>
+          <li><code>&lt;dt&gt;</code> – term name.</li>
+          <li><code>&lt;dd&gt;</code> – definition/description for the term.</li>
+        </ul>
+        <p>
+          They are semantically richer than trying to fake definitions with just <code>&lt;p&gt;</code> and <code>&lt;strong&gt;</code>.
+        </p>
+      </details>
+
+      <details>
+        <summary>Syntax &amp; example</summary>
+        <p class="code-caption">Basic description list</p>
+        <pre><code>&lt;dl&gt;
+  &lt;dt&gt;HTML&lt;/dt&gt;
+  &lt;dd&gt;HyperText Markup Language, used to structure content on the web.&lt;/dd&gt;
+
+  &lt;dt&gt;CSS&lt;/dt&gt;
+  &lt;dd&gt;Cascading Style Sheets, used to style and layout web pages.&lt;/dd&gt;
+
+  &lt;dt&gt;JavaScript&lt;/dt&gt;
+  &lt;dd&gt;Programming language that adds interactivity to web pages.&lt;/dd&gt;
+&lt;/dl&gt;</code></pre>
+      </details>
+
+      <details>
+        <summary>Use cases &amp; semantic meaning</summary>
+        <ul>
+          <li>Glossaries of technical terms.</li>
+          <li>FAQ-style question–answer pairs (Q as <code>&lt;dt&gt;</code>, A as <code>&lt;dd&gt;</code>).</li>
+          <li>Metadata lists: property name + value (e.g., product specifications).</li>
+        </ul>
+        <div class="callout">
+          <strong>Semantics:</strong> screen readers announce description lists differently from normal lists,
+          making them more accessible for definitions and Q&amp;A content.
+        </div>
+      </details>
+    </section>
+
+    <!-- 4.4 NAVIGATION PATTERNS -->
+    <section id="sec-nav" class="section-block alt">
+      <div class="section-block-header">
+        <div>
+          <div class="section-index">4.4 · Navigation</div>
+          <h2 class="section-title">Navigation bars, breadcrumbs, and pagination</h2>
+        </div>
+        <div class="section-meta">
+          Using lists to model paths and menus in user interfaces.
+        </div>
+      </div>
+
+      <details>
+        <summary>Executive summary</summary>
+        <p>
+          Most navigation patterns are built with lists because they represent:
+        </p>
+        <ul>
+          <li>A set of navigation options (menu).</li>
+          <li>A path of pages (breadcrumb).</li>
+          <li>A sequence of pages (pagination).</li>
+        </ul>
+        <p>
+          Underneath the CSS, you typically use <code>&lt;ul&gt;</code> and <code>&lt;li&gt;</code> with links <code>&lt;a&gt;</code>.
+        </p>
+      </details>
+
+      <details>
+        <summary>Navigation bar using lists</summary>
+        <p class="code-caption">Simple horizontal nav bar</p>
+        <pre><code>&lt;nav&gt;
+  &lt;ul class=&quot;main-nav&quot;&gt;
+    &lt;li&gt;&lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a href=&quot;/courses&quot;&gt;Courses&lt;/a&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a href=&quot;/blog&quot;&gt;Blog&lt;/a&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a href=&quot;/contact&quot;&gt;Contact&lt;/a&gt;&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/nav&gt;</code></pre>
+
+        <p class="code-caption">CSS idea (conceptual)</p>
+        <pre><code>.main-nav {
+  list-style: none;
+  display: flex;
+  gap: 1.5rem;
+}
+
+.main-nav a {
+  text-decoration: none;
+  color: #e0e6f0;
+}</code></pre>
+
+        <p>
+          The list structure remains semantically a list of navigation options; CSS just changes its presentation.
+        </p>
+      </details>
+
+      <details>
+        <summary>Breadcrumb navigation</summary>
+        <p>
+          Breadcrumbs represent the path of pages from root to current page:
+          <em>Home &gt; Category &gt; Subcategory &gt; Current page</em>.
+        </p>
+        <p class="code-caption">Example breadcrumb list</p>
+        <pre><code>&lt;nav aria-label=&quot;Breadcrumb&quot;&gt;
+  &lt;ol class=&quot;breadcrumb&quot;&gt;
+    &lt;li&gt;&lt;a href=&quot;/&quot;&gt;Home&lt;/a&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a href=&quot;/html&quot;&gt;HTML&lt;/a&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a href=&quot;/html/lists&quot;&gt;Lists&lt;/a&gt;&lt;/li&gt;
+    &lt;li aria-current=&quot;page&quot;&gt;Navigation Patterns&lt;/li&gt;
+  &lt;/ol&gt;
+&lt;/nav&gt;</code></pre>
+
+        <div class="callout">
+          <strong>Accessibility:</strong> the <code>aria-label=&quot;Breadcrumb&quot;</code> and
+          <code>aria-current=&quot;page&quot;</code> attributes help screen readers understand the structure and current location.
+        </div>
+      </details>
+
+      <details>
+        <summary>Pagination elements</summary>
+        <p>
+          Pagination is another ordered sequence, commonly represented as an ordered or unordered list:
+        </p>
+        <p class="code-caption">Example pagination component</p>
+        <pre><code>&lt;nav aria-label=&quot;Page navigation&quot;&gt;
+  &lt;ul class=&quot;pagination&quot;&gt;
+    &lt;li&gt;&lt;a href=&quot;?page=1&quot;&gt;1&lt;/a&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a href=&quot;?page=2&quot;&gt;2&lt;/a&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a href=&quot;?page=3&quot;&gt;3&lt;/a&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a href=&quot;?page=4&quot;&gt;Next &raquo;&lt;/a&gt;&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/nav&gt;</code></pre>
+
+        <p>
+          CSS (or Bootstrap classes like <code>.pagination</code>) control layout and active states,
+          but the underlying list remains accessible and meaningful.
+        </p>
+      </details>
+    </section>
+
+  </main>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  // Sidebar toggle (mobile)
+  const sidebar = document.getElementById("sidebar");
+  const sidebarToggle = document.getElementById("sidebarToggle");
+
+  sidebarToggle.addEventListener("click", () => {
+    sidebar.classList.toggle("open");
+  });
+
+  // Smooth scroll for TOC links
+  document.querySelectorAll("#toc a[data-scroll]").forEach(link => {
+    link.addEventListener("click", function (e) {
+      e.preventDefault();
+      const targetId = this.getAttribute("href").substring(1);
+      const target = document.getElementById(targetId);
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+      document.querySelectorAll("#toc a").forEach(a => a.classList.remove("active"));
+      this.classList.add("active");
+      if (window.innerWidth <= 992) {
+        sidebar.classList.remove("open");
+      }
+    });
+  });
+
+  // Expand / collapse all
+  document.getElementById("expandAllBtn").addEventListener("click", () => {
+    document.querySelectorAll("details").forEach(d => d.open = true);
+  });
+  document.getElementById("collapseAllBtn").addEventListener("click", () => {
+    document.querySelectorAll("details").forEach(d => d.open = false);
+  });
+
+  // TOC search
+  const tocSearch = document.getElementById("tocSearch");
+  tocSearch.addEventListener("input", function () {
+    const term = this.value.trim().toLowerCase();
+    document.querySelectorAll("#toc li").forEach(li => {
+      const text = li.textContent.toLowerCase();
+      li.style.display = text.includes(term) ? "" : "none";
+    });
+  });
+
+  // ===== SAFE SIMPLE SYNTAX HIGHLIGHT (HTML TAGS NOT TOUCHED) =====
+  let highlightEnabled = true;
+  const highlightToggleBtn = document.getElementById("highlightToggleBtn");
+
+  // Store original text once
+  document.querySelectorAll("pre code").forEach(code => {
+    code.dataset.originalText = code.innerHTML;
+  });
+
+  function applySimpleHighlighting() {
+    document.querySelectorAll("pre code").forEach(code => {
+      if (code.dataset.highlighted === "true") return;
+      let text = code.dataset.originalText; // keep entities like &lt;ul&gt;
+
+      // JS keywords
+      text = text.replace(/\b(const|let|var|function|return|if|else|for|while|async|await|class|new|try|catch)\b/g,
+        '<span class="hl-js-keyword">$1</span>');
+
+      // JS-like function names foo()
+      text = text.replace(/([a-zA-Z_$][a-zA-Z0-9_$]*)\s*(?=\()/g,
+        '<span class="hl-js-func">$1</span>');
+
+      // CSS property: value;
+      text = text.replace(/([a-zA-Z-]+)\s*:\s*([^;]+);/g,
+        '<span class="hl-css-prop">$1</span>: <span class="hl-css-value">$2</span>;');
+
+      // HTML-style comments (but not tags)
+      text = text.replace(/(&lt;!--[\s\S]*?--&gt;)/g,
+        '<span class="hl-comment">$1</span>');
+
+      code.innerHTML = text;
+      code.dataset.highlighted = "true";
+    });
+  }
+
+  function clearSimpleHighlighting() {
+    document.querySelectorAll("pre code").forEach(code => {
+      if (code.dataset.originalText) {
+        code.innerHTML = code.dataset.originalText;
+        code.dataset.highlighted = "false";
+      }
+    });
+  }
+
+  // Initial highlight
+  applySimpleHighlighting();
+
+  highlightToggleBtn.addEventListener("click", () => {
+    highlightEnabled = !highlightEnabled;
+    if (highlightEnabled) {
+      applySimpleHighlighting();
+      highlightToggleBtn.textContent = "✨ Syntax hi-lite";
+    } else {
+      clearSimpleHighlighting();
+      highlightToggleBtn.textContent = "✖ Plain code";
+    }
+  });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,1003 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Module 16 - Advanced HTML5 APIs</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    />
+
+    <style>
+        :root {
+            --bg-main: #050816;
+            --bg-card: #0b1020;
+            --bg-code: #050812;
+            --accent-cyan: #22d3ee;
+            --accent-amber: #fbbf24;
+            --text-main: #e5e7eb;
+            --text-muted: #9ca3af;
+            --border-subtle: #1f2933;
+            --shadow-soft: 0 0 40px rgba(15, 23, 42, 0.95);
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            background: radial-gradient(circle at top, #0b1120 0, #020617 55%);
+            color: var(--text-main);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        a { color: var(--accent-cyan); text-decoration: none; }
+        a:hover { color: var(--accent-amber); text-decoration: underline; }
+
+        .layout-wrapper { min-height: 100vh; padding: 1rem; }
+        .note-container {
+            background: rgba(15, 23, 42, 0.95);
+            border-radius: 1.25rem;
+            box-shadow: var(--shadow-soft);
+            overflow: hidden;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: #020617;
+            border-right: 1px solid var(--border-subtle);
+            padding: 1.2rem 1.1rem;
+        }
+        .sidebar-inner {
+            position: sticky;
+            top: 0;
+            max-height: 100vh;
+            overflow-y: auto;
+            padding-right: 0.25rem;
+        }
+        .badge-module {
+            background: rgba(56,189,248,.1);
+            border:1px solid rgba(56,189,248,.3);
+            color:var(--accent-cyan);
+            padding:0.2rem 0.7rem;
+            border-radius:999px;
+            font-size:0.7rem;
+            letter-spacing:0.1em;
+            text-transform:uppercase;
+        }
+        .pill-tag {
+            font-size: 0.7rem;
+            padding: 0.15rem 0.6rem;
+            border-radius: 999px;
+            border: 1px solid rgba(248, 250, 252, 0.12);
+            color: var(--text-muted);
+        }
+        .sidebar-title {
+            font-size:1.3rem;
+            font-weight:700;
+            color:var(--accent-cyan);
+            margin-top:0.7rem;
+        }
+        .sidebar-subtitle {
+            font-size:0.9rem;
+            color:var(--text-muted);
+        }
+        .author-block {
+            font-size:0.8rem;
+            margin-top:0.6rem;
+            color:var(--text-muted);
+        }
+        .author-name { color:var(--accent-amber); font-weight:600; }
+
+        .toc-title {
+            margin-top:1rem;
+            font-size:0.85rem;
+            text-transform:uppercase;
+            letter-spacing:0.15em;
+            color:var(--text-muted);
+        }
+        .toc-search-input {
+            background:#020617;
+            border:1px solid var(--border-subtle);
+            color:var(--text-main);
+            font-size:0.8rem;
+        }
+        .toc-search-input:focus {
+            outline:none;
+            box-shadow:0 0 0 1px var(--accent-cyan);
+            border-color:var(--accent-cyan);
+        }
+        .toc-list { list-style:none; padding-left:0; margin-top:0.4rem; }
+        .toc-list li { margin-bottom:0.15rem; }
+        .toc-link {
+            display:block;
+            padding:0.25rem 0.35rem;
+            border-radius:0.35rem;
+            font-size:0.86rem;
+            color:var(--text-muted);
+        }
+        .toc-link.main { font-weight:600; color:var(--text-main); }
+        .toc-link.sub { padding-left:0.9rem; font-size:0.8rem; }
+        .toc-link:hover {
+            background:rgba(56,189,248,0.06);
+            color:var(--accent-cyan);
+            text-decoration:none;
+        }
+        .toc-link.active {
+            background:rgba(56,189,248,0.12);
+            color:var(--accent-cyan);
+            border-left:3px solid var(--accent-cyan);
+        }
+        .toc-utilities {
+            display:flex;
+            gap:0.35rem;
+            margin-top:0.5rem;
+        }
+        .btn-util {
+            flex:1;
+            border-radius:999px;
+            font-size:0.7rem;
+            padding:0.15rem 0.4rem;
+            border:1px solid var(--border-subtle);
+            background:#020617;
+            color:var(--text-muted);
+        }
+        .btn-util:hover { border-color:var(--accent-cyan); color:var(--accent-cyan); }
+
+        /* Content */
+        .content-area {
+            padding:1.35rem 1.4rem 1.6rem;
+            background: radial-gradient(circle at top, #020617 0, #020617 60%);
+            max-height:calc(100vh - 2rem);
+            overflow-y:auto;
+        }
+        .content-header-label {
+            font-size:0.75rem;
+            text-transform:uppercase;
+            letter-spacing:0.18em;
+            color:var(--accent-amber);
+        }
+        .content-main-title {
+            font-size:1.7rem;
+            font-weight:700;
+            color:#f9fafb;
+        }
+        .content-subtitle {
+            font-size:0.95rem;
+            color:var(--text-muted);
+            max-width:48rem;
+        }
+
+        .section-card {
+            background:rgba(15,23,42,0.9);
+            border-radius:1rem;
+            border:1px solid var(--border-subtle);
+            padding:1rem;
+            margin-top:1.1rem;
+        }
+        .section-heading {
+            font-size:1.1rem;
+            font-weight:600;
+            color:#e5e7eb;
+        }
+        .section-summary-text {
+            font-size:0.9rem;
+            color:var(--text-muted);
+        }
+
+        details {
+            margin-top:0.6rem;
+            border-radius:0.75rem;
+            border:1px solid #111827;
+            background:#020617;
+        }
+        summary {
+            padding:0.55rem 0.7rem;
+            cursor:pointer;
+            list-style:none;
+            font-size:0.9rem;
+            color:var(--text-main);
+        }
+        summary::marker,
+        summary::-webkit-details-marker { display:none; }
+        summary::before {
+            content:"▸";
+            display:inline-block;
+            margin-right:0.45rem;
+            color:var(--accent-cyan);
+            transition:transform 0.16s ease-out;
+            font-size:0.8rem;
+        }
+        details[open] summary::before { transform:rotate(90deg); }
+        .details-body {
+            border-top:1px solid #111827;
+            padding:0.5rem 0.9rem 0.75rem;
+            font-size:0.9rem;
+            color:var(--text-muted);
+        }
+        .details-body ul,
+        .details-body ol { padding-left:1.2rem; }
+
+        pre.code-block {
+            background:var(--bg-code);
+            border-radius:0.75rem;
+            border:1px solid #020617;
+            padding:0.75rem 0.9rem;
+            font-size:0.82rem;
+            overflow-x:auto;
+            margin-bottom:0.65rem;
+        }
+        pre.code-block code {
+            font-family:"Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            white-space:pre;
+        }
+        code.inline-code {
+            background:rgba(15,23,42,0.95);
+            border-radius:0.35rem;
+            border:1px solid #111827;
+            padding:0.05rem 0.28rem;
+            font-size:0.83rem;
+        }
+
+        .note-callout {
+            border-radius:0.75rem;
+            border:1px dashed rgba(248,250,252,0.08);
+            background:rgba(15,23,42,0.8);
+            padding:0.5rem 0.7rem;
+            font-size:0.85rem;
+            color:var(--text-muted);
+            margin-top:0.7rem;
+        }
+        .note-callout strong { color:var(--accent-amber); }
+
+        /* Syntax highlighting */
+        .hl-tag { color:#38bdf8; }
+        .hl-attr { color:#fbbf24; }
+        .hl-string { color:#a5b4fc; }
+        .hl-comment { color:#6b7280; font-style:italic; }
+        .hl-key { color:#facc15; }
+        .hl-number { color:#34d399; }
+        .hl-bool { color:#fb7185; }
+        .hl-punct { color:#9ca3af; }
+
+        .hl-js-keyword { color:#fb923c; }
+        .hl-js-func { color:#4ade80; }
+        .hl-js-global { color:#22d3ee; }
+
+        @media (max-width: 991.98px) {
+            .sidebar-inner { position:static; max-height:none; }
+            .content-area { max-height:none; }
+        }
+    </style>
+</head>
+<body>
+<div class="layout-wrapper container-fluid">
+    <div class="note-container row g-0">
+        <!-- SIDEBAR -->
+        <aside class="sidebar col-12 col-lg-3">
+            <div class="sidebar-inner">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="badge-module">Module 16</span>
+                    <span class="pill-tag">Advanced APIs</span>
+                </div>
+                <div class="mt-3">
+                    <div class="sidebar-title">Advanced HTML5 APIs</div>
+                    <div class="sidebar-subtitle">
+                        Web Components, Shadow DOM, security headers, intersection observers,
+                        media APIs, and emerging standards for componentized, high-performance web apps.
+                    </div>
+                </div>
+
+                <div class="author-block">
+                    <div><span class="author-name">Prepared for:</span> College to PhD-level learners</div>
+                    <div><span class="author-name">Focus:</span> HTML5 APIs · Components · Standards</div>
+                </div>
+
+                <div class="toc-title">Table of Contents</div>
+                <input id="tocSearch" class="form-control form-control-sm toc-search-input" placeholder="Search sections…" />
+
+                <div class="toc-utilities">
+                    <button id="expandAll" class="btn btn-sm btn-util">Expand All</button>
+                    <button id="collapseAll" class="btn btn-sm btn-util">Collapse All</button>
+                </div>
+
+                <ul id="tocList" class="toc-list mt-2">
+                    <li><a href="#sec-16-1" class="toc-link main">16.1 Web Components Preparation</a></li>
+                    <li><a href="#sec-16-1-custom" class="toc-link sub">16.1.1 Custom Elements</a></li>
+                    <li><a href="#sec-16-1-shadow" class="toc-link sub">16.1.2 Shadow DOM Basics</a></li>
+                    <li><a href="#sec-16-1-template" class="toc-link sub">16.1.3 HTML Templates</a></li>
+
+                    <li class="mt-2"><a href="#sec-16-2" class="toc-link main">16.2 Modern HTML Features</a></li>
+                    <li><a href="#sec-16-2-csp" class="toc-link sub">16.2.1 CSP Headers</a></li>
+                    <li><a href="#sec-16-2-io" class="toc-link sub">16.2.2 Intersection Observer</a></li>
+                    <li><a href="#sec-16-2-pip" class="toc-link sub">16.2.3 Picture-in-Picture API</a></li>
+                    <li><a href="#sec-16-2-share" class="toc-link sub">16.2.4 Web Share API</a></li>
+
+                    <li class="mt-2"><a href="#sec-16-3" class="toc-link main">16.3 Emerging Standards</a></li>
+                    <li><a href="#sec-16-3-container" class="toc-link sub">16.3.1 Container Queries</a></li>
+                    <li><a href="#sec-16-3-importmaps" class="toc-link sub">16.3.2 Import Maps</a></li>
+                    <li><a href="#sec-16-3-dsd" class="toc-link sub">16.3.3 Declarative Shadow DOM</a></li>
+                    <li><a href="#sec-16-3-htmlmodules" class="toc-link sub">16.3.4 HTML Modules</a></li>
+                </ul>
+
+                <div class="note-callout">
+                    <strong>Mental model:</strong> “Advanced HTML” today means
+                    mixing semantic markup with powerful browser APIs while keeping
+                    everything progressive, secure, and componentized.
+                </div>
+            </div>
+        </aside>
+
+        <!-- CONTENT -->
+        <main class="content-area col-12 col-lg-9">
+            <header class="mb-2">
+                <div class="content-header-label">Web Components · CSP · Observers · Emerging Standards</div>
+                <h1 class="content-main-title">Module 16: Advanced HTML5 APIs</h1>
+                <p class="content-subtitle">
+                    In this module, we prepare the mental and technical model for advanced HTML5 APIs:
+                    from Web Components and Shadow DOM to security-conscious CSP headers, Intersection Observer-based
+                    lazy behavior, media APIs like Picture-in-Picture and Web Share, and the next wave of standards
+                    such as container queries, import maps, declarative shadow DOM, and HTML modules.
+                </p>
+            </header>
+
+            <!-- EXECUTIVE SUMMARY -->
+            <section class="section-card">
+                <h2 class="section-heading">Executive Summary</h2>
+                <p class="section-summary-text">
+                    Traditional HTML defines static documents. Advanced HTML5 APIs transform documents into
+                    componentized, reactive, secure applications where layout, behavior, and loading strategy are
+                    deeply integrated with browser primitives.
+                </p>
+
+                <details open>
+                    <summary>High-level TL;DR</summary>
+                    <div class="details-body">
+                        <ul>
+                            <li><strong>Web Components:</strong> Custom elements + shadow DOM + templates =&gt; reusable, encapsulated widgets.</li>
+                            <li><strong>Modern APIs:</strong> CSP protects against XSS; Intersection Observer powers lazy-loading; PiP and Web Share integrate with OS UX.</li>
+                            <li><strong>Emerging Standards:</strong> Container queries make CSS component-aware; import maps and HTML modules simplify module loading; declarative shadow DOM allows server-rendered components.</li>
+                        </ul>
+                        <pre class="code-block"><code class="language-text">
+Pseudocode thinking model:
+
+For each UI feature F:
+    1. Can it be a custom element (web component)?
+    2. What security boundary (CSP) do we need?
+    3. Can we lazy-load it using IntersectionObserver?
+    4. Does it integrate with device capabilities (PiP, Share)?
+    5. Can emerging standards simplify F's layout or loading?
+                        </code></pre>
+                    </div>
+                </details>
+            </section>
+
+            <!-- ======================== -->
+            <!-- 16.1 WEB COMPONENTS PREP -->
+            <!-- ======================== -->
+            <section id="sec-16-1" class="section-card">
+                <h2 class="section-heading">16.1 Web Components Preparation</h2>
+                <p class="section-summary-text">
+                    Web Components standardize the idea of reusable UI elements, backed by browser primitives:
+                    custom elements, shadow DOM, HTML templates, and (optionally) ES modules.
+                </p>
+
+                <!-- 16.1.1 Custom Elements -->
+                <section id="sec-16-1-custom">
+                    <details open>
+                        <summary>16.1.1 Custom elements foundation</summary>
+                        <div class="details-body">
+                            <p>
+                                A custom element is a JavaScript class extending <code class="inline-code">HTMLElement</code>.
+                                After calling <code class="inline-code">customElements.define(name, class)</code>, the
+                                browser recognizes your new tag.
+                            </p>
+                            <pre class="code-block"><code class="language-js">
+class HelloBox extends HTMLElement {
+  constructor() {
+    super();
+    this.textContent = "Hello, Web Components!";
+  }
+
+  connectedCallback() {
+    console.log("hello-box added to DOM");
+  }
+
+  disconnectedCallback() {
+    console.log("hello-box removed from DOM");
+  }
+}
+
+customElements.define("hello-box", HelloBox);
+                            </code></pre>
+                            <pre class="code-block"><code class="language-html">
+&lt;!-- After definition, this works like a normal tag --&gt;
+&lt;hello-box&gt;&lt;/hello-box&gt;
+                            </code></pre>
+                            <p>
+                                Lifecycle callbacks (<code class="inline-code">connectedCallback</code>,
+                                <code class="inline-code">disconnectedCallback</code>, etc.) let you hook component
+                                creation and cleanup, similar to React/Vue lifecycle but natively in the browser.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 16.1.2 Shadow DOM -->
+                <section id="sec-16-1-shadow">
+                    <details>
+                        <summary>16.1.2 Shadow DOM basics</summary>
+                        <div class="details-body">
+                            <p>
+                                Shadow DOM provides <em>encapsulation</em>: markup and styles inside the shadow tree
+                                do not leak out or get affected by external CSS (with some controlled exceptions).
+                            </p>
+                            <pre class="code-block"><code class="language-js">
+class UserBadge extends HTMLElement {
+  constructor() {
+    super();
+    const root = this.attachShadow({ mode: "open" });
+
+    root.innerHTML = `
+      &lt;style&gt;
+        .badge {
+          padding: 0.4rem 0.7rem;
+          border-radius: 999px;
+          background: #0b1020;
+          color: #e5e7eb;
+          border: 1px solid #22d3ee;
+          font-size: 0.8rem;
+        }
+      &lt;/style&gt;
+      &lt;span class="badge"&gt;User: ${this.getAttribute("name") || "Unknown"}&lt;/span&gt;
+    `;
+  }
+}
+
+customElements.define("user-badge", UserBadge);
+                            </code></pre>
+                            <pre class="code-block"><code class="language-html">
+&lt;user-badge name=&quot;Irfan&quot;&gt;&lt;/user-badge&gt;
+                            </code></pre>
+                            <p>
+                                CSS inside the shadow root styles only the component internals. External page styles
+                                won't accidentally break your component, and vice versa.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 16.1.3 HTML Templates -->
+                <section id="sec-16-1-template">
+                    <details>
+                        <summary>16.1.3 HTML templates (&lt;template&gt;)</summary>
+                        <div class="details-body">
+                            <p>
+                                The <code class="inline-code">&lt;template&gt;</code> tag stores inert DOM fragments
+                                that are not rendered until you clone and insert them. Templates are a perfect match
+                                for Web Components and dynamic UI.
+                            </p>
+                            <pre class="code-block"><code class="language-html">
+&lt;template id=&quot;note-template&quot;&gt;
+  &lt;article class=&quot;note&quot;&gt;
+    &lt;h3&gt;Note title&lt;/h3&gt;
+    &lt;p&gt;Note body...&lt;/p&gt;
+  &lt;/article&gt;
+&lt;/template&gt;
+
+&lt;section id=&quot;notes&quot;&gt;&lt;/section&gt;
+                            </code></pre>
+                            <pre class="code-block"><code class="language-js">
+const tpl = document.getElementById("note-template");
+const container = document.getElementById("notes");
+
+function addNote(title, body) {
+  const fragment = tpl.content.cloneNode(true);
+  fragment.querySelector("h3").textContent = title;
+  fragment.querySelector("p").textContent = body;
+  container.appendChild(fragment);
+}
+
+addNote("Research idea", "Try container queries in dashboard widgets.");
+                            </code></pre>
+                        </div>
+                    </details>
+                </section>
+            </section>
+
+            <!-- ======================== -->
+            <!-- 16.2 MODERN HTML FEATURES -->
+            <!-- ======================== -->
+            <section id="sec-16-2" class="section-card">
+                <h2 class="section-heading">16.2 Modern HTML Features</h2>
+                <p class="section-summary-text">
+                    Beyond structure and components, HTML pages participate in a larger runtime system:
+                    security policies, intersection-based observation, and tight OS integration via media and sharing APIs.
+                </p>
+
+                <!-- 16.2.1 CSP -->
+                <section id="sec-16-2-csp">
+                    <details open>
+                        <summary>16.2.1 Content Security Policy headers</summary>
+                        <div class="details-body">
+                            <p>
+                                Content Security Policy (CSP) reduces XSS risk by describing where scripts, styles,
+                                images, etc. are allowed to load from. CSP is usually delivered as an HTTP header,
+                                but you can also embed a (less flexible) policy with a <code class="inline-code">&lt;meta&gt;</code>.
+                            </p>
+                            <pre class="code-block"><code class="language-text">
+HTTP response header example:
+
+Content-Security-Policy:
+  default-src 'self';
+  script-src 'self' https://cdn.example.com;
+  style-src 'self' 'unsafe-inline';
+  img-src 'self' data:;
+  connect-src 'self' https://api.example.com;
+                            </code></pre>
+                            <pre class="code-block"><code class="language-html">
+&lt;!-- HTML meta variant (not all directives supported) --&gt;
+&lt;meta http-equiv=&quot;Content-Security-Policy&quot;
+      content=&quot;default-src 'self'; script-src 'self' https://cdn.example.com&quot; /&gt;
+                            </code></pre>
+                            <p>
+                                CSP forces you to stop using inline script by default, encouraging
+                                <code class="inline-code">&lt;script src&gt;</code> and safer patterns
+                                like nonces or hashes.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 16.2.2 Intersection Observer -->
+                <section id="sec-16-2-io">
+                    <details>
+                        <summary>16.2.2 Intersection Observer setup</summary>
+                        <div class="details-body">
+                            <p>
+                                Intersection Observer lets you efficiently detect when elements enter or leave the viewport
+                                (or any scrollable ancestor) without manually listening to scroll events.
+                            </p>
+                            <pre class="code-block"><code class="language-js">
+const cards = document.querySelectorAll(".lazy-section");
+
+const observer = new IntersectionObserver((entries) =&gt; {
+  entries.forEach(entry =&gt; {
+    if (entry.isIntersecting) {
+      entry.target.classList.add("visible");
+      observer.unobserve(entry.target);
+    }
+  });
+}, {
+  root: null,          // viewport
+  threshold: 0.2       // 20% visible
+});
+
+cards.forEach(card =&gt; observer.observe(card));
+                            </code></pre>
+                            <pre class="code-block"><code class="language-html">
+&lt;section class=&quot;lazy-section&quot;&gt;
+  &lt;h2&gt;Heavy chart&lt;/h2&gt;
+  &lt;!-- load data once visible --&gt;
+&lt;/section&gt;
+                            </code></pre>
+                            <p>
+                                This pattern powers scroll-based animations, lazy loading of heavy sections, and
+                                “mark this section as viewed” analytics in a performant, GC-friendly way.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 16.2.3 Picture-in-Picture -->
+                <section id="sec-16-2-pip">
+                    <details>
+                        <summary>16.2.3 Picture-in-Picture API</summary>
+                        <div class="details-body">
+                            <p>
+                                Picture-in-Picture (PiP) allows a video to be shown in a floating mini-window
+                                on supported platforms. The API is accessed via the video element and
+                                <code class="inline-code">document.pictureInPictureEnabled</code>.
+                            </p>
+                            <pre class="code-block"><code class="language-html">
+&lt;video id=&quot;lecture&quot; controls src=&quot;/videos/html5-apis.mp4&quot;&gt;&lt;/video&gt;
+&lt;button id=&quot;pipBtn&quot;&gt;Toggle PiP&lt;/button&gt;
+                            </code></pre>
+                            <pre class="code-block"><code class="language-js">
+const video = document.getElementById("lecture");
+const pipBtn = document.getElementById("pipBtn");
+
+pipBtn.addEventListener("click", async () =&gt; {
+  if (!("pictureInPictureEnabled" in document)) {
+    alert("PiP not supported");
+    return;
+  }
+
+  try {
+    if (document.pictureInPictureElement) {
+      await document.exitPictureInPicture();
+    } else {
+      if (video !== document.pictureInPictureElement) {
+        await video.requestPictureInPicture();
+      }
+    }
+  } catch (err) {
+    console.error("PiP toggle failed", err);
+  }
+});
+                            </code></pre>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 16.2.4 Web Share -->
+                <section id="sec-16-2-share">
+                    <details>
+                        <summary>16.2.4 Web Share API integration</summary>
+                        <div class="details-body">
+                            <p>
+                                The Web Share API allows a web page to open the OS-native share sheet (on mobile
+                                and some desktop platforms) so users can share URLs, text, or files.
+                            </p>
+                            <pre class="code-block"><code class="language-html">
+&lt;button id=&quot;shareBtn&quot;&gt;Share this report&lt;/button&gt;
+                            </code></pre>
+                            <pre class="code-block"><code class="language-js">
+const shareBtn = document.getElementById("shareBtn");
+
+shareBtn.addEventListener("click", async () =&gt; {
+  if (!navigator.share) {
+    alert("Web Share API not supported");
+    return;
+  }
+
+  try {
+    await navigator.share({
+      title: "Advanced HTML5 APIs",
+      text: "Check out this lecture on Web Components &amp; modern APIs.",
+      url: window.location.href
+    });
+    console.log("Share completed");
+  } catch (err) {
+    console.error("Share failed or cancelled", err);
+  }
+});
+                            </code></pre>
+                            <p>
+                                This shows a progressive enhancement pattern: test for <code class="inline-code">navigator.share</code>
+                                and fall back gracefully when unavailable.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+            </section>
+
+            <!-- ======================== -->
+            <!-- 16.3 EMERGING STANDARDS -->
+            <!-- ======================== -->
+            <section id="sec-16-3" class="section-card">
+                <h2 class="section-heading">16.3 Emerging Standards</h2>
+                <p class="section-summary-text">
+                    These features represent the next stage of web evolution. Browser support may be partial,
+                    but they define strong directions for layout, modules, and components.
+                </p>
+
+                <!-- 16.3.1 Container queries -->
+                <section id="sec-16-3-container">
+                    <details open>
+                        <summary>16.3.1 Container queries preparation</summary>
+                        <div class="details-body">
+                            <p>
+                                Container queries let components adapt to the size of their *container*
+                                instead of the overall viewport, enabling true layout encapsulation.
+                            </p>
+                            <pre class="code-block"><code class="language-css">
+.card-shell {
+  container-type: inline-size;
+  container-name: card-shell;
+}
+
+/* This rule depends on parent container width, not viewport */
+@container card-shell (min-width: 480px) {
+  .card-content {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 1rem;
+  }
+}
+                            </code></pre>
+                            <p>
+                                Container queries pair beautifully with Web Components: each component
+                                can be its own layout universe, independent of where it is placed.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 16.3.2 Import maps -->
+                <section id="sec-16-3-importmaps">
+                    <details>
+                        <summary>16.3.2 Import maps</summary>
+                        <div class="details-body">
+                            <p>
+                                Import maps let you declare module specifiers for the browser, so you can
+                                write <code class="inline-code">import</code> statements using bare names
+                                without bundling.
+                            </p>
+                            <pre class="code-block"><code class="language-html">
+&lt;script type=&quot;importmap&quot;&gt;
+{
+  &quot;imports&quot;: {
+    &quot;lodash&quot;: &quot;https://cdn.example.com/lodash-es/lodash.js&quot;,
+    &quot;components/&quot;: &quot;/js/components/&quot;
+  }
+}
+&lt;/script&gt;
+
+&lt;script type=&quot;module&quot;&gt;
+  import _ from &quot;lodash&quot;;
+  import &quot;components/user-card.js&quot;;
+&lt;/script&gt;
+                            </code></pre>
+                            <p>
+                                This feature moves module resolution configuration into HTML, giving you
+                                fine-grained control over client-side module graphs.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 16.3.3 Declarative Shadow DOM -->
+                <section id="sec-16-3-dsd">
+                    <details>
+                        <summary>16.3.3 Declarative shadow DOM</summary>
+                        <div class="details-body">
+                            <p>
+                                Declarative Shadow DOM allows servers to send shadow roots in HTML using
+                                <code class="inline-code">&lt;template shadowrootmode=&quot;open&quot;&gt;</code>.
+                                The browser parses this into a live shadow root without imperative JS.
+                            </p>
+                            <pre class="code-block"><code class="language-html">
+&lt;user-card&gt;
+  &lt;template shadowrootmode=&quot;open&quot;&gt;
+    &lt;style&gt;
+      .frame { padding: 0.75rem; border-radius: 0.75rem; background:#020617; }
+    &lt;/style&gt;
+    &lt;div class=&quot;frame&quot;&gt;
+      &lt;h3&gt;Declarative Shadow DOM User&lt;/h3&gt;
+      &lt;p&gt;Rendered on the server, upgraded on the client.&lt;/p&gt;
+    &lt;/div&gt;
+  &lt;/template&gt;
+&lt;/user-card&gt;
+                            </code></pre>
+                            <p>
+                                This makes server-side rendering of Web Components much more powerful:
+                                you can hydrate behavior on top of already structured shadow DOM.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 16.3.4 HTML modules -->
+                <section id="sec-16-3-htmlmodules">
+                    <details>
+                        <summary>16.3.4 HTML modules (conceptual)</summary>
+                        <div class="details-body">
+                            <p>
+                                HTML modules are a proposed way to package HTML, CSS, and JS into reusable units
+                                that can be imported like ES modules. Browser support is experimental, but the
+                                idea aligns strongly with component-oriented development.
+                            </p>
+                            <pre class="code-block"><code class="language-text">
+Conceptual shape:
+
+&lt;script type=&quot;module&quot; src=&quot;/components/widget.html&quot;&gt;&lt;/script&gt;
+
+Where widget.html might internally define:
+- Template markup
+- Styles
+- Custom element logic
+
+And exporting something like:
+export class WidgetElement extends HTMLElement { ... }
+                            </code></pre>
+                            <p>
+                                Even before native HTML modules fully land, bundlers and frameworks simulate
+                                this idea. Understanding the direction prepares you for future-native solutions.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+            </section>
+
+            <!-- WRAP-UP -->
+            <section class="section-card">
+                <h2 class="section-heading">Module 16 Checklist &amp; Recap</h2>
+                <details open>
+                    <summary>Self-audit questions</summary>
+                    <div class="details-body">
+                        <ul>
+                            <li>Can you define and register a basic custom element with lifecycle callbacks?</li>
+                            <li>Do you understand how Shadow DOM isolates styles and markup?</li>
+                            <li>Can you use &lt;template&gt; to clone and insert inert HTML fragments?</li>
+                            <li>Do you know at a high level what a CSP is and why inline scripts are dangerous?</li>
+                            <li>Can you set up an IntersectionObserver to lazily load or animate sections?</li>
+                            <li>Do you know how to test for and use Picture-in-Picture and Web Share APIs progressively?</li>
+                            <li>Are you aware of container queries, import maps, and declarative shadow DOM and why they matter?</li>
+                        </ul>
+                        <p>
+                            If most answers are “yes”, you are not only fluent in HTML as a document language, but
+                            also in HTML as a platform for advanced, app-like experiences.
+                        </p>
+                    </div>
+                </details>
+            </section>
+        </main>
+    </div>
+</div>
+
+<!-- JS: Bootstrap + Utilities + Syntax Highlighting -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Smooth scroll
+    document.querySelectorAll('a[href^="#"]').forEach(function (anchor) {
+        anchor.addEventListener("click", function (e) {
+            const id = this.getAttribute("href");
+            if (id.length > 1) {
+                e.preventDefault();
+                const target = document.querySelector(id);
+                if (target) {
+                    target.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+            }
+        });
+    });
+
+    // Expand / collapse all
+    const expandBtn = document.getElementById("expandAll");
+    const collapseBtn = document.getElementById("collapseAll");
+    if (expandBtn) {
+        expandBtn.addEventListener("click", function () {
+            document.querySelectorAll("details").forEach(d => d.open = true);
+        });
+    }
+    if (collapseBtn) {
+        collapseBtn.addEventListener("click", function () {
+            document.querySelectorAll("details").forEach(d => d.open = false);
+        });
+    }
+
+    // TOC search
+    const tocSearch = document.getElementById("tocSearch");
+    const tocList = document.getElementById("tocList");
+    if (tocSearch && tocList) {
+        tocSearch.addEventListener("input", function () {
+            const q = this.value.trim().toLowerCase();
+            tocList.querySelectorAll(".toc-link").forEach(link => {
+                const li = link.closest("li");
+                if (!q || link.textContent.toLowerCase().includes(q)) {
+                    li.style.display = "";
+                } else {
+                    li.style.display = "none";
+                }
+            });
+        });
+    }
+
+    // Mark active TOC on click
+    document.querySelectorAll(".toc-link").forEach(link => {
+        link.addEventListener("click", function () {
+            document.querySelectorAll(".toc-link.active").forEach(l => l.classList.remove("active"));
+            this.classList.add("active");
+        });
+    });
+
+    // Simple scrollspy-like behavior
+    const sectionIds = Array.from(document.querySelectorAll("section[id]")).map(sec => sec.id);
+    const sectionMap = sectionIds.map(id => ({
+        id,
+        el: document.getElementById(id),
+        link: document.querySelector('.toc-link[href="#' + id + '"]')
+    }));
+
+    function onScroll() {
+        let currentId = null;
+        const scrollY = window.scrollY || document.documentElement.scrollTop;
+        sectionMap.forEach(item => {
+            if (!item.el) return;
+            const rect = item.el.getBoundingClientRect();
+            const top = rect.top + scrollY - 120;
+            if (scrollY >= top) currentId = item.id;
+        });
+        if (currentId) {
+            document.querySelectorAll(".toc-link.active").forEach(l => l.classList.remove("active"));
+            const active = document.querySelector('.toc-link[href="#' + currentId + '"]');
+            if (active) active.classList.add("active");
+        }
+    }
+    document.addEventListener("scroll", onScroll, { passive: true });
+
+    // ========= SYNTAX HIGHLIGHTING =========
+    function highlightHTML(codeEl) {
+        let html = codeEl.innerHTML;
+
+        html = html.replace(/(&lt;!--[\s\S]*?--&gt;)/g,
+            '<span class="hl-comment">$1</span>'
+        );
+
+        html = html.replace(/(&quot;[^&]*?&quot;)/g,
+            '<span class="hl-string">$1</span>'
+        );
+
+        html = html.replace(/(&lt;\/?)([a-zA-Z0-9\-]+)((?:[^&]|&(?!gt;))*)&gt;/g,
+            function (match, open, tagName, rest) {
+                const attrs = rest.replace(
+                    /([\s\t\r\n])([a-zA-Z_:][-a-zA-Z0-9_:.]*)(=)/g,
+                    '$1<span class="hl-attr">$2</span>$3'
+                );
+                return open + '<span class="hl-tag">' + tagName + '</span>' + attrs + '&gt;';
+            }
+        );
+
+        codeEl.innerHTML = html;
+    }
+
+    function highlightJSON(codeEl) {
+        let html = codeEl.innerHTML;
+
+        html = html.replace(/(&quot;[^&]*?&quot;)/g,
+            '<span class="hl-string">$1</span>'
+        );
+        html = html.replace(/(&quot;[^&]*?&quot;)(\s*:&nbsp;|\s*:)/g,
+            '<span class="hl-key">$1</span>$2'
+        );
+        html = html.replace(/\b(-?\d+(\.\d+)?)\b/g,
+            '<span class="hl-number">$1</span>'
+        );
+        html = html.replace(/\b(true|false|null)\b/g,
+            '<span class="hl-bool">$1</span>'
+        );
+        html = html.replace(/([\{\}\[\]\:\,])/g,
+            '<span class="hl-punct">$1</span>'
+        );
+
+        codeEl.innerHTML = html;
+    }
+
+    function highlightJS(codeEl) {
+        let html = codeEl.innerHTML;
+
+        html = html.replace(/(&quot;[^&]*?&quot;|'.*?')/g,
+            '<span class="hl-string">$1</span>'
+        );
+        html = html.replace(
+            /\b(const|let|var|function|if|else|return|async|await|try|catch|finally|new|class|extends|import|from|export|throw)\b/g,
+            '<span class="hl-js-keyword">$1</span>'
+        );
+        html = html.replace(
+            /\b(self|caches|fetch|Promise|navigator|window|document|console|event)\b/g,
+            '<span class="hl-js-global">$1</span>'
+        );
+        html = html.replace(
+            /\b(addEventListener|waitUntil|respondWith|open|match|put|keys|delete|register|observe|unobserve|disconnect|requestPictureInPicture|exitPictureInPicture|share)\b/g,
+            '<span class="hl-js-func">$1</span>'
+        );
+        html = html.replace(/\b(-?\d+(\.\d+)?)\b/g,
+            '<span class="hl-number">$1</span>'
+        );
+
+        codeEl.innerHTML = html;
+    }
+
+    // Apply highlighting
+    document.querySelectorAll('pre.code-block code.language-html').forEach(highlightHTML);
+    document.querySelectorAll('pre.code-block code.language-jsonld').forEach(highlightJSON);
+    document.querySelectorAll('pre.code-block code.language-js').forEach(highlightJS);
+    // CSS / text blocks left mostly plain; they are already readable.
+});
+</script>
+</body>
+</html>

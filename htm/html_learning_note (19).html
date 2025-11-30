@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Module 14 - Performance Optimization</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- Bootstrap CSS -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    />
+
+    <style>
+        :root {
+            --bg-main: #050816;
+            --bg-card: #0b1020;
+            --bg-code: #050812;
+            --accent-cyan: #22d3ee;
+            --accent-amber: #fbbf24;
+            --text-main: #e5e7eb;
+            --text-muted: #9ca3af;
+            --border-subtle: #1f2933;
+            --shadow-soft: 0 0 40px rgba(15, 23, 42, 0.95);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            background: radial-gradient(circle at top, #0b1120 0, #020617 55%);
+            color: var(--text-main);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        a {
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+
+        a:hover {
+            color: var(--accent-amber);
+            text-decoration: underline;
+        }
+
+        /* Layout */
+        .layout-wrapper {
+            min-height: 100vh;
+            padding: 1rem;
+        }
+
+        .note-container {
+            background: rgba(15, 23, 42, 0.95);
+            border-radius: 1.25rem;
+            box-shadow: var(--shadow-soft);
+            overflow: hidden;
+        }
+
+        .sidebar {
+            background: linear-gradient(180deg, #020617, #020617, #020617);
+            border-right: 1px solid var(--border-subtle);
+            padding: 1.25rem 1.1rem;
+            min-height: 100%;
+        }
+
+        .sidebar-inner {
+            position: sticky;
+            top: 0;
+            max-height: 100vh;
+            overflow-y: auto;
+            padding-right: 0.25rem;
+        }
+
+        .sidebar-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            color: var(--accent-cyan);
+        }
+
+        .sidebar-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .badge-module {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            border-radius: 999px;
+            padding: 0.2rem 0.75rem;
+            background: rgba(56, 189, 248, 0.1);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+
+        .author-block {
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            color: var(--text-muted);
+        }
+
+        .author-name {
+            color: var(--accent-amber);
+            font-weight: 600;
+        }
+
+        .toc-title {
+            margin-top: 1rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: var(--text-muted);
+        }
+
+        .toc-search-input {
+            background-color: #020617;
+            border: 1px solid var(--border-subtle);
+            color: var(--text-main);
+            font-size: 0.8rem;
+        }
+
+        .toc-search-input:focus {
+            outline: none;
+            box-shadow: 0 0 0 1px var(--accent-cyan);
+            border-color: var(--accent-cyan);
+        }
+
+        .toc-list {
+            list-style: none;
+            margin: 0;
+            margin-top: 0.5rem;
+            padding-left: 0;
+            font-size: 0.86rem;
+        }
+
+        .toc-list li {
+            margin-bottom: 0.15rem;
+        }
+
+        .toc-link {
+            display: block;
+            padding: 0.25rem 0.35rem;
+            border-radius: 0.35rem;
+            color: var(--text-muted);
+        }
+
+        .toc-link:hover {
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--accent-cyan);
+            text-decoration: none;
+        }
+
+        .toc-link.main {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .toc-link.sub {
+            padding-left: 0.8rem;
+            font-size: 0.8rem;
+        }
+
+        .toc-link.active {
+            background: rgba(56, 189, 248, 0.09);
+            color: var(--accent-cyan);
+            border-left: 3px solid var(--accent-cyan);
+        }
+
+        .toc-utilities {
+            display: flex;
+            gap: 0.3rem;
+            margin-top: 0.6rem;
+        }
+
+        .btn-util {
+            flex: 1;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            padding: 0.18rem 0.4rem;
+            border: 1px solid var(--border-subtle);
+            background: #020617;
+            color: var(--text-muted);
+        }
+
+        .btn-util:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        /* Content Area */
+        .content-area {
+            background: radial-gradient(circle at top, #020617 0, #020617 60%);
+            padding: 1.25rem 1.35rem 1.6rem;
+            overflow-y: auto;
+            max-height: calc(100vh - 2rem);
+        }
+
+        .content-header-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: var(--accent-amber);
+            margin-bottom: 0.15rem;
+        }
+
+        .content-main-title {
+            font-size: 1.65rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            color: #f9fafb;
+        }
+
+        .content-subtitle {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            max-width: 48rem;
+        }
+
+        .pill-tag {
+            font-size: 0.7rem;
+            padding: 0.15rem 0.6rem;
+            border-radius: 999px;
+            border: 1px solid rgba(248, 250, 252, 0.12);
+            color: var(--text-muted);
+        }
+
+        .section-card {
+            border-radius: 1rem;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid var(--border-subtle);
+            margin-top: 1.1rem;
+            padding: 0.9rem 0.9rem 1rem;
+        }
+
+        .section-heading {
+            font-size: 1.1rem;
+            color: #e5e7eb;
+            font-weight: 600;
+        }
+
+        .section-kicker {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--text-muted);
+        }
+
+        .section-label {
+            font-size: 0.76rem;
+            padding: 0.08rem 0.45rem;
+            border-radius: 0.5rem;
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            color: var(--accent-cyan);
+            background: rgba(15, 23, 42, 0.9);
+            margin-left: 0.35rem;
+        }
+
+        .section-summary-text {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        details {
+            margin-top: 0.5rem;
+            border-radius: 0.75rem;
+            border: 1px solid #111827;
+            background: radial-gradient(circle at top left, #020617 0, #020617 65%);
+        }
+
+        summary {
+            cursor: pointer;
+            padding: 0.55rem 0.75rem;
+            position: relative;
+            list-style: none;
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        summary::marker {
+            display: none;
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary::before {
+            content: "▸";
+            display: inline-block;
+            margin-right: 0.4rem;
+            color: var(--accent-cyan);
+            transition: transform 0.15s ease-out;
+            font-size: 0.8rem;
+        }
+
+        details[open] summary::before {
+            transform: rotate(90deg);
+        }
+
+        .details-body {
+            padding: 0.15rem 0.8rem 0.6rem;
+            border-top: 1px solid #111827;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .details-body ul,
+        .details-body ol {
+            padding-left: 1.1rem;
+        }
+
+        pre.code-block {
+            background: var(--bg-code);
+            border-radius: 0.75rem;
+            padding: 0.6rem 0.8rem;
+            font-size: 0.82rem;
+            overflow-x: auto;
+            border: 1px solid #020617;
+            margin-bottom: 0.6rem;
+        }
+
+        pre.code-block code {
+            font-family: "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco,
+                Consolas, "Liberation Mono", "Courier New", monospace;
+            white-space: pre;
+        }
+
+        code.inline-code {
+            background: rgba(15, 23, 42, 0.95);
+            border-radius: 0.35rem;
+            padding: 0.05rem 0.25rem;
+            border: 1px solid #111827;
+            font-size: 0.83rem;
+        }
+
+        /* Syntax highlight (Option B advanced) */
+        .hl-tag { color: #38bdf8; }
+        .hl-attr { color: #fbbf24; }
+        .hl-string { color: #a5b4fc; }
+        .hl-comment { color: #6b7280; font-style: italic; }
+        .hl-key { color: #facc15; }
+        .hl-number { color: #34d399; }
+        .hl-bool { color: #fb7185; }
+        .hl-punct { color: #9ca3af; }
+
+        .note-callout {
+            border-radius: 0.75rem;
+            border: 1px dashed rgba(248, 250, 252, 0.1);
+            background: rgba(15, 23, 42, 0.75);
+            padding: 0.45rem 0.7rem;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .note-callout strong {
+            color: var(--accent-amber);
+        }
+
+        .mini-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 0.4rem;
+            margin-top: 0.3rem;
+        }
+
+        .mini-card {
+            border-radius: 0.75rem;
+            border: 1px solid #111827;
+            background: rgba(15, 23, 42, 0.85);
+            padding: 0.4rem 0.6rem;
+            font-size: 0.8rem;
+        }
+
+        @media (max-width: 991.98px) {
+            .sidebar-inner {
+                position: static;
+                max-height: none;
+            }
+            .content-area {
+                max-height: none;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="layout-wrapper container-fluid">
+    <div class="note-container row g-0">
+        <!-- SIDEBAR -->
+        <aside class="sidebar col-12 col-lg-3">
+            <div class="sidebar-inner">
+                <div class="d-flex align-items-center justify-content-between">
+                    <span class="badge-module">Module 14</span>
+                    <span class="pill-tag">Performance</span>
+                </div>
+
+                <div class="mt-3">
+                    <div class="sidebar-title">Performance Optimization</div>
+                    <div class="sidebar-subtitle">
+                        HTML-level strategies, loading patterns, and Core Web Vitals
+                        for fast, stable, research-grade web experiences.
+                    </div>
+                </div>
+
+                <div class="author-block">
+                    <div><span class="author-name">Prepared for:</span> College to PhD-level learners</div>
+                    <div><span class="author-name">Focus:</span> HTML perf, loading, Core Web Vitals</div>
+                </div>
+
+                <div class="toc-title mt-3">Table of Contents</div>
+                <input
+                    id="tocSearch"
+                    type="text"
+                    class="form-control form-control-sm toc-search-input mt-1"
+                    placeholder="Search sections…"
+                />
+
+                <div class="toc-utilities">
+                    <button id="expandAll" class="btn btn-sm btn-util">Expand All</button>
+                    <button id="collapseAll" class="btn btn-sm btn-util">Collapse All</button>
+                </div>
+
+                <ul id="tocList" class="toc-list mt-2">
+                    <li><a href="#sec-14-1" class="toc-link main">14.1 HTML Performance Basics</a></li>
+                    <li><a href="#sec-14-1-min-size" class="toc-link sub">14.1.1 Minimizing HTML size</a></li>
+                    <li><a href="#sec-14-1-structure" class="toc-link sub">14.1.2 Efficient document structure</a></li>
+                    <li><a href="#sec-14-1-priority" class="toc-link sub">14.1.3 Resource prioritization</a></li>
+
+                    <li class="mt-2"><a href="#sec-14-2" class="toc-link main">14.2 Loading Optimization</a></li>
+                    <li><a href="#sec-14-2-lazy" class="toc-link sub">14.2.1 Lazy loading images & iframes</a></li>
+                    <li><a href="#sec-14-2-preload" class="toc-link sub">14.2.2 Preload, prefetch, preconnect</a></li>
+                    <li><a href="#sec-14-2-critical" class="toc-link sub">14.2.3 Critical resource hints</a></li>
+                    <li><a href="#sec-14-2-fonts" class="toc-link sub">14.2.4 Web fonts optimization</a></li>
+
+                    <li class="mt-2"><a href="#sec-14-3" class="toc-link main">14.3 Core Web Vitals</a></li>
+                    <li><a href="#sec-14-3-lcp" class="toc-link sub">14.3.1 Largest Contentful Paint (LCP)</a></li>
+                    <li><a href="#sec-14-3-fid" class="toc-link sub">14.3.2 First Input Delay (FID / INP)</a></li>
+                    <li><a href="#sec-14-3-cls" class="toc-link sub">14.3.3 Cumulative Layout Shift (CLS)</a></li>
+                    <li><a href="#sec-14-3-html-role" class="toc-link sub">14.3.4 HTML’s role in performance metrics</a></li>
+                </ul>
+
+                <div class="note-callout mt-3">
+                    <strong>Mental model:</strong>
+                    Performance = (what you send) + (when the browser sees it) +
+                    (how stable it looks while loading).
+                </div>
+            </div>
+        </aside>
+
+        <!-- CONTENT -->
+        <main class="content-area col-12 col-lg-9">
+            <header class="mb-2">
+                <div class="content-header-label">Perf · Core Web Vitals</div>
+                <h1 class="content-main-title">Module 14: Performance Optimization</h1>
+                <p class="content-subtitle mt-1">
+                    This module focuses on how HTML authoring decisions influence
+                    performance: payload size, loading order, lazy loading, resource
+                    hints, web fonts, and their impact on Core Web Vitals such as
+                    LCP, FID/INP, and CLS.
+                </p>
+                <div class="d-flex flex-wrap gap-1 mt-1">
+                    <span class="pill-tag">Core Web Vitals</span>
+                    <span class="pill-tag">Loading Optimization</span>
+                    <span class="pill-tag">HTML Strategy</span>
+                </div>
+            </header>
+
+            <!-- EXECUTIVE SUMMARY -->
+            <section class="section-card">
+                <div class="section-kicker">0. Executive Overview</div>
+                <h2 class="section-heading">
+                    Why performance optimization matters
+                    <span class="section-label">Big Picture</span>
+                </h2>
+                <p class="section-summary-text mt-1">
+                    Performance is not just “fast networks” or “smaller images”. It
+                    is a user-perceived phenomenon: how quickly something
+                    <strong>useful</strong> appears (LCP), how soon they can
+                    <strong>interact</strong> (FID/INP), and whether the layout feels
+                    <strong>stable</strong> (CLS). HTML is your first line of control:
+                    what markup you send, how you reference resources, and which
+                    hints you give to the browser.
+                </p>
+
+                <details open>
+                    <summary>
+                        Executive summary of Module 14
+                        <span class="badge-level">TL;DR</span>
+                    </summary>
+                    <div class="details-body">
+                        <ul>
+                            <li>
+                                <strong>14.1 HTML Basics:</strong> Keep HTML small,
+                                avoid unnecessary wrappers, and prioritize loading of
+                                critical resources (above-the-fold content).
+                            </li>
+                            <li>
+                                <strong>14.2 Loading Optimization:</strong> Lazy-load
+                                non-critical images/iframes, use
+                                <code class="inline-code">&lt;link rel="preload"&gt;</code>
+                                and <code class="inline-code">preconnect</code> for
+                                key resources, and optimize web fonts for speed and
+                                stability.
+                            </li>
+                            <li>
+                                <strong>14.3 Core Web Vitals:</strong> Learn how LCP,
+                                FID/INP, and CLS work, and which HTML patterns directly
+                                affect them.
+                            </li>
+                        </ul>
+                        <p>
+                            Think of yourself as negotiating a contract with the
+                            browser: “Here’s what’s critical, here’s what can wait,
+                            and here’s how to keep layout stable while everything
+                            loads.”
+                        </p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- ================================= -->
+            <!-- 14.1 HTML PERFORMANCE BASICS      -->
+            <!-- ================================= -->
+            <section id="sec-14-1" class="section-card">
+                <div class="section-kicker">14.1</div>
+                <h2 class="section-heading">
+                    HTML Performance Basics
+                    <span class="section-label">Payload &amp; Structure</span>
+                </h2>
+                <p class="section-summary-text mt-1">
+                    The browser can’t start rendering until it has downloaded and
+                    parsed your HTML. Large, deeply nested, or poorly structured
+                    documents slow down Time to First Byte (TTFB), parsing,
+                    and layout. Small, clean HTML is a performance optimization.
+                </p>
+
+                <!-- 14.1.1 MINIMIZING HTML SIZE -->
+                <section id="sec-14-1-min-size" class="mt-2">
+                    <h3 class="section-heading" style="font-size:1rem;">
+                        14.1.1 Minimizing HTML size
+                    </h3>
+
+                    <details open>
+                        <summary>
+                            Strategies to reduce HTML payload
+                            <span class="badge-level">Concept</span>
+                        </summary>
+                        <div class="details-body">
+                            <ul>
+                                <li>Remove unused markup, dead widgets, and commented-out legacy code.</li>
+                                <li>Avoid deeply nested &lt;div&gt; trees for simple layouts.</li>
+                                <li>Use server-side compression (gzip, brotli).</li>
+                                <li>Inline only truly critical CSS/JS in the initial HTML.</li>
+                            </ul>
+                            <pre class="code-block"><code class="language-text">
+Heuristic:
+- If markup is never visible above-the-fold → consider loading later via JS.
+- If content is boilerplate repeated across pages → consider templating with shared layout instead of duplication.
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            Example: reducing unnecessary wrapper divs
+                            <span class="badge-level">Example</span>
+                        </summary>
+                        <div class="details-body">
+                            <pre class="code-block"><code class="language-html">
+&lt;!-- ❌ Over-wrapped HTML --&gt;
+&lt;div class=&quot;page&quot;&gt;
+  &lt;div class=&quot;page-inner&quot;&gt;
+    &lt;div class=&quot;content-wrapper&quot;&gt;
+      &lt;div class=&quot;content-inner&quot;&gt;
+        &lt;h1&gt;Article Title&lt;/h1&gt;
+        &lt;p&gt;Content...&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- ✅ Lean structure --&gt;
+&lt;main class=&quot;page&quot;&gt;
+  &lt;article class=&quot;content&quot;&gt;
+    &lt;h1&gt;Article Title&lt;/h1&gt;
+    &lt;p&gt;Content...&lt;/p&gt;
+  &lt;/article&gt;
+&lt;/main&gt;
+</code></pre>
+                            <p>
+                                The lean version reduces DOM depth, improves
+                                maintainability, and slightly reduces HTML size.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 14.1.2 EFFICIENT DOCUMENT STRUCTURE -->
+                <section id="sec-14-1-structure" class="mt-3">
+                    <h3 class="section-heading" style="font-size:1rem;">
+                        14.1.2 Efficient document structure
+                    </h3>
+
+                    <details open>
+                        <summary>
+                            DOM complexity &amp; rendering cost
+                            <span class="badge-level">Concept</span>
+                        </summary>
+                        <div class="details-body">
+                            <p>
+                                The browser constructs a DOM tree from your HTML,
+                                then applies styles and computes layout. A deeply
+                                nested, huge DOM can slow style recalculation and
+                                layout, especially on low-powered devices.
+                            </p>
+                            <ul>
+                                <li>Keep DOM depth reasonable; avoid “div soup”.</li>
+                                <li>Use semantic containers (&lt;header&gt;, &lt;main&gt;, &lt;section&gt;) instead of random wrappers.</li>
+                                <li>Avoid thousands of nodes rendered immediately if only some are visible initially.</li>
+                            </ul>
+                            <pre class="code-block"><code class="language-text">
+Rule of thumb:
+- Fewer nodes, shallower nesting → faster style/layout calculation.
+- Use pagination or virtual scrolling for very large lists.
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            Example: deferring non-critical sections
+                            <span class="badge-level">Example</span>
+                        </summary>
+                        <div class="details-body">
+                            <pre class="code-block"><code class="language-html">
+&lt;main&gt;
+  &lt;section&gt;
+    &lt;h1&gt;Main Dashboard&lt;/h1&gt;
+    &lt;!-- Critical, above-the-fold widgets here --&gt;
+  &lt;/section&gt;
+
+  &lt;section id=&quot;lazy-section&quot; hidden&gt;
+    &lt;h2&gt;Historical Analytics&lt;/h2&gt;
+    &lt;p&gt;Heavy charts and tables...&lt;/p&gt;
+  &lt;/section&gt;
+&lt;/main&gt;
+
+&lt;script&gt;
+  // Defer loading heavy section until after first paint
+  window.addEventListener('load', () =&gt; {
+    const lazySection = document.getElementById('lazy-section');
+    lazySection.hidden = false;
+  });
+&lt;/script&gt;
+</code></pre>
+                            <p>
+                                Here, initial HTML hints main content first, while
+                                non-critical sections become visible after initial
+                                load, reducing competition for early rendering.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 14.1.3 RESOURCE PRIORITIZATION -->
+                <section id="sec-14-1-priority" class="mt-3">
+                    <h3 class="section-heading" style="font-size:1rem;">
+                        14.1.3 Resource prioritization
+                    </h3>
+
+                    <details open>
+                        <summary>
+                            Critical vs non-critical resources
+                            <span class="badge-level">Concept</span>
+                        </summary>
+                        <div class="details-body">
+                            <p>
+                                HTML tells the browser which resources exist
+                                (stylesheets, scripts, images). The browser performs
+                                its own prioritization, but you can gently steer it.
+                            </p>
+                            <ul>
+                                <li><strong>Critical CSS</strong> → needed to render above-the-fold content.</li>
+                                <li><strong>Critical JS</strong> → needed for initial interaction.</li>
+                                <li>Everything else is non-critical and can be delayed.</li>
+                            </ul>
+                            <pre class="code-block"><code class="language-text">
+Design principle:
+- Render something useful fast (skeleton, main content).
+- Avoid blocking rendering with non-essential JS.
+- Load analytics and heavy scripts after initial paint.
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            Example: deferring non-critical scripts
+                            <span class="badge-level">Example</span>
+                        </summary>
+                        <div class="details-body">
+                            <pre class="code-block"><code class="language-html">
+&lt;!-- Critical CSS in &lt;head&gt; --&gt;
+&lt;link rel=&quot;stylesheet&quot; href=&quot;/css/critical.css&quot; /&gt;
+
+&lt;!-- Defer main bundle so HTML parsing isn&apos;t blocked --&gt;
+&lt;script src=&quot;/js/main.bundle.js&quot; defer&gt;&lt;/script&gt;
+
+&lt;!-- Non-critical analytics loaded later --&gt;
+&lt;script&gt;
+  window.addEventListener('load', () =&gt; {
+    const s = document.createElement('script');
+    s.src = 'https://analytics.example.com/sdk.js';
+    document.body.appendChild(s);
+  });
+&lt;/script&gt;
+</code></pre>
+                            <p>
+                                Using <code class="inline-code">defer</code> ensures
+                                scripts execute after parsing; inlined “load” handler
+                                ensures analytics waits until the page is ready.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+            </section>
+
+            <!-- ================================= -->
+            <!-- 14.2 LOADING OPTIMIZATION         -->
+            <!-- ================================= -->
+            <section id="sec-14-2" class="section-card">
+                <div class="section-kicker">14.2</div>
+                <h2 class="section-heading">
+                    Loading Optimization
+                    <span class="section-label">Network &amp; Hints</span>
+                </h2>
+                <p class="section-summary-text mt-1">
+                    Beyond HTML size and structure, you control when and how
+                    resources load. Modern HTML attributes and link hints let you
+                    defer non-critical work and prewarm critical connections.
+                </p>
+
+                <!-- 14.2.1 LAZY LOADING -->
+                <section id="sec-14-2-lazy" class="mt-2">
+                    <h3 class="section-heading" style="font-size:1rem;">
+                        14.2.1 Lazy loading images and iframes
+                    </h3>
+
+                    <details open>
+                        <summary>
+                            Native lazy loading
+                            <span class="badge-level">Concept</span>
+                        </summary>
+                        <div class="details-body">
+                            <p>
+                                Browsers now support native lazy loading for images
+                                and iframes via the
+                                <code class="inline-code">loading</code> attribute:
+                            </p>
+                            <ul>
+                                <li><code class="inline-code">loading="lazy"</code> → load when near viewport</li>
+                                <li><code class="inline-code">loading="eager"</code> → load immediately</li>
+                            </ul>
+                            <p>
+                                Lazy loading reduces initial network contention and
+                                speeds up first paint, especially on long, image-heavy
+                                pages.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            Example: lazy-loading below-the-fold assets
+                            <span class="badge-level">Example</span>
+                        </summary>
+                        <div class="details-body">
+                            <pre class="code-block"><code class="language-html">
+&lt;!-- Above-the-fold hero image: eager --&gt;
+&lt;img
+  src=&quot;/img/hero-banner.jpg&quot;
+  alt=&quot;Dashboard overview&quot;
+  width=&quot;1200&quot; height=&quot;600&quot;
+  loading=&quot;eager&quot; /&gt;
+
+&lt;!-- Gallery images further down: lazy --&gt;
+&lt;img
+  src=&quot;/img/report-1-thumb.jpg&quot;
+  alt=&quot;Report screenshot&quot;
+  width=&quot;400&quot; height=&quot;300&quot;
+  loading=&quot;lazy&quot; /&gt;
+
+&lt;iframe
+  src=&quot;https://www.youtube.com/embed/xyz&quot;
+  title=&quot;Performance talk&quot;
+  loading=&quot;lazy&quot;&gt;
+&lt;/iframe&gt;
+</code></pre>
+                            <p>
+                                Always include <code class="inline-code">width</code>
+                                and <code class="inline-code">height</code> to avoid
+                                layout shifts as images load (helps CLS).
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 14.2.2 PRELOAD / PREFETCH / PRECONNECT -->
+                <section id="sec-14-2-preload" class="mt-3">
+                    <h3 class="section-heading" style="font-size:1rem;">
+                        14.2.2 Preload, prefetch, and preconnect
+                    </h3>
+
+                    <details open>
+                        <summary>
+                            Resource hint taxonomy
+                            <span class="badge-level">Concept</span>
+                        </summary>
+                        <div class="details-body">
+                            <ul>
+                                <li>
+                                    <code class="inline-code">rel="preload"</code> —
+                                    high-priority fetch for resources needed in the
+                                    current navigation.
+                                </li>
+                                <li>
+                                    <code class="inline-code">rel="prefetch"</code> —
+                                    low-priority fetch for likely <em>future</em>
+                                    navigations.
+                                </li>
+                                <li>
+                                    <code class="inline-code">rel="preconnect"</code> —
+                                    pre-establish TCP/TLS connection to an origin.
+                                </li>
+                            </ul>
+                            <p>
+                                Using these hints correctly can shift network work
+                                earlier, improving LCP and input readiness.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            Example: preloading critical CSS and hero image
+                            <span class="badge-level">Example</span>
+                        </summary>
+                        <div class="details-body">
+                            <pre class="code-block"><code class="language-html">
+&lt;head&gt;
+  &lt;!-- Preload critical CSS as a style resource --&gt;
+  &lt;link
+    rel=&quot;preload&quot;
+    href=&quot;/css/critical.css&quot;
+    as=&quot;style&quot;
+    onload=&quot;this.rel='stylesheet'&quot; /&gt;
+  &lt;noscript&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;/css/critical.css&quot; /&gt;
+  &lt;/noscript&gt;
+
+  &lt;!-- Preload LCP hero image --&gt;
+  &lt;link
+    rel=&quot;preload&quot;
+    as=&quot;image&quot;
+    href=&quot;/img/hero-banner.jpg&quot;
+    imagesrcset=&quot;/img/hero-banner-800.jpg 800w,
+                  /img/hero-banner-1200.jpg 1200w&quot;
+    imagesizes=&quot;100vw&quot; /&gt;
+&lt;/head&gt;
+</code></pre>
+                            <p>
+                                This pattern tells the browser “these resources are
+                                critical, please fetch them early”.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            Example: preconnect to third-party origins
+                            <span class="badge-level">Example</span>
+                        </summary>
+                        <div class="details-body">
+                            <pre class="code-block"><code class="language-html">
+&lt;head&gt;
+  &lt;!-- Preconnect to font provider --&gt;
+  &lt;link rel=&quot;preconnect&quot; href=&quot;https://fonts.gstatic.com&quot; crossorigin /&gt;
+
+  &lt;!-- Preconnect to analytics CDN --&gt;
+  &lt;link rel=&quot;preconnect&quot; href=&quot;https://analytics.example.com&quot; /&gt;
+&lt;/head&gt;
+</code></pre>
+                            <p>
+                                Preconnect warms up the connection handshake so when
+                                the actual request is made, it’s faster.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 14.2.3 CRITICAL RESOURCE HINTS -->
+                <section id="sec-14-2-critical" class="mt-3">
+                    <h3 class="section-heading" style="font-size:1rem;">
+                        14.2.3 Critical resource hints
+                    </h3>
+
+                    <details open>
+                        <summary>
+                            Identifying critical path resources
+                            <span class="badge-level">Concept</span>
+                        </summary>
+                        <div class="details-body">
+                            <p>
+                                The critical path is the minimal set of resources
+                                required to render the above-the-fold content. Common
+                                critical resources:
+                            </p>
+                            <ul>
+                                <li>HTML of the main document</li>
+                                <li>Critical CSS for initial view</li>
+                                <li>Hero image or main visual (LCP element)</li>
+                                <li>Minimal JS for user input if necessary</li>
+                            </ul>
+                            <pre class="code-block"><code class="language-text">
+Heuristic:
+- Inline tiny critical CSS (&lt;style&gt;...) in HTML.
+- Preload key CSS/JS files.
+- Lazy-load non-critical bundles.
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            Example: splitting main vs non-critical JS
+                            <span class="badge-level">Example</span>
+                        </summary>
+                        <div class="details-body">
+                            <pre class="code-block"><code class="language-html">
+&lt;!-- Minimal JS needed for above-the-fold navbar / menu --&gt;
+&lt;script src=&quot;/js/main-critical.js&quot; defer&gt;&lt;/script&gt;
+
+&lt;!-- Non-critical modules: load later --&gt;
+&lt;script&gt;
+  window.addEventListener('load', () =&gt; {
+    ['charts.js', 'heatmaps.js'].forEach(file =&gt; {
+      const s = document.createElement('script');
+      s.src = '/js/' + file;
+      s.defer = true;
+      document.body.appendChild(s);
+    });
+  });
+&lt;/script&gt;
+</code></pre>
+                            <p>
+                                The browser focuses early bandwidth on the “critical”
+                                script, while heavy visualizations wait until after
+                                load.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 14.2.4 WEB FONTS OPTIMIZATION -->
+                <section id="sec-14-2-fonts" class="mt-3">
+                    <h3 class="section-heading" style="font-size:1rem;">
+                        14.2.4 Web fonts optimization
+                    </h3>
+
+                    <details open>
+                        <summary>
+                            Fonts, FOUT, and CLS
+                            <span class="badge-level">Concept</span>
+                        </summary>
+                        <div class="details-body">
+                            <p>
+                                Web fonts can block text rendering and cause layout
+                                shifts if not handled carefully.
+                            </p>
+                            <ul>
+                                <li>Use <code class="inline-code">font-display</code> to control behavior.</li>
+                                <li>Limit number of font families and weights.</li>
+                                <li>Preload critical fonts if they impact LCP.</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            Example: font-display and preload
+                            <span class="badge-level">Example</span>
+                        </summary>
+                        <div class="details-body">
+                            <pre class="code-block"><code class="language-html">
+&lt;head&gt;
+  &lt;!-- Preload critical font --&gt;
+  &lt;link
+    rel=&quot;preload&quot;
+    href=&quot;/fonts/Inter-Variable.woff2&quot;
+    as=&quot;font&quot;
+    type=&quot;font/woff2&quot;
+    crossorigin /&gt;
+
+  &lt;style&gt;
+    @font-face {
+      font-family: 'Inter';
+      src: url('/fonts/Inter-Variable.woff2') format('woff2');
+      font-display: swap; /* show fallback, swap when ready */
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont,
+                   'Segoe UI', sans-serif;
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+</code></pre>
+                            <p>
+                                <code class="inline-code">font-display: swap</code>
+                                avoids invisible text; preload ensures the font is
+                                ready early.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+            </section>
+
+            <!-- ================================= -->
+            <!-- 14.3 CORE WEB VITALS              -->
+            <!-- ================================= -->
+            <section id="sec-14-3" class="section-card">
+                <div class="section-kicker">14.3</div>
+                <h2 class="section-heading">
+                    Core Web Vitals
+                    <span class="section-label">User-centric Metrics</span>
+                </h2>
+                <p class="section-summary-text mt-1">
+                    Core Web Vitals are a set of field-focused metrics capturing key
+                    aspects of user experience: loading performance (LCP),
+                    interactivity (FID/INP), and visual stability (CLS). Many
+                    problems in these metrics are rooted in HTML decisions.
+                </p>
+
+                <!-- 14.3.1 LCP -->
+                <section id="sec-14-3-lcp" class="mt-2">
+                    <h3 class="section-heading" style="font-size:1rem;">
+                        14.3.1 Largest Contentful Paint (LCP)
+                    </h3>
+
+                    <details open>
+                        <summary>
+                            What is LCP?
+                            <span class="badge-level">Concept</span>
+                        </summary>
+                        <div class="details-body">
+                            <p>
+                                LCP measures when the largest content element in the
+                                viewport (often hero image, big heading, or main
+                                block) becomes visible. Good LCP is generally
+                                &lt; 2.5 seconds.
+                            </p>
+                            <ul>
+                                <li>Common LCP elements: hero image, main heading, large background image.</li>
+                                <li>Improved by: optimized images, resource hints, server speed, avoiding render-blocking resources.</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            Example: HTML patterns that improve LCP
+                            <span class="badge-level">Example</span>
+                        </summary>
+                        <div class="details-body">
+                            <pre class="code-block"><code class="language-html">
+&lt;head&gt;
+  &lt;!-- Fast critical CSS and hero image preload --&gt;
+  &lt;link rel=&quot;preload&quot; href=&quot;/css/critical.css&quot; as=&quot;style&quot; onload=&quot;this.rel='stylesheet'&quot; /&gt;
+  &lt;link rel=&quot;preload&quot; as=&quot;image&quot; href=&quot;/img/hero.jpg&quot; /&gt;
+&lt;/head&gt;
+
+&lt;body&gt;
+  &lt;main&gt;
+    &lt;section class=&quot;hero&quot;&gt;
+      &lt;h1&gt;Observe Your Data in Real Time&lt;/h1&gt;
+      &lt;img src=&quot;/img/hero.jpg&quot; alt=&quot;Real-time dashboard&quot;
+           width=&quot;1200&quot; height=&quot;600&quot; /&gt;
+    &lt;/section&gt;
+  &lt;/main&gt;
+&lt;/body&gt;
+</code></pre>
+                            <p>
+                                Ensuring the hero section is early in HTML and its
+                                assets are preloaded helps LCP.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 14.3.2 FID / INP -->
+                <section id="sec-14-3-fid" class="mt-3">
+                    <h3 class="section-heading" style="font-size:1rem;">
+                        14.3.2 First Input Delay (FID) / Interaction to Next Paint (INP)
+                    </h3>
+
+                    <details open>
+                        <summary>
+                            Interactivity metrics
+                            <span class="badge-level">Concept</span>
+                        </summary>
+                        <div class="details-body">
+                            <p>
+                                FID measured the delay between first user interaction
+                                and event handler execution. INP (Interaction to Next
+                                Paint) is a newer, more holistic metric for overall
+                                interaction latency.
+                            </p>
+                            <ul>
+                                <li>Heavy JavaScript execution blocks the main thread.</li>
+                                <li>Long tasks (&gt; 50ms) reduce responsiveness.</li>
+                                <li>Deferred, split, and optimized JS improves INP/FID.</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            HTML-level patterns influencing FID/INP
+                            <span class="badge-level">Example</span>
+                        </summary>
+                        <div class="details-body">
+                            <pre class="code-block"><code class="language-html">
+&lt;!-- ❌ Blocking inline script in &lt;head&gt; --&gt;
+&lt;head&gt;
+  &lt;script&gt;
+    // Large synchronous JS doing heavy calculations at startup
+  &lt;/script&gt;
+&lt;/head&gt;
+
+&lt;!-- ✅ Defer heavy JS and split tasks --&gt;
+&lt;head&gt;
+  &lt;script src=&quot;/js/main.js&quot; defer&gt;&lt;/script&gt;
+&lt;/head&gt;
+
+&lt;script&gt;
+  // Example: splitting heavy work using requestIdleCallback or setTimeout
+  function heavyWork() {
+    // break into chunks to avoid long tasks
+  }
+  window.addEventListener('load', () =&gt; {
+    setTimeout(heavyWork, 0);
+  });
+&lt;/script&gt;
+</code></pre>
+                            <p>
+                                As an HTML author, you choose where scripts go and how
+                                they load; this indirectly affects INP/FID.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 14.3.3 CLS -->
+                <section id="sec-14-3-cls" class="mt-3">
+                    <h3 class="section-heading" style="font-size:1rem;">
+                        14.3.3 Cumulative Layout Shift (CLS)
+                    </h3>
+
+                    <details open>
+                        <summary>
+                            What causes CLS?
+                            <span class="badge-level">Concept</span>
+                        </summary>
+                        <div class="details-body">
+                            <p>
+                                CLS tracks unexpected layout shifts during the
+                                lifetime of the page — when content suddenly moves
+                                while the user is reading or interacting.
+                            </p>
+                            <ul>
+                                <li>Images or iframes without fixed dimensions</li>
+                                <li>Ads or embeds injected above existing content</li>
+                                <li>Web fonts causing reflow</li>
+                                <li>DOM elements inserted above-the-fold without reserving space</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>
+                            Example: avoiding CLS with fixed dimensions
+                            <span class="badge-level">Example</span>
+                        </summary>
+                        <div class="details-body">
+                            <pre class="code-block"><code class="language-html">
+&lt;!-- ❌ No dimensions → layout jumps when image loads --&gt;
+&lt;img src=&quot;/img/card-thumb.jpg&quot; alt=&quot;Card&quot; /&gt;
+
+&lt;!-- ✅ Reserve space with width/height (or CSS aspect-ratio) --&gt;
+&lt;img
+  src=&quot;/img/card-thumb.jpg&quot;
+  alt=&quot;Card&quot;
+  width=&quot;400&quot; height=&quot;250&quot; /&gt;
+
+&lt;!-- Or in CSS:
+.card-thumb {
+  aspect-ratio: 16 / 9;
+} --&gt;
+</code></pre>
+                            <p>
+                                Always define size or aspect ratio for media in the
+                                HTML or CSS, especially above-the-fold.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 14.3.4 HTML'S ROLE IN METRICS -->
+                <section id="sec-14-3-html-role" class="mt-3">
+                    <h3 class="section-heading" style="font-size:1rem;">
+                        14.3.4 HTML’s role in performance metrics
+                    </h3>
+
+                    <details open>
+                        <summary>
+                            Mapping HTML choices to metrics
+                            <span class="badge-level">Summary</span>
+                        </summary>
+                        <div class="details-body">
+                            <ul>
+                                <li>
+                                    <strong>LCP:</strong>
+                                    <ul>
+                                        <li>Place LCP element early in HTML.</li>
+                                        <li>Preload its resources.</li>
+                                        <li>Avoid blocking CSS/JS before it.</li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <strong>FID / INP:</strong>
+                                    <ul>
+                                        <li>Use <code class="inline-code">defer</code> for scripts.</li>
+                                        <li>Avoid large inline blocking scripts in &lt;head&gt;.</li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <strong>CLS:</strong>
+                                    <ul>
+                                        <li>Reserve space for images, iframes, ads, and dynamic content.</li>
+                                        <li>Avoid inserting content above existing text without reservation.</li>
+                                    </ul>
+                                </li>
+                            </ul>
+                            <pre class="code-block"><code class="language-text">
+Performance mindset:
+1. Identify critical content (LCP).
+2. Reserve space for everything that loads later (CLS).
+3. Avoid blocking the main thread (FID/INP).
+4. Use HTML hints to guide the browser.
+                            </code></pre>
+                        </div>
+                    </details>
+                </section>
+            </section>
+
+            <!-- SUMMARY / CHECKLIST -->
+            <section class="section-card">
+                <div class="section-kicker">Wrap-up</div>
+                <h2 class="section-heading">
+                    Checklist: Performance Optimization
+                    <span class="section-label">Self-Audit</span>
+                </h2>
+
+                <details open class="mt-1">
+                    <summary>
+                        Quick self-check
+                        <span class="badge-level">Checklist</span>
+                    </summary>
+                    <div class="details-body">
+                        <ul>
+                            <li>Is HTML free from unnecessary wrappers and dead code?</li>
+                            <li>Are above-the-fold resources clearly prioritized (HTML, CSS, key images)?</li>
+                            <li>Are non-critical scripts deferred or loaded after initial render?</li>
+                            <li>Do images/iframes use <code class="inline-code">loading="lazy"</code> where appropriate?</li>
+                            <li>Are you using <code class="inline-code">preload</code> / <code class="inline-code">preconnect</code> for critical assets?</li>
+                            <li>Are font files optimized with <code class="inline-code">font-display</code> and preloading?</li>
+                            <li>Do all media elements have fixed dimensions or aspect ratios to avoid CLS?</li>
+                        </ul>
+                        <p class="mt-1">
+                            If you can say “yes” to most of these, your HTML is not
+                            only functionally correct but actively supporting fast,
+                            stable, and high-quality user experiences.
+                        </p>
+                    </div>
+                </details>
+            </section>
+
+        </main>
+    </div>
+</div>
+
+<!-- JavaScript: Bootstrap + utilities + syntax highlighting -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Smooth scrolling for TOC links
+    document.querySelectorAll('a[href^="#"]').forEach(function (anchor) {
+        anchor.addEventListener("click", function (e) {
+            const targetId = this.getAttribute("href");
+            if (targetId.length > 1) {
+                e.preventDefault();
+                const target = document.querySelector(targetId);
+                if (target) {
+                    target.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+            }
+        });
+    });
+
+    // Expand / Collapse all <details>
+    const expandBtn = document.getElementById("expandAll");
+    const collapseBtn = document.getElementById("collapseAll");
+
+    if (expandBtn) {
+        expandBtn.addEventListener("click", function () {
+            document.querySelectorAll("details").forEach(function (d) {
+                d.open = true;
+            });
+        });
+    }
+
+    if (collapseBtn) {
+        collapseBtn.addEventListener("click", function () {
+            document.querySelectorAll("details").forEach(function (d) {
+                d.open = false;
+            });
+        });
+    }
+
+    // TOC search
+    const tocSearch = document.getElementById("tocSearch");
+    const tocList = document.getElementById("tocList");
+
+    if (tocSearch && tocList) {
+        tocSearch.addEventListener("input", function () {
+            const query = this.value.trim().toLowerCase();
+            const links = tocList.querySelectorAll(".toc-link");
+            links.forEach(function (link) {
+                const text = link.textContent.toLowerCase();
+                const li = link.closest("li");
+                if (!query || text.includes(query)) {
+                    li.style.display = "";
+                } else {
+                    li.style.display = "none";
+                }
+            });
+        });
+    }
+
+    // Simple "active" state for TOC when clicking
+    document.querySelectorAll(".toc-link").forEach(function (link) {
+        link.addEventListener("click", function () {
+            document.querySelectorAll(".toc-link.active").forEach(function (l) {
+                l.classList.remove("active");
+            });
+            this.classList.add("active");
+        });
+    });
+
+    // ========================
+    // SYNTAX HIGHLIGHTING (safe)
+    // ========================
+    function highlightHTMLCodeBlock(codeEl) {
+        let html = codeEl.innerHTML;
+
+        // Comments: &lt;!-- ... --&gt;
+        html = html.replace(
+            /(&lt;!--[\s\S]*?--&gt;)/g,
+            '<span class="hl-comment">$1</span>'
+        );
+
+        // Strings in attributes: "..."
+        html = html.replace(
+            /(&quot;[^&]*?&quot;)/g,
+            '<span class="hl-string">$1</span>'
+        );
+
+        // Tag opening with attributes: &lt;tag ...&gt;
+        html = html.replace(
+            /(&lt;\/?)([a-zA-Z0-9\-]+)((?:[^&]|&(?!gt;))*)&gt;/g,
+            function (match, open, tagName, rest) {
+                // Highlight attribute names
+                const highlightedRest = rest.replace(
+                    /([\s\t\r\n])([a-zA-Z_:][-a-zA-Z0-9_:.]*)(=)/g,
+                    '$1<span class="hl-attr">$2</span>$3'
+                );
+                return (
+                    open +
+                    '<span class="hl-tag">' +
+                    tagName +
+                    "</span>" +
+                    highlightedRest +
+                    "&gt;"
+                );
+            }
+        );
+
+        codeEl.innerHTML = html;
+    }
+
+    function highlightJSONCodeBlock(codeEl) {
+        let html = codeEl.innerHTML;
+
+        // Strings: "..."
+        html = html.replace(
+            /(&quot;[^&]*?&quot;)/g,
+            '<span class="hl-string">$1</span>'
+        );
+
+        // Keys: "key":
+        html = html.replace(
+            /(&quot;[^&]*?&quot;)(\s*:&nbsp;|\s*:)/g,
+            '<span class="hl-key">$1</span>$2'
+        );
+
+        // Numbers
+        html = html.replace(
+            /\b(-?\d+(\.\d+)?)\b/g,
+            '<span class="hl-number">$1</span>'
+        );
+
+        // Booleans and null
+        html = html.replace(
+            /\b(true|false|null)\b/g,
+            '<span class="hl-bool">$1</span>'
+        );
+
+        // Punctuation { } [ ] : ,
+        html = html.replace(
+            /([\{\}\[\]\:\,])/g,
+            '<span class="hl-punct">$1</span>'
+        );
+
+        codeEl.innerHTML = html;
+    }
+
+    document
+        .querySelectorAll("pre.code-block code.language-html")
+        .forEach(function (codeEl) {
+            highlightHTMLCodeBlock(codeEl);
+        });
+
+    document
+        .querySelectorAll("pre.code-block code.language-jsonld")
+        .forEach(function (codeEl) {
+            highlightJSONCodeBlock(codeEl);
+        });
+});
+</script>
+</body>
+</html>

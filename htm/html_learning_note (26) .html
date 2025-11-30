@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Module 21 – Advanced Development Workflow</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <!-- Bootstrap -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+
+  <style>
+    :root {
+      --bg-main: #050816;
+      --bg-card: #0b1020;
+      --bg-code: #050812;
+      --accent-cyan: #22d3ee;
+      --accent-amber: #fbbf24;
+      --text-main: #e5e7eb;
+      --text-muted: #9ca3af;
+      --border-subtle: #1f2937;
+      --shadow-soft: 0 0 40px rgba(15, 23, 42, 0.95);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: radial-gradient(circle at top, #0b1120 0, #020617 55%);
+      color: var(--text-main);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+    }
+
+    a {
+      color: var(--accent-cyan);
+      text-decoration: none;
+    }
+
+    a:hover {
+      color: var(--accent-amber);
+      text-decoration: underline;
+    }
+
+    .layout-wrapper {
+      min-height: 100vh;
+      padding: 1rem;
+    }
+
+    .note-container {
+      background: rgba(15, 23, 42, 0.96);
+      border-radius: 1.25rem;
+      box-shadow: var(--shadow-soft);
+      overflow: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      background: #020617;
+      border-right: 1px solid var(--border-subtle);
+      padding: 1.2rem 1.1rem;
+    }
+
+    .sidebar-inner {
+      position: sticky;
+      top: 0;
+      max-height: 100vh;
+      overflow-y: auto;
+      padding-right: 0.35rem;
+    }
+
+    .badge-module {
+      background: rgba(56, 189, 248, 0.12);
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      color: var(--accent-cyan);
+      padding: 0.22rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .pill-tag {
+      font-size: 0.7rem;
+      padding: 0.15rem 0.55rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      color: var(--text-muted);
+    }
+
+    .sidebar-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--accent-cyan);
+      margin-top: 0.7rem;
+    }
+
+    .sidebar-subtitle {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .author-block {
+      font-size: 0.8rem;
+      margin-top: 0.6rem;
+      color: var(--text-muted);
+    }
+
+    .author-name {
+      color: var(--accent-amber);
+      font-weight: 600;
+    }
+
+    .toc-title {
+      margin-top: 1rem;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+    }
+
+    .toc-search-input {
+      background: #020617;
+      border: 1px solid var(--border-subtle);
+      color: var(--text-main);
+      font-size: 0.8rem;
+    }
+
+    .toc-search-input:focus {
+      outline: none;
+      border-color: var(--accent-cyan);
+      box-shadow: 0 0 0 1px var(--accent-cyan);
+    }
+
+    .toc-utilities {
+      display: flex;
+      gap: 0.3rem;
+      margin-top: 0.45rem;
+    }
+
+    .btn-util {
+      flex: 1;
+      border-radius: 999px;
+      border: 1px solid var(--border-subtle);
+      background: #020617;
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      padding: 0.18rem 0.4rem;
+    }
+
+    .btn-util:hover {
+      border-color: var(--accent-cyan);
+      color: var(--accent-cyan);
+    }
+
+    .toc-list {
+      list-style: none;
+      padding-left: 0;
+      margin-top: 0.5rem;
+    }
+
+    .toc-list li {
+      margin-bottom: 0.15rem;
+    }
+
+    .toc-link {
+      display: block;
+      padding: 0.26rem 0.4rem;
+      border-radius: 0.35rem;
+      font-size: 0.86rem;
+      color: var(--text-muted);
+    }
+
+    .toc-link.main {
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
+    .toc-link.sub {
+      padding-left: 0.95rem;
+      font-size: 0.8rem;
+    }
+
+    .toc-link:hover {
+      background: rgba(56, 189, 248, 0.08);
+      color: var(--accent-cyan);
+      text-decoration: none;
+    }
+
+    .toc-link.active {
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--accent-cyan);
+      border-left: 3px solid var(--accent-cyan);
+    }
+
+    /* Content */
+    .content-area {
+      padding: 1.35rem 1.4rem 1.5rem;
+      max-height: calc(100vh - 2rem);
+      overflow-y: auto;
+    }
+
+    .content-header-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--accent-amber);
+    }
+
+    .content-main-title {
+      font-size: 1.7rem;
+      font-weight: 700;
+      color: #f9fafb;
+    }
+
+    .content-subtitle {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      max-width: 48rem;
+    }
+
+    .section-card {
+      background: rgba(15, 23, 42, 0.9);
+      border-radius: 1rem;
+      border: 1px solid var(--border-subtle);
+      padding: 1rem;
+      margin-top: 1.1rem;
+    }
+
+    .section-heading {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #e5e7eb;
+    }
+
+    .section-summary-text {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    /* details / summary */
+    details {
+      margin-top: 0.6rem;
+      border-radius: 0.75rem;
+      border: 1px solid #111827;
+      background: #020617;
+    }
+
+    summary {
+      padding: 0.55rem 0.75rem;
+      cursor: pointer;
+      list-style: none;
+      font-size: 0.9rem;
+      color: var(--text-main);
+    }
+
+    summary::marker,
+    summary::-webkit-details-marker {
+      display: none;
+    }
+
+    summary::before {
+      content: "▸";
+      display: inline-block;
+      margin-right: 0.45rem;
+      color: var(--accent-cyan);
+      font-size: 0.8rem;
+      transition: transform 0.16s ease-out;
+    }
+
+    details[open] summary::before {
+      transform: rotate(90deg);
+    }
+
+    .details-body {
+      border-top: 1px solid #111827;
+      padding: 0.55rem 0.9rem 0.85rem;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .details-body ul,
+    .details-body ol {
+      padding-left: 1.2rem;
+    }
+
+    /* code blocks */
+    pre.code-block {
+      background: var(--bg-code);
+      border-radius: 0.75rem;
+      border: 1px solid #020617;
+      padding: 0.8rem 0.9rem;
+      font-size: 0.85rem;
+      overflow-x: auto;
+      margin-bottom: 0.65rem;
+    }
+
+    pre.code-block code {
+      font-family: "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco,
+        Consolas, "Liberation Mono", "Courier New", monospace;
+      white-space: pre;
+    }
+
+    code.inline-code {
+      background: rgba(15, 23, 42, 0.95);
+      border-radius: 0.3rem;
+      border: 1px solid #111827;
+      padding: 0.05rem 0.25rem;
+      font-size: 0.83rem;
+    }
+
+    .note-callout {
+      border-radius: 0.75rem;
+      border: 1px dashed rgba(148, 163, 184, 0.6);
+      background: rgba(15, 23, 42, 0.8);
+      padding: 0.5rem 0.7rem;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 0.7rem;
+    }
+
+    .note-callout strong {
+      color: var(--accent-amber);
+    }
+
+    /* syntax highlighting tokens */
+    .hl-tag {
+      color: #38bdf8;
+    }
+
+    .hl-attr {
+      color: #fbbf24;
+    }
+
+    .hl-string {
+      color: #a5b4fc;
+    }
+
+    .hl-key {
+      color: #facc15;
+    }
+
+    .hl-number {
+      color: #34d399;
+    }
+
+    .hl-js-keyword {
+      color: #fb923c;
+    }
+
+    .hl-js-global {
+      color: #22d3ee;
+    }
+
+    .hl-js-func {
+      color: #4ade80;
+    }
+  </style>
+</head>
+<body>
+  <div class="layout-wrapper container-fluid">
+    <div class="note-container row g-0">
+      <!-- SIDEBAR -->
+      <aside class="sidebar col-12 col-lg-3">
+        <div class="sidebar-inner">
+          <div class="d-flex justify-content-between align-items-center">
+            <span class="badge-module">Module 21</span>
+            <span class="pill-tag">Dev Workflow</span>
+          </div>
+
+          <div class="mt-3">
+            <div class="sidebar-title">Advanced Development Workflow</div>
+            <div class="sidebar-subtitle">
+              Build tools, preprocessing, automation, CMS integration, deploy pipelines (CDN, SSR, SSG) for serious HTML projects.
+            </div>
+          </div>
+
+          <div class="author-block">
+            <div><span class="author-name">Prepared for:</span> College → Master → PhD learners</div>
+            <div><span class="author-name">Focus:</span> Build systems · CMS · Deployment</div>
+          </div>
+
+          <div class="toc-title">Table of Contents</div>
+          <input
+            id="tocSearch"
+            class="form-control form-control-sm toc-search-input"
+            placeholder="Search sections…"
+          />
+
+          <div class="toc-utilities">
+            <button id="expandAll" class="btn btn-sm btn-util">Expand All</button>
+            <button id="collapseAll" class="btn btn-sm btn-util">Collapse All</button>
+          </div>
+
+          <ul id="tocList" class="toc-list">
+            <li>
+              <a href="#sec-21-1" class="toc-link main">21.1 Build Tools &amp; Automation</a>
+            </li>
+            <li>
+              <a href="#sec-21-1-preprocess" class="toc-link sub">21.1.1 HTML preprocessing (Pug, Handlebars)</a>
+            </li>
+            <li>
+              <a href="#sec-21-1-minify" class="toc-link sub">21.1.2 Minification &amp; optimization</a>
+            </li>
+            <li>
+              <a href="#sec-21-1-testing" class="toc-link sub">21.1.3 Automated testing setup</a>
+            </li>
+
+            <li class="mt-2">
+              <a href="#sec-21-2" class="toc-link main">21.2 Content Management Integration</a>
+            </li>
+            <li>
+              <a href="#sec-21-2-cms-html" class="toc-link sub">21.2.1 CMS-friendly HTML structures</a>
+            </li>
+            <li>
+              <a href="#sec-21-2-templates" class="toc-link sub">21.2.2 Template systems</a>
+            </li>
+            <li>
+              <a href="#sec-21-2-headless" class="toc-link sub">21.2.3 Headless CMS integration</a>
+            </li>
+
+            <li class="mt-2">
+              <a href="#sec-21-3" class="toc-link main">21.3 Deployment Considerations</a>
+            </li>
+            <li>
+              <a href="#sec-21-3-cdn" class="toc-link sub">21.3.1 CDN optimization</a>
+            </li>
+            <li>
+              <a href="#sec-21-3-ssr" class="toc-link sub">21.3.2 SSR preparation</a>
+            </li>
+            <li>
+              <a href="#sec-21-3-ssg" class="toc-link sub">21.3.3 Static site generation</a>
+            </li>
+          </ul>
+
+          <div class="note-callout">
+            <strong>Mental model:</strong> “HTML in a serious project is never alone.” It lives inside a
+            pipeline: templates → builds → CMS → deployment → monitoring.
+          </div>
+        </div>
+      </aside>
+
+      <!-- CONTENT -->
+      <main class="content-area col-12 col-lg-9">
+        <header class="mb-2">
+          <div class="content-header-label">Build tools · CMS · Deployment</div>
+          <h1 class="content-main-title">Module 21: Advanced Development Workflow</h1>
+          <p class="content-subtitle">
+            This module connects everything you learned about HTML to modern development workflows: preprocessing
+            with Pug/Handlebars, build systems and minification, CMS-friendly structures, headless content
+            pipelines, CDNs, SSR, and static site generation.
+          </p>
+        </header>
+
+        <!-- EXEC SUMMARY -->
+        <section class="section-card">
+          <h2 class="section-heading">Executive Overview</h2>
+          <details open>
+            <summary>Why workflows matter</summary>
+            <div class="details-body">
+              <ul>
+                <li><strong>21.1:</strong> Use build tools to generate, compress, and test HTML automatically.</li>
+                <li><strong>21.2:</strong> Structure HTML so CMS and templates can produce consistent pages at scale.</li>
+                <li><strong>21.3:</strong> Deliver HTML efficiently using CDNs, SSR, and static site generators.</li>
+              </ul>
+              <pre class="code-block"><code class="language-text">
+Conceptual pseudocode for a modern HTML workflow:
+
+Write templates (.pug / .hbs / .njk)
+    ↓
+Build step:
+    - Compile templates → HTML
+    - Minify HTML, CSS, JS
+    - Run automated tests (lint, a11y, e2e)
+    ↓
+Deploy:
+    - Upload to CDN / hosting
+    - Optional SSR or SSG
+    - Monitor performance + errors</code></pre>
+            </div>
+          </details>
+        </section>
+
+        <!-- ========================== -->
+        <!-- 21.1 BUILD TOOLS & AUTOMATION -->
+        <!-- ========================== -->
+        <section id="sec-21-1" class="section-card">
+          <h2 class="section-heading">21.1 Build Tools and Automation</h2>
+          <p class="section-summary-text">
+            Build tools transform human-friendly source files into production-grade HTML, CSS, JS bundles with
+            minification, cache-busting, and automatic testing.
+          </p>
+
+          <!-- 21.1.1 HTML preprocessing -->
+          <section id="sec-21-1-preprocess">
+            <details open>
+              <summary>21.1.1 HTML preprocessing (Pug, Handlebars)</summary>
+              <div class="details-body">
+                <p>
+                  Preprocessors like <code class="inline-code">Pug</code> and <code class="inline-code">Handlebars</code> let you use
+                  variables, loops, and layout inheritance to generate HTML.
+                </p>
+
+                <p><strong>Pug example:</strong></p>
+                <pre class="code-block"><code class="language-text">
+doctype html
+html(lang="en")
+  head
+    title Blog
+  body
+    h1 Articles
+    ul
+      each post in posts
+        li
+          a(href=post.url)= post.title</code></pre>
+
+                <p>
+                  Compiles to HTML like:
+                </p>
+                <pre class="code-block"><code class="language-html">
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+  &lt;head&gt;
+    &lt;title&gt;Blog&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;h1&gt;Articles&lt;/h1&gt;
+    &lt;ul&gt;
+      &lt;li&gt;&lt;a href=&quot;/post-1&quot;&gt;Post 1&lt;/a&gt;&lt;/li&gt;
+      &lt;li&gt;&lt;a href=&quot;/post-2&quot;&gt;Post 2&lt;/a&gt;&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+                <p><strong>Handlebars example:</strong></p>
+                <pre class="code-block"><code class="language-text">
+&lt;ul&gt;
+  {{#each posts}}
+    &lt;li&gt;&lt;a href=&quot;{{url}}&quot;&gt;{{title}}&lt;/a&gt;&lt;/li&gt;
+  {{/each}}
+&lt;/ul&gt;</code></pre>
+
+                <p>
+                  At build time, you pass data (<code class="inline-code">posts</code>) and generate pure HTML. This keeps your HTML
+                  DRY (don’t repeat yourself) and consistent across pages.
+                </p>
+              </div>
+            </details>
+          </section>
+
+          <!-- 21.1.2 Minification -->
+          <section id="sec-21-1-minify">
+            <details>
+              <summary>21.1.2 Minification and optimization</summary>
+              <div class="details-body">
+                <p>
+                  Minification removes whitespace, comments, and redundant characters from HTML/CSS/JS to reduce file size.
+                  Typical tools: HTMLMinifier, Terser (for JS), CSSNano, etc.
+                </p>
+
+                <p><strong>Original HTML:</strong></p>
+                <pre class="code-block"><code class="language-html">
+&lt;section class=&quot;hero&quot;&gt;
+  &lt;h1&gt;Welcome to our site&lt;/h1&gt;
+  &lt;p&gt;High-performance HTML workflow.&lt;/p&gt;
+&lt;/section&gt;</code></pre>
+
+                <p><strong>Minified:</strong></p>
+                <pre class="code-block"><code class="language-html">
+&lt;section class=&quot;hero&quot;&gt;&lt;h1&gt;Welcome to our site&lt;/h1&gt;&lt;p&gt;High-performance HTML workflow.&lt;/p&gt;&lt;/section&gt;</code></pre>
+
+                <p>
+                  In a real build, you rarely write minified HTML yourself. Instead, you configure a task runner:
+                </p>
+                <pre class="code-block"><code class="language-js">
+// Example: Node-style task (pseudo-code)
+import { minify } from "html-minifier";
+
+const inputHtml = await fs.promises.readFile("dist/index.html", "utf8");
+const output = minify(inputHtml, {
+  collapseWhitespace: true,
+  removeComments: true,
+  removeRedundantAttributes: true
+});
+await fs.promises.writeFile("dist/index.html", output);</code></pre>
+
+                <p>
+                  Minification directly improves performance metrics like transfer size and Time to First Byte (TTFB) impact.
+                </p>
+              </div>
+            </details>
+          </section>
+
+          <!-- 21.1.3 Automated testing -->
+          <section id="sec-21-1-testing">
+            <details>
+              <summary>21.1.3 Automated testing setup</summary>
+              <div class="details-body">
+                <p>
+                  HTML-heavy projects use automation for regression testing and quality assurance:
+                </p>
+                <ul>
+                  <li>HTML linting (structure, attribute correctness)</li>
+                  <li>Unit tests for JS behavior</li>
+                  <li>End-to-end tests simulating real user flows</li>
+                </ul>
+
+                <p><strong>Example: simple HTML lint step via npm script (conceptual):</strong></p>
+                <pre class="code-block"><code class="language-text">
+&quot;scripts&quot;: {
+  &quot;lint:html&quot;: &quot;htmlhint src/**/*.html&quot;,
+  &quot;test:e2e&quot;: &quot;playwright test&quot;
+}</code></pre>
+
+                <p><strong>Example: minimal Playwright test (JS):</strong></p>
+                <pre class="code-block"><code class="language-js">
+import { test, expect } from "@playwright/test";
+
+test("home page loads and shows hero title", async ({ page }) =&gt; {
+  await page.goto("http://localhost:3000");
+  const title = await page.textContent("h1.hero-title");
+  expect(title).toContain("Advanced HTML workflow");
+});</code></pre>
+
+                <p>
+                  The HTML must provide stable selectors (classes, data attributes) for these tests, which is part of your
+                  workflow design.
+                </p>
+              </div>
+            </details>
+          </section>
+        </section>
+
+        <!-- ========================== -->
+        <!-- 21.2 CONTENT MANAGEMENT    -->
+        <!-- ========================== -->
+        <section id="sec-21-2" class="section-card">
+          <h2 class="section-heading">21.2 Content Management Integration</h2>
+          <p class="section-summary-text">
+            Most real-world sites serve content managed by a CMS or headless API. HTML must be designed to
+            be generated, edited, and reused safely by non-developers.
+          </p>
+
+          <!-- 21.2.1 CMS-friendly HTML -->
+          <section id="sec-21-2-cms-html">
+            <details open>
+              <summary>21.2.1 CMS-friendly HTML structures</summary>
+              <div class="details-body">
+                <p>
+                  A CMS (WordPress, Drupal, Ghost, etc.) often outputs HTML into predefined “slots”:
+                </p>
+                <pre class="code-block"><code class="language-html">
+&lt;main&gt;
+  &lt;article class=&quot;post&quot;&gt;
+    &lt;header&gt;
+      &lt;h1 class=&quot;post-title&quot;&gt;{{ post_title }}&lt;/h1&gt;
+      &lt;p class=&quot;post-meta&quot;&gt;{{ post_date }} · {{ author_name }}&lt;/p&gt;
+    &lt;/header&gt;
+    &lt;section class=&quot;post-content&quot;&gt;
+      {{ post_body_html }}
+    &lt;/section&gt;
+  &lt;/article&gt;
+&lt;/main&gt;</code></pre>
+
+                <p>
+                  Here, placeholders like <code class="inline-code">{{ post_body_html }}</code> will be replaced by the CMS. Your job
+                  is to define a stable, semantic wrapper around that content.
+                </p>
+
+                <ul>
+                  <li>Use classes the CMS can target (e.g., <code class="inline-code">.post-content</code>).</li>
+                  <li>Keep layout and rich text areas separate.</li>
+                  <li>Ensure headings inside content follow logical hierarchy (H2, H3…).</li>
+                </ul>
+              </div>
+            </details>
+          </section>
+
+          <!-- 21.2.2 Template systems -->
+          <section id="sec-21-2-templates">
+            <details>
+              <summary>21.2.2 Template systems</summary>
+              <div class="details-body">
+                <p>
+                  Template systems (Twig, Liquid, Nunjucks, etc.) are used by both CMS and static site generators:
+                </p>
+                <pre class="code-block"><code class="language-text">
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+  &lt;head&gt;
+    &lt;title&gt;{{ page.title }}&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    {% include &quot;partials/header.html&quot; %}
+    &lt;main&gt;
+      {{ content | safe }}
+    &lt;/main&gt;
+    {% include &quot;partials/footer.html&quot; %}
+  &lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+                <p>
+                  This pattern separates:
+                </p>
+                <ul>
+                  <li><strong>Layout skeleton:</strong> shared across pages.</li>
+                  <li><strong>Partial templates:</strong> header, footer, nav, sidebars.</li>
+                  <li><strong>Content blocks:</strong> actual page-specific HTML injected into the layout.</li>
+                </ul>
+              </div>
+            </details>
+          </section>
+
+          <!-- 21.2.3 Headless CMS -->
+          <section id="sec-21-2-headless">
+            <details>
+              <summary>21.2.3 Headless CMS integration</summary>
+              <div class="details-body">
+                <p>
+                  A headless CMS (Contentful, Sanity, Strapi, etc.) exposes content via API (JSON). Your build or
+                  frontend consumes that API and renders HTML.
+                </p>
+
+                <p><strong>Conceptual fetch + render (client-side JS example):</strong></p>
+                <pre class="code-block"><code class="language-js">
+async function loadArticles() {
+  const res = await fetch("https://cms.example.com/api/articles");
+  const data = await res.json();
+  const container = document.querySelector("#articles");
+
+  data.items.forEach(item =&gt; {
+    const article = document.createElement("article");
+    article.className = "post";
+    article.innerHTML = `
+      &lt;h2 class=&quot;post-title&quot;&gt;${item.title}&lt;/h2&gt;
+      &lt;div class=&quot;post-body&quot;&gt;${item.htmlBody}&lt;/div&gt;
+    `;
+    container.appendChild(article);
+  });
+}
+
+loadArticles().catch(console.error);</code></pre>
+
+                <p>
+                  For SEO and performance, you usually pull the same API at <em>build time</em> (SSG) or <em>request time</em> (SSR) and
+                  output HTML on the server. But the final outcome is the same: clean semantic HTML delivered to the browser.
+                </p>
+              </div>
+            </details>
+          </section>
+        </section>
+
+        <!-- ========================== -->
+        <!-- 21.3 DEPLOYMENT            -->
+        <!-- ========================== -->
+        <section id="sec-21-3" class="section-card">
+          <h2 class="section-heading">21.3 Deployment Considerations</h2>
+          <p class="section-summary-text">
+            Deployment moves your built HTML from your local machine to the real world. We care about distribution
+            speed (CDN), render strategy (SSR), and pre-rendering (SSG).
+          </p>
+
+          <!-- 21.3.1 CDN -->
+          <section id="sec-21-3-cdn">
+            <details open>
+              <summary>21.3.1 CDN optimization</summary>
+              <div class="details-body">
+                <p>
+                  A CDN (Content Delivery Network) caches your HTML, CSS, JS, and media at servers closer to users.
+                </p>
+                <ul>
+                  <li>Use immutable cache headers for hashed assets (<code class="inline-code">app.3f2a9.js</code>).</li>
+                  <li>Set short caching for HTML (to allow quick updates).</li>
+                  <li>Prefer HTTPS and HTTP/2 for multiplexed requests.</li>
+                </ul>
+
+                <p><strong>Example HTTP headers (conceptual):</strong></p>
+                <pre class="code-block"><code class="language-text">
+/* For HTML */
+Cache-Control: max-age=60, must-revalidate
+
+/* For hashed JS/CSS */
+Cache-Control: public, max-age=31536000, immutable</code></pre>
+
+                <p>
+                  From HTML’s perspective, you use correct <code class="inline-code">&lt;link&gt;</code> and <code class="inline-code">&lt;script&gt;</code> tags pointing to CDN URLs:
+                </p>
+                <pre class="code-block"><code class="language-html">
+&lt;link rel=&quot;stylesheet&quot; href=&quot;https://cdn.example.com/assets/app.3f2a9.css&quot;&gt;
+&lt;script src=&quot;https://cdn.example.com/assets/app.823bd.js&quot; defer&gt;&lt;/script&gt;</code></pre>
+              </div>
+            </details>
+          </section>
+
+          <!-- 21.3.2 SSR -->
+          <section id="sec-21-3-ssr">
+            <details>
+              <summary>21.3.2 Server-side rendering preparation</summary>
+              <div class="details-body">
+                <p>
+                  SSR means the HTML for each route is rendered on the server (Node, PHP, etc.) before being sent to the browser.
+                  This improves first load performance and SEO for JS-heavy apps.
+                </p>
+
+                <p>
+                  For SSR, your HTML template usually contains “slots” where server code injects rendered components:
+                </p>
+                <pre class="code-block"><code class="language-html">
+&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+  &lt;head&gt;
+    &lt;meta charset=&quot;utf-8&quot; /&gt;
+    &lt;title&gt;My SSR App&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;div id=&quot;root&quot;&gt;{{ rendered_app_html }}&lt;/div&gt;
+    &lt;script&gt;
+      window.__INITIAL_DATA__ = {{ initial_data_json }};
+    &lt;/script&gt;
+    &lt;script src=&quot;/static/app.js&quot; defer&gt;&lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</code></pre>
+
+                <p>
+                  The server replaces <code class="inline-code">{{ rendered_app_html }}</code> with markup on each request. Your HTML structure must be
+                  stable so client-side hydration (JS taking over) can attach correctly.
+                </p>
+              </div>
+            </details>
+          </section>
+
+          <!-- 21.3.3 SSG -->
+          <section id="sec-21-3-ssg">
+            <details>
+              <summary>21.3.3 Static site generation</summary>
+              <div class="details-body">
+                <p>
+                  Static site generators (Next.js SSG mode, Gatsby, Eleventy, Hugo, etc.) pre-render HTML at build time.
+                  The result is a folder of static <code class="inline-code">.html</code> files plus assets.
+                </p>
+
+                <p><strong>Conceptual workflow:</strong></p>
+                <pre class="code-block"><code class="language-text">
+for each route in routes:
+  data = fetchContent(route)
+  html = renderTemplate(layout, data)
+  writeFile("dist" + route.path + "/index.html", html)</code></pre>
+
+                <p>
+                  The deployed output is just HTML/CSS/JS. This is often the fastest and most reliable way to ship
+                  content-heavy sites.
+                </p>
+              </div>
+            </details>
+          </section>
+        </section>
+
+        <!-- WRAP UP -->
+        <section class="section-card">
+          <h2 class="section-heading">Module 21 Checklist</h2>
+          <details open>
+            <summary>Self-check</summary>
+            <div class="details-body">
+              <ul>
+                <li>Can you explain how Pug/Handlebars templates transform into HTML?</li>
+                <li>Do you understand minification and why it is not written by hand?</li>
+                <li>Can you describe a basic automated test flow for an HTML-based app?</li>
+                <li>Do you know how HTML must be structured to be CMS-friendly?</li>
+                <li>Can you distinguish between headless CMS rendering at build time vs client time?</li>
+                <li>Do you know why CDNs, SSR, and SSG exist and when each is appropriate?</li>
+              </ul>
+            </div>
+          </details>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- JS: Bootstrap bundle + utilities + simple syntax highlighting -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      // Smooth scrolling
+      document.querySelectorAll('a[href^="#"]').forEach(function (anchor) {
+        anchor.addEventListener("click", function (e) {
+          const id = this.getAttribute("href");
+          if (!id || id === "#") return;
+          const target = document.querySelector(id);
+          if (!target) return;
+          e.preventDefault();
+          target.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+      });
+
+      // Expand / Collapse all details
+      const expandBtn = document.getElementById("expandAll");
+      const collapseBtn = document.getElementById("collapseAll");
+
+      if (expandBtn) {
+        expandBtn.addEventListener("click", function () {
+          document
+            .querySelectorAll("details")
+            .forEach(function (d) {
+              d.open = true;
+            });
+        });
+      }
+      if (collapseBtn) {
+        collapseBtn.addEventListener("click", function () {
+          document
+            .querySelectorAll("details")
+            .forEach(function (d) {
+              d.open = false;
+            });
+        });
+      }
+
+      // TOC search
+      const tocSearch = document.getElementById("tocSearch");
+      const tocList = document.getElementById("tocList");
+      if (tocSearch && tocList) {
+        tocSearch.addEventListener("input", function () {
+          const q = this.value.toLowerCase();
+          tocList.querySelectorAll(".toc-link").forEach(function (link) {
+            const li = link.closest("li");
+            if (!q || link.textContent.toLowerCase().includes(q)) {
+              li.style.display = "";
+            } else {
+              li.style.display = "none";
+            }
+          });
+        });
+      }
+
+      // Active TOC highlight on click
+      document.querySelectorAll(".toc-link").forEach(function (link) {
+        link.addEventListener("click", function () {
+          document
+            .querySelectorAll(".toc-link.active")
+            .forEach(function (l) {
+              l.classList.remove("active");
+            });
+          this.classList.add("active");
+        });
+      });
+
+      // Simple syntax highlighting – HTML
+      function highlightHTML(codeEl) {
+        let html = codeEl.innerHTML;
+
+        // strings "..."
+        html = html.replace(/(&quot;[^&]*?&quot;)/g,
+          '<span class="hl-string">$1</span>'
+        );
+
+        // tags & attributes: &lt;tag attr="value"&gt;
+        html = html.replace(
+          /(&lt;\/?)([a-zA-Z0-9\-]+)([^&]*?&gt;)/g,
+          function (match, open, tagName, rest) {
+            const attrs = rest.replace(
+              / ([a-zA-Z_:][-a-zA-Z0-9_:.]*)(=)/g,
+              ' <span class="hl-attr">$1</span>$2'
+            );
+            return open + '<span class="hl-tag">' + tagName + "</span>" + attrs;
+          }
+        );
+
+        codeEl.innerHTML = html;
+      }
+
+      // Simple syntax highlighting – JS
+      function highlightJS(codeEl) {
+        let html = codeEl.innerHTML;
+
+        // strings
+        html = html.replace(
+          /(&quot;[^&]*?&quot;|'.*?')/g,
+          '<span class="hl-string">$1</span>'
+        );
+
+        // JS keywords
+        html = html.replace(
+          /\b(const|let|var|function|if|else|return|async|await|try|catch|finally|new|class|extends|import|from|export|throw|for|while|break|continue)\b/g,
+          '<span class="hl-js-keyword">$1</span>'
+        );
+
+        // globals
+        html = html.replace(
+          /\b(document|window|history|location|fetch|console|navigator|fs)\b/g,
+          '<span class="hl-js-global">$1</span>'
+        );
+
+        // common methods
+        html = html.replace(
+          /\b(addEventListener|querySelectorAll|querySelector|getElementById|pushState|readFile|writeFile|goto)\b/g,
+          '<span class="hl-js-func">$1</span>'
+        );
+
+        // numbers
+        html = html.replace(/\b(-?\d+(\.\d+)?)\b/g,
+          '<span class="hl-number">$1</span>'
+        );
+
+        codeEl.innerHTML = html;
+      }
+
+      document
+        .querySelectorAll("pre.code-block code.language-html")
+        .forEach(highlightHTML);
+      document
+        .querySelectorAll("pre.code-block code.language-js")
+        .forEach(highlightJS);
+      // text blocks remain plain for readability
+    });
+  </script>
+</body>
+</html>
