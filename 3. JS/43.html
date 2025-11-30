@@ -1,0 +1,957 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>14.1 – Object Immutability in JavaScript</title>
+
+<!-- Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+:root{
+    --bg-main:#050816;
+    --bg-sidebar:#060b18;
+    --accent-cyan:#22d3ee;
+    --accent-amber:#fbbf24;
+    --text-main:#e5e7eb;
+    --text-muted:#9ca3af;
+    --border-subtle:#1f2937;
+    --code-bg:#020617;
+}
+
+/* Base */
+*{box-sizing:border-box;}
+html,body{
+    margin:0;
+    padding:0;
+    height:100%;
+    background:var(--bg-main);
+    color:var(--text-main);
+    font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    scroll-behavior:smooth;
+}
+body{overflow:hidden;}
+
+/* Layout */
+.app-wrapper{height:100vh;}
+.sidebar{
+    background:radial-gradient(circle at top left,#0f172a,var(--bg-sidebar));
+    border-right:1px solid var(--border-subtle);
+    height:100vh;
+    position:sticky;top:0;
+    overflow-y:auto;
+    padding:1.2rem 1rem;
+}
+.content-panel{
+    height:100vh;
+    overflow-y:auto;
+    padding:1.5rem 2rem;
+    background:radial-gradient(circle at top right,#020617,var(--bg-main));
+}
+
+/* Scrollbars */
+.sidebar::-webkit-scrollbar,
+.content-panel::-webkit-scrollbar{width:8px;}
+.sidebar::-webkit-scrollbar-thumb,
+.content-panel::-webkit-scrollbar-thumb{
+    background:#1f2937;border-radius:999px;
+}
+
+/* Sidebar text */
+.course-tag{
+    font-size:0.75rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--accent-amber);
+}
+.main-title{
+    font-size:1.4rem;
+    font-weight:700;
+    color:var(--accent-cyan);
+}
+.subtitle{
+    font-size:0.9rem;
+    color:var(--text-muted);
+}
+.meta-text{
+    font-size:0.8rem;
+    color:var(--text-muted);
+}
+.pill{
+    display:inline-flex;
+    align-items:center;
+    border-radius:999px;
+    padding:0.15rem 0.55rem;
+    font-size:0.72rem;
+    border:1px solid rgba(148,163,184,0.6);
+    color:var(--text-muted);
+    margin:0.15rem 0.25rem 0.15rem 0;
+}
+.pill span.bullet{
+    width:6px;height:6px;border-radius:999px;
+    background:var(--accent-cyan);
+    margin-right:0.25rem;
+}
+
+/* TOC */
+.toc-card{
+    margin-top:1rem;
+    background:rgba(15,23,42,0.95);
+    border-radius:0.75rem;
+    border:1px solid rgba(148,163,184,0.3);
+    padding:0.9rem;
+}
+.toc-title{
+    font-size:0.9rem;
+    font-weight:600;
+    color:var(--accent-amber);
+}
+.toc-search input{
+    width:100%;
+    border-radius:999px;
+    border:1px solid #111827;
+    background:#020617;
+    color:var(--text-main);
+    font-size:0.78rem;
+    padding:0.2rem 0.6rem;
+}
+.toc-list{
+    list-style:none;
+    padding-left:0;
+    margin:0.4rem 0 0 0;
+}
+.toc-link{
+    display:flex;
+    align-items:center;
+    gap:0.4rem;
+    font-size:0.8rem;
+    padding:0.18rem 0.4rem;
+    border-radius:0.4rem;
+    text-decoration:none;
+    color:var(--text-muted);
+}
+.toc-link-dot{
+    width:6px;height:6px;border-radius:999px;
+    background:rgba(148,163,184,0.7);
+}
+.toc-link:hover{
+    background:rgba(15,23,42,0.9);
+    color:var(--accent-cyan);
+}
+.toc-link.active{
+    background:rgba(8,47,73,0.85);
+    color:var(--accent-cyan);
+}
+.toc-link.active .toc-link-dot{background:var(--accent-cyan);}
+.toc-actions button{
+    border-radius:999px;
+    border:1px solid rgba(148,163,184,0.45);
+    background:rgba(15,23,42,0.9);
+    color:var(--text-muted);
+    font-size:0.72rem;
+    padding:0.12rem 0.6rem;
+}
+
+/* Content */
+.content-heading h1{
+    font-size:1.6rem;
+    color:var(--accent-cyan);
+}
+.content-heading p{
+    font-size:0.9rem;
+    color:var(--text-muted);
+}
+.badge-level,.badge-topic{
+    font-size:0.75rem;
+    border-radius:999px;
+    padding:0.12rem 0.6rem;
+}
+.badge-level{
+    border:1px solid rgba(56,189,248,0.6);
+    color:var(--accent-cyan);
+}
+.badge-topic{
+    border:1px dashed rgba(251,191,36,0.6);
+    color:var(--accent-amber);
+}
+.summary-strip{
+    background:radial-gradient(circle at left,rgba(56,189,248,0.2),transparent);
+    border-radius:0.8rem;
+    border:1px solid rgba(148,163,184,0.5);
+    padding:0.8rem 1rem;
+    font-size:0.86rem;
+    margin-bottom:1.1rem;
+}
+.summary-strip strong{color:var(--accent-amber);}
+.section-label{
+    font-size:0.7rem;
+    text-transform:uppercase;
+    letter-spacing:0.16em;
+    color:#9ca3af;
+}
+.section-title{
+    font-size:1.05rem;
+    font-weight:600;
+    color:var(--accent-amber);
+}
+.section-subtitle{
+    font-size:0.85rem;
+    color:var(--text-muted);
+    margin-bottom:0.6rem;
+}
+
+/* Details blocks */
+details{
+    background:rgba(15,23,42,0.9);
+    border-radius:0.8rem;
+    border:1px solid rgba(30,64,175,0.8);
+    padding:0.25rem 0.85rem 0.6rem;
+    margin-bottom:0.8rem;
+}
+details[open]{border-color:rgba(56,189,248,0.85);}
+summary{
+    list-style:none;
+    cursor:pointer;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0.35rem 0;
+    font-size:0.92rem;
+    font-weight:600;
+}
+summary::-webkit-details-marker{display:none;}
+.summary-label{display:flex;align-items:center;gap:0.4rem;}
+.summary-label .dot{
+    width:7px;height:7px;border-radius:999px;
+    background:var(--accent-cyan);
+}
+.summary-tag{
+    font-size:0.75rem;
+    color:var(--accent-amber);
+}
+details .inner{
+    font-size:0.84rem;
+    color:var(--text-muted);
+}
+details .inner ul{padding-left:1.1rem;}
+details .inner li{margin-bottom:0.2rem;}
+.hint{
+    border-left:3px solid var(--accent-cyan);
+    padding-left:0.6rem;
+    margin:0.4rem 0;
+    font-size:0.8rem;
+}
+
+/* Code */
+pre{
+    background:var(--code-bg);
+    border-radius:0.7rem;
+    border:1px solid rgba(15,118,110,0.7);
+    padding:0.7rem 0.9rem;
+    overflow-x:auto;
+    margin:0.4rem 0;
+}
+code{
+    font-family:"JetBrains Mono","Fira Code",ui-monospace,monospace;
+    font-size:0.8rem;
+}
+.token-comment{color:#6b7280;font-style:italic;}
+.token-string{color:#fb923c;}
+.token-number{color:#a855f7;}
+.token-keyword{color:#22c55e;font-weight:600;}
+.token-builtins{color:#facc15;}
+.token-function{color:#38bdf8;}
+
+/* Responsive */
+@media (max-width:991.98px){
+    body{overflow:auto;}
+    .app-wrapper{height:auto;}
+    .sidebar{
+        height:auto;
+        position:static;
+        border-right:none;
+        border-bottom:1px solid var(--border-subtle);
+    }
+    .content-panel{height:auto;}
+}
+</style>
+</head>
+
+<body>
+<div class="container-fluid app-wrapper">
+  <div class="row flex-nowrap">
+    <!-- SIDEBAR -->
+    <aside class="col-12 col-md-4 col-lg-3 sidebar">
+      <div>
+        <div class="course-tag">Modern JavaScript Deep Dive</div>
+        <div class="main-title">14.1 – Object Immutability</div>
+        <div class="subtitle">Freeze, seal, extensions &amp; immutable patterns</div>
+        <div class="meta-text">
+          Prepared for: College → Master / PhD level<br>
+          Focus: Correct semantics + real-world usage
+        </div>
+      </div>
+
+      <div class="mt-2">
+        <span class="pill"><span class="bullet"></span>Object.freeze()</span>
+        <span class="pill"><span class="bullet"></span>Object.seal()</span>
+        <span class="pill"><span class="bullet"></span>preventExtensions()</span>
+        <span class="pill"><span class="bullet"></span>Deep freezing</span>
+        <span class="pill"><span class="bullet"></span>Immutable patterns</span>
+      </div>
+
+      <div class="toc-card mt-2">
+        <div class="toc-title mb-1">On this page</div>
+        <div class="mb-2">
+          <input id="tocSearch" type="text" placeholder="Search sections…">
+        </div>
+        <ul id="tocList" class="toc-list">
+          <li data-label="object freeze">
+            <a href="#sec-freeze" class="toc-link">
+              <span class="toc-link-dot"></span>
+              <span>14.1.1 Object.freeze()</span>
+            </a>
+          </li>
+          <li data-label="object seal">
+            <a href="#sec-seal" class="toc-link">
+              <span class="toc-link-dot"></span>
+              <span>14.1.2 Object.seal()</span>
+            </a>
+          </li>
+          <li data-label="object preventextensions">
+            <a href="#sec-prevent" class="toc-link">
+              <span class="toc-link-dot"></span>
+              <span>14.1.3 Object.preventExtensions()</span>
+            </a>
+          </li>
+          <li data-label="deep freezing techniques">
+            <a href="#sec-deep" class="toc-link">
+              <span class="toc-link-dot"></span>
+              <span>14.1.4 Deep freezing techniques</span>
+            </a>
+          </li>
+          <li data-label="immutable data patterns">
+            <a href="#sec-patterns" class="toc-link">
+              <span class="toc-link-dot"></span>
+              <span>14.1.5 Immutable data patterns</span>
+            </a>
+          </li>
+        </ul>
+        <div class="toc-actions mt-2">
+          <button id="btnExpandAll" type="button">Expand all</button>
+          <button id="btnCollapseAll" type="button">Collapse all</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="col content-panel">
+      <section class="content-heading">
+        <div class="d-flex flex-wrap align-items-center mb-2">
+          <span class="badge-level">Level: Advanced</span>
+          <span class="badge-topic ms-1">Topic: Data immutability &amp; object meta operations</span>
+        </div>
+        <h1>14.1 – Object Immutability in JavaScript</h1>
+        <p>
+          Immutability is not just a functional-programming buzzword; it is a powerful strategy for
+          building predictable, debuggable, and concurrency-friendly systems. JavaScript gives you
+          low-level tools like <code>Object.freeze</code>, <code>Object.seal</code>,
+          <code>Object.preventExtensions</code>, and you can build higher-level immutable patterns on
+          top of them. This chapter dives deep into what these APIs <em>actually</em> do and how to
+          design practical, immutable-style architectures in JavaScript.
+        </p>
+      </section>
+
+      <section>
+        <div class="summary-strip">
+          <strong>Executive intuition:</strong>
+          <code>Object.freeze</code> stops changes to existing properties and prevents new ones.
+          <code>Object.seal</code> prevents adding/removing properties but still lets you change values.
+          <code>Object.preventExtensions</code> only stops adding new properties; existing ones can still
+          be reconfigured or deleted. True application-level immutability, especially for nested
+          structures, requires <em>deep</em> strategies and disciplined patterns.
+        </div>
+      </section>
+
+      <!-- 14.1.1 Object.freeze -->
+      <section id="sec-freeze" class="mb-4">
+        <div class="section-label">14.1.1</div>
+        <div class="section-title">Object.freeze()</div>
+        <div class="section-subtitle">Shallow, non-extensible, non-writable, non-configurable.</div>
+
+        <details open>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>What does Object.freeze() do exactly?</span>
+            <span class="summary-tag">semantics</span>
+          </summary>
+          <div class="inner">
+            <ul>
+              <li>Prevents adding new properties.</li>
+              <li>Prevents deleting existing properties.</li>
+              <li>Marks existing data properties as non-writable and non-configurable.</li>
+              <li>Does <strong>not</strong> make nested objects immutable (shallow freeze).</li>
+            </ul>
+
+            <pre><code>
+const user = {
+    name: "Irfan",
+    meta: { active: true }
+};
+
+Object.freeze(user);
+
+user.name = "Kittu";       // silently ignored in non-strict mode
+delete user.name;          // silently ignored
+user.newProp = 123;        // silently ignored
+
+console.log(user.name);    // "Irfan"
+console.log(user.meta.active); // true (meta itself is still mutable)
+
+user.meta.active = false;  // this still works, because freeze is shallow
+console.log(user.meta.active); // false
+            </code></pre>
+
+            <p class="hint">
+              Think: within one object level, everything is locked. But if a value is itself an object,
+              you can still mutate that nested object unless you freeze it too.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Checking if an object is frozen</span>
+            <span class="summary-tag">introspection</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+const config = { debug: true };
+console.log(Object.isFrozen(config)); // false
+
+Object.freeze(config);
+
+console.log(Object.isFrozen(config)); // true
+            </code></pre>
+            <p>
+              This is useful in development tools or tests to assert that certain objects are meant to be immutable.
+            </p>
+          </div>
+        </details>
+      </section>
+
+      <!-- 14.1.2 Object.seal -->
+      <section id="sec-seal" class="mb-4">
+        <div class="section-label">14.1.2</div>
+        <div class="section-title">Object.seal()</div>
+        <div class="section-subtitle">Locking structure, but not necessarily values.</div>
+
+        <details open>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Difference between seal and freeze</span>
+            <span class="summary-tag">comparison</span>
+          </summary>
+          <div class="inner">
+            <ul>
+              <li>Both prevent adding new properties.</li>
+              <li>Both prevent deleting properties (properties become non-configurable).</li>
+              <li><code>Object.seal</code> allows changing existing property values if they are writable.</li>
+              <li><code>Object.freeze</code> also sets writable to false, so values cannot change.</li>
+            </ul>
+
+            <pre><code>
+const obj = { x: 1, y: 2 };
+
+Object.seal(obj);
+
+obj.x = 10;        // allowed (writable true by default)
+delete obj.y;      // ignored
+obj.z = 3;         // ignored
+
+console.log(obj);  // { x: 10, y: 2 }
+
+console.log(Object.isSealed(obj)); // true
+console.log(Object.isFrozen(obj)); // false in general
+            </code></pre>
+
+            <p class="hint">
+              Use seal when you want to fix the “shape” of an object (no new keys) but still allow updates to the current fields.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Practical example: configuration objects</span>
+            <span class="summary-tag">example</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+const config = {
+    apiUrl: "/api",
+    timeoutMs: 5000
+};
+
+Object.seal(config);
+
+config.timeoutMs = 10000; // allowed
+config.newKey = 42;       // ignored
+
+console.log(config); // { apiUrl: "/api", timeoutMs: 10000 }
+            </code></pre>
+
+            <p>
+              This ensures that developers cannot casually add random config fields that the system does not know how to handle.
+            </p>
+          </div>
+        </details>
+      </section>
+
+      <!-- 14.1.3 Object.preventExtensions -->
+      <section id="sec-prevent" class="mb-4">
+        <div class="section-label">14.1.3</div>
+        <div class="section-title">Object.preventExtensions()</div>
+        <div class="section-subtitle">The weakest form: no new properties, but existing ones are free.</div>
+
+        <details open>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Behaviour of preventExtensions</span>
+            <span class="summary-tag">semantics</span>
+          </summary>
+          <div class="inner">
+            <p>
+              <code>Object.preventExtensions(obj)</code> ensures that no new properties can be added to
+              <code>obj</code>. Existing properties can still be:
+            </p>
+            <ul>
+              <li>Changed (if writable).</li>
+              <li>Deleted (if configurable).</li>
+              <li>Reconfigured (subject to descriptor rules).</li>
+            </ul>
+
+            <pre><code>
+const obj = { x: 1 };
+
+Object.preventExtensions(obj);
+
+obj.x = 2;             // allowed
+delete obj.x;          // allowed (if configurable)
+obj.y = 3;             // ignored in non-strict mode
+
+console.log(obj);      // {} in this simple case
+console.log(Object.isExtensible(obj)); // false
+            </code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Relationship between the three APIs</span>
+            <span class="summary-tag">hierarchy</span>
+          </summary>
+          <div class="inner">
+            <p>
+              Roughly you can imagine:
+            </p>
+            <pre><code>
+Object.freeze(obj)
+    implies Object.seal(obj)
+        implies Object.preventExtensions(obj)
+            // but not vice versa
+            </code></pre>
+
+            <ul>
+              <li>Frozen objects are sealed and non-extensible.</li>
+              <li>Sealed objects are non-extensible, but not necessarily frozen.</li>
+              <li>Non-extensible objects might not be sealed or frozen.</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
+      <!-- 14.1.4 Deep freezing -->
+      <section id="sec-deep" class="mb-4">
+        <div class="section-label">14.1.4</div>
+        <div class="section-title">Deep freezing techniques</div>
+        <div class="section-subtitle">Making entire object graphs read-only.</div>
+
+        <details open>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Why shallow freeze is not enough</span>
+            <span class="summary-tag">motivation</span>
+          </summary>
+          <div class="inner">
+            <p>
+              Consider a typical state object:
+            </p>
+            <pre><code>
+const state = {
+    user: { name: "Irfan", active: true },
+    todos: [
+        { id: 1, text: "Learn JS", done: false }
+    ]
+};
+
+Object.freeze(state);
+
+state.user.active = false;     // allowed, user object not frozen
+state.todos[0].done = true;    // allowed, inner objects not frozen
+            </code></pre>
+
+            <p>
+              If you want true immutability for the whole graph, you need a recursive strategy (deep freeze).
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Implementing a recursive deepFreeze</span>
+            <span class="summary-tag">implementation</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+function deepFreeze(obj, seen) {
+    if (!obj || typeof obj !== "object") {
+        return obj; // primitives ignored
+    }
+
+    // Handle circular references
+    if (!seen) {
+        seen = new WeakSet();
+    }
+    if (seen.has(obj)) {
+        return obj;
+    }
+    seen.add(obj);
+
+    // First freeze this level
+    Object.freeze(obj);
+
+    // Then recursively freeze properties
+    const props = Object.getOwnPropertyNames(obj);
+    for (const key of props) {
+        const value = obj[key];
+        deepFreeze(value, seen);
+    }
+
+    return obj;
+}
+
+const appState = {
+    user: { name: "Irfan", active: true },
+    settings: { theme: "dark", language: "en" }
+};
+
+deepFreeze(appState);
+
+appState.user.active = false;  // ignored
+appState.settings.theme = "light"; // ignored
+            </code></pre>
+
+            <p class="hint">
+              The <code>WeakSet</code> protects against infinite recursion on cyclic graphs.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>When should you use deepFreeze in production?</span>
+            <span class="summary-tag">practice</span>
+          </summary>
+          <div class="inner">
+            <ul>
+              <li>Great for development mode to detect accidental mutations.</li>
+              <li>Overhead may be high for large graphs in performance-critical code.</li>
+              <li>Many libraries (like Redux) recommend freeze only in dev, not in production builds.</li>
+            </ul>
+            <p>
+              In performance-sensitive paths, prefer patterns where you never mutate state by convention,
+              and use lightweight checks or library support instead of freezing everything.
+            </p>
+          </div>
+        </details>
+      </section>
+
+      <!-- 14.1.5 Immutable data patterns -->
+      <section id="sec-patterns" class="mb-4">
+        <div class="section-label">14.1.5</div>
+        <div class="section-title">Immutable data patterns</div>
+        <div class="section-subtitle">Working with “changes” without mutation.</div>
+
+        <details open>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Core idea: never modify, always create new</span>
+            <span class="summary-tag">concept</span>
+          </summary>
+          <div class="inner">
+            <p>
+              Immutable data pattern: instead of editing an object in-place, you create a new one that
+              represents the updated state.
+            </p>
+
+            <pre><code>
+const state1 = {
+    user: { name: "Irfan", active: true },
+    count: 0
+};
+
+// BAD: mutate
+state1.count = state1.count + 1;
+
+// GOOD: create new
+const state2 = {
+    ...state1,
+    count: state1.count + 1
+};
+
+console.log(state1.count); // 1 (mutated)
+console.log(state2.count); // 1 (new object)
+
+// More correct approach would keep state1 unchanged:
+const fixedState1 = {
+    user: { name: "Irfan", active: true },
+    count: 0
+};
+const state3 = {
+    ...fixedState1,
+    count: fixedState1.count + 1
+};
+            </code></pre>
+
+            <p class="hint">
+              Libraries like Redux rely heavily on this idea: reducers must be pure and never mutate inputs.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Updating nested structures with structural sharing</span>
+            <span class="summary-tag">pattern</span>
+          </summary>
+          <div class="inner">
+            <p>
+              You can update nested objects without cloning the entire world by using <em>structural sharing</em>:
+              you only copy the path that changes.
+            </p>
+
+            <pre><code>
+const stateA = {
+    user: { name: "Irfan", active: true },
+    todos: [
+        { id: 1, text: "Learn JS", done: false },
+        { id: 2, text: "Practice", done: false }
+    ]
+};
+
+// Mark todo with id 1 as done immutably
+const updatedTodos = stateA.todos.map(todo =&gt;
+    (todo.id === 1)
+        ? { ...todo, done: true }
+        : todo
+);
+
+const stateB = {
+    ...stateA,
+    todos: updatedTodos
+};
+
+console.log(stateA.todos === stateB.todos);         // false
+console.log(stateA.user === stateB.user);           // true (shared)
+console.log(stateA.todos[1] === stateB.todos[1]);   // true (unchanged element shared)
+            </code></pre>
+
+            <p>
+              This is exactly how many “persistent data structure” libraries do it internally,
+              but with more advanced tree-like data structures.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Using Object.freeze with immutable patterns</span>
+            <span class="summary-tag">combination</span>
+          </summary>
+          <div class="inner">
+            <p>
+              Freezing is a runtime guard; immutable patterns are a discipline. You can combine them:
+            </p>
+
+            <pre><code>
+function immutableAssign(obj, changes) {
+    const next = {
+        ...obj,
+        ...changes
+    };
+    return Object.freeze(next); // shallow freeze
+}
+
+const base = Object.freeze({ x: 1, y: 2 });
+
+const moved = immutableAssign(base, { x: 5 });
+console.log(moved.x, moved.y);  // 5, 2
+
+// Following attempts will be ignored in non-strict mode:
+moved.x = 100;
+console.log(moved.x); // still 5
+            </code></pre>
+
+            <p>
+              This pattern ensures you never accidentally mutate the new object after creation.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>When to choose immutable patterns in real apps</span>
+            <span class="summary-tag">guidance</span>
+          </summary>
+          <div class="inner">
+            <ul>
+              <li>UI state (React, Vue, etc.) where change detection depends on reference equality.</li>
+              <li>Concurrency scenarios (web workers, multi-threaded environments in other JS runtimes).</li>
+              <li>Complex business logic where debugging random mutations is hard.</li>
+              <li>Security-sensitive code paths where you need predictability.</li>
+            </ul>
+            <p>
+              Immutable patterns pair well with:
+            </p>
+            <ul>
+              <li>Pure functions.</li>
+              <li>Event sourcing.</li>
+              <li>Time-travel debugging (keeping historical states).</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Checklist &amp; mental model</span>
+            <span class="summary-tag">summary</span>
+          </summary>
+          <div class="inner">
+            <ul>
+              <li>Explain precisely how <code>freeze</code>, <code>seal</code>, and <code>preventExtensions</code> differ.</li>
+              <li>Write a robust <code>deepFreeze</code> that handles nested objects and circular references.</li>
+              <li>Design a small state-update module that never mutates its inputs.</li>
+              <li>Use structural sharing to update nested data efficiently.</li>
+              <li>Decide when to use freezing (dev-time guard) vs. pure immutable patterns (architecture choice).</li>
+            </ul>
+            <p>
+              If you can do all of this comfortably, you are ready to design large-scale, immutable-style
+              JavaScript systems with confidence.
+            </p>
+          </div>
+        </details>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script>
+// Smooth scrolling + active TOC + search + expand/collapse + simple highlighting
+document.addEventListener("DOMContentLoaded", () => {
+  const contentPanel = document.querySelector(".content-panel");
+  const tocLinks = Array.from(document.querySelectorAll(".toc-link"));
+  const sections = tocLinks.map(link => {
+    const id = link.getAttribute("href");
+    return { link, target: document.querySelector(id) };
+  });
+
+  // Smooth scroll
+  tocLinks.forEach(link => {
+    link.addEventListener("click", e => {
+      e.preventDefault();
+      const id = link.getAttribute("href");
+      const target = document.querySelector(id);
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+        history.replaceState(null, "", id);
+      }
+    });
+  });
+
+  // Active TOC highlight
+  function updateActive() {
+    const y = contentPanel.scrollTop;
+    let current = null;
+    sections.forEach(({ link, target }) => {
+      if (!target) return;
+      const top = target.offsetTop;
+      if (top - 80 <= y) current = link;
+    });
+    tocLinks.forEach(l => l.classList.remove("active"));
+    if (current) current.classList.add("active");
+  }
+  contentPanel.addEventListener("scroll", updateActive);
+  updateActive();
+
+  // TOC search
+  const tocSearch = document.getElementById("tocSearch");
+  const tocItems = Array.from(document.querySelectorAll("#tocList li"));
+  tocSearch.addEventListener("input", () => {
+    const q = tocSearch.value.toLowerCase();
+    tocItems.forEach(li => {
+      const text = li.textContent.toLowerCase() || "";
+      li.style.display = text.includes(q) ? "" : "none";
+    });
+  });
+
+  // Expand / collapse all
+  document.getElementById("btnExpandAll").onclick =
+    () => document.querySelectorAll("details").forEach(d => d.open = true);
+  document.getElementById("btnCollapseAll").onclick =
+    () => document.querySelectorAll("details").forEach(d => d.open = false);
+
+  // Simple syntax highlighting
+  function escapeHtml(str){
+    return str.replace(/&/g,"&amp;")
+              .replace(/</g,"&lt;")
+              .replace(/>/g,"&gt;");
+  }
+  const keywords = [
+    "class","extends","constructor","super",
+    "function","return","const","let","var",
+    "if","else","while","for","new","async","await",
+    "try","catch","throw","in","instanceof"
+  ];
+  const builtins = [
+    "Object","Array","Map","Set","Date","Promise",
+    "console","Math","JSON","fetch","WeakSet"
+  ];
+
+  document.querySelectorAll("pre code").forEach(codeEl => {
+    const raw = codeEl.textContent;
+    let html = escapeHtml(raw);
+
+    // comments
+    html = html.replace(/(\/\/.*?$)/gm,"<span class='token-comment'>$1</span>");
+    // strings
+    html = html.replace(/(&quot;.*?&quot;|'.*?'|`.*?`)/g,
+      "<span class='token-string'>$1</span>");
+    // numbers
+    html = html.replace(/\b(\d+(\.\d+)?)\b/g,
+      "<span class='token-number'>$1</span>");
+    // builtins
+    builtins.forEach(b => {
+      const re = new RegExp("\\b"+b+"\\b","g");
+      html = html.replace(re,"<span class='token-builtins'>"+b+"</span>");
+    });
+    // keywords
+    keywords.forEach(k => {
+      const re = new RegExp("\\b"+k+"\\b","g");
+      html = html.replace(re,"<span class='token-keyword'>"+k+"</span>");
+    });
+    // functions (simple heuristic)
+    html = html.replace(/([a-zA-Z_$][\w$]*)\s*(?=\()/g,
+      "<span class='token-function'>$1</span>");
+
+    codeEl.innerHTML = html;
+  });
+});
+</script>
+</body>
+</html>

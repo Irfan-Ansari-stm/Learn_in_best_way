@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>21.1 Client-Side Security — Deep Learning Note</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+
+  <!-- highlight.js -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #0b0f10;
+      --surface: #121416;
+      --muted: #9aa7ad;
+      --cyan: #06b6d4;
+      --amber: #f59e0b;
+      --card: #111316;
+      --radius: 12px;
+      --toc-width: 320px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
+    }
+    body {
+      background: linear-gradient(180deg, var(--bg), #050606);
+      color: #e6eef2;
+      margin: 0;
+      font-family: Inter, system-ui;
+    }
+    .app { display: grid; grid-template-columns: var(--toc-width) 1fr; gap: 20px; height: 100vh; padding: 20px; }
+    .panel-left {
+      width: var(--toc-width); background: var(--card); padding: 16px; border-radius: var(--radius);
+      box-shadow: 0 6px 30px rgba(0,0,0,0.6); position: sticky; top: 20px; height: calc(100vh - 40px); overflow-y: auto;
+    }
+    .panel-right { overflow-y: auto; height: calc(100vh - 40px); padding: 10px; }
+    .card {
+      background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);
+      border-radius: var(--radius); padding: 18px; margin-bottom: 16px;
+    }
+    h2, h3 { color: #eaf7fb; }
+    details { 
+        color: white;
+        background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); padding: 12px; margin: 8px 0; border-radius: 10px; }
+    summary { cursor: pointer; font-weight: 600; }
+    pre { background: #0b0f10; border-left: 4px solid rgba(6,182,212,0.4); padding: 14px; border-radius: 8px; font-size: 0.9rem; overflow-x: auto; }
+    code { font-family: var(--mono); }
+    @media (max-width: 900px) { .app { grid-template-columns: 1fr; } .panel-left { position: relative; width: 100%; height: auto; } }
+    .btn-ghost { background: transparent; border: 1px solid rgba(255,255,255,0.09); padding: 8px 12px; border-radius: 8px; color: var(--muted); }
+  </style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- LEFT PANEL -->
+  <aside class="panel-left">
+    <h1 style="color:var(--cyan); font-size:1.2rem;">21.1 Client-Side Security</h1>
+    <p class="">XSS • CSRF • CSP • Same-Origin Policy • CORS</p>
+
+    <!-- Controls -->
+    <button id="expandAll" class="btn-ghost">Expand All</button>
+    <button id="collapseAll" class="btn-ghost">Collapse All</button>
+
+    <h4 class="mt-3">Contents</h4>
+    <ul style="list-style:none; padding-left:0" id="tocList">
+      <li data-target="xss">XSS Prevention</li>
+      <li data-target="csrf">CSRF Protection</li>
+      <li data-target="csp">Content Security Policy</li>
+      <li data-target="sop">Same-Origin Policy</li>
+      <li data-target="cors">CORS</li>
+    </ul>
+  </aside>
+
+  <!-- RIGHT PANEL -->
+  <main class="panel-right">
+
+    <!-- Intro -->
+    <div class="card">
+      <h2>Executive Summary</h2>
+      <p class="">
+        Client-side security protects your web app from attacks that execute in the browser. This module covers the 5 pillars:
+        <b>XSS</b>, <b>CSRF</b>, <b>CSP</b>, <b>Same-Origin Policy</b>, and <b>CORS</b>, with deep explanations and production-grade JavaScript examples.
+      </p>
+    </div>
+
+    <!-- XSS -->
+    <section class="card" id="xss">
+      <h2>XSS (Cross-Site Scripting) Prevention</h2>
+
+      <details open>
+        <summary>What is XSS?</summary>
+        <p class="">
+          XSS allows attackers to inject JavaScript into your site. It executes in your users’ browsers and can steal cookies, tokens, or perform actions as the user.
+        </p>
+      </details>
+
+      <details>
+        <summary>Types of XSS</summary>
+        <ul>
+          <li><b>Reflected XSS:</b> input → immediate output (search box, query params).</li>
+          <li><b>Stored XSS:</b> malicious input stored in DB and shown to every user.</li>
+          <li><b>DOM XSS:</b> insecure JavaScript manipulates the DOM with unsanitized data.</li>
+        </ul>
+      </details>
+
+      <details>
+        <summary>Safe DOM handling (never use innerHTML)</summary>
+
+<pre><code>&lt;!-- ❌ Dangerous --&gt;
+element.innerHTML = userInput;
+
+&lt;!-- ✅ Safe --&gt;
+element.textContent = userInput;
+</code></pre>
+      </details>
+
+      <details>
+        <summary>Sanitizing HTML (DOMPurify example)</summary>
+
+<pre><code>&lt;script&gt;
+const clean = DOMPurify.sanitize(userInput);
+safeContainer.innerHTML = clean;
+&lt;/script&gt;
+</code></pre>
+      </details>
+
+      <details>
+        <summary>Escaping dangerous characters</summary>
+
+<pre><code>function escapeHTML(str) {
+  return str.replace(/&amp;/g, "&amp;amp;")
+    .replace(/&lt;/g, "&amp;lt;")
+    .replace(/&gt;/g, "&amp;gt;")
+    .replace(/"/g, "&amp;quot;")
+    .replace(/'/g, "&#039;");
+}
+</code></pre>
+      </details>
+    </section>
+
+    <!-- CSRF -->
+    <section class="card" id="csrf">
+      <h2>CSRF (Cross-Site Request Forgery) Protection</h2>
+
+      <details open>
+        <summary>What is CSRF?</summary>
+        <p class="">
+          CSRF tricks a logged-in user’s browser into sending a request to your site without their intention, typically using cookies.
+        </p>
+      </details>
+
+      <details>
+        <summary>Token-based protection</summary>
+
+<pre><code>&lt;!-- Server generates a CSRF token --&gt;
+&lt;input type="hidden" name="csrf_token" value="{{token}}"&gt;
+
+&lt;script&gt;
+// Add token to headers for AJAX calls
+fetch('/transfer', {
+  method: 'POST',
+  headers: { 'X-CSRF-Token': window.csrfToken },
+});
+&lt;/script&gt;
+</code></pre>
+      </details>
+
+      <details>
+        <summary>SameSite Cookies</summary>
+
+<pre><code>Set-Cookie: session=abcd; HttpOnly; Secure; SameSite=Lax;
+</code></pre>
+      </details>
+    </section>
+
+    <!-- CSP -->
+    <section class="card" id="csp">
+      <h2>Content Security Policy (CSP)</h2>
+
+      <details open>
+        <summary>Purpose</summary>
+        <p class="">
+          CSP prevents XSS by restricting what resources the browser can load and execute.
+        </p>
+      </details>
+
+      <details>
+        <summary>Example CSP header</summary>
+
+<pre><code>Content-Security-Policy:
+  default-src 'self';
+  script-src 'self' https://cdn.example.com;
+  style-src 'self' 'unsafe-inline';
+  img-src 'self' data:;
+  object-src 'none';
+  connect-src 'self';
+</code></pre>
+      </details>
+
+      <details>
+        <summary>Enforce vs Report-Only</summary>
+
+<pre><code>Content-Security-Policy-Report-Only: script-src 'self';
+</code></pre>
+      </details>
+    </section>
+
+    <!-- SAME ORIGIN POLICY -->
+    <section class="card" id="sop">
+      <h2>Same-Origin Policy</h2>
+
+      <details open>
+        <summary>What is it?</summary>
+        <p class="">
+          The Same-Origin Policy (SOP) prevents scripts from one origin from accessing data in another origin.
+        </p>
+      </details>
+
+      <details>
+        <summary>Origin = scheme + host + port</summary>
+
+<pre><code>https://example.com:443  → origin A  
+https://api.example.com  → different origin (subdomain ≠ same origin)
+</code></pre>
+      </details>
+
+      <details>
+        <summary>What SOP restricts</summary>
+        <ul>
+          <li>Reading cross-origin responses</li>
+          <li>Accessing DOM of cross-origin pages</li>
+          <li>Reading cookies/localStorage of another origin</li>
+        </ul>
+      </details>
+    </section>
+
+    <!-- CORS -->
+    <section class="card" id="cors">
+      <h2>CORS (Cross-Origin Resource Sharing)</h2>
+
+      <details open>
+        <summary>What is CORS?</summary>
+        <p class="">
+          CORS allows a server to tell the browser which cross-origin requests are allowed.
+        </p>
+      </details>
+
+      <details>
+        <summary>Simple example</summary>
+
+<pre><code>Access-Control-Allow-Origin: https://myapp.com
+Access-Control-Allow-Methods: GET, POST
+Access-Control-Allow-Headers: Content-Type
+</code></pre>
+      </details>
+
+      <details>
+        <summary>Preflight (OPTIONS)</summary>
+
+<pre><code>OPTIONS /api
+Access-Control-Request-Method: POST
+Access-Control-Request-Headers: Authorization
+</code></pre>
+      </details>
+    </section>
+
+    <footer class=" mt-3">
+      Generated on <span id="date"></span>
+    </footer>
+
+  </main>
+</div>
+
+<script>
+  document.getElementById('date').textContent = new Date().toLocaleString();
+
+  // Expand/Collapse all
+  document.getElementById('expandAll').onclick = () => {
+    document.querySelectorAll('details').forEach(d => d.open = true);
+  };
+  document.getElementById('collapseAll').onclick = () => {
+    document.querySelectorAll('details').forEach(d => d.open = false);
+  };
+
+  // TOC scroll
+  document.querySelectorAll('#tocList li').forEach(item => {
+    item.onclick = () => {
+      const el = document.getElementById(item.dataset.target);
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+  });
+
+  hljs.highlightAll();
+</script>
+
+</body>
+</html>

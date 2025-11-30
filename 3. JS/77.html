@@ -1,0 +1,394 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>22.3 Package Management — Deep Learning Note</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
+
+  <style>
+    :root{--bg:#0b0f10;--surface:#111518;--cyan:#06b6d4;--amber:#f59e0b;--muted:#9aa6a6;--panel-width:340px;--radius:12px}
+    html,body{height:100%}
+    body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:#e6eef0}
+    .app{display:flex;gap:18px;height:100vh;padding:20px}
+    .left-panel{width:var(--panel-width);background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.04));padding:18px;border-radius:var(--radius);position:sticky;top:20px;height:calc(100vh - 40px);flex-shrink:0;border:1px solid rgba(255,255,255,0.03)}
+    .right-panel{flex:1;background:linear-gradient(180deg,rgba(255,255,255,0.01),rgba(255,255,255,0.00));padding:22px;border-radius:var(--radius);overflow:auto;box-shadow:0 6px 18px rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.02)}
+    .brand{display:flex;gap:12px;align-items:center}
+    .brand-mark{width:46px;height:46px;border-radius:10px;background:linear-gradient(90deg,var(--cyan),var(--amber));display:flex;align-items:center;justify-content:center;color:#071018;font-weight:700}
+    .title{font-weight:700}
+    .subtitle{font-size:0.82rem;color:var(--muted)}
+    .toc{margin-top:12px}
+    .search{margin-bottom:10px}
+    .controls{display:flex;gap:8px;margin-bottom:8px}
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);padding:6px 8px;border-radius:8px}
+    .toc-list{max-height:58vh;overflow:auto;padding-right:6px}
+    a.toc-item{display:block;padding:8px;border-radius:8px;margin-bottom:6px;color:inherit;text-decoration:none}
+    a.toc-item:hover{background:rgba(255,255,255,0.02);color:var(--cyan)}
+    details{background:rgba(255,255,255,0.015);padding:12px;border-radius:10px;margin-bottom:12px;border:1px solid rgba(255,255,255,0.02)}
+    summary{cursor:pointer;font-weight:600}
+    pre{background:rgba(0,0,0,0.35);padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,'Roboto Mono','Courier New',monospace}
+    h1,h2,h3{color:#dff7fb}
+    p{color:#cfe8ea}
+    .muted{color:var(--muted)}
+    table.table thead th{border-bottom:1px solid rgba(255,255,255,0.04)}
+    @media (max-width:900px){.left-panel{display:none}}
+  </style>
+</head>
+<body>
+  <div class="app container-fluid">
+    <aside class="left-panel" aria-label="Table of contents">
+      <div class="brand">
+        <div class="brand-mark">22.3</div>
+        <div>
+          <div class="title">Package Management</div>
+          <div class="subtitle">npm, Yarn, pnpm, SemVer, publishing</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">
+        <div class="muted">Author: <strong>Irfan</strong></div>
+        <div style="background:linear-gradient(90deg,var(--cyan),rgba(0,0,0,0.12));padding:4px 8px;border-radius:999px;color:#021417;font-weight:700">Advanced</div>
+      </div>
+
+      <div class="toc">
+        <input id="tocSearch" class="form-control search" placeholder="Search TOC..." />
+        <div class="controls">
+          <button class="btn-ghost" id="expandAll">Expand all</button>
+          <button class="btn-ghost" id="collapseAll">Collapse all</button>
+          <button class="btn-ghost" id="tocReset">Reset</button>
+        </div>
+        <div class="toc-list" id="tocList">
+          <a class="toc-item" href="#npm">npm ecosystem &amp; scripts</a>
+          <a class="toc-item" href="#yarn-pnpm">Yarn and pnpm alternatives</a>
+          <a class="toc-item" href="#semver">Semantic versioning (SemVer)</a>
+          <a class="toc-item" href="#strategies">Dependency management strategies</a>
+          <a class="toc-item" href="#publishing">Publishing packages</a>
+          <a class="toc-item" href="#security">Security & supply chain</a>
+          <a class="toc-item" href="#checklist">Checklist before publishing</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="right-panel" id="content" tabindex="0">
+      <article>
+        <h1 id="top">22.3 Package Management — Deep Learning Note</h1>
+        <p class="muted">Detailed coverage of npm scripts, package managers (Yarn/pnpm), semantic versioning, strategies for dependency management, and how to publish packages safely. Examples use HTML entities so code displays correctly. Use the TOC to jump to sections.</p>
+
+        <!-- NPM -->
+        <section id="npm" class="anchor-target">
+          <h2>npm ecosystem &amp; scripts</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>npm is the default package registry and CLI for Node.js. <code>package.json</code> declares metadata, dependencies, scripts, and configuration for publishing. npm scripts are lightweight task runners that chain commands and can use lifecycle hooks.</p>
+          </details>
+
+          <details>
+            <summary>package.json anatomy</summary>
+            <pre><code class="language-json">{
+  "name": "my-package",
+  "version": "1.2.3",
+  "description": "Example package",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "files": ["dist/"],
+  "scripts": {
+    "build": "npm run clean && rollup -c",
+    "test": "jest",
+    "prepublishOnly": "npm run build"
+  },
+  "dependencies": {"lodash": "^4.17.21"},
+  "devDependencies": {"rollup": "^3.0.0"}
+}
+</code></pre>
+          </details>
+
+          <details>
+            <summary>npm scripts patterns & tips</summary>
+            <ul>
+              <li>Use <code>npm run</code> scripts to unify tooling commands (build, lint, test).</li>
+              <li>Use chained scripts: <code>"build:prod": "cross-env NODE_ENV=production parcel build"</code>.</li>
+              <li>Use <code>pre</code> and <code>post</code> hooks (e.g., <code>prepublishOnly</code>, <code>posttest</code>).</li>
+              <li>Keep complex logic in JS files (scripts folder) rather than complex shell pipelines for portability.</li>
+            </ul>
+          </details>
+
+          <details>
+            <summary>Lockfiles and reproducible installs</summary>
+            <p><code>package-lock.json</code> (npm), <code>yarn.lock</code>, and <code>pnpm-lock.yaml</code> pin exact versions to ensure reproducible installs across machines and CI. Commit lockfiles to VCS for apps; libraries should consider whether to publish lockfiles.</p>
+          </details>
+
+          <details>
+            <summary>Example: cross-platform script using npm-run-all</summary>
+            <pre><code class="language-javascript">// package.json scripts
+{
+  "scripts": {
+    "clean": "rimraf dist",
+    "build:es": "rollup -c rollup.esm.config.js",
+    "build:cjs": "rollup -c rollup.cjs.config.js",
+    "build": "npm-run-all clean build:es build:cjs"
+  }
+}
+</code></pre>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- YARN & PNPM -->
+        <section id="yarn-pnpm" class="anchor-target">
+          <h2>Yarn and pnpm alternatives</h2>
+
+          <details>
+            <summary>Executive summary</summary>
+            <p>Yarn and pnpm are alternative package managers that offer speed, deterministic installs, and different disk/hoisting strategies. Yarn introduced workspaces and Plug'n'Play; pnpm optimizes disk usage with a content-addressable store and strict node_modules layout.</p>
+          </details>
+
+          <details>
+            <summary>Yarn: features & usage</summary>
+            <pre><code class="language-bash"># install
+npm install -g yarn
+
+# install deps
+yarn install
+
+# add package
+yarn add lodash
+
+# workspaces (monorepo)
+# package.json in root: { "workspaces": ["packages/*"] }
+</code></pre>
+          </details>
+
+          <details>
+            <summary>pnpm: features & usage</summary>
+            <pre><code class="language-bash"># install pnpm
+npm install -g pnpm
+
+# install deps
+pnpm install
+
+# add package
+pnpm add express
+
+# pnpm uses hard links to a global store which saves disk space and speeds installs
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Choosing between npm, Yarn, pnpm</summary>
+            <ul>
+              <li>For monorepos: pnpm workspaces are efficient; Yarn v2+ (Berry) supports Plug'n'Play and constraints.</li>
+              <li>For simple apps: npm is generally sufficient and improved significantly in performance.</li>
+              <li>Adopt what your team and CI support; prefer lockfile-first workflows.</li>
+            </ul>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- SEMVER -->
+        <section id="semver" class="anchor-target">
+          <h2>Semantic Versioning (SemVer)</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>SemVer uses <code>MAJOR.MINOR.PATCH</code>. Increment MAJOR for incompatible API changes, MINOR for backward-compatible feature additions, PATCH for backward-compatible bug fixes. Range specifiers (^, ~, >=, <) influence which versions are allowed when installing.</p>
+          </details>
+
+          <details>
+            <summary>SemVer examples & ranges</summary>
+            <pre><code class="language-text">"lodash": "^4.17.21"  // compatible with 4.x.x, allows minor/patch
+"left-pad": "~1.2.3"   // allows 1.2.x only
+"dep": ">=2.0.0 <3.0.0" // any 2.x release
+</code></pre>
+            <p class="muted">Note: Careful when using <code>^</code> with transitive dependencies—automated updates can introduce regressions; use Dependabot or Renovate to automate PRs with tests.</p>
+          </details>
+
+          <details>
+            <summary>Breaking changes & deprecation strategy</summary>
+            <ol>
+              <li>Document breaking changes clearly in CHANGELOG.md.</li>
+              <li>Use deprecation warnings and a migration guide before bumping MAJOR.</li>
+              <li>Consider a transitional release that supports both APIs if feasible.</li>
+            </ol>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- STRATEGIES -->
+        <section id="strategies" class="anchor-target">
+          <h2>Dependency management strategies</h2>
+
+          <details>
+            <summary>Executive summary</summary>
+            <p>Manage dependencies to balance stability, security, and freshness. Strategies include dependency pinning, selective upgrading, using bot PRs for updates, monorepo toolchains, and separating runtime vs dev deps.</p>
+          </details>
+
+          <details>
+            <summary>Dev vs peer vs prod dependencies</summary>
+            <ul>
+              <li><strong>dependencies</strong> — required at runtime by the package.</li>
+              <li><strong>devDependencies</strong> — build/test tools not needed by consumers.</li>
+              <li><strong>peerDependencies</strong> — host application must provide these (e.g., React libs).</li>
+            </ul>
+          </details>
+
+          <details>
+            <summary>Monorepo strategies</summary>
+            <p>Use workspaces (pnpm/Yarn/npm) to manage multiple packages. Prefer independent versioning vs fixed/lockstep depending on release workflow. Use tools like changesets for managing changelogs and version bumps.</p>
+          </details>
+
+          <details>
+            <summary>Automating updates</summary>
+            <p>Use Dependabot, Renovate, or Snyk to create small, testable PRs for dependency updates. Configure rules to ignore non-critical updates or group related ones.</p>
+          </details>
+
+          <details>
+            <summary>Example: grep for unused deps</summary>
+            <pre><code class="language-bash"># using depcheck
+npx depcheck
+
+# or list direct dependencies not referenced
+node -e "const pkg=require('./package.json'); console.log(Object.keys(pkg.dependencies||{}));"
+</code></pre>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- PUBLISHING -->
+        <section id="publishing" class="anchor-target">
+          <h2>Publishing packages</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>Publishing packages to npm requires preparing metadata, builds, and access controls. Decide visibility (public/private), set proper entry points (main/module/types), and ensure the package is tested and secure before publishing.</p>
+          </details>
+
+          <details>
+            <summary>Publish steps (safe workflow)</summary>
+            <pre><code class="language-bash"># login
+npm login
+
+# build (ensure prepublishOnly builds artifact)
+npm run build
+
+# run tests
+npm test
+
+# publish (use dist-tag to avoid immediately making it latest)
+npm publish --tag beta
+
+# promote tag when ready
+npm dist-tag add my-package@1.2.0 latest
+</code></pre>
+          </details>
+
+          <details>
+            <summary>package.json fields to include</summary>
+            <pre><code class="language-json">{
+  "name": "@myorg/my-package",
+  "version": "1.2.3",
+  "description": "...",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "repository": {"type":"git","url":"git+https://github.com/myorg/my-package.git"},
+  "keywords": ["util","myorg"],
+  "license": "MIT"
+}
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Managing scoped packages & access</summary>
+            <p>Use npm organizations and teams for scoped packages (e.g., <code>@myorg/mypkg</code>). Configure <code>access: public</code> when publishing public scoped packages: <code>npm publish --access public</code>.</p>
+          </details>
+
+          <details>
+            <summary>Rollback & unpublish policies</summary>
+            <p>npm allows unpublishing within a short time window for security; otherwise, deprecate versions using <code>npm deprecate my-package@1.2.3 "buggy"</code> and publish a patched version. Have CI gating to avoid accidental publishes.</p>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- SECURITY -->
+        <section id="security" class="anchor-target">
+          <h2>Security &amp; supply chain</h2>
+
+          <details>
+            <summary>Executive summary</summary>
+            <p>Supply-chain security is critical: scan dependencies, pin or lock, use least-privilege tokens for publishing, and monitor for compromised packages. Use automated scans and private registries for sensitive artifacts.</p>
+          </details>
+
+          <details>
+            <summary>Tools & practices</summary>
+            <ul>
+              <li>Use npm audit, Snyk, or GitHub Dependabot alerts.</li>
+              <li>Use short-lived CI tokens and do not store npm tokens in plain text.</li>
+              <li>Prefer verified publishers and avoid unknown packages with few downloads.</li>
+            </ul>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- CHECKLIST -->
+        <section id="checklist" class="anchor-target">
+          <h2>Checklist before publishing</h2>
+
+          <details open>
+            <summary>Quick checklist</summary>
+            <ul>
+              <li>All tests pass in CI.</li>
+              <li>Build artifacts are included in <code>files</code> or bundled correctly.</li>
+              <li>package.json has proper <code>main</code>, <code>module</code>, and <code>types</code> fields.</li>
+              <li>LICENSE and README.md present.</li>
+              <li>Security scans run and critical vulnerabilities addressed.</li>
+              <li>Use dist-tags for staged releases.</li>
+            </ul>
+          </details>
+
+          <details>
+            <summary>Further reading</summary>
+            <ul>
+              <li>npm documentation (package.json, publishing)</li>
+              <li>pnpm, Yarn docs, SemVer specification</li>
+              <li>Dependabot, Renovate, Snyk guides</li>
+            </ul>
+          </details>
+        </section>
+
+        <footer style="margin-top:20px;padding-bottom:40px;">
+          <p class="muted">End of note. Use left TOC to navigate, expand/collapse sections, and copy examples. Tell me which subsection you want expanded (e.g., CI publish pipeline, changesets for monorepos, or automated release notes) and I will update the same file.</p>
+        </footer>
+      </article>
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/javascript.min.js"></script>
+  <script>
+    if(window.hljs){ hljs.highlightAll(); }
+
+    document.querySelectorAll('#tocList a').forEach(a=>{
+      a.addEventListener('click', function(e){ e.preventDefault(); const id=this.getAttribute('href').slice(1); const el=document.getElementById(id); if(el){ el.scrollIntoView({behavior:'smooth',block:'start'}); const d=el.querySelector('details'); if(d && !d.open) d.open=true; } });
+    });
+
+    document.getElementById('expandAll').addEventListener('click', ()=> document.querySelectorAll('details').forEach(d=> d.open=true));
+    document.getElementById('collapseAll').addEventListener('click', ()=> document.querySelectorAll('details').forEach(d=> d.open=false));
+    document.getElementById('tocReset').addEventListener('click', ()=> document.getElementById('content').scrollTo({top:0,behavior:'smooth'}));
+
+    document.getElementById('tocSearch').addEventListener('input', ()=>{ const q=document.getElementById('tocSearch').value.trim().toLowerCase(); document.querySelectorAll('#tocList a').forEach(a=>{ a.style.display = a.textContent.toLowerCase().includes(q) ? 'block' : 'none'; }); });
+
+    document.addEventListener('keydown',(e)=>{ if(e.key==='E' || e.key==='e') document.querySelectorAll('details').forEach(d=> d.open=true); if(e.key==='C' || e.key==='c') document.querySelectorAll('details').forEach(d=> d.open=false); });
+  </script>
+</body>
+</html>

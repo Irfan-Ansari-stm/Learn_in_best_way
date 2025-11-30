@@ -1,0 +1,846 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>6.2 Closures Deep Dive</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00f5ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --accent: #00f5ff;
+            --card-bg: #112240;
+            --border-color: #007a99;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            position: fixed;
+            width: 300px;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            box-shadow: 2px 0 10px rgba(0, 245, 255, 0.1);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--amber);
+        }
+
+        .toc-item {
+            margin: 8px 0;
+            padding-left: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .toc-item a {
+            color: var(--cyan);
+            text-decoration: none;
+            display: block;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .toc-item a:hover {
+            color: var(--amber);
+            padding-left: 20px;
+        }
+
+        .toc-subitem {
+            margin-left: 20px;
+            font-size: 0.9rem;
+            color: #b0c4de;
+        }
+
+        details {
+            margin: 15px 0;
+            border-left: 3px solid var(--amber);
+            padding-left: 15px;
+            background-color: rgba(17, 34, 64, 0.5);
+            border-radius: 0 5px 5px 0;
+        }
+
+        summary {
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--amber);
+            list-style: none;
+            padding: 10px;
+            background-color: rgba(0, 245, 255, 0.08);
+            border-radius: 5px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        summary::before {
+            content: "▶";
+            margin-right: 10px;
+            font-size: 0.8rem;
+            transition: transform 0.3s;
+        }
+
+        details[open] summary::before {
+            transform: rotate(90deg);
+        }
+
+        pre code {
+            display: block;
+            padding: 15px;
+            background-color: #0d1b2a;
+            color: var(--cyan);
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            border-left: 3px solid var(--amber);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.2);
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+
+        .formula {
+            background-color: rgba(0, 245, 255, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 3px solid var(--cyan);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.1rem;
+        }
+
+        .definition {
+            color: var(--amber);
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .detail {
+            margin: 12px 0;
+            line-height: 1.6;
+        }
+
+        .syntax {
+            margin: 15px 0;
+        }
+
+        .example {
+            margin: 15px 0;
+        }
+
+        .use-case {
+            color: var(--cyan);
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
+        .code-comment {
+            color: #7f8c8d;
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: #0a192f;
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-left: 8px;
+        }
+
+        .scope-diagram {
+            background-color: rgba(0, 245, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px dashed var(--cyan);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            white-space: pre;
+        }
+
+        .memory-graph {
+            background-color: rgba(17, 34, 64, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid var(--amber);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 991px) {
+            .left-panel {
+                position: relative;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .right-panel {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid p-0">
+    <div class="row g-0">
+        <!-- Left Panel -->
+        <div class="col-md-3 left-panel">
+            <h2>6.2 Closures Deep Dive</h2>
+            <p class="text-muted small">Unlocking Hidden Power in Functions</p>
+            <p class="text-secondary small">Author: AI Tutor • Updated: 2024</p>
+
+            <div class="mb-3 d-flex gap-2">
+                <button id="expandAll" class="btn btn-control">Expand All</button>
+                <button id="collapseAll" class="btn btn-control">Collapse All</button>
+            </div>
+
+            <div class="search-box mb-4">
+                <input type="text" id="searchToc" class="form-control bg-dark border-cyan" placeholder="Search topics..." style="color: var(--cyan); background-color: #112240; border-color: var(--amber);">
+            </div>
+
+            <h5 class="text-uppercase text-muted fw-bold mb-3">Table of Contents</h5>
+            <ul class="list-unstyled">
+                <li class="toc-item">
+                    <a href="#what-are-closures">What are Closures?</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#closure-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#closure-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#closure-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#closure-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#closure-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#creating-closures">Creating Closures</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#create-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#create-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#create-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#create-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#create-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#practical-examples">Practical Closure Examples</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#practical-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#practical-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#practical-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#practical-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#practical-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#memory-implications">Memory Implications</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#memory-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#memory-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#memory-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#memory-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#memory-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#module-pattern">Module Pattern with Closures</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#module-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#module-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#module-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#module-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#module-uses">Uses</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="col-md-9 right-panel">
+            <section id="what-are-closures">
+                <details>
+                    <summary>What are Closures?</summary>
+                    <div class="definition">Definition:</div>
+                    <p>A <span class="highlight">closure</span> is a function that remembers and has access to variables from its outer (enclosing) scope, even after the outer function has finished executing.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>Closures are not a special syntax — they're a natural consequence of lexical scoping and how JavaScript handles function execution contexts. Every time a function is defined inside another function, it creates a closure. The inner function "closes over" the variables of the outer function, preserving them for later use. This allows functions to maintain private state without objects or classes.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>function outer() {
+    let outerVar = "I'm preserved!";
+    
+    function inner() {
+        console.log(outerVar); // ← inner closes over outerVar
+    }
+    
+    return inner; // Return the inner function
+}
+
+const myClosure = outer(); // outer() finishes, but inner still has access to outerVar!
+myClosure(); // Output: "I'm preserved!"</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// Simple closure example
+function createCounter() {
+    let count = 0; // This variable is "captured" by the returned function
+    
+    return function() {
+        count++;
+        return count;
+    };
+}
+
+const counter1 = createCounter();
+const counter2 = createCounter();
+
+console.log(counter1()); // 1
+console.log(counter1()); // 2
+console.log(counter2()); // 1 (independent!)
+console.log(counter1()); // 3</code></pre>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Creating private variables and methods</li>
+                        <li>Implementing factories that generate specialized functions</li>
+                        <li>Event handlers that remember context</li>
+                        <li>Callbacks that preserve state across asynchronous operations</li>
+                    </ul>
+                    <p class="text-info mt-2">💡 Think of closures as "functions with backpacks" — they carry their environment with them wherever they go!</p>
+                </details>
+            </section>
+
+            <section id="creating-closures">
+                <details>
+                    <summary>Creating Closures</summary>
+                    <div class="definition">Definition:</div>
+                    <p>A closure is created whenever a function is defined inside another function and references variables from the outer scope.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>The key requirement for a closure is: <strong>an inner function must reference a variable from an outer function's scope</strong>. It doesn't matter if the inner function is returned, assigned to a variable, or passed as a callback — as long as it retains access to the outer variables, a closure exists.</p>
+                    <p>JavaScript engines automatically create closures when needed. You don't need to declare them explicitly — they happen naturally through nested function structure.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// Pattern: Outer function returns inner function
+function outer() {
+    const outerVariable = "data";
+    
+    // Inner function references outerVariable → creates closure
+    function inner() {
+        return outerVariable;
+    }
+    
+    return inner; // Returns the closure
+}
+
+// Usage
+const closure = outer();
+console.log(closure()); // Accesses outerVariable even though outer() is done!</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// Multiple ways to create closures:
+
+// 1. Returned function
+function makeGreeting(name) {
+    return function(greeting) {
+        return greeting + ", " + name + "!";
+    };
+}
+
+const sayHello = makeGreeting("Alice");
+console.log(sayHello("Hello")); // "Hello, Alice!"
+
+// 2. Assigned to variable
+function createMultiplier(factor) {
+    return function(number) {
+        return number * factor;
+    };
+}
+
+const double = createMultiplier(2);
+const triple = createMultiplier(3);
+
+console.log(double(5)); // 10
+console.log(triple(5)); // 15
+
+// 3. Event handler closure
+for (let i = 0; i &lt; 3; i++) {
+    document.getElementById('btn' + i).addEventListener('click', function() {
+        console.log('Button ' + i + ' clicked'); // i is captured from loop scope!
+    });
+}</code></pre>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Generating parameterized functions dynamically</li>
+                        <li>Building configuration-dependent behaviors</li>
+                        <li>Creating reusable logic templates</li>
+                        <li>Implementing decorators and higher-order functions</li>
+                    </ul>
+                    <p class="text-success mt-2">✅ Rule: If a function uses variables from outside its own scope, it forms a closure with those variables.</p>
+                </details>
+            </section>
+
+            <section id="practical-examples">
+                <details>
+                    <summary>Practical Closure Examples</summary>
+                    <div class="definition">Definition:</div>
+                    <p>Real-world applications of closures that solve common programming problems elegantly.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>Closures aren't just theoretical — they power everyday patterns in modern JavaScript. From data privacy to event handling, closures provide elegant solutions where other approaches would be verbose or insecure.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// Common patterns:
+// Factory pattern: return customized functions
+// Private state: encapsulate data within closures
+// Callbacks: preserve context in async operations
+// Memoization: cache results using closure-stored state</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// EXAMPLE 1: Private Counter with Validation
+function createSecureCounter(initialValue = 0) {
+    let count = initialValue; // Private variable - inaccessible externally
+    
+    return {
+        increment() { count++; },
+        decrement() { count--; },
+        getValue() { return count; },
+        reset() { count = initialValue; },
+        set(value) {
+            if (typeof value === 'number') {
+                count = value;
+            } else {
+                throw new Error('Only numbers allowed!');
+            }
+        }
+    };
+}
+
+const counter = createSecureCounter(10);
+counter.increment();
+counter.increment();
+console.log(counter.getValue()); // 12
+counter.set("hello"); // Throws error!
+console.log(counter.count); // undefined — can't access directly!
+
+// EXAMPLE 2: Module for API Configuration
+const apiClient = (function() {
+    let baseUrl = 'https://api.example.com';
+    let token = null;
+    
+    return {
+        setToken(newToken) {
+            token = newToken;
+        },
+        setBaseUrl(newUrl) {
+            baseUrl = newUrl;
+        },
+        async get(endpoint) {
+            const response = await fetch(baseUrl + endpoint, {
+                headers: { Authorization: 'Bearer ' + token }
+            });
+            return response.json();
+        }
+    };
+})();
+
+// Use it
+apiClient.setToken('abc123');
+apiClient.get('/users'); // Automatically includes token!
+
+// EXAMPLE 3: Event Listener with Context
+function setupButtons() {
+    const buttons = ['Home', 'About', 'Contact'];
+    
+    buttons.forEach((label, index) => {
+        const button = document.createElement('button');
+        button.textContent = label;
+        
+        // Each closure captures current label and index!
+        button.addEventListener('click', () => {
+            console.log(`Clicked ${label} (index: ${index})`);
+        });
+        
+        document.body.appendChild(button);
+    });
+}</code></pre>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Creating private APIs and encapsulated modules</li>
+                        <li>Implementing stateful components without classes</li>
+                        <li>Configurable utilities (logging, analytics)</li>
+                        <li>Debouncing/throttling functions with internal state</li>
+                        <li>Custom hooks in React-like frameworks</li>
+                    </ul>
+                    <p class="text-warning mt-2"><strong>💡 Pro Tip:</strong> Closures are the foundation of the Module Pattern and functional programming in JavaScript!</p>
+                </details>
+            </section>
+
+            <section id="memory-implications">
+                <details>
+                    <summary>Memory Implications</summary>
+                    <div class="definition">Definition:</div>
+                    <p>Closures keep referenced outer variables alive in memory even after the outer function has completed execution.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>This is both a powerful feature and a potential memory leak source. Normally, when a function finishes, its local variables are garbage collected. But if a closure holds a reference to those variables, the JavaScript engine cannot free them — they remain accessible as long as the closure exists.</p>
+                    <p>Modern engines optimize this well, but large data structures retained unintentionally can cause performance issues, especially in long-running applications like SPAs.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// Memory-efficient closure
+function createSmallClosure() {
+    const smallData = [1, 2, 3];
+    return function() { return smallData.length; };
+}
+
+// Memory-heavy closure (potential leak)
+function createHeavyClosure() {
+    const hugeArray = new Array(1000000).fill('data'); // 1M elements!
+    const expensiveObject = { /* complex object */ };
+    
+    return function() {
+        // Only uses one small property, but keeps ALL data alive!
+        return hugeArray.length;
+    };
+}</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// Memory leak scenario
+function loadData() {
+    const massiveDataset = new Array(1000000).fill(Math.random());
+    const filteredData = massiveDataset.filter(x =&gt; x &gt; 0.5);
+    
+    // Closure captures entire dataset even though we only need length
+    return function() {
+        return filteredData.length; // ← Only uses length, but keeps 1M items!
+    };
+}
+
+const getLength = loadData(); // Huge array stays in memory forever!
+// Even if we never call getLength(), the memory is locked!
+
+// Better approach: extract only what you need
+function loadDataOptimized() {
+    const massiveDataset = new Array(1000000).fill(Math.random());
+    const count = massiveDataset.filter(x =&gt; x &gt; 0.5).length;
+    
+    return function() {
+        return count; // Now only the number is retained!
+    };
+}
+
+const getLengthOptimized = loadDataOptimized(); // Much more memory efficient!</code></pre>
+
+                    <div class="memory-graph">
+// Memory Diagram: Closure vs Optimized
+//
+//          BEFORE CLOSURE         AFTER CLOSURE (LEAKY)
+//   ┌───────────────┐      ┌─────────────────────────────┐
+//   │  outer()      │      │  outer()                  │
+//   │  ┌─────────┐  │      │  ┌───────────────────────┐│
+//   │  │ data:[] │◄─┼──┐  │  │ data: [1M items]      ││
+//   │  └─────────┘  │  │  │  └───────────────────────┘│
+//   └───────┬───────┘  │  └───────────┬───────────────┘
+//           │          │              │
+//           ▼          │              ▼
+//       GC CLEAN       │          MEMORY LEAK!
+//                      │              ▲
+//                      └──────────────┘
+//                     Closure still references data!
+//
+//          OPTIMIZED VERSION
+//   ┌───────────────┐      ┌─────────────────────────────┐
+//   │  outer()      │      │  outer()                  │
+//   │  ┌─────────┐  │      │  ┌───────────────────────┐│
+//   │  │ data:[] │  │      │  │ data: [1M items]      ││
+//   │  └─────────┘  │      │  └───────────────────────┘│
+//   └───────┬───────┘      └───────────┬───────────────┘
+//           │                          │
+//           ▼                          ▼
+//       ┌─────────┐              ┌─────────┐
+//       │ count:  │◄─────────────┤ count:  │
+//       └─────────┘              └─────────┘
+//             ▲                          ▲
+//             └──────────────────────────┘
+//         Only retain what's needed!
+                    </div>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Understanding performance bottlenecks</li>
+                        <li>Debugging memory leaks in web apps</li>
+                        <li>Optimizing closures to retain minimal data</li>
+                        <li>Designing memory-efficient libraries</li>
+                    </ul>
+                    <p class="text-success mt-2">✅ Best Practices:</p>
+                    <ul>
+                        <li>Don't capture large objects unless necessary</li>
+                        <li>Set large variables to <code>null</code> after use if no longer needed</li>
+                        <li>Extract values early instead of keeping entire objects</li>
+                        <li>Use tools like Chrome DevTools Memory tab to detect leaks</li>
+                    </ul>
+                </details>
+            </section>
+
+            <section id="module-pattern">
+                <details>
+                    <summary>Module Pattern with Closures</summary>
+                    <div class="definition">Definition:</div>
+                    <p>The <span class="highlight">Module Pattern</span> uses closures to create private state and public API in JavaScript before ES6 modules existed.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>This pattern leverages Immediately Invoked Function Expressions (IIFE) to create a private scope. Variables declared inside the IIFE are inaccessible from outside, while the returned object exposes controlled public methods. This provides true encapsulation — similar to classes but without the syntax.</p>
+                    <p>Before ES6 modules, this was the standard way to achieve modular code organization in JavaScript.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>const MyModule = (function() {
+    // Private variables and functions
+    let privateVar = "secret";
+    function privateMethod() { ... }
+    
+    // Public API
+    return {
+        publicVar: "exposed",
+        publicMethod() {
+            return privateVar; // Can access private members
+        },
+        updatePrivate(value) {
+            privateVar = value;
+        }
+    };
+})();</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// Full Module Pattern Example
+const Calculator = (function() {
+    // PRIVATE STATE
+    let history = [];
+    let lastResult = 0;
+    
+    // PRIVATE HELPER FUNCTIONS
+    function addToHistory(operation, result) {
+        history.push({ operation, result, timestamp: new Date().toISOString() });
+    }
+    
+    function validateNumber(num) {
+        if (typeof num !== 'number' || isNaN(num)) {
+            throw new Error('Invalid number');
+        }
+    }
+    
+    // PUBLIC API
+    return {
+        add(a, b) {
+            validateNumber(a);
+            validateNumber(b);
+            lastResult = a + b;
+            addToHistory(`${a} + ${b}`, lastResult);
+            return lastResult;
+        },
+        
+        subtract(a, b) {
+            validateNumber(a);
+            validateNumber(b);
+            lastResult = a - b;
+            addToHistory(`${a} - ${b}`, lastResult);
+            return lastResult;
+        },
+        
+        getResult() {
+            return lastResult;
+        },
+        
+        getHistory() {
+            // Return copy to prevent external modification
+            return [...history];
+        },
+        
+        clearHistory() {
+            history = [];
+        },
+        
+        // Public method that uses private state
+        getLastOperation() {
+            return history.length > 0 ? history[history.length - 1].operation : null;
+        }
+    };
+})();
+
+// Usage:
+console.log(Calculator.add(5, 3));     // 8
+console.log(Calculator.subtract(10, 4)); // 6
+console.log(Calculator.getResult());   // 6
+console.log(Calculator.getLastOperation()); // "10 - 4"
+
+// Can't access private variables directly:
+console.log(Calculator.history);       // undefined
+console.log(Calculator.lastResult);    // undefined
+console.log(Calculator.validateNumber); // undefined</code></pre>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Creating namespaces and avoiding global pollution</li>
+                        <li>Encapsulating sensitive data and business logic</li>
+                        <li>Legacy JavaScript applications (pre-ES6)</li>
+                        <li>Libraries that need private state (jQuery plugins)</li>
+                        <li>Alternative to classes when you want true privacy</li>
+                    </ul>
+                    <p class="text-info mt-2">💡 Modern Alternative: ES6 Modules (<code>import/export</code>) are now preferred, but understanding the module pattern helps you read legacy code and understand how closures enable encapsulation.</p>
+                    <div class="formula">Module Pattern = IIFE + Closure + Public API</div>
+                </details>
+            </section>
+
+            <hr class="my-5">
+
+            <div class="alert alert-info">
+                <h5>Key Takeaways</h5>
+                <ul>
+                    <li><strong>Closure = Function + Lexical Environment</strong> — it remembers where it was created.</li>
+                    <li>Closures are created automatically when inner functions reference outer variables.</li>
+                    <li>Closures enable true privacy and encapsulation in JavaScript.</li>
+                    <li>Every closure maintains references to variables — which can cause memory leaks if misused.</li>
+                    <li>The Module Pattern uses closures to create objects with private state and public methods.</li>
+                    <li>Closures are essential for callbacks, event handlers, factories, and functional programming patterns.</li>
+                </ul>
+            </div>
+
+            <div class="alert alert-warning">
+                <h5>Common Pitfalls</h5>
+                <ul>
+                    <li>Accidentally capturing entire objects instead of specific values</li>
+                    <li>Creating closures in loops without proper variable binding (use <code>let</code>!)</li>
+                    <li>Forgetting that closures keep references alive → memory leaks</li>
+                    <li>Confusing closure behavior with object properties</li>
+                    <li>Overusing closures when simple variables or parameters would suffice</li>
+                </ul>
+            </div>
+
+            <div class="alert alert-success">
+                <h5>Interview Question Prep</h5>
+                <p><strong>Q: Explain what a closure is in your own words.</strong></p>
+                <p><strong>A:</strong> A closure is a function that remembers and can access variables from the scope in which it was created, even after that scope has finished executing. It's like a function carrying its own personal backpack of variables wherever it goes.</p>
+                
+                <p><strong>Q: Why does this log 3 three times? How do you fix it?</strong></p>
+                <pre><code>for (var i = 0; i &lt; 3; i++) {
+    setTimeout(() =&gt; console.log(i), 100);
+}</code></pre>
+                <p><strong>A:</strong> Because <code>var</code> is function-scoped, all closures reference the same <code>i</code> variable, which ends at 3. Fix with <code>let</code> or pass <code>i</code> as a parameter.</p>
+            </div>
+
+            <div class="text-center mt-4">
+                <small class="text-muted">© 2024 AI Tutor — Mastering Programming Fundamentals One Concept at a Time</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript Utilities -->
+<script>
+    // Expand/Collapse All
+    document.getElementById('expandAll').addEventListener('click', () => {
+        document.querySelectorAll('details').forEach(detail => {
+            detail.open = true;
+        });
+    });
+
+    document.getElementById('collapseAll').addEventListener('click', () => {
+        document.querySelectorAll('details').forEach(detail => {
+            detail.open = false;
+        });
+    });
+
+    // Smooth scrolling for TOC links
+    document.querySelectorAll('.toc-item a, .toc-subitem a').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+            
+            if (targetElement) {
+                window.scrollTo({
+                    top: targetElement.offsetTop - 100,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+
+    // Search functionality for TOC
+    document.getElementById('searchToc').addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
+        
+        tocItems.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            if (query === '' || text.includes(query)) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+
+    // Syntax Highlighting (basic)
+    document.querySelectorAll('pre code').forEach(block => {
+        hljs.highlightBlock(block);
+    });
+
+    // Add highlight.js if not present (fallback)
+    if (typeof hljs === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js';
+        script.onload = () => {
+            document.querySelectorAll('pre code').forEach(block => {
+                hljs.highlightBlock(block);
+            });
+        };
+        document.head.appendChild(script);
+    }
+</script>
+
+<!-- Optional: Add highlight.js for better syntax highlighting -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+
+</body>
+</html>
+```

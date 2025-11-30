@@ -1,0 +1,1467 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>11.3 – Async/Await in JavaScript</title>
+    <!-- Bootstrap CDN -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+    </script>
+
+    <style>
+        :root {
+            --bg-main: #050816;
+            --bg-sidebar: #050b14;
+            --bg-card: #06111f;
+            --accent-cyan: #22d3ee;
+            --accent-amber: #fbbf24;
+            --text-main: #e5e7eb;
+            --text-muted: #9ca3af;
+            --border-subtle: #1f2933;
+            --code-bg: #020617;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            overflow: hidden;
+        }
+
+        .app-wrapper {
+            height: 100vh;
+        }
+
+        /* Layout */
+        .sidebar {
+            background: radial-gradient(circle at top left, #0f172a, var(--bg-sidebar));
+            border-right: 1px solid var(--border-subtle);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 1.25rem 1rem;
+        }
+
+        .content-panel {
+            max-height: 100vh;
+            overflow-y: auto;
+            padding: 1.5rem 2rem;
+            background: radial-gradient(circle at top right, #0b1120, var(--bg-main));
+        }
+
+        /* Scrollbars */
+        .sidebar::-webkit-scrollbar,
+        .content-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .sidebar::-webkit-scrollbar-track,
+        .content-panel::-webkit-scrollbar-track {
+            background: #020617;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb,
+        .content-panel::-webkit-scrollbar-thumb {
+            background: #1f2937;
+            border-radius: 999px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover,
+        .content-panel::-webkit-scrollbar-thumb:hover {
+            background: #4b5563;
+        }
+
+        /* Sidebar content */
+        .course-tag {
+            font-size: 0.75rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--accent-amber);
+        }
+
+        .main-title {
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            margin-bottom: 0.25rem;
+        }
+
+        .subtitle {
+            font-size: 0.92rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .meta-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 0.15rem 0.55rem;
+            font-size: 0.7rem;
+            border: 1px solid rgba(148, 163, 184, 0.6);
+            color: var(--text-muted);
+            margin-right: 0.3rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .pill span.bullet {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            margin-right: 0.25rem;
+            background: var(--accent-cyan);
+        }
+
+        .toc-card {
+            margin-top: 1rem;
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 0.75rem;
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            padding: 0.9rem 0.85rem;
+        }
+
+        .toc-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.65rem;
+        }
+
+        .toc-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--accent-amber);
+        }
+
+        .toc-search {
+            font-size: 0.8rem;
+        }
+
+        .toc-search input {
+            background: #020617;
+            border: 1px solid #111827;
+            border-radius: 999px;
+            padding: 0.18rem 0.65rem;
+            color: var(--text-main);
+            width: 100%;
+            font-size: 0.78rem;
+        }
+
+        .toc-search input::placeholder {
+            color: #64748b;
+        }
+
+        .toc-list {
+            list-style: none;
+            padding-left: 0;
+            margin-bottom: 0;
+            margin-top: 0.4rem;
+        }
+
+        .toc-list li {
+            margin-bottom: 0.28rem;
+        }
+
+        .toc-link {
+            font-size: 0.8rem;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.4rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            text-decoration: none;
+            color: var(--text-muted);
+            transition: all 0.15s ease;
+        }
+
+        .toc-link-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.7);
+        }
+
+        .toc-link:hover {
+            background: rgba(15, 23, 42, 0.85);
+            color: var(--accent-cyan);
+        }
+
+        .toc-link.active {
+            background: rgba(8, 47, 73, 0.8);
+            color: var(--accent-cyan);
+        }
+
+        .toc-link.active .toc-link-dot {
+            background: var(--accent-cyan);
+        }
+
+        .toc-actions {
+            display: flex;
+            gap: 0.25rem;
+            margin-top: 0.5rem;
+        }
+
+        .toc-actions button {
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            background: rgba(15, 23, 42, 0.85);
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            padding: 0.12rem 0.6rem;
+        }
+
+        .toc-actions button:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        /* Content area */
+        .content-heading {
+            margin-bottom: 1rem;
+        }
+
+        .content-heading h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+        }
+
+        .content-heading p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .badge-level {
+            font-size: 0.75rem;
+            border-radius: 999px;
+            padding: 0.16rem 0.6rem;
+            border: 1px solid rgba(56, 189, 248, 0.6);
+            color: var(--accent-cyan);
+            margin-right: 0.35rem;
+        }
+
+        .badge-topic {
+            font-size: 0.75rem;
+            border-radius: 999px;
+            padding: 0.16rem 0.6rem;
+            border: 1px dashed rgba(251, 191, 36, 0.6);
+            color: var(--accent-amber);
+        }
+
+        .summary-strip {
+            background: radial-gradient(circle at left, rgba(56, 189, 248, 0.18), transparent);
+            border-radius: 0.9rem;
+            border: 1px solid rgba(148, 163, 184, 0.45);
+            padding: 0.9rem 1rem;
+            font-size: 0.85rem;
+            margin-bottom: 1.1rem;
+        }
+
+        .summary-strip strong {
+            color: var(--accent-amber);
+        }
+
+        details {
+            background: rgba(15, 23, 42, 0.85);
+            border-radius: 0.9rem;
+            border: 1px solid rgba(30, 64, 175, 0.8);
+            margin-bottom: 0.9rem;
+            padding: 0.25rem 0.9rem 0.7rem 0.9rem;
+        }
+
+        details summary {
+            cursor: pointer;
+            list-style: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 0.35rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #e5e7eb;
+        }
+
+        details summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .summary-label {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .summary-label .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 999px;
+            background: var(--accent-cyan);
+        }
+
+        .summary-tag {
+            font-size: 0.75rem;
+            color: var(--accent-amber);
+        }
+
+        details[open] {
+            border-color: rgba(56, 189, 248, 0.85);
+            box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.08);
+        }
+
+        details .inner {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .inner p {
+            margin-bottom: 0.45rem;
+        }
+
+        .inner ul {
+            padding-left: 1.2rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .inner li {
+            margin-bottom: 0.25rem;
+        }
+
+        /* Code blocks */
+        pre {
+            background: var(--code-bg);
+            border-radius: 0.7rem;
+            padding: 0.75rem 0.9rem;
+            overflow-x: auto;
+            border: 1px solid rgba(15, 118, 110, 0.65);
+            margin-bottom: 0.55rem;
+        }
+
+        code {
+            font-family: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.8rem;
+        }
+
+        .token-keyword {
+            color: #22c55e;
+            font-weight: 600;
+        }
+
+        .token-function {
+            color: #38bdf8;
+        }
+
+        .token-builtins {
+            color: #facc15;
+        }
+
+        .token-comment {
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        .token-string {
+            color: #f97316;
+        }
+
+        .token-number {
+            color: #a855f7;
+        }
+
+        .section-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: #9ca3af;
+            margin-bottom: 0.35rem;
+        }
+
+        .section-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--accent-amber);
+            margin-bottom: 0.2rem;
+        }
+
+        .section-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.55rem;
+        }
+
+        .hint {
+            border-left: 3px solid var(--accent-cyan);
+            padding-left: 0.6rem;
+            margin: 0.45rem 0;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .pill-inline {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.55);
+            padding: 0.05rem 0.4rem;
+            font-size: 0.7rem;
+            margin-left: 0.25rem;
+            color: #cbd5f5;
+        }
+
+        @media (max-width: 991.98px) {
+            body {
+                overflow: auto;
+            }
+
+            .app-wrapper {
+                height: auto;
+            }
+
+            .sidebar {
+                position: static;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border-subtle);
+            }
+
+            .content-panel {
+                max-height: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid app-wrapper">
+        <div class="row flex-nowrap">
+            <!-- LEFT SIDEBAR -->
+            <aside class="col-12 col-md-4 col-lg-3 sidebar">
+                <div class="mb-2">
+                    <div class="course-tag">Modern JavaScript Deep Dive</div>
+                    <div class="main-title">11.3 – Async / Await</div>
+                    <div class="subtitle">Syntactic sugar over Promises, done right</div>
+                    <div class="meta-text mb-2">
+                        Prepared for: College → Master / PhD level understanding<br>
+                        Style: Deep, detailed, example-driven, research-friendly
+                    </div>
+                </div>
+
+                <div class="mb-2">
+                    <span class="pill">
+                        <span class="bullet"></span>
+                        async functions
+                    </span>
+                    <span class="pill">
+                        <span class="bullet"></span>
+                        await keyword
+                    </span>
+                    <span class="pill">
+                        <span class="bullet"></span>
+                        try / catch errors
+                    </span>
+                    <span class="pill">
+                        <span class="bullet"></span>
+                        seq vs parallel
+                    </span>
+                    <span class="pill">
+                        <span class="bullet"></span>
+                        best practices
+                    </span>
+                </div>
+
+                <div class="toc-card">
+                    <div class="toc-header">
+                        <span class="toc-title">On this page</span>
+                    </div>
+
+                    <div class="toc-search mb-2">
+                        <input type="text" id="tocSearch" placeholder="Search sections…">
+                    </div>
+
+                    <ul class="toc-list" id="tocList">
+                        <li data-label="async function declaration">
+                            <a href="#sec-async-declaration" class="toc-link">
+                                <span class="toc-link-dot"></span>
+                                <span>11.3.1 async function declaration</span>
+                            </a>
+                        </li>
+                        <li data-label="await keyword usage">
+                            <a href="#sec-await-usage" class="toc-link">
+                                <span class="toc-link-dot"></span>
+                                <span>11.3.2 await keyword usage</span>
+                            </a>
+                        </li>
+                        <li data-label="error handling try catch">
+                            <a href="#sec-error-handling" class="toc-link">
+                                <span class="toc-link-dot"></span>
+                                <span>11.3.3 Error handling with try / catch</span>
+                            </a>
+                        </li>
+                        <li data-label="sequential versus parallel async">
+                            <a href="#sec-seq-vs-par" class="toc-link">
+                                <span class="toc-link-dot"></span>
+                                <span>11.3.4 Sequential vs parallel execution</span>
+                            </a>
+                        </li>
+                        <li data-label="async await best practices patterns pitfalls">
+                            <a href="#sec-best-practices" class="toc-link">
+                                <span class="toc-link-dot"></span>
+                                <span>11.3.5 Async / await best practices</span>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="toc-actions">
+                        <button id="btnExpandAll" type="button">Expand all</button>
+                        <button id="btnCollapseAll" type="button">Collapse all</button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- RIGHT CONTENT PANEL -->
+            <main class="col content-panel">
+                <section class="content-heading">
+                    <div class="d-flex flex-wrap align-items-center mb-2">
+                        <span class="badge-level">Level: Intermediate → Advanced</span>
+                        <span class="badge-topic">Topic: Async / Await built on Promises</span>
+                    </div>
+                    <h1>11.3 – Async / Await in JavaScript</h1>
+                    <p>
+                        <code>async</code> / <code>await</code> is syntactic sugar on top of Promises that makes asynchronous
+                        code look and feel like synchronous code. Internally, the event loop, microtask queue, and Promise
+                        chaining rules still apply, but as a developer you get clean linear control flow with normal
+                        <code>try</code> / <code>catch</code>. In this module, we will formally define async functions,
+                        understand what <code>await</code> really does, build robust error handling, and learn how to structure
+                        sequential vs parallel flows using async / await in production-quality code.
+                    </p>
+                </section>
+
+                <section>
+                    <div class="summary-strip">
+                        <strong>Executive intuition:</strong>
+                        Marking a function as <code>async</code> means that it <em>always returns a Promise</em>. Inside it,
+                        you can pause execution at <code>await</code> points. While the function is “paused”, the JavaScript
+                        engine is <strong>not blocked</strong>: control returns to the event loop. When the awaited Promise
+                        settles, execution resumes with the resolved value or throws the rejection, just like synchronous
+                        <code>try</code> / <code>catch</code>.
+                    </div>
+                </section>
+
+                <!-- 11.3.1 – async function declaration -->
+                <section id="sec-async-declaration" class="mb-4">
+                    <div class="section-label">11.3.1</div>
+                    <div class="section-title">async function declaration</div>
+                    <div class="section-subtitle">
+                        Defining functions that always return Promises.
+                    </div>
+
+                    <!-- Overview -->
+                    <details open>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                High-level overview of async functions
+                            </span>
+                            <span class="summary-tag">concept</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                Declaring a function with the <code>async</code> keyword transforms it into a
+                                <strong>Promise-returning function</strong>. Regardless of what you return inside, the outer
+                                call returns a Promise:
+                            </p>
+                            <ul>
+                                <li>Returning a value &rarr; Promise fulfilled with that value.</li>
+                                <li>Throwing an error &rarr; Promise rejected with that error.</li>
+                                <li>Using <code>return await</code> is often redundant but can affect stack traces.</li>
+                            </ul>
+                            <p>
+                                Internally, the JavaScript engine rewrites async functions into Promise chains and schedules
+                                the continuation using the microtask queue.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Syntax forms -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Syntax: declaration, expression, arrow
+                            </span>
+                            <span class="summary-tag">syntax</span>
+                        </summary>
+                        <div class="inner">
+                            <pre><code>
+// Function declaration
+async function fetchUser() {
+    return { id: 1, name: "Irfan" };
+}
+
+// Function expression
+const fetchSettings = async function () {
+    return { theme: "dark" };
+};
+
+// Arrow function
+const fetchData = async () =&gt; {
+    return "Hello Async";
+};
+
+// All three return Promises
+const p1 = fetchUser();
+const p2 = fetchSettings();
+const p3 = fetchData();
+
+console.log(p1 instanceof Promise); // true
+console.log(p2 instanceof Promise); // true
+console.log(p3 instanceof Promise); // true
+                            </code></pre>
+
+                            <p class="hint">
+                                Rule: <code>async</code> affects only the <em>outermost</em> function. Inner functions must
+                                also be marked <code>async</code> if they use <code>await</code>.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Return vs throw behaviour -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Return vs throw inside async
+                            </span>
+                            <span class="summary-tag">behaviour</span>
+                        </summary>
+                        <div class="inner">
+                            <pre><code>
+async function computeValue() {
+    return 42;
+}
+
+async function failValue() {
+    throw new Error("Computation failed");
+}
+
+computeValue().then(function (v) {
+    console.log("computeValue resolved with", v); // 42
+});
+
+failValue().catch(function (err) {
+    console.log("failValue rejected with", err.message); // "Computation failed"
+});
+                            </code></pre>
+
+                            <p>
+                                The above is equivalent to using <code>Promise.resolve</code> and
+                                <code>Promise.reject</code>, but async functions give you a structured place to write your
+                                sequential logic with <code>await</code>.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Mental model -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Mental model: async as Promise factory
+                            </span>
+                            <span class="summary-tag">deep dive</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                You can think of an <code>async</code> function as a machine that builds a Promise with an
+                                internal state machine:
+                            </p>
+                            <ul>
+                                <li>Every <code>await</code> is a suspension point.</li>
+                                <li>The local variables and state are captured.</li>
+                                <li>When the awaited Promise settles, the machine resumes with the right branch (value or error).</li>
+                                <li>When the function reaches <code>return</code>, it resolves; on uncaught error, it rejects.</li>
+                            </ul>
+                            <p class="hint">
+                                For exam / interview answers: &ldquo;An async function always returns a Promise; inside, you
+                                write synchronous-looking code that the engine transforms into Promise chains.&rdquo;
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 11.3.2 – await keyword usage -->
+                <section id="sec-await-usage" class="mb-4">
+                    <div class="section-label">11.3.2</div>
+                    <div class="section-title">await keyword usage</div>
+                    <div class="section-subtitle">
+                        Pausing async functions at Promise boundaries.
+                    </div>
+
+                    <!-- Overview -->
+                    <details open>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                High-level behaviour of await
+                            </span>
+                            <span class="summary-tag">await</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                The <code>await</code> keyword can only be used inside <code>async</code> functions (in
+                                modern JS, also at top-level in ES modules). It takes a Promise-like value:
+                            </p>
+                            <ul>
+                                <li>If given a Promise, it pauses execution until the Promise settles and returns the fulfillment value, or throws the rejection.</li>
+                                <li>If given a non-Promise value, it just returns that value immediately.</li>
+                            </ul>
+                            <p>
+                                During the pause, the JS thread is <strong>not blocked</strong> &mdash; the function returns a
+                                pending Promise to the caller, and the event loop can continue processing other tasks.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Basic await examples -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Basic await usage examples
+                            </span>
+                            <span class="summary-tag">examples</span>
+                        </summary>
+                        <div class="inner">
+                            <pre><code>
+function delay(ms) {
+    return new Promise(function (resolve) {
+        setTimeout(function () {
+            resolve("Done after " + ms + " ms");
+        }, ms);
+    });
+}
+
+async function run() {
+    console.log("Before await");
+    const message = await delay(1000); // pause here, but not block thread
+    console.log("After await:", message);
+}
+
+run();
+console.log("Outside async function");
+
+// Possible output:
+// Before await
+// Outside async function
+// After await: Done after 1000 ms
+                            </code></pre>
+
+                            <p class="hint">
+                                Note the interleaving: the line after <code>run()</code> executes before the awaited Promise
+                                resolves.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Awaiting non-promises -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Awaiting non-Promise values
+                            </span>
+                            <span class="summary-tag">details</span>
+                        </summary>
+                        <div class="inner">
+                            <pre><code>
+async function demo() {
+    const x = await 10; // same as: Promise.resolve(10)
+    console.log("x =", x);
+
+    const y = await "hello";
+    console.log("y =", y);
+
+    const z = await Promise.resolve(99);
+    console.log("z =", z);
+}
+
+demo();
+// x = 10
+// y = hello
+// z = 99
+                            </code></pre>
+
+                            <p>
+                                Internally, <code>await</code> behaves like:
+                            </p>
+                            <pre><code>
+await expr  ~  Promise.resolve(expr) then resume
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <!-- Await and microtask ordering -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Await and microtask queue ordering
+                            </span>
+                            <span class="summary-tag">deep</span>
+                        </summary>
+                        <div class="inner">
+                            <pre><code>
+async function example() {
+    console.log("A");
+    await null; // yields to microtask queue
+    console.log("B");
+}
+
+console.log("Start");
+example();
+console.log("End");
+
+// Output:
+// Start
+// A
+// End
+// B
+                            </code></pre>
+
+                            <p>
+                                The <code>await null</code> causes the function to suspend and schedule its continuation as a
+                                microtask. So <code>B</code> is printed after all current tasks and microtasks preceding it are
+                                done, but before the next macrotask (e.g. timers).
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 11.3.3 – Error handling with try / catch -->
+                <section id="sec-error-handling" class="mb-4">
+                    <div class="section-label">11.3.3</div>
+                    <div class="section-title">Error handling with try / catch</div>
+                    <div class="section-subtitle">
+                        Handling async failures as if they were synchronous.
+                    </div>
+
+                    <!-- Overview -->
+                    <details open>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Why async / await simplifies error handling
+                            </span>
+                            <span class="summary-tag">errors</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                With Promises alone, you usually attach <code>.catch</code> handlers. This works, but long
+                                chains can become hard to reason about. Async / await lets you handle asynchronous errors using
+                                regular <code>try</code> / <code>catch</code>, making error paths more explicit and localized.
+                            </p>
+                            <p>
+                                Any Promise rejection that occurs in an <code>await</code> expression is converted into a
+                                <strong>throw</strong>, which is then caught by the nearest surrounding <code>try</code> /
+                                <code>catch</code>.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Basic try/catch with await -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Basic try / catch with await
+                            </span>
+                            <span class="summary-tag">example</span>
+                        </summary>
+                        <div class="inner">
+                            <pre><code>
+function mightFail() {
+    return new Promise(function (resolve, reject) {
+        const ok = Math.random() &gt; 0.5;
+        if (ok) {
+            resolve("Success");
+        } else {
+            reject(new Error("Random failure"));
+        }
+    });
+}
+
+async function run() {
+    try {
+        const result = await mightFail();
+        console.log("Result:", result);
+    } catch (err) {
+        console.error("Caught error:", err.message);
+    } finally {
+        console.log("Always runs (cleanup)");
+    }
+}
+
+run();
+                            </code></pre>
+
+                            <p class="hint">
+                                This corresponds exactly to Promise code:
+                                <code>mightFail().then(...).catch(...).finally(...)</code> but is often easier to follow.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Combining sync and async errors -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Handling both sync and async exceptions
+                            </span>
+                            <span class="summary-tag">deep</span>
+                        </summary>
+                        <div class="inner">
+                            <pre><code>
+async function getUserProfile(userId) {
+    try {
+        if (!userId) {
+            // Synchronous validation error
+            throw new Error("Missing userId");
+        }
+
+        const response = await fetch("/api/users/" + userId);
+        if (!response.ok) {
+            // Convert HTTP error to JS Error
+            throw new Error("HTTP " + response.status);
+        }
+
+        const json = await response.json();
+        return json;
+    } catch (err) {
+        // Handles validation errors, network errors, JSON parse errors, etc.
+        console.error("Failed to get profile:", err);
+        throw err; // rethrow if caller should know
+    }
+}
+                            </code></pre>
+
+                            <p>
+                                The same <code>try</code> / <code>catch</code> block handles:
+                            </p>
+                            <ul>
+                                <li>Explicit synchronous <code>throw</code>s (e.g., parameter validation).</li>
+                                <li>Rejections from <code>fetch</code>, <code>response.json</code>, or any other awaited Promise.</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <!-- Local vs top-level error handling -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Local vs global error handling strategy
+                            </span>
+                            <span class="summary-tag">strategy</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                A common pattern:
+                            </p>
+                            <ul>
+                                <li>Local functions: catch errors only to add context, then rethrow.</li>
+                                <li>Top-level: catch errors once and decide what to do (log, show UI, exit process in Node, etc.).</li>
+                            </ul>
+
+                            <pre><code>
+async function loadConfig() {
+    try {
+        const response = await fetch("/config.json");
+        return await response.json();
+    } catch (err) {
+        // Add contextual information
+        throw new Error("loadConfig failed: " + err.message);
+    }
+}
+
+async function main() {
+    try {
+        const config = await loadConfig();
+        console.log("Config loaded:", config);
+    } catch (err) {
+        console.error("Fatal error:", err);
+        // maybe show UI error or process.exit(1) in Node
+    }
+}
+
+main();
+                            </code></pre>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 11.3.4 – Sequential vs parallel execution -->
+                <section id="sec-seq-vs-par" class="mb-4">
+                    <div class="section-label">11.3.4</div>
+                    <div class="section-title">Sequential vs parallel execution</div>
+                    <div class="section-subtitle">
+                        Structuring async / await code for correctness and performance.
+                    </div>
+
+                    <!-- Overview -->
+                    <details open>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                When async / await is sequential by default
+                            </span>
+                            <span class="summary-tag">ordering</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                A key point: if you <strong>await one Promise after another</strong>, your code becomes
+                                <em>sequential</em> &mdash; the second awaits only after the first has resolved. This is correct
+                                when steps depend on each other, but wasteful when operations are independent and can run in
+                                parallel.
+                            </p>
+                            <p>
+                                For independent tasks, you should start them first, capture the Promises, and then
+                                <code>await</code> them together using <code>Promise.all</code>.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Sequential example -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Example: purely sequential awaits
+                            </span>
+                            <span class="summary-tag">sequential</span>
+                        </summary>
+                        <div class="inner">
+                            <pre><code>
+async function fetchSequential() {
+    console.time("sequential");
+    const user = await fetch("/api/user");         // wait for user
+    const orders = await fetch("/api/orders");     // after that, wait for orders
+    const analytics = await fetch("/api/analytics"); // then analytics
+    console.timeEnd("sequential");
+}
+                            </code></pre>
+
+                            <p>
+                                If each request takes ~1s, total time could be ~3s, even though they are independent.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Parallel example -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Example: proper parallel execution
+                            </span>
+                            <span class="summary-tag">parallel</span>
+                        </summary>
+                        <div class="inner">
+                            <pre><code>
+async function fetchParallel() {
+    console.time("parallel");
+
+    // Start all fetches immediately
+    const userPromise = fetch("/api/user");
+    const ordersPromise = fetch("/api/orders");
+    const analyticsPromise = fetch("/api/analytics");
+
+    // Await them together
+    const [user, orders, analytics] = await Promise.all([
+        userPromise,
+        ordersPromise,
+        analyticsPromise
+    ]);
+
+    console.timeEnd("parallel");
+}
+                            </code></pre>
+
+                            <p>
+                                Now, all three requests are in flight at the same time. If each takes ~1s, total time is ~1s
+                                plus overhead. This is the correct pattern for independent tasks.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Mixing sequential and parallel -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Mixed pattern: sequential steps, parallel inside
+                            </span>
+                            <span class="summary-tag">pattern</span>
+                        </summary>
+                        <div class="inner">
+                            <pre><code>
+async function loadDashboard(userId) {
+    // Step 1: load user (must be first)
+    const userResponse = await fetch("/api/users/" + userId);
+    const user = await userResponse.json();
+
+    // Step 2: once we have user, we can load orders and recommendations in parallel
+    const ordersPromise = fetch("/api/orders?user=" + user.id);
+    const recsPromise = fetch("/api/recommendations?user=" + user.id);
+
+    const [ordersResponse, recsResponse] = await Promise.all([
+        ordersPromise,
+        recsPromise
+    ]);
+
+    const [orders, recommendations] = await Promise.all([
+        ordersResponse.json(),
+        recsResponse.json()
+    ]);
+
+    return { user, orders, recommendations };
+}
+                            </code></pre>
+
+                            <p class="hint">
+                                Pattern: do minimal sequential work needed to define independent tasks, then run those tasks
+                                in parallel.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 11.3.5 – Async / await best practices -->
+                <section id="sec-best-practices" class="mb-4">
+                    <div class="section-label">11.3.5</div>
+                    <div class="section-title">Async / await best practices</div>
+                    <div class="section-subtitle">
+                        Writing robust, maintainable, and performant async code.
+                    </div>
+
+                    <!-- Overview -->
+                    <details open>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Checklist of best practices
+                            </span>
+                            <span class="summary-tag">checklist</span>
+                        </summary>
+                        <div class="inner">
+                            <ul>
+                                <li>Mark functions <code>async</code> only when they actually use <code>await</code> or must return a Promise.</li>
+                                <li>Always wrap awaited code in <code>try</code> / <code>catch</code> at appropriate layers.</li>
+                                <li>Use parallelism with <code>Promise.all</code> when tasks are independent.</li>
+                                <li>Avoid unhandled rejections: always handle or propagate errors.</li>
+                                <li>Do not block the event loop with heavy CPU work; consider breaking into chunks or using workers.</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <!-- Pattern: async boundary at edges -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Pattern: async boundaries at edges
+                            </span>
+                            <span class="summary-tag">architecture</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                A helpful architectural rule: keep most of your code synchronous and push async boundaries to:
+                            </p>
+                            <ul>
+                                <li>Network / database layers.</li>
+                                <li>File system / IO layers.</li>
+                                <li>UI event handlers or route handlers.</li>
+                            </ul>
+
+                            <pre><code>
+// Infra: async function that actually hits the network
+async function getJson(url) {
+    const response = await fetch(url);
+    if (!response.ok) {
+        throw new Error("HTTP " + response.status + " for " + url);
+    }
+    return response.json();
+}
+
+// Core logic: pure, synchronous, easily testable
+function computeReport(user, orders) {
+    // ... complex sync logic ...
+    return { user, orders, summary: "..." };
+}
+
+// Glue: small async function that composes both
+async function buildUserReport(userId) {
+    const [user, orders] = await Promise.all([
+        getJson("/api/users/" + userId),
+        getJson("/api/orders?user=" + userId)
+    ]);
+    return computeReport(user, orders);
+}
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <!-- Pattern: avoid fire-and-forget pitfalls -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Handling "fire-and-forget" carefully
+                            </span>
+                            <span class="summary-tag">pitfall</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                Sometimes you intentionally start an async operation and do not <code>await</code> it (e.g.,
+                                background logging). This is a &ldquo;fire-and-forget&rdquo; pattern, but can cause:
+                            </p>
+                            <ul>
+                                <li>Unobserved errors (unhandled rejections).</li>
+                                <li>Resource leaks or incomplete cleanup if the app shuts down early.</li>
+                            </ul>
+
+                            <pre><code>
+// Fire-and-forget with explicit error logging
+function logEvent(event) {
+    (async function () {
+        try {
+            await fetch("/analytics", {
+                method: "POST",
+                body: JSON.stringify(event),
+                headers: { "Content-Type": "application/json" }
+            });
+        } catch (err) {
+            console.error("Failed to log event:", err);
+        }
+    })();
+}
+                            </code></pre>
+
+                            <p class="hint">
+                                Pattern: wrap fire-and-forget in an internal async IIFE with its own <code>try</code> /
+                                <code>catch</code>, so errors do not become unhandled rejections.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Anti-patterns -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Common anti-patterns to avoid
+                            </span>
+                            <span class="summary-tag">anti-patterns</span>
+                        </summary>
+                        <div class="inner">
+                            <ul>
+                                <li>
+                                    <strong>Anti-pattern 1:</strong> forgetting <code>await</code> when needed and accidentally returning a Promise instead of a value.
+                                </li>
+                                <li>
+                                    <strong>Anti-pattern 2:</strong> using <code>Array.prototype.forEach</code> with async callbacks and expecting it to wait.
+                                </li>
+                                <li>
+                                    <strong>Anti-pattern 3:</strong> deeply nested <code>try</code> / <code>catch</code> blocks instead of structured layers.
+                                </li>
+                            </ul>
+
+                            <pre><code>
+// Anti-pattern: async forEach (does not await properly)
+async function process(list) {
+    list.forEach(async function (item) {
+        await doSomething(item); // this runs, but process() does not await them
+    });
+}
+
+// Better: use for...of with await
+async function processBetter(list) {
+    for (const item of list) {
+        await doSomething(item);
+    }
+}
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <!-- Summary -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Module summary &amp; exam checklist
+                            </span>
+                            <span class="summary-tag">summary</span>
+                        </summary>
+                        <div class="inner">
+                            <ul>
+                                <li>Async functions always return Promises; values become fulfillment, throws become rejection.</li>
+                                <li><code>await</code> pauses execution within async functions without blocking the event loop.</li>
+                                <li>Error handling becomes natural with <code>try</code> / <code>catch</code>, capturing both sync and async errors.</li>
+                                <li>Sequential vs parallel execution is under your control via where you place <code>await</code> and how you use <code>Promise.all</code>.</li>
+                                <li>Use async / await with disciplined patterns (boundaries, parallelism, error strategy) to keep code readable and robust.</li>
+                            </ul>
+                            <p>
+                                If you can manually rewrite an async / await function into raw Promise chains, predict log
+                                order with awaits and microtasks, and design a sequential/parallel plan for real APIs, you
+                                have mastered <span class="pill-inline">Module 11.3 – Async / Await</span>.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // Smooth scrolling + active TOC highlight + search + details expand/collapse + simple syntax highlighting
+        document.addEventListener("DOMContentLoaded", function () {
+            const tocLinks = Array.from(document.querySelectorAll(".toc-link"));
+            const sections = tocLinks.map(link => {
+                const hash = link.getAttribute("href");
+                const target = document.querySelector(hash);
+                return { link, target };
+            });
+
+            // Smooth scrolling
+            tocLinks.forEach(link => {
+                link.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute("href");
+                    const target = document.querySelector(targetId);
+                    if (target) {
+                        target.scrollIntoView({ behavior: "smooth", block: "start" });
+                        history.replaceState(null, "", targetId);
+                    }
+                });
+            });
+
+            // Active TOC highlighting on scroll
+            const contentPanel = document.querySelector(".content-panel");
+            function updateActiveToc() {
+                const scrollY = contentPanel.scrollTop;
+                let current = null;
+                sections.forEach(({ link, target }) => {
+                    if (!target) return;
+                    const offsetTop = target.offsetTop;
+                    if (offsetTop - 80 <= scrollY) current = link;
+                });
+                tocLinks.forEach(l => l.classList.remove("active"));
+                if (current) current.classList.add("active");
+            }
+
+            contentPanel.addEventListener("scroll", updateActiveToc);
+            updateActiveToc();
+
+            // TOC search filter
+            const tocSearch = document.getElementById("tocSearch");
+            const tocListItems = Array.from(document.querySelectorAll("#tocList li"));
+
+            tocSearch.addEventListener("input", function () {
+                const q = this.value.toLowerCase();
+                tocListItems.forEach(li => {
+                    const label = (li.getAttribute("data-label") || "").toLowerCase();
+                    const text = li.textContent.toLowerCase();
+                    const match = label.includes(q) || text.includes(q);
+                    li.style.display = match ? "" : "none";
+                });
+            });
+
+            // Expand / collapse all details
+            const btnExpandAll = document.getElementById("btnExpandAll");
+            const btnCollapseAll = document.getElementById("btnCollapseAll");
+
+            btnExpandAll.addEventListener("click", function () {
+                document.querySelectorAll("details").forEach(d => d.open = true);
+            });
+
+            btnCollapseAll.addEventListener("click", function () {
+                document.querySelectorAll("details").forEach(d => d.open = false);
+            });
+
+            // Simple syntax highlighting for JS in &lt;code&gt; blocks
+            function escapeHtml(str) {
+                return str
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;");
+            }
+
+            const jsKeywords = [
+                "function", "return", "const", "let", "var", "if", "else",
+                "while", "for", "async", "await", "new", "throw", "try", "catch"
+            ];
+            const builtins = [
+                "setTimeout", "setInterval", "clearTimeout", "clearInterval",
+                "Promise", "console", "fetch", "require"
+            ];
+
+            const codeBlocks = Array.from(document.querySelectorAll("pre code"));
+
+            codeBlocks.forEach(codeEl => {
+                const raw = codeEl.textContent;
+                let html = escapeHtml(raw);
+
+                // Comments
+                html = html.replace(/(\/\/.*?$)/gm, '<span class="token-comment">$1</span>');
+
+                // Strings
+                html = html.replace(/(".*?"|'.*?'|`.*?`)/g, '<span class="token-string">$1</span>');
+
+                // Numbers
+                html = html.replace(/\b(\d+(_\d+)*)\b/g, '<span class="token-number">$1</span>');
+
+                // Builtins
+                builtins.forEach(name => {
+                    const re = new RegExp("\\b" + name + "\\b", "g");
+                    html = html.replace(re, '<span class="token-builtins">' + name + "</span>");
+                });
+
+                // Keywords
+                jsKeywords.forEach(kw => {
+                    const re = new RegExp("\\b" + kw + "\\b", "g");
+                    html = html.replace(re, '<span class="token-keyword">' + kw + "</span>");
+                });
+
+                // Common function names
+                html = html.replace(/([a-zA-Z_$][\w$]*)\s*(?=\()/g, '<span class="token-function">$1</span>');
+
+                codeEl.innerHTML = html;
+            });
+        });
+    </script>
+</body>
+
+</html>

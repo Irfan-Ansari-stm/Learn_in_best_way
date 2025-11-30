@@ -1,0 +1,548 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>25.1 Understanding Frontend Frameworks — Deep Learning Note</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <!-- Highlight.js -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/default.min.css">
+
+  <style>
+    :root{
+      --bg:#0b0c0d; /* very dark */
+      --surface:#111216;
+      --muted:#9ca3af;
+      --cyan:#06b6d4;
+      --amber:#f59e0b;
+      --accent-gradient: linear-gradient(90deg,var(--cyan),#7dd3fc 50%, var(--amber));
+      --card-shadow: 0 6px 18px rgba(2,6,23,0.6);
+      --left-width:320px;
+      --max-content-width:1100px;
+      --radius:12px;
+    }
+    html,body{height:100%;background:var(--bg);color:#e6eef3;font-family:Inter,ui-sans-serif,system-ui,Segoe UI,Roboto,"Helvetica Neue",Arial;}
+    .container-app{max-width:var(--max-content-width);margin:20px auto;padding:18px;display:flex;gap:18px;}
+    /* left panel */
+    .left-panel{width:var(--left-width);background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.015));border-radius:var(--radius);padding:16px;box-shadow:var(--card-shadow);flex:0 0 auto;position:sticky;top:20px;height:calc(100vh - 40px);overflow:auto}
+    .right-panel{flex:1 1 auto;background:var(--surface);border-radius:var(--radius);padding:22px;box-shadow:var(--card-shadow);height:calc(100vh - 40px);overflow:auto}
+
+    h1,h2,h3{color:#eaf6ff;margin-bottom:8px}
+    .muted{color:var(--muted);font-size:0.95rem}
+
+    .toc-search{display:flex;gap:8px;margin:8px 0}
+    .toc-list{margin-top:12px}
+    .toc-item{display:flex;align-items:center;justify-content:space-between;padding:6px 8px;border-radius:8px;margin-bottom:6px}
+    .toc-item a{color:inherit;text-decoration:none}
+
+    .control-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+
+    /* details summary styling */
+    details{background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);padding:12px;border-radius:10px;margin:12px 0}
+    details[open]{box-shadow: inset 0 1px 0 rgba(255,255,255,0.02)}
+    summary{cursor:pointer;outline:none;list-style:none;font-weight:600}
+    summary::-webkit-details-marker{display:none}
+
+    pre{background:#071018;padding:12px;border-radius:8px;overflow:auto;border:1px solid rgba(255,255,255,0.02)}
+    code{font-family:SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;font-size:0.95rem}
+
+    .badge-accent{background:linear-gradient(90deg,var(--cyan),var(--amber));-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700}
+
+    /* smooth scroll target spacing */
+    .section-anchor{scroll-margin-top:24px}
+
+    /* responsive */
+    @media(max-width:900px){
+      .container-app{flex-direction:column;padding:12px}
+      .left-panel{width:100%;position:relative;height:auto}
+      .right-panel{height:calc(100vh - 220px)}
+    }
+  </style>
+</head>
+<body>
+  <div class="container-app" role="main">
+    <aside class="left-panel" aria-label="Table of contents">
+      <div>
+        <h2>25.1 <span class="badge-accent">Understanding Frontend Frameworks</span></h2>
+        <div class="muted">Deep note — virtual DOM, components, state, reactivity, comparison</div>
+        <hr />
+        <div class="toc-search">
+          <input id="tocSearch" class="form-control form-control-sm" placeholder="Search TOC..." aria-label="Search table of contents" />
+          <button id="tocClear" class="btn btn-sm btn-ghost">Clear</button>
+        </div>
+
+        <div class="control-row">
+          <button id="expandAll" class="btn btn-sm btn-outline-primary">Expand all</button>
+          <button id="collapseAll" class="btn btn-sm btn-outline-warning">Collapse all</button>
+          <button id="scrollTop" class="btn btn-sm btn-ghost">Top</button>
+        </div>
+
+        <div class="toc-list" id="tocList">
+          <div class="toc-item"><a href="#exec" data-target>Executive summary</a></div>
+          <div class="toc-item"><a href="#vdom" data-target>Virtual DOM concepts</a></div>
+          <div class="toc-item"><a href="#component" data-target>Component-based architecture</a></div>
+          <div class="toc-item"><a href="#state" data-target>State management patterns</a></div>
+          <div class="toc-item"><a href="#reactive" data-target>Reactive programming principles</a></div>
+          <div class="toc-item"><a href="#compare" data-target>Framework comparison criteria</a></div>
+          <div class="toc-item"><a href="#examples" data-target>Code examples</a></div>
+          <div class="toc-item"><a href="#usecases" data-target>Real-world use cases</a></div>
+          <div class="toc-item"><a href="#further" data-target>Further reading & notes</a></div>
+        </div>
+
+        <hr />
+        <div class="muted">Author: Research Tutor — Generated single-file note</div>
+      </div>
+    </aside>
+
+    <main class="right-panel" id="content" tabindex="0">
+      <article>
+        <section id="exec" class="section-anchor">
+          <h1>Executive summary</h1>
+          <details open>
+            <summary>TL;DR</summary>
+            <div class="mt-2">
+              <p class="muted">A frontend framework is a structured set of conventions, components, and runtime facilities that help you build interactive user interfaces. This note breaks down core ideas: Virtual DOM, component-based design, state management (local, global, derived), reactive programming, and how to evaluate frameworks. We'll examine the underlying algorithms, trade-offs, and practical patterns so you can reason from first principles.</p>
+            </div>
+          </details>
+        </section>
+
+        <section id="vdom" class="section-anchor">
+          <h2>Virtual DOM concepts</h2>
+
+          <details>
+            <summary>1 — Why a Virtual DOM?</summary>
+            <div class="mt-2">
+              <p>Manipulating the browser DOM is expensive: layout, style recalculation, and paint happen after mutations. The Virtual DOM (vDOM) is an in-memory representation of the desired UI state. By diffing two vDOM trees (previous and next), frameworks compute a minimal set of DOM operations to apply, reducing costly reflows.</p>
+            </div>
+          </details>
+
+          <details>
+            <summary>2 — vDOM as an algorithmic abstraction</summary>
+            <div class="mt-2">
+              <p>At its core, vDOM involves three steps:</p>
+              <ol>
+                <li>Render: produce a tree of lightweight node objects from application state.</li>
+                <li>Diff: compute differences between old and new trees.</li>
+                <li>Patch: apply minimal DOM operations (create, remove, reorder, update attributes).</li>
+              </ol>
+
+              <p><strong>Key complexity:</strong> naive diff is O(n) but careful algorithms target O(k) where k is number of changed nodes — using heuristics like keyed lists (keys to identify nodes across reorders) and structural heuristics to avoid deep tree comparisons.</p>
+            </div>
+          </details>
+
+          <details>
+            <summary>3 — Simple vDOM pseudo implementation</summary>
+            <pre><code class="language-js">// minimal vdom nodes (pseudocode)
+function h(tag, props, children){
+  return { tag: tag, props: props || {}, children: children || [] };
+}
+
+function render(vnode){
+  if(typeof vnode === 'string') return document.createTextNode(vnode);
+  const el = document.createElement(vnode.tag);
+  for(const k in vnode.props) el.setAttribute(k, vnode.props[k]);
+  vnode.children.forEach(c =&gt; el.appendChild(render(c)));
+  return el;
+}
+
+// naive diff (very basic)
+function diff(oldVNode, newVNode){
+  if(!oldVNode) return { type: 'CREATE', node: newVNode };
+  if(!newVNode) return { type: 'REMOVE' };
+  if(typeof oldVNode !== typeof newVNode || (typeof oldVNode === 'string' && oldVNode !== newVNode))
+    return { type: 'REPLACE', node: newVNode };
+  if(oldVNode.tag !== newVNode.tag) return { type: 'REPLACE', node: newVNode };
+  // attribute and children diffing would follow
+  return { type: 'UPDATE', props: /*...*/, children: /*...*/ };
+}
+</code></pre>
+
+              <p class="muted">This pseudocode is intentionally simplified — production frameworks add optimizations: keyed children, component boundaries, lifecycle hooks, and synthetic events.</p>
+            </div>
+          </details>
+
+          <details>
+            <summary>4 — Performance trade-offs</summary>
+            <div class="mt-2">
+              <ul>
+                <li><strong>Pros:</strong> batch updates, predictable render logic, easier to reason about UI as a pure function of state.</li>
+                <li><strong>Cons:</strong> memory overhead of vDOM objects, diffing cost, and sometimes excessive re-renders when not optimized.</li>
+                <li><strong>Alternatives:</strong> incremental DOM (like lit-html), direct DOM binding, or compiler-time optimizations (Svelte) which emit minimal DOM operations.</li>
+              </ul>
+            </div>
+          </details>
+        </section>
+
+        <section id="component" class="section-anchor">
+          <h2>Component-based architecture</h2>
+
+          <details>
+            <summary>1 — Component model</summary>
+            <div class="mt-2">
+              <p>Components encapsulate markup, logic, and styles into reusable units. They can be function-based (stateless) or class-based (stateful). The component lifecycle defines moments to allocate resources, perform side-effects, or clean up.</p>
+            </div>
+          </details>
+
+          <details>
+            <summary>2 — Composition vs inheritance</summary>
+            <div class="mt-2">
+              <p>Prefer composition: build complex UI by composing simpler components. Composition encourages separation of concerns and easier testing. Inheritance often leads to fragile hierarchies.</p>
+            </div>
+          </details>
+
+          <details>
+            <summary>3 — Component boundaries and update isolation</summary>
+            <div class="mt-2">
+              <p>Well-defined boundaries limit re-rendering and localize state. When a parent updates, frameworks decide whether children re-render based on props equality (shallow or deep), memoization, or explicit signals.</p>
+
+              <pre><code class="language-js">// simple functional component (JSX-like pseudocode)
+function Counter(props){
+  const [count, setCount] = useState(0);
+  return h('div', null, [
+    h('p', null, ['Count: '+count]),
+    h('button', {onClick: ()=>setCount(count+1)}, ['+'])
+  ]);
+}
+</code></pre>
+
+            </div>
+          </details>
+
+          <details>
+            <summary>4 — Component communication</summary>
+            <div class="mt-2">
+              <p>Common patterns: props (parent &rArr; child), callbacks (child &rArr; parent), context (global-ish read-only values), event buses, and state stores. Each comes with trade-offs in coupling and observability.</p>
+            </div>
+          </details>
+        </section>
+
+        <section id="state" class="section-anchor">
+          <h2>State management patterns</h2>
+
+          <details>
+            <summary>1 — Types of state</summary>
+            <div class="mt-2">
+              <ul>
+                <li><strong>Local UI state:</strong> ephemeral, component-scoped (e.g., open/closed, inputs).</li>
+                <li><strong>Shared state:</strong> data used by multiple components (e.g., user session).</li>
+                <li><strong>Derived state:</strong> computed from other state (e.g., filtered lists).</li>
+                <li><strong>Server state:</strong> remote data with async lifecycle (caching, invalidation).</li>
+              </ul>
+            </div>
+          </details>
+
+          <details>
+            <summary>2 — Management strategies</summary>
+            <div class="mt-2">
+              <ol>
+                <li><strong>Lifted state:</strong> move state up to the nearest common ancestor.</li>
+                <li><strong>Context / Provider:</strong> share values without prop drilling.</li>
+                <li><strong>Global store:</strong> Redux-like centralized immutable store.</li>
+                <li><strong>Signals / Observables:</strong> reactive primitives that notify dependents on change.</li>
+              </ol>
+
+              <p class="muted">Choice depends on app size, team familiarity, and performance constraints.</p>
+            </div>
+          </details>
+
+          <details>
+            <summary>3 — Example: simple Redux-ish store</summary>
+            <pre><code class="language-js">// very small redux-like store
+function createStore(reducer, initial){
+  let state = initial;
+  const listeners = new Set();
+  return {
+    getState: ()=>state,
+    dispatch(action){
+      state = reducer(state, action);
+      listeners.forEach(l =&gt; l());
+    },
+    subscribe(fn){ listeners.add(fn); return ()=>listeners.delete(fn); }
+  }
+}
+
+// reducer
+function counterReducer(state={count:0}, action){
+  switch(action.type){
+    case 'inc': return {...state, count: state.count + 1};
+    default: return state;
+  }
+}
+</code></pre>
+
+            </div>
+          </details>
+        </section>
+
+        <section id="reactive" class="section-anchor">
+          <h2>Reactive programming principles</h2>
+
+          <details>
+            <summary>1 — Core idea</summary>
+            <div class="mt-2">
+              <p>Reactive programming treats data as streams and computations as subscriptions to those streams. When a source emits a new value, dependents recompute automatically. This fits UI well: model &rArr; view mapping can be expressed declaratively.</p>
+            </div>
+          </details>
+
+          <details>
+            <summary>2 — Signals vs Observables</summary>
+            <div class="mt-2">
+              <p><strong>Signals:</strong> hold a single value and notify dependents when it changes (e.g., SolidJS). <strong>Observables:</strong> sequences of values over time (RxJS). Signals are simpler for UI state, Observables are powerful for async streams and complex transformations.</p>
+            </div>
+          </details>
+
+          <details>
+            <summary>3 — Reactive example (signal)</summary>
+            <pre><code class="language-js">// very simple signal implementation
+function signal(initial){
+  let value = initial;
+  const subs = new Set();
+  return {
+    read: ()=>value,
+    write: (v)=>{ value = v; subs.forEach(s =&gt; s(value)); },
+    subscribe: (fn)=>{ subs.add(fn); return ()=>subs.delete(fn); }
+  };
+}
+
+const count = signal(0);
+count.subscribe(v =&gt; console.log('count changed', v));
+count.write(1); // triggers subscriber
+</code></pre>
+
+            </div>
+          </details>
+        </section>
+
+        <section id="compare" class="section-anchor">
+          <h2>Framework comparison criteria</h2>
+
+          <details>
+            <summary>1 — Evaluation axes</summary>
+            <div class="mt-2">
+              <ul>
+                <li><strong>Abstraction level:</strong> Do you want runtime vDOM, compile-time optimizations, or minimal runtime?</li>
+                <li><strong>Bundle size:</strong> Important for mobile/low-bandwidth.</li>
+                <li><strong>Learning curve & ecosystem:</strong> libraries, patterns, community support.</li>
+                <li><strong>Performance characteristics:</strong> initial load vs runtime updates.
+                </li>
+                <li><strong>Developer ergonomics:</strong> DX, devtools, hot reloading.</li>
+              </ul>
+            </div>
+          </details>
+
+          <details>
+            <summary>2 — Example mapping (ideas, not exhaustive)</summary>
+            <div class="mt-2">
+              <table class="table table-sm table-borderless table-dark">
+                <thead>
+                  <tr><th>Framework</th><th>Model</th><th>Strength</th><th>Best for</th></tr>
+                </thead>
+                <tbody>
+                  <tr><td>React</td><td>vDOM + JSX + hooks</td><td>Huge ecosystem, flexible</td><td>Large apps, many integrations</td></tr>
+                  <tr><td>Vue</td><td>Reactive templates + runtime</td><td>Progressive, approachable</td><td>Incremental adoption</td></tr>
+                  <tr><td>Svelte</td><td>Compile-time reactive code</td><td>Tiny runtime, fast</td><td>Performance-critical apps</td></tr>
+                  <tr><td>Solid</td><td>Fine-grained reactivity (signals)</td><td>High runtime performance</td><td>UI with many small updates</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </details>
+        </section>
+
+        <section id="examples" class="section-anchor">
+          <h2>Code examples & patterns</h2>
+
+          <details>
+            <summary>1 — Virtual DOM diffed list (keyed)</summary>
+            <div class="mt-2">
+              <pre><code class="language-js">// keyed diff approach (outline)
+function diffChildren(oldChildren, newChildren){
+  const oldKeyed = new Map();
+  oldChildren.forEach((c,i)=>{ if(c.props && c.props.key) oldKeyed.set(c.props.key, {node:c, index:i}); });
+  const patches = [];
+  let lastIndex = 0;
+  newChildren.forEach((nc, i) =&gt; {
+    const key = nc.props && nc.props.key;
+    const matched = key ? oldKeyed.get(key) : null;
+    if(matched){
+      // maybe an update; compute if index changed
+      if(matched.index &lt; lastIndex){ patches.push({type:'MOVE', from:matched.index, to:i}); }
+      lastIndex = Math.max(matched.index,lastIndex);
+      patches.push({type:'UPDATE', index:i, node:nc});
+    } else {
+      patches.push({type:'CREATE', index:i, node:nc});
+    }
+  });
+  // removals: keys in old not in new
+  return patches;
+}
+</code></pre>
+
+            </div>
+          </details>
+
+          <details>
+            <summary>2 — Component memoization (avoid unnecessary re-renders)</summary>
+            <div class="mt-2">
+              <pre><code class="language-js">// pseudocode for memoization
+function memo(Component, areEqual){
+  let lastProps = null, lastResult = null;
+  return function(props){
+    if(lastProps && areEqual(lastProps, props)) return lastResult;
+    lastProps = props;
+    lastResult = Component(props);
+    return lastResult;
+  }
+}
+</code></pre>
+
+            </div>
+          </details>
+
+          <details>
+            <summary>3 — Handling server state (caching + invalidation)</summary>
+            <div class="mt-2">
+              <p>Best practice: separate server cache (with TTL, ETag) from local UI state. Use optimistic updates for low-latency UX, and rollbacks on failure.</p>
+              <pre><code class="language-js">// outline: optimistic update
+async function updateItem(id, patch){
+  const old = store.getItem(id);
+  store.applyPatch(id, patch); // immediate UI update
+  try{
+    await api.patch('/items/'+id, patch);
+  }catch(err){
+    store.replace(id, old); // rollback
+  }
+}
+</code></pre>
+            </div>
+          </details>
+        </section>
+
+        <section id="usecases" class="section-anchor">
+          <h2>Real-world use cases & patterns</h2>
+
+          <details>
+            <summary>1 — When to choose vDOM frameworks</summary>
+            <div class="mt-2">
+              <p>When your UI contains complex state transitions, conditional rendering, and needs a rich ecosystem (routing, forms, testing), vDOM frameworks give structure. Large teams benefit from conventions and libraries.</p>
+            </div>
+          </details>
+
+          <details>
+            <summary>2 — When to choose compile-time/reactive frameworks</summary>
+            <div class="mt-2">
+              <p>If bundle size and runtime performance are primary, prefer compile-time frameworks (Svelte) or fine-grained reactive frameworks (Solid). They reduce runtime diffing work.</p>
+            </div>
+          </details>
+
+          <details>
+            <summary>3 — Advanced pattern: micro-frontends</summary>
+            <div class="mt-2">
+              <p>Scale frontends by composing separately deployable apps. Important considerations: shared libraries, styling isolation, routing coordination, and cross-app communication (events, shared state). Use federated builds (Module Federation) or iframe-based isolation where appropriate.</p>
+            </div>
+          </details>
+        </section>
+
+        <section id="further" class="section-anchor">
+          <h2>Further reading & research notes</h2>
+
+          <details>
+            <summary>Key papers and resources</summary>
+            <div class="mt-2 muted">
+              <ol>
+                <li>React docs — reconciliation and hooks</li>
+                <li>Svelte — compile-time reactivity design notes</li>
+                <li>RxJS documentation for observables and operators</li>
+                <li>Research on incremental DOM and UI compilers</li>
+              </ol>
+            </div>
+          </details>
+
+          <details>
+            <summary>Study exercises (suggested)</summary>
+            <div class="mt-2">
+              <ol>
+                <li>Implement a minimal vDOM renderer and compare update counts with direct DOM updates.</li>
+                <li>Build a tiny signal-based library and measure re-render scope when updating nested values.</li>
+                <li>Profile bundle sizes and runtime performance for React, Vue, and Svelte versions of the same app.</li>
+              </ol>
+            </div>
+          </details>
+
+        </section>
+
+        <hr />
+        <div class="muted">End of note — export this file to use offline. Happy researching.</div>
+      </article>
+    </main>
+  </div>
+
+  <!-- Dependencies -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    // initialize highlight.js
+    document.querySelectorAll('pre code').forEach((el)=>{hljs.highlightElement(el)});
+
+    // TOC search
+    const tocSearch = document.getElementById('tocSearch');
+    const tocList = document.getElementById('tocList');
+    tocSearch.addEventListener('input', (e)=>{
+      const q = e.target.value.trim().toLowerCase();
+      Array.from(tocList.querySelectorAll('.toc-item')).forEach(item=>{
+        const text = item.textContent.trim().toLowerCase();
+        item.style.display = text.includes(q) ? '' : 'none';
+      })
+    });
+    document.getElementById('tocClear').addEventListener('click', ()=>{tocSearch.value='';tocSearch.dispatchEvent(new Event('input'));});
+
+    // smooth scrolling for toc links
+    document.querySelectorAll('[data-target]').forEach(a=>{
+      a.addEventListener('click', (ev)=>{
+        ev.preventDefault();
+        const href = a.getAttribute('href');
+        const el = document.querySelector(href);
+        if(el) el.scrollIntoView({behavior:'smooth', block:'start'});
+      });
+    });
+
+    // expand / collapse all
+    function setDetails(open){
+      document.querySelectorAll('main details').forEach(d=>d.open = open);
+    }
+    document.getElementById('expandAll').addEventListener('click', ()=>setDetails(true));
+    document.getElementById('collapseAll').addEventListener('click', ()=>setDetails(false));
+    document.getElementById('scrollTop').addEventListener('click', ()=>document.getElementById('content').scrollTo({top:0,behavior:'smooth'}));
+
+    // accessibility: keyboard shortcut E to expand/collapse toggle
+    window.addEventListener('keydown', (e)=>{
+      if(e.key === 'E' || e.key === 'e'){
+        const anyClosed = Array.from(document.querySelectorAll('main details')).some(d=>!d.open);
+        setDetails(anyClosed);
+      }
+    });
+
+    // optional: mark code blocks for copy on click
+    document.querySelectorAll('pre').forEach(pre=>{
+      pre.style.position='relative';
+      const btn = document.createElement('button');
+      btn.className='btn btn-sm btn-ghost';
+      btn.textContent='Copy';
+      btn.style.position='absolute';
+      btn.style.top='8px';
+      btn.style.right='8px';
+      btn.addEventListener('click', async ()=>{
+        try{
+          await navigator.clipboard.writeText(pre.innerText);
+          btn.textContent='Copied!';
+          setTimeout(()=>btn.textContent='Copy',1200);
+        }catch(err){btn.textContent='Err';setTimeout(()=>btn.textContent='Copy',1200)}
+      });
+      pre.appendChild(btn);
+    });
+  </script>
+</body>
+</html>

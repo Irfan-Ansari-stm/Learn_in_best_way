@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>19.3 Behavioral Patterns — Observer, Strategy, Command, State, Chain of Responsibility</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
+  <style>
+    :root{--bg:#0d1117;--surface:#0f1724;--muted:#9ca3af;--cyan:#06b6d4;--amber:#f59e0b;--panel-width:360px;--radius:12px;--mono:ui-monospace,SFMono-Regular,Menlo,Monaco,'Roboto Mono','Courier New',monospace}
+    html,body{height:100%;background:var(--bg);color:#e6eef6;font-family:Inter, system-ui, -apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial;margin:0}
+    .app{display:flex;height:100vh;gap:20px;padding:20px;box-sizing:border-box}
+    .left{width:var(--panel-width);min-width:260px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);border-radius:var(--radius);padding:18px;box-shadow:0 6px 18px rgba(2,6,23,0.7);position:sticky;top:20px;height:calc(100vh - 40px);overflow:auto}
+    .right{flex:1;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);border-radius:var(--radius);padding:28px;box-shadow:0 6px 18px rgba(2,6,23,0.7);height:calc(100vh - 40px);overflow:auto}
+    h1,h2,h3{color:#fff}
+    .muted{color:var(--muted)}
+    .toc-search{display:flex;gap:8px;margin-bottom:12px}
+    .toc-list{list-style:none;padding:0;margin:0}
+    .toc-item{padding:8px 10px;border-radius:8px;cursor:pointer}
+    .toc-item:hover{background:rgba(255,255,255,0.02)}
+    pre{background:rgba(255,255,255,0.02);padding:14px;border-radius:10px;overflow:auto;font-family:var(--mono);font-size:13px}
+    code{font-family:var(--mono);font-size:13px}
+    details{background:rgba(255,255,255,0.01);margin:10px 0;padding:10px;border-radius:8px}
+    details[open]{box-shadow:0 8px 24px rgba(2,6,23,0.7)}
+    summary{cursor:pointer;outline:none;padding:6px 8px;border-radius:6px}
+    summary::-webkit-details-marker{display:none}
+    .summary-title{display:flex;align-items:center;gap:10px}
+    .pill{padding:2px 8px;border-radius:999px;background:rgba(245,158,11,0.12);color:var(--amber);font-size:12px}
+    .section{padding-top:8px;margin-top:8px;border-top:1px dashed rgba(255,255,255,0.03)}
+    .highlight{background:linear-gradient(90deg, rgba(6,182,212,0.06), transparent);}
+    .controls{display:flex;gap:8px;margin-bottom:12px}
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+    .pattern-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media (max-width:900px){.app{flex-direction:column;padding:12px}.left{width:100%;position:relative;height:auto}.right{height:auto}.pattern-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="app container-fluid">
+    <aside class="left">
+      <div class="d-flex align-items-start mb-3">
+        <div>
+          <h4 class="mb-0">19.3 Behavioral Patterns</h4>
+          <div class="muted">Observer, Strategy, Command, State, Chain of Responsibility — JavaScript</div>
+          <div class="mt-2"><small class="muted">Author: Advanced JS Tutor • Updated: Nov 28, 2025</small></div>
+        </div>
+      </div>
+
+      <div class="toc-search">
+        <input id="tocSearch" class="form-control form-control-sm" placeholder="Search TOC..." aria-label="Search table of contents"/>
+        <button id="tocClear" class="btn btn-sm btn-outline-secondary">Clear</button>
+      </div>
+
+      <div class="controls">
+        <button id="expandAll" class="btn btn-sm btn-primary">Expand all</button>
+        <button id="collapseAll" class="btn btn-sm btn-ghost">Collapse all</button>
+        <button id="tocCollapse" class="btn btn-sm btn-ghost">Collapse TOC</button>
+      </div>
+
+      <nav>
+        <ul id="tocList" class="toc-list">
+          <li class="toc-item" data-target="intro">Introduction &amp; Exec Summary</li>
+          <li class="toc-item" data-target="observer">Observer Pattern</li>
+          <li class="toc-item" data-target="strategy">Strategy Pattern</li>
+          <li class="toc-item" data-target="command">Command Pattern</li>
+          <li class="toc-item" data-target="state">State Pattern</li>
+          <li class="toc-item" data-target="chain">Chain of Responsibility</li>
+          <li class="toc-item" data-target="comparison">Comparison &amp; Use Cases</li>
+          <li class="toc-item" data-target="examples">Examples &amp; Cheatsheet</li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="right" id="content">
+      <section id="intro" class="section">
+        <h2>Introduction &amp; Executive Summary <span class="pill">Quick</span></h2>
+        <details open>
+          <summary><div class="summary-title"><strong>Executive summary</strong><span class="muted">(short)</span></div></summary>
+          <div class="mt-2 muted">Behavioral patterns define how objects interact and communicate. They simplify responsibilities, increase flexibility, and decouple senders from receivers. This module explains Observer, Strategy, Command, State, and Chain of Responsibility with idiomatic JavaScript examples and practical guidance.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Why this matters</strong></div></summary>
+          <div class="mt-2">Applying behavioral patterns improves modularity, testability, and maintainability — crucial for complex applications like UI frameworks, event systems, and middleware stacks.</div>
+        </details>
+      </section>
+
+      <section id="observer" class="section">
+        <h3>Observer Pattern</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Intent</strong></div></summary>
+          <div class="mt-2">Define a one-to-many dependency so that when one object changes state, its dependents are notified automatically. Used for events, reactive systems, and pub/sub.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Simple Pub/Sub implementation</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>// pubsub.js
+function createPubSub(){
+  const subs = new Map();
+  return {
+    subscribe(topic, cb){
+      if(!subs.has(topic)) subs.set(topic, new Set());
+      subs.get(topic).add(cb);
+      return () =&gt; subs.get(topic).delete(cb);
+    },
+    publish(topic, data){
+      const s = subs.get(topic);
+      if(!s) return;
+      for(const cb of Array.from(s)) cb(data);
+    }
+  };
+}
+
+// usage
+const bus = createPubSub();
+const unsub = bus.subscribe('tick', d =&gt; console.log('tick', d));
+bus.publish('tick', { t: Date.now() });
+</code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Memory considerations</strong></div></summary>
+          <div class="mt-2">Unsubscribe when no longer needed to avoid leaks, or use WeakRef patterns for subscribers where appropriate.</div>
+        </details>
+      </section>
+
+      <section id="strategy" class="section">
+        <h3>Strategy Pattern</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Intent</strong></div></summary>
+          <div class="mt-2">Encapsulate interchangeable algorithms or behaviors and make them interchangeable at runtime. Strategy decouples the algorithm from the host object.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Example: sorting strategies</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>// strategy.js
+const strategies = {
+  asc: (a,b) =&gt; a - b,
+  desc: (a,b) =&gt; b - a
+};
+
+function sortWithStrategy(arr, strategy){
+  return arr.slice().sort(strategies[strategy]);
+}
+
+console.log(sortWithStrategy([3,1,2], 'asc'));
+</code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>When to use</strong></div></summary>
+          <div class="mt-2">Use when you have multiple algorithms and want to switch behavior without changing client code — good for policy objects, pricing rules, or validation flows.</div>
+        </details>
+      </section>
+
+      <section id="command" class="section">
+        <h3>Command Pattern</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Intent</strong></div></summary>
+          <div class="mt-2">Encapsulate a request as an object, allowing parameterization, queuing, logging, undo/redo, and transactional operations.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Example: undoable commands</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>// command.js
+class AddTextCommand{
+  constructor(doc, text){ this.doc = doc; this.text = text; }
+  execute(){ this.doc.push(this.text); }
+  undo(){ this.doc.pop(); }
+}
+
+const doc = [];
+const cmd = new AddTextCommand(doc, 'hello');
+cmd.execute(); // doc: ['hello']
+cmd.undo(); // doc: []
+</code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Queueing &amp; retries</strong></div></summary>
+          <div class="mt-2">Commands can be queued for later execution and retried on failure, useful for offline-first or task scheduling systems.</div>
+        </details>
+      </section>
+
+      <section id="state" class="section">
+        <h3>State Pattern</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Intent</strong></div></summary>
+          <div class="mt-2">Allow an object to alter its behavior when its internal state changes. Encapsulate state-specific behavior into separate objects and delegate to them.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Example: media player states</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>// state.js
+class PlayingState{ play(player){ /* already playing */ } pause(player){ player.state = new PausedState(); } }
+class PausedState{ play(player){ player.state = new PlayingState(); } pause(player){ /* already paused */ } }
+
+class Player{
+  constructor(){ this.state = new PausedState(); }
+  play(){ this.state.play(this); }
+  pause(){ this.state.pause(this); }
+}
+</code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Benefits</strong></div></summary>
+          <div class="mt-2">Reduces complex conditional logic and centralizes state behavior. Useful for UI widgets, protocol implementations, and workflow engines.</div>
+        </details>
+      </section>
+
+      <section id="chain" class="section">
+        <h3>Chain of Responsibility</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Intent</strong></div></summary>
+          <div class="mt-2">Pass a request along a chain of handlers. Each handler decides either to handle the request or pass it to the next handler. Useful for middleware, event processing, and validation chains.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Middleware-style chain example</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>// chain.js
+function compose(middlewares){
+  return function(ctx){
+    let i = -1;
+    function dispatch(n){
+      if(n &lt;= i) return Promise.reject(new Error('next() called multiple times'));
+      i = n;
+      const fn = middlewares[n];
+      if(!fn) return Promise.resolve();
+      try{ return Promise.resolve(fn(ctx, () =&gt; dispatch(n+1))); }
+      catch(err){ return Promise.reject(err); }
+    }
+    return dispatch(0);
+  };
+}
+
+// usage
+const mw = [
+  async (ctx, next) =&gt; { ctx.a = 1; await next(); ctx.a += 10; },
+  async (ctx, next) =&gt; { ctx.b = 2; await next(); ctx.b += 20; }
+];
+const fn = compose(mw);
+const ctx = {};
+await fn(ctx);
+console.log(ctx); // { a:11, b:22 }
+</code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Use in servers</strong></div></summary>
+          <div class="mt-2">Express/Koa middleware are real-world Chain of Responsibility examples; handlers can short-circuit or pass control further.</div>
+        </details>
+      </section>
+
+      <section id="comparison" class="section">
+        <h3>Comparison &amp; Use Cases</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Quick guide</strong></div></summary>
+          <div class="mt-2">
+            <ul>
+              <li><strong>Observer</strong>: event-driven systems, pub/sub.</li>
+              <li><strong>Strategy</strong>: interchangeable algorithms (sorting, pricing).</li>
+              <li><strong>Command</strong>: encapsulate requests for undo/redo, queues.</li>
+              <li><strong>State</strong>: objects with complex internal states that change behavior.</li>
+              <li><strong>Chain</strong>: middleware, validation chains, request processing.</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
+      <section id="examples" class="section">
+        <h3>Examples &amp; Cheatsheet</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Combined example: observer + command queue</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>// combined.js
+const bus = createPubSub();
+const queue = [];
+bus.subscribe('cmd', async (cmd) =&gt; { queue.push(cmd); while(queue.length){ const c = queue.shift(); await c.execute(); } });
+
+// publish a command
+bus.publish('cmd', new AddTextCommand(doc, 'hi'));
+</code></pre>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Testing tips</strong></div></summary>
+          <div class="mt-2">Replace concrete strategies or handlers with test doubles; verify that observers receive events and chains honor ordering. Keep handlers small and side-effect free when possible.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Cheat sheet</strong></div></summary>
+          <div class="mt-2">
+            <ul>
+              <li>Observer: subscribe/publish; remember to unsubscribe.</li>
+              <li>Strategy: swap algorithms via composition.</li>
+              <li>Command: encapsulate execute/undo and queue commands.</li>
+              <li>State: delegate behavior to state objects to avoid conditionals.</li>
+              <li>Chain: middleware composition; allow short-circuiting.</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
+      <footer class="mt-4 muted"><small>Designed for students from college to PhD. Want TypeScript variants, UML, or interactive visualizers (sequence diagrams), tell me which and I'll add it. — Advanced JS Tutor</small></footer>
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+  <script>
+    // TOC interactions, search, expand/collapse, smooth scroll
+    document.querySelectorAll('.toc-item').forEach(item =&gt; {
+      item.addEventListener('click', () =&gt; {
+        const target = document.getElementById(item.dataset.target);
+        if(target){
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          document.querySelectorAll('.section').forEach(s =&gt; s.classList.remove('highlight'));
+          target.classList.add('highlight');
+          setTimeout(() =&gt; target.classList.remove('highlight'), 1400);
+        }
+      });
+    });
+
+    const tocSearch = document.getElementById('tocSearch');
+    const tocList = document.getElementById('tocList');
+    tocSearch.addEventListener('input', (e) =&gt; {
+      const q = e.target.value.trim().toLowerCase();
+      Array.from(tocList.children).forEach(li =&gt; {
+        const text = li.textContent.trim().toLowerCase();
+        li.style.display = text.includes(q) ? '' : 'none';
+      });
+    });
+    document.getElementById('tocClear').addEventListener('click', () =&gt; { tocSearch.value=''; tocSearch.dispatchEvent(new Event('input')); });
+
+    function setAll(open){ document.querySelectorAll('main details').forEach(d =&gt; { d.open = open; }); }
+    document.getElementById('expandAll').addEventListener('click', () =&gt; setAll(true));
+    document.getElementById('collapseAll').addEventListener('click', () =&gt; setAll(false));
+
+    document.getElementById('tocCollapse').addEventListener('click', () =&gt; {
+      const left = document.querySelector('.left');
+      if(left.style.width === '64px'){ left.style.width = getComputedStyle(document.documentElement).getPropertyValue('--panel-width'); }
+      else { left.style.width = '64px'; }
+    });
+
+    document.addEventListener('DOMContentLoaded', (ev) =&gt; {
+      if(window.hljs) hljs.highlightAll();
+    });
+  </script>
+</body>
+</html>

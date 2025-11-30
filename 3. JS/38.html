@@ -1,0 +1,966 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>12.4 – Advanced OOP Patterns in JavaScript</title>
+
+<!-- Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+:root{
+    --bg-main:#050816;
+    --bg-sidebar:#060b18;
+    --accent-cyan:#22d3ee;
+    --accent-amber:#fbbf24;
+    --text-main:#e5e7eb;
+    --text-muted:#9ca3af;
+    --border-subtle:#1f2937;
+    --code-bg:#020617;
+}
+
+/* Base */
+*{box-sizing:border-box;}
+html,body{
+    margin:0;
+    padding:0;
+    height:100%;
+    background:var(--bg-main);
+    color:var(--text-main);
+    font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    scroll-behavior:smooth;
+}
+body{overflow:hidden;}
+
+/* Layout */
+.app-wrapper{height:100vh;}
+.sidebar{
+    background:radial-gradient(circle at top left,#0f172a,var(--bg-sidebar));
+    border-right:1px solid var(--border-subtle);
+    height:100vh;
+    position:sticky;top:0;
+    overflow-y:auto;
+    padding:1.2rem 1rem;
+}
+.content-panel{
+    height:100vh;
+    overflow-y:auto;
+    padding:1.5rem 2rem;
+    background:radial-gradient(circle at top right,#020617,var(--bg-main));
+}
+
+/* Scrollbars */
+.sidebar::-webkit-scrollbar,
+.content-panel::-webkit-scrollbar{width:8px;}
+.sidebar::-webkit-scrollbar-thumb,
+.content-panel::-webkit-scrollbar-thumb{
+    background:#1f2937;border-radius:999px;
+}
+
+/* Sidebar text */
+.course-tag{
+    font-size:0.75rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--accent-amber);
+}
+.main-title{
+    font-size:1.4rem;
+    font-weight:700;
+    color:var(--accent-cyan);
+}
+.subtitle{
+    font-size:0.9rem;
+    color:var(--text-muted);
+}
+.meta-text{
+    font-size:0.8rem;
+    color:var(--text-muted);
+}
+.pill{
+    display:inline-flex;
+    align-items:center;
+    border-radius:999px;
+    padding:0.15rem 0.55rem;
+    font-size:0.72rem;
+    border:1px solid rgba(148,163,184,0.6);
+    color:var(--text-muted);
+    margin:0.15rem 0.25rem 0.15rem 0;
+}
+.pill span.bullet{
+    width:6px;height:6px;border-radius:999px;
+    background:var(--accent-cyan);
+    margin-right:0.25rem;
+}
+
+/* TOC */
+.toc-card{
+    margin-top:1rem;
+    background:rgba(15,23,42,0.95);
+    border-radius:0.75rem;
+    border:1px solid rgba(148,163,184,0.3);
+    padding:0.9rem;
+}
+.toc-title{
+    font-size:0.9rem;
+    font-weight:600;
+    color:var(--accent-amber);
+}
+.toc-search input{
+    width:100%;
+    border-radius:999px;
+    border:1px solid #111827;
+    background:#020617;
+    color:var(--text-main);
+    font-size:0.78rem;
+    padding:0.2rem 0.6rem;
+}
+.toc-list{
+    list-style:none;
+    padding-left:0;
+    margin:0.4rem 0 0 0;
+}
+.toc-link{
+    display:flex;
+    align-items:center;
+    gap:0.4rem;
+    font-size:0.8rem;
+    padding:0.18rem 0.4rem;
+    border-radius:0.4rem;
+    text-decoration:none;
+    color:var(--text-muted);
+}
+.toc-link-dot{
+    width:6px;height:6px;border-radius:999px;
+    background:rgba(148,163,184,0.7);
+}
+.toc-link:hover{
+    background:rgba(15,23,42,0.9);
+    color:var(--accent-cyan);
+}
+.toc-link.active{
+    background:rgba(8,47,73,0.85);
+    color:var(--accent-cyan);
+}
+.toc-link.active .toc-link-dot{background:var(--accent-cyan);}
+.toc-actions button{
+    border-radius:999px;
+    border:1px solid rgba(148,163,184,0.45);
+    background:rgba(15,23,42,0.9);
+    color:var(--text-muted);
+    font-size:0.72rem;
+    padding:0.12rem 0.6rem;
+}
+
+/* Content */
+.content-heading h1{
+    font-size:1.6rem;
+    color:var(--accent-cyan);
+}
+.content-heading p{
+    font-size:0.9rem;
+    color:var(--text-muted);
+}
+.badge-level,.badge-topic{
+    font-size:0.75rem;
+    border-radius:999px;
+    padding:0.12rem 0.6rem;
+}
+.badge-level{
+    border:1px solid rgba(56,189,248,0.6);
+    color:var(--accent-cyan);
+}
+.badge-topic{
+    border:1px dashed rgba(251,191,36,0.6);
+    color:var(--accent-amber);
+}
+.summary-strip{
+    background:radial-gradient(circle at left,rgba(56,189,248,0.2),transparent);
+    border-radius:0.8rem;
+    border:1px solid rgba(148,163,184,0.5);
+    padding:0.8rem 1rem;
+    font-size:0.86rem;
+    margin-bottom:1.1rem;
+}
+.summary-strip strong{color:var(--accent-amber);}
+.section-label{
+    font-size:0.7rem;
+    text-transform:uppercase;
+    letter-spacing:0.16em;
+    color:#9ca3af;
+}
+.section-title{
+    font-size:1.05rem;
+    font-weight:600;
+    color:var(--accent-amber);
+}
+.section-subtitle{
+    font-size:0.85rem;
+    color:var(--text-muted);
+    margin-bottom:0.6rem;
+}
+
+/* Details blocks */
+details{
+    background:rgba(15,23,42,0.9);
+    border-radius:0.8rem;
+    border:1px solid rgba(30,64,175,0.8);
+    padding:0.25rem 0.85rem 0.6rem;
+    margin-bottom:0.8rem;
+}
+details[open]{border-color:rgba(56,189,248,0.85);}
+summary{
+    list-style:none;
+    cursor:pointer;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0.35rem 0;
+    font-size:0.92rem;
+    font-weight:600;
+}
+summary::-webkit-details-marker{display:none;}
+.summary-label{display:flex;align-items:center;gap:0.4rem;}
+.summary-label .dot{
+    width:7px;height:7px;border-radius:999px;
+    background:var(--accent-cyan);
+}
+.summary-tag{
+    font-size:0.75rem;
+    color:var(--accent-amber);
+}
+details .inner{
+    font-size:0.84rem;
+    color:var(--text-muted);
+}
+details .inner ul{padding-left:1.1rem;}
+details .inner li{margin-bottom:0.2rem;}
+.hint{
+    border-left:3px solid var(--accent-cyan);
+    padding-left:0.6rem;
+    margin:0.4rem 0;
+    font-size:0.8rem;
+}
+
+/* Code */
+pre{
+    background:var(--code-bg);
+    border-radius:0.7rem;
+    border:1px solid rgba(15,118,110,0.7);
+    padding:0.7rem 0.9rem;
+    overflow-x:auto;
+    margin:0.4rem 0;
+}
+code{
+    font-family:"JetBrains Mono","Fira Code",ui-monospace,monospace;
+    font-size:0.8rem;
+}
+.token-comment{color:#6b7280;font-style:italic;}
+.token-string{color:#fb923c;}
+.token-number{color:#a855f7;}
+.token-keyword{color:#22c55e;font-weight:600;}
+.token-builtins{color:#facc15;}
+.token-function{color:#38bdf8;}
+
+/* Responsive */
+@media (max-width:991.98px){
+    body{overflow:auto;}
+    .app-wrapper{height:auto;}
+    .sidebar{
+        height:auto;
+        position:static;
+        border-right:none;
+        border-bottom:1px solid var(--border-subtle);
+    }
+    .content-panel{height:auto;}
+}
+</style>
+</head>
+
+<body>
+<div class="container-fluid app-wrapper">
+  <div class="row flex-nowrap">
+    <!-- SIDEBAR -->
+    <aside class="col-12 col-md-4 col-lg-3 sidebar">
+      <div>
+        <div class="course-tag">Modern JavaScript Deep Dive</div>
+        <div class="main-title">12.4 – Advanced OOP Patterns</div>
+        <div class="subtitle">Composition, mixins, factories, prototypes &amp; patterns</div>
+        <div class="meta-text">
+          Prepared for: College → Master / PhD level<br>
+          Focus: Deep, example-rich, production-oriented
+        </div>
+      </div>
+
+      <div class="mt-2">
+        <span class="pill"><span class="bullet"></span>Composition</span>
+        <span class="pill"><span class="bullet"></span>Mixins &amp; traits</span>
+        <span class="pill"><span class="bullet"></span>Factories vs classes</span>
+        <span class="pill"><span class="bullet"></span>Prototypes</span>
+        <span class="pill"><span class="bullet"></span>Design patterns</span>
+      </div>
+
+      <div class="toc-card mt-2">
+        <div class="toc-title mb-1">On this page</div>
+        <div class="mb-2">
+          <input id="tocSearch" type="text" placeholder="Search sections…">
+        </div>
+        <ul id="tocList" class="toc-list">
+          <li data-label="composition over inheritance">
+            <a href="#sec-composition" class="toc-link">
+              <span class="toc-link-dot"></span>
+              <span>12.4.1 Composition over inheritance</span>
+            </a>
+          </li>
+          <li data-label="mixins and traits">
+            <a href="#sec-mixins" class="toc-link">
+              <span class="toc-link-dot"></span>
+              <span>12.4.2 Mixins and traits</span>
+            </a>
+          </li>
+          <li data-label="factory functions versus classes">
+            <a href="#sec-factories" class="toc-link">
+              <span class="toc-link-dot"></span>
+              <span>12.4.3 Factory functions vs classes</span>
+            </a>
+          </li>
+          <li data-label="prototype based inheritance">
+            <a href="#sec-prototype" class="toc-link">
+              <span class="toc-link-dot"></span>
+              <span>12.4.4 Prototype-based inheritance</span>
+            </a>
+          </li>
+          <li data-label="design patterns implementation">
+            <a href="#sec-patterns" class="toc-link">
+              <span class="toc-link-dot"></span>
+              <span>12.4.5 Design patterns implementation</span>
+            </a>
+          </li>
+        </ul>
+        <div class="toc-actions mt-2">
+          <button id="btnExpandAll" type="button">Expand all</button>
+          <button id="btnCollapseAll" type="button">Collapse all</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="col content-panel">
+      <section class="content-heading">
+        <div class="d-flex flex-wrap align-items-center mb-2">
+          <span class="badge-level">Level: Advanced</span>
+          <span class="badge-topic ms-1">Topic: OOP design &amp; patterns in JS</span>
+        </div>
+        <h1>12.4 – Advanced OOP Patterns in JavaScript</h1>
+        <p>
+          Classical OOP talks heavily about inheritance, but modern JavaScript systems use a mix of
+          <strong>composition</strong>, <strong>mixins</strong>, <strong>factory functions</strong>,
+          and <strong>prototype-based tricks</strong>, plus well-known design patterns like Strategy,
+          Singleton and Observer. This module gives you deep understanding plus practical patterns you
+          can immediately use in frameworks, backends and large-scale apps.
+        </p>
+      </section>
+
+      <section>
+        <div class="summary-strip">
+          <strong>Executive intuition:</strong>
+          Use <em>inheritance</em> when you truly have an “is-a” hierarchy and polymorphism; prefer
+          <em>composition</em> and <em>factories</em> for flexible, decoupled behaviour. Mixins give
+          you “horizontal” reuse across classes. Underneath, everything sits on prototypes; classes,
+          factories and mixins are just different ways to orchestrate that prototype machinery.
+        </div>
+      </section>
+
+      <!-- 12.4.1 Composition over inheritance -->
+      <section id="sec-composition" class="mb-4">
+        <div class="section-label">12.4.1</div>
+        <div class="section-title">Composition over inheritance</div>
+        <div class="section-subtitle">Building objects from capabilities instead of deep hierarchies.</div>
+
+        <details open>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Why composition is often better</span>
+            <span class="summary-tag">concept</span>
+          </summary>
+          <div class="inner">
+            <p>
+              Inheritance couples child and parent tightly: one linear chain, one base deciding structure.
+              Composition says: <em>take small behaviours and assemble them</em>. This gives:
+            </p>
+            <ul>
+              <li>Shallower hierarchies.</li>
+              <li>Better testability.</li>
+              <li>Ability to mix capabilities at runtime.</li>
+              <li>Less fragile changes when requirements evolve.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Example: Behaviour via simple factories</span>
+            <span class="summary-tag">example</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+// "Capability" factories
+function canWalk(state) {
+    return {
+        walk() {
+            state.distance += 1;
+            console.log(state.name + " walked. Total:", state.distance);
+        }
+    };
+}
+
+function canEat(state) {
+    return {
+        eat(food) {
+            console.log(state.name + " eats " + food);
+        }
+    };
+}
+
+function canSleep(state) {
+    return {
+        sleep() {
+            console.log(state.name + " is sleeping...");
+        }
+    };
+}
+
+// Composition: assemble behaviours
+function createPerson(name) {
+    const state = { name, distance: 0 };
+    return {
+        ...state,
+        ...canWalk(state),
+        ...canEat(state),
+        ...canSleep(state)
+    };
+}
+
+const p = createPerson("Irfan");
+p.walk();
+p.eat("biryani");
+p.sleep();
+            </code></pre>
+
+            <p class="hint">
+              Note there is no <code>class</code>, no <code>extends</code>. You can create a different
+              “species” by combining a different subset of behaviours.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>When inheritance is still appropriate</span>
+            <span class="summary-tag">guidance</span>
+          </summary>
+          <div class="inner">
+            <ul>
+              <li>When you truly have a stable “is-a” hierarchy (e.g. <code>Shape → Circle</code>).</li>
+              <li>When polymorphic dispatch is your main requirement.</li>
+              <li>When the base type defines a clear interface contract for many subtypes.</li>
+            </ul>
+            <p>
+              But even then, composition can model variants more flexibly. Think “prefer composition
+              unless strong reasons for inheritance”.
+            </p>
+          </div>
+        </details>
+      </section>
+
+      <!-- 12.4.2 Mixins and traits -->
+      <section id="sec-mixins" class="mb-4">
+        <div class="section-label">12.4.2</div>
+        <div class="section-title">Mixins and traits</div>
+        <div class="section-subtitle">Horizontal code reuse across unrelated types.</div>
+
+        <details open>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Concept: Mixins / traits</span>
+            <span class="summary-tag">concept</span>
+          </summary>
+          <div class="inner">
+            <p>
+              A <strong>mixin</strong> is a reusable set of methods / properties that can be “mixed into”
+              many different classes or objects. It is similar to traits in other languages.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Mixin with Object.assign on prototype</span>
+            <span class="summary-tag">pattern</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+const CanLog = {
+    log(message) {
+        console.log("[" + this.name + "]", message);
+    }
+};
+
+const CanTimestamp = {
+    timestamp() {
+        return new Date().toISOString();
+    }
+};
+
+function applyMixins(targetClass, ...mixins) {
+    Object.assign(targetClass.prototype, ...mixins);
+}
+
+class Service {
+    constructor(name) {
+        this.name = name;
+    }
+}
+
+applyMixins(Service, CanLog, CanTimestamp);
+
+const s = new Service("EmailService");
+s.log("Starting...");
+console.log("Time:", s.timestamp());
+            </code></pre>
+
+            <p class="hint">
+              Mixins extend <em>prototype</em> behaviour. Be careful about name clashes between mixins.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Class mixin factory (extends Base)</span>
+            <span class="summary-tag">advanced</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+const WithEvents = Base =&gt; class extends Base {
+    on(event, handler) {
+        this._handlers = this._handlers || {};
+        (this._handlers[event] = this._handlers[event] || []).push(handler);
+    }
+
+    emit(event, payload) {
+        (this._handlers?.[event] || []).forEach(h =&gt; h(payload));
+    }
+};
+
+class Model {}
+class UserModel extends WithEvents(Model) {
+    constructor(name) {
+        super();
+        this.name = name;
+    }
+}
+
+const u = new UserModel("Irfan");
+u.on("save", data =&gt; console.log("Saved:", data));
+u.emit("save", { id: 1 });
+            </code></pre>
+
+            <p>
+              Here <code>WithEvents</code> is a higher-order class: it takes a base and returns an
+              extended class with extra behaviour.
+            </p>
+          </div>
+        </details>
+      </section>
+
+      <!-- 12.4.3 Factory functions vs classes -->
+      <section id="sec-factories" class="mb-4">
+        <div class="section-label">12.4.3</div>
+        <div class="section-title">Factory functions vs classes</div>
+        <div class="section-subtitle">Two ways to construct objects and behaviour.</div>
+
+        <details open>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Factory function pattern</span>
+            <span class="summary-tag">concept</span>
+          </summary>
+          <div class="inner">
+            <p>
+              A <strong>factory function</strong> is any function that returns a new object, without
+              using <code>new</code> or <code>class</code>. It combines very naturally with closures
+              for encapsulation.
+            </p>
+
+            <pre><code>
+function createCounter(initial = 0) {
+    let value = initial;         // private via closure
+    return {
+        inc() { value++; },
+        dec() { value--; },
+        get() { return value; }
+    };
+}
+
+const c = createCounter(10);
+c.inc();
+console.log(c.get()); // 11
+            </code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Factory vs class trade-offs</span>
+            <span class="summary-tag">comparison</span>
+          </summary>
+          <div class="inner">
+            <ul>
+              <li>Classes naturally use prototypes → memory efficient for many instances.</li>
+              <li>Factories with closure-based privacy may create fresh functions per instance.</li>
+              <li>Factories avoid <code>this</code> pitfalls and work well with plain objects.</li>
+              <li>Classes integrate cleanly with <code>extends</code>, <code>super</code> and tooling.</li>
+            </ul>
+            <p>
+              In real projects you often mix both. For domain models classes may fit; for utilities and
+              small modules factories are elegant.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Hybrid: factory that returns class instance</span>
+            <span class="summary-tag">pattern</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+class Repository {
+    constructor(url, cache) {
+        this.url = url;
+        this.cache = cache;
+    }
+
+    async get(id) {
+        if (this.cache.has(id)) return this.cache.get(id);
+        const res = await fetch(this.url + "/" + id);
+        const json = await res.json();
+        this.cache.set(id, json);
+        return json;
+    }
+}
+
+function createRepository(url) {
+    const cache = new Map();
+    return new Repository(url, cache);
+}
+
+const userRepo = createRepository("/api/users");
+            </code></pre>
+          </div>
+        </details>
+      </section>
+
+      <!-- 12.4.4 Prototype-based inheritance -->
+      <section id="sec-prototype" class="mb-4">
+        <div class="section-label">12.4.4</div>
+        <div class="section-title">Prototype-based inheritance</div>
+        <div class="section-subtitle">The underlying model that powers JS OOP.</div>
+
+        <details open>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Direct prototype chains</span>
+            <span class="summary-tag">core</span>
+          </summary>
+          <div class="inner">
+            <p>
+              Every object has an internal <code>[[Prototype]]</code> reference (accessible via
+              <code>Object.getPrototypeOf</code>). When you access a property, JS looks:
+            </p>
+            <ol>
+              <li>Does the object itself have the property?</li>
+              <li>If not, look on its prototype.</li>
+              <li>Then the prototype’s prototype, and so on.</li>
+            </ol>
+
+            <pre><code>
+const animal = {
+    speak() { console.log("generic sound"); }
+};
+
+const dog = Object.create(animal);
+dog.speak(); // "generic sound"
+console.log(Object.getPrototypeOf(dog) === animal); // true
+            </code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Relating prototypes to classes</span>
+            <span class="summary-tag">bridge</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+class Animal {
+    speak() { console.log("animal sound"); }
+}
+
+const a = new Animal();
+
+console.log(typeof Animal); // "function"
+console.log(Object.getPrototypeOf(a) === Animal.prototype); // true
+            </code></pre>
+            <p class="hint">
+              Classes are just nicer syntax for setting <code>prototype</code> and constructor
+              properties correctly. Understanding this makes debugging much easier.
+            </p>
+          </div>
+        </details>
+      </section>
+
+      <!-- 12.4.5 Design patterns implementation -->
+      <section id="sec-patterns" class="mb-4">
+        <div class="section-label">12.4.5</div>
+        <div class="section-title">Design patterns implementation</div>
+        <div class="section-subtitle">Strategy, Singleton, Observer in idiomatic JS.</div>
+
+        <details open>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Strategy pattern with composition</span>
+            <span class="summary-tag">strategy</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+// Strategy objects
+const percentageDiscount = rate =&gt; ({
+    apply(amount) { return amount - amount * rate; }
+});
+
+const flatDiscount = value =&gt; ({
+    apply(amount) { return Math.max(0, amount - value); }
+});
+
+// Context uses any strategy
+class Cart {
+    constructor(discountStrategy) {
+        this.items = [];
+        this.discountStrategy = discountStrategy;
+    }
+
+    add(price) { this.items.push(price); }
+
+    total() {
+        const sum = this.items.reduce((a,p) =&gt; a + p, 0);
+        return this.discountStrategy
+            ? this.discountStrategy.apply(sum)
+            : sum;
+    }
+}
+
+const cart = new Cart(percentageDiscount(0.1));
+cart.add(100);
+cart.add(50);
+console.log(cart.total()); // 135
+            </code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Singleton pattern (module-style)</span>
+            <span class="summary-tag">singleton</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+const Config = (function () {
+    let instance;
+
+    function create() {
+        const obj = { url: "/api", retries: 3 };
+        return Object.freeze(obj);
+    }
+
+    return {
+        getInstance() {
+            if (!instance) instance = create();
+            return instance;
+        }
+    };
+}());
+
+const c1 = Config.getInstance();
+const c2 = Config.getInstance();
+console.log(c1 === c2); // true
+            </code></pre>
+            <p>
+              In ES modules, simply exporting a plain object from a module acts like a singleton.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Observer pattern (event emitter)</span>
+            <span class="summary-tag">observer</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+class EventEmitter {
+    constructor() {
+        this._listeners = {};
+    }
+
+    on(event, handler) {
+        (this._listeners[event] = this._listeners[event] || []).push(handler);
+    }
+
+    off(event, handler) {
+        this._listeners[event] =
+            (this._listeners[event] || []).filter(h =&gt; h !== handler);
+    }
+
+    emit(event, payload) {
+        (this._listeners[event] || []).forEach(h =&gt; h(payload));
+    }
+}
+
+const bus = new EventEmitter();
+
+function onLogin(user) {
+    console.log("User logged in:", user.name);
+}
+
+bus.on("login", onLogin);
+bus.emit("login", { name: "Irfan" });
+bus.off("login", onLogin);
+            </code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Checklist &amp; mental map</span>
+            <span class="summary-tag">summary</span>
+          </summary>
+          <div class="inner">
+            <ul>
+              <li>Explain why “composition over inheritance” is recommended in many modern systems.</li>
+              <li>Write a mixin and apply it to multiple classes safely.</li>
+              <li>Implement the same behaviour once with factories, once with classes, and see pros/cons.</li>
+              <li>Draw the prototype chain for class-based and Object.create-based objects.</li>
+              <li>Implement Strategy, Singleton, Observer using idiomatic JS tools.</li>
+            </ul>
+            <p>
+              If you can do these without looking up syntax, you have a strong command of
+              <span class="pill-inline">Advanced OOP Patterns in JS</span>.
+            </p>
+          </div>
+        </details>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script>
+// Smooth scrolling + active TOC + search + expand/collapse + simple highlighting
+document.addEventListener("DOMContentLoaded", () => {
+  const contentPanel = document.querySelector(".content-panel");
+  const tocLinks = Array.from(document.querySelectorAll(".toc-link"));
+  const sections = tocLinks.map(link => {
+    const id = link.getAttribute("href");
+    return { link, target: document.querySelector(id) };
+  });
+
+  // Smooth scroll
+  tocLinks.forEach(link => {
+    link.addEventListener("click", e => {
+      e.preventDefault();
+      const id = link.getAttribute("href");
+      const target = document.querySelector(id);
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+        history.replaceState(null, "", id);
+      }
+    });
+  });
+
+  // Active TOC highlight
+  function updateActive() {
+    const y = contentPanel.scrollTop;
+    let current = null;
+    sections.forEach(({ link, target }) => {
+      if (!target) return;
+      const top = target.offsetTop;
+      if (top - 80 <= y) current = link;
+    });
+    tocLinks.forEach(l => l.classList.remove("active"));
+    if (current) current.classList.add("active");
+  }
+  contentPanel.addEventListener("scroll", updateActive);
+  updateActive();
+
+  // TOC search
+  const tocSearch = document.getElementById("tocSearch");
+  const tocItems = Array.from(document.querySelectorAll("#tocList li"));
+  tocSearch.addEventListener("input", () => {
+    const q = tocSearch.value.toLowerCase();
+    tocItems.forEach(li => {
+      const text = li.textContent.toLowerCase() || "";
+      li.style.display = text.includes(q) ? "" : "none";
+    });
+  });
+
+  // Expand / collapse all
+  document.getElementById("btnExpandAll").onclick =
+    () => document.querySelectorAll("details").forEach(d => d.open = true);
+  document.getElementById("btnCollapseAll").onclick =
+    () => document.querySelectorAll("details").forEach(d => d.open = false);
+
+  // Simple syntax highlighting
+  function escapeHtml(str){
+    return str.replace(/&/g,"&amp;")
+              .replace(/</g,"&lt;")
+              .replace(/>/g,"&gt;");
+  }
+  const keywords = [
+    "class","extends","constructor","super",
+    "function","return","const","let","var",
+    "if","else","while","for","new","async","await",
+    "try","catch","throw"
+  ];
+  const builtins = [
+    "Object","Array","Map","Set","Date","Promise",
+    "console","Math","JSON","fetch"
+  ];
+
+  document.querySelectorAll("pre code").forEach(codeEl => {
+    const raw = codeEl.textContent;
+    let html = escapeHtml(raw);
+
+    // comments
+    html = html.replace(/(\/\/.*?$)/gm,"<span class='token-comment'>$1</span>");
+    // strings
+    html = html.replace(/(&quot;.*?&quot;|'.*?'|`.*?`)/g,
+      "<span class='token-string'>$1</span>");
+    // numbers
+    html = html.replace(/\b(\d+(\.\d+)?)\b/g,
+      "<span class='token-number'>$1</span>");
+    // builtins
+    builtins.forEach(b => {
+      const re = new RegExp("\\b"+b+"\\b","g");
+      html = html.replace(re,"<span class='token-builtins'>"+b+"</span>");
+    });
+    // keywords
+    keywords.forEach(k => {
+      const re = new RegExp("\\b"+k+"\\b","g");
+      html = html.replace(re,"<span class='token-keyword'>"+k+"</span>");
+    });
+    // functions (simple heuristic)
+    html = html.replace(/([a-zA-Z_$][\w$]*)\s*(?=\()/g,
+      "<span class='token-function'>$1</span>");
+
+    codeEl.innerHTML = html;
+  });
+});
+</script>
+</body>
+</html>

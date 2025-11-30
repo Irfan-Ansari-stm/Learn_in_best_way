@@ -1,0 +1,948 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4.3 Error Handling Basics & 4.4 Code Organization and Flow</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00f5ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --accent: #00c4cc;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            position: fixed;
+            width: 280px;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: rgba(10, 25, 47, 0.9);
+            border-right: 1px solid var(--cyan);
+            box-shadow: 5px 0 15px rgba(0, 245, 255, 0.1);
+            z-index: 1000;
+        }
+
+        .right-panel {
+            margin-left: 280px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        h1, h2, h3, h4 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--amber);
+            padding-bottom: 8px;
+            margin-top: 30px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin-top: 40px;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            color: var(--amber);
+        }
+
+        .subtitle {
+            color: var(--amber);
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+
+        .author-info {
+            color: var(--cyan);
+            font-size: 0.9rem;
+            margin-bottom: 25px;
+            opacity: 0.8;
+        }
+
+        .toc-item {
+            margin: 8px 0;
+            padding: 6px 10px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        .toc-item:hover {
+            background-color: rgba(0, 245, 255, 0.1);
+            transform: translateX(5px);
+        }
+
+        .toc-item.active {
+            background-color: rgba(0, 245, 255, 0.2);
+            border-left: 3px solid var(--amber);
+        }
+
+        .toc-subitem {
+            margin-left: 20px;
+            font-size: 0.9rem;
+            color: var(--cyan);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .toc-subitem:hover {
+            background-color: rgba(0, 245, 255, 0.1);
+        }
+
+        .search-box {
+            width: 100%;
+            margin-bottom: 20px;
+            background-color: rgba(0, 245, 255, 0.1);
+            border-color: var(--cyan);
+            color: var(--text-light);
+        }
+
+        .btn-control {
+            margin-bottom: 20px;
+            background-color: rgba(0, 245, 255, 0.1);
+            border: 1px solid var(--cyan);
+            color: var(--cyan);
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.9rem;
+        }
+
+        .btn-control:hover {
+            background-color: rgba(0, 245, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        pre code {
+            display: block;
+            padding: 16px;
+            background-color: rgba(10, 25, 47, 0.7);
+            border-left: 4px solid var(--amber);
+            border-radius: 6px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--cyan);
+        }
+
+        .code-keyword {
+            color: var(--amber);
+        }
+
+        .code-string {
+            color: #a5ff8a;
+        }
+
+        .code-comment {
+            color: #777;
+        }
+
+        .details-summary {
+            cursor: pointer;
+            padding: 12px;
+            background-color: rgba(0, 245, 255, 0.08);
+            border: 1px solid rgba(0, 245, 255, 0.2);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            color: var(--cyan);
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .details-summary:hover {
+            background-color: rgba(0, 245, 255, 0.15);
+            transform: translateX(5px);
+        }
+
+        .details-content {
+            padding: 15px;
+            background-color: rgba(10, 25, 47, 0.5);
+            border: 1px solid rgba(0, 245, 255, 0.1);
+            border-radius: 0 0 8px 8px;
+            margin-bottom: 20px;
+            border-top: none;
+        }
+
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.2);
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid var(--amber);
+        }
+
+        .formula {
+            background-color: rgba(0, 245, 255, 0.1);
+            padding: 10px;
+            border-radius: 6px;
+            margin: 15px 0;
+            border-left: 3px solid var(--cyan);
+            font-family: 'Cambria Math', serif;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: #000;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 8px;
+        }
+
+        .scroll-indicator {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(0, 245, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--cyan);
+            cursor: pointer;
+            opacity: 0.7;
+            transition: all 0.3s;
+            z-index: 999;
+        }
+
+        .scroll-indicator:hover {
+            opacity: 1;
+            transform: scale(1.1);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 991px) {
+            .left-panel {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding: 15px;
+            }
+            .right-panel {
+                margin-left: 0;
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Left Panel -->
+    <div class="left-panel">
+        <h1>Error Handling & Code Flow</h1>
+        <p class="subtitle">Mastering Robust Programming Practices</p>
+        <p class="author-info">By: Master Tutor • Level: Intermediate • Estimated Time: 45 min</p>
+
+        <div class="mb-3">
+            <input type="text" class="form-control search-box" id="searchToc" placeholder="🔍 Search topics...">
+        </div>
+
+        <button class="btn btn-control w-100 mb-2" id="expandAll">Expand All</button>
+        <button class="btn btn-control w-100 mb-3" id="collapseAll">Collapse All</button>
+
+        <div class="toc">
+            <div class="toc-item" data-target="error-basics">4.3 Error Handling Basics</div>
+            <div class="toc-subitem" data-target="try-catch-finally">○ try/catch/finally blocks</div>
+            <div class="toc-subitem" data-target="throw-custom-errors">○ Throwing custom errors</div>
+            <div class="toc-subitem" data-target="error-types">○ Error types and properties</div>
+            <div class="toc-subitem" data-target="debugging-strategies">○ Basic debugging strategies</div>
+
+            <div class="toc-item" data-target="code-organization">4.4 Code Organization and Flow</div>
+            <div class="toc-subitem" data-target="code-blocks-scope">○ Code blocks and scope</div>
+            <div class="toc-subitem" data-target="nested-structures">○ Nested structures</div>
+            <div class="toc-subitem" data-target="loop-optimization">○ Loop optimization techniques</div>
+            <div class="toc-subitem" data-target="avoid-infinite-loops">○ Avoiding infinite loops</div>
+        </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="right-panel">
+        <!-- 4.3 Error Handling Basics -->
+        <section id="error-basics">
+            <h2>4.3 Error Handling Basics</h2>
+            <p>Errors are inevitable in programming. The difference between a fragile program and a robust one lies in how it handles unexpected situations. This section teaches you to anticipate, detect, and gracefully respond to errors.</p>
+
+            <!-- try/catch/finally blocks -->
+            <details>
+                <summary class="details-summary">○ try/catch/finally blocks</summary>
+                <div class="details-content">
+                    <h3>Definition</h3>
+                    <p>The <code>try</code>, <code>catch</code>, and <code>finally</code> blocks form the foundation of structured error handling in JavaScript. They allow you to test a block of code for errors, handle them appropriately, and execute cleanup code regardless of success or failure.</p>
+
+                    <h3>Detail</h3>
+                    <ul>
+                        <li><strong>try:</strong> Contains code that might throw an error.</li>
+                        <li><strong>catch:</strong> Executes if an error occurs in the try block. Receives the error object.</li>
+                        <li><strong>finally:</strong> Always executes after try/catch, whether an error occurred or not. Ideal for cleanup tasks.</li>
+                    </ul>
+
+                    <h3>Syntax</h3>
+                    <pre><code>try {
+    // Code that may throw an error
+} catch (error) {
+    // Handle the error
+    console.error('An error occurred:', error.message);
+} finally {
+    // Cleanup code - always runs
+    console.log('Cleanup task completed');
+}</code></pre>
+
+                    <h3>Example</h3>
+                    <pre><code>// Attempt to parse invalid JSON
+try {
+    const rawData = "{name: John}"; // Invalid JSON (missing quotes)
+    const user = JSON.parse(rawData);
+    console.log(user.name);
+} catch (error) {
+    console.error('❌ Failed to parse user data:', error.message);
+    // Fallback behavior
+    console.log('Using default user profile...');
+} finally {
+    console.log('✅ Data processing attempt complete');
+}</code></pre>
+                    <p><strong>Output:</strong><br>
+                    <code>❌ Failed to parse user data: Unexpected token n in JSON at position 1<br>
+                    ✅ Data processing attempt complete</code></p>
+
+                    <h3>Uses</h3>
+                    <ul>
+                        <li>Handling network request failures</li>
+                        <li>Validating user input</li>
+                        <li>File system operations</li>
+                        <li>Database queries</li>
+                        <li>Any operation with external dependencies</li>
+                    </ul>
+                </div>
+            </details>
+
+            <!-- Throwing custom errors -->
+            <details>
+                <summary class="details-summary">○ Throwing custom errors</summary>
+                <div class="details-content">
+                    <h3>Definition</h3>
+                    <p>You can create your own error conditions using the <code>throw</code> statement to signal specific problems unique to your application's logic.</p>
+
+                    <h3>Detail</h3>
+                    <p>Custom errors improve code readability and maintainability by clearly communicating what went wrong. You can throw any value, but best practice is to throw instances of <code>Error</code> or its subclasses.</p>
+
+                    <h3>Syntax</h3>
+                    <pre><code>if (condition) {
+    throw new Error('Descriptive message about the error');
+}
+
+// Or create custom error classes
+class ValidationError extends Error {
+    constructor(message) {
+        super(message);
+        this.name = 'ValidationError';
+    }
+}</code></pre>
+
+                    <h3>Example</h3>
+                    <pre><code>function divide(a, b) {
+    if (typeof a !== 'number' || typeof b !== 'number') {
+        throw new TypeError('Both arguments must be numbers');
+    }
+    
+    if (b === 0) {
+        throw new Error('Cannot divide by zero');
+    }
+    
+    return a / b;
+}
+
+// Usage
+try {
+    const result = divide(10, 0);
+    console.log(result);
+} catch (error) {
+    console.error('⛔️ Division Error:', error.name, '-', error.message);
+}</code></pre>
+                    <p><strong>Output:</strong><br>
+                    <code>⛔️ Division Error: Error - Cannot divide by zero</code></p>
+
+                    <h3>Uses</h3>
+                    <ul>
+                        <li>Validating function parameters</li>
+                        <li>Business rule enforcement</li>
+                        <li>API response validation</li>
+                        <li>Preventing invalid state transitions</li>
+                    </ul>
+                </div>
+            </details>
+
+            <!-- Error types and properties -->
+            <details>
+                <summary class="details-summary">○ Error types and properties</summary>
+                <div class="details-content">
+                    <h3>Definition</h3>
+                    <p>JavaScript provides several built-in error types, each designed for specific error categories. Understanding these helps you write precise error handlers.</p>
+
+                    <h3>Common Error Types</h3>
+                    <table class="table table-dark table-striped mt-3">
+                        <thead>
+                            <tr>
+                                <th>Error Type</th>
+                                <th>When It Occurs</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>TypeError</code></td>
+                                <td>When a value is not of the expected type</td>
+                            </tr>
+                            <tr>
+                                <td><code>ReferenceError</code></td>
+                                <td>When referencing a non-existent variable</td>
+                            </tr>
+                            <tr>
+                                <td><code>SyntaxError</code></td>
+                                <td>When code has invalid syntax</td>
+                            </tr>
+                            <tr>
+                                <td><code>RangeError</code></td>
+                                <td>When a number is outside allowed range</td>
+                            </tr>
+                            <tr>
+                                <td><code>URIError</code></td>
+                                <td>When URI functions are misused</td>
+                            </tr>
+                            <tr>
+                                <td><code>Error</code></td>
+                                <td>Generic error container</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3>Error Properties</h3>
+                    <pre><code>const err = new Error('Something went wrong');
+
+console.log(err.message);     // "Something went wrong"
+console.log(err.name);        // "Error"
+console.log(err.stack);       // Stack trace showing call hierarchy</code></pre>
+
+                    <h3>Example</h3>
+                    <pre><code>function processUserData(data) {
+    if (!data) throw new ReferenceError('User data is undefined');
+    if (typeof data.age !== 'number') throw new TypeError('Age must be a number');
+    if (data.age &lt; 0 || data.age &gt; 150) throw new RangeError('Age must be between 0 and 150');
+    
+    return `User: ${data.name}, Age: ${data.age}`;
+}
+
+// Test different errors
+const testData = { name: 'Alex', age: 'twenty' }; // Wrong type
+
+try {
+    console.log(processUserData(testData));
+} catch (error) {
+    console.log(`Type: ${error.name}`);
+    console.log(`Message: ${error.message}`);
+    console.log(`Stack: ${error.stack.split('\n')[0]}`);
+}</code></pre>
+                    <p><strong>Output:</strong><br>
+                    <code>Type: TypeError<br>
+                    Message: Age must be a number<br>
+                    Stack: processUserData at &lt;anonymous&gt;</code></p>
+
+                    <h3>Uses</h3>
+                    <ul>
+                        <li>Creating meaningful error messages for users</li>
+                        <li>Logging errors with context</li>
+                        <li>Implementing different recovery strategies based on error type</li>
+                        <li>Debugging complex applications</li>
+                    </ul>
+                </div>
+            </details>
+
+            <!-- Basic debugging strategies -->
+            <details>
+                <summary class="details-summary">○ Basic debugging strategies</summary>
+                <div class="details-content">
+                    <h3>Definition</h3>
+                    <p>Debugging is the systematic process of identifying and removing errors from your code. Effective debugging combines tools, techniques, and logical analysis.</p>
+
+                    <h3>Key Strategies</h3>
+                    <ol>
+                        <li><strong>Console Logging:</strong> Use <code>console.log()</code> strategically to trace execution flow and variable states.</li>
+                        <li><strong>Breakpoints:</strong> Use browser DevTools to pause execution at specific lines.</li>
+                        <li><strong>Check Data Types:</strong> Use <code>typeof</code> and <code>instanceof</code> to verify data integrity.</li>
+                        <li><strong>Validate Inputs:</strong> Always validate external data before processing.</li>
+                        <li><strong>Reproduce Consistently:</strong> Ensure you can reliably reproduce the bug before fixing it.</li>
+                    </ol>
+
+                    <h3>Example: Debugging Workflow</h3>
+                    <pre><code>// Problem: Function returns NaN unexpectedly
+function calculateAverage(numbers) {
+    let sum = 0;
+    console.log('Input array:', numbers); // 👈 Log input
+    
+    for (let i = 0; i &lt; numbers.length; i++) {
+        console.log(`Index ${i}: ${numbers[i]} (type: ${typeof numbers[i]})`); // 👈 Log each element
+        sum += numbers[i];
+    }
+    
+    console.log('Sum:', sum); // 👈 Log intermediate result
+    return sum / numbers.length;
+}
+
+// Test with bad data
+const results = calculateAverage([1, 2, 'three', 4]);</code></pre>
+                    <p><strong>Debug Output:</strong><br>
+                    <code>Input array: [1, 2, "three", 4]<br>
+                    Index 0: 1 (type: number)<br>
+                    Index 1: 2 (type: number)<br>
+                    Index 2: three (type: string)<br>
+                    Sum: 7three<br>
+                    Result: NaN</code></p>
+
+                    <h3>Pro Tips</h3>
+                    <ul>
+                        <li>Use <code>console.table()</code> for arrays and objects</li>
+                        <li>Use <code>console.group()</code> to organize related logs</li>
+                        <li>Enable "Pause on exceptions" in DevTools</li>
+                        <li>Write unit tests to catch regressions</li>
+                        <li>Always test edge cases: null, undefined, empty strings, zero values</li>
+                    </ul>
+                </div>
+            </details>
+        </section>
+
+        <!-- 4.4 Code Organization and Flow -->
+        <section id="code-organization">
+            <h2>4.4 Code Organization and Flow</h2>
+            <p>Well-organized code is readable, maintainable, and efficient. This section focuses on structuring your programs logically to avoid confusion and performance pitfalls.</p>
+
+            <!-- Code blocks and scope -->
+            <details>
+                <summary class="details-summary">○ Code blocks and scope</summary>
+                <div class="details-content">
+                    <h3>Definition</h3>
+                    <p>A <em>code block</em> is a group of statements enclosed in curly braces <code>{}</code>. <em>Scope</em> determines where variables are accessible in your code.</p>
+
+                    <h3>Detail</h3>
+                    <p>JavaScript has two main scopes:</p>
+                    <ul>
+                        <li><strong>Function Scope:</strong> Variables declared with <code>var</code> are scoped to the nearest function.</li>
+                        <li><strong>Block Scope:</strong> Variables declared with <code>let</code> and <code>const</code> are limited to the nearest enclosing block (<code>{}</code>).</li>
+                    </ul>
+
+                    <h3>Syntax</h3>
+                    <pre><code>// Function scope example
+function example() {
+    if (true) {
+        var functionScoped = 'I\'m function-scoped';
+        let blockScoped = 'I\'m block-scoped';
+        const constant = 'I cannot be reassigned';
+    }
+    
+    console.log(functionScoped); // ✅ Works
+    console.log(blockScoped);    // ❌ ReferenceError
+    console.log(constant);       // ❌ ReferenceError
+}</code></pre>
+
+                    <h3>Example</h3>
+                    <pre><code>function manageUserSession() {
+    let isLoggedIn = false;
+    
+    if (loginSuccess) {
+        let username = 'john_doe'; // Block-scoped
+        isLoggedIn = true;
+        console.log('Inside block:', username); // ✅
+    }
+    
+    console.log('Outside block:', isLoggedIn); // ✅
+    console.log('Outside block:', username);   // ❌ ReferenceError!
+    
+    // Fix: Declare variables at appropriate scope level
+    let userRole;
+    if (isLoggedIn) {
+        userRole = 'admin'; // Now accessible outside if block
+    }
+    
+    return userRole;
+}</code></pre>
+
+                    <h3>Best Practices</h3>
+                    <ul>
+                        <li>Always use <code>let</code> and <code>const</code> instead of <code>var</code></li>
+                        <li>Declare variables as close as possible to their first use</li>
+                        <li>Use <code>const</code> by default; only use <code>let</code> when reassignment is needed</li>
+                        <li>Avoid global variables—they pollute the namespace</li>
+                        <li>Use IIFE (Immediately Invoked Function Expressions) for encapsulation</li>
+                    </ul>
+                </div>
+            </details>
+
+            <!-- Nested structures -->
+            <details>
+                <summary class="details-summary">○ Nested structures</summary>
+                <div class="details-content">
+                    <h3>Definition</h3>
+                    <p>Nested structures occur when control flow statements (like loops or conditionals) are placed inside other control flow statements.</p>
+
+                    <h3>Detail</h3>
+                    <p>Nesting allows complex decision-making but can lead to the "Pyramid of Doom" — deeply indented, hard-to-read code. Aim for shallow nesting.</p>
+
+                    <h3>Syntax</h3>
+                    <pre><code>// Deeply nested structure
+if (userExists) {
+    if (user.isActive) {
+        if (user.hasPermission) {
+            if (paymentProcessed) {
+                // Do something
+            } else {
+                // Handle payment failure
+            }
+        } else {
+            // Handle permission denied
+        }
+    } else {
+        // Handle inactive user
+    }
+}</code></pre>
+
+                    <h3>Example: Refactoring Nested Logic</h3>
+                    <pre><code>// ❌ Bad: Pyramid of Doom
+function processOrder(order) {
+    if (order) {
+        if (order.items.length &gt; 0) {
+            if (order.customer.email) {
+                if (validateEmail(order.customer.email)) {
+                    if (hasSufficientStock(order.items)) {
+                        if (processPayment(order.total)) {
+                            sendConfirmationEmail(order.customer.email);
+                            updateInventory(order.items);
+                            return { success: true, message: 'Order processed' };
+                        } else {
+                            return { success: false, message: 'Payment failed' };
+                        }
+                    } else {
+                        return { success: false, message: 'Insufficient stock' };
+                    }
+                } else {
+                    return { success: false, message: 'Invalid email' };
+                }
+            } else {
+                return { success: false, message: 'No email provided' };
+            }
+        } else {
+            return { success: false, message: 'No items in order' };
+        }
+    } else {
+        return { success: false, message: 'No order provided' };
+    }
+}
+
+// ✅ Good: Early Returns (Guard Clauses)
+function processOrder(order) {
+    // Guard clauses: exit early on invalid conditions
+    if (!order) return { success: false, message: 'No order provided' };
+    if (order.items.length === 0) return { success: false, message: 'No items in order' };
+    if (!order.customer.email) return { success: false, message: 'No email provided' };
+    if (!validateEmail(order.customer.email)) return { success: false, message: 'Invalid email' };
+    if (!hasSufficientStock(order.items)) return { success: false, message: 'Insufficient stock' };
+    if (!processPayment(order.total)) return { success: false, message: 'Payment failed' };
+
+    // Only reach here if all validations pass
+    sendConfirmationEmail(order.customer.email);
+    updateInventory(order.items);
+    return { success: true, message: 'Order processed' };
+}</code></pre>
+
+                    <h3>Benefits of Early Returns</h3>
+                    <ul>
+                        <li>Reduces indentation levels</li>
+                        <li>Improves readability</li>
+                        <li>Easier to add new validation rules</li>
+                        <li>Faster execution (avoids unnecessary nesting)</li>
+                    </ul>
+                </div>
+            </details>
+
+            <!-- Loop optimization techniques -->
+            <details>
+                <summary class="details-summary">○ Loop optimization techniques</summary>
+                <div class="details-content">
+                    <h3>Definition</h3>
+                    <p>Loop optimization refers to improving the efficiency of loops to reduce computational overhead and improve performance.</p>
+
+                    <h3>Key Techniques</h3>
+                    <ol>
+                        <li><strong>Caching Length:</strong> Store array length in a variable to avoid repeated property access.</li>
+                        <li><strong>Minimize Work Inside Loop:</strong> Move invariant calculations outside the loop.</li>
+                        <li><strong>Choose Appropriate Loop Type:</strong> Use <code>for</code> for indexed iteration, <code>for...of</code> for values, <code>for...in</code> for keys (rarely used).</li>
+                        <li><strong>Use Built-in Methods:</strong> <code>map()</code>, <code>filter()</code>, <code>reduce()</code> often perform better than manual loops.</li>
+                    </ol>
+
+                    <h3>Example: Optimization Comparison</h3>
+                    <pre><code>// ❌ Inefficient
+function sumArraySlow(arr) {
+    let total = 0;
+    for (let i = 0; i &lt; arr.length; i++) { // ❌ Re-evaluates arr.length every iteration
+        total += arr[i] * 2 + 5; // ❌ Recalculates expression every time
+    }
+    return total;
+}
+
+// ✅ Optimized
+function sumArrayFast(arr) {
+    const len = arr.length; // ✅ Cache length
+    let total = 0;
+    
+    for (let i = 0; i &lt; len; i++) {
+        const temp = arr[i] * 2; // ✅ Calculate once
+        total += temp + 5;       // ✅ Use cached value
+    }
+    return total;
+}
+
+// ✅ Even Better: Functional approach
+function sumArrayModern(arr) {
+    return arr.reduce((sum, val) =&gt; sum + val * 2 + 5, 0);
+}</code></pre>
+
+                    <h3>Performance Benchmark</h3>
+                    <p>For an array of 100,000 elements:</p>
+                    <ul>
+                        <li>Inefficient version: ~15ms</li>
+                        <li>Optimized version: ~8ms</li>
+                        <li>Functional version: ~7ms</li>
+                    </ul>
+
+                    <h3>Rule of Thumb</h3>
+                    <blockquote>
+                        "Move work out of loops, not into them."
+                    </blockquote>
+                </div>
+            </details>
+
+            <!-- Avoiding infinite loops -->
+            <details>
+                <summary class="details-summary">○ Avoiding infinite loops</summary>
+                <div class="details-content">
+                    <h3>Definition</h3>
+                    <p>An infinite loop occurs when a loop's termination condition never becomes false, causing the program to run indefinitely.</p>
+
+                    <h3>Common Causes</h3>
+                    <ul>
+                        <li>Forgetting to increment/decrement loop counter</li>
+                        <li>Incorrect condition logic</li>
+                        <li>Modifying loop variable incorrectly</li>
+                        <li>Using floating-point comparisons with equality operators</li>
+                    </ul>
+
+                    <h3>Example: Infinite Loop Trap</h3>
+                    <pre><code>// ❌ INFINITE LOOP
+function countDown(start) {
+    while (start !== 0) { // ❌ Dangerous: floating point precision issues
+        start -= 0.1;
+        console.log(start);
+    }
+}
+
+countDown(1); // Never terminates! Due to floating point imprecision
+
+// ❌ Another trap
+let i = 0;
+while (i &lt; 10) {
+    console.log(i);
+    // Forgot to increment i!
+}</code></pre>
+
+                    <h3>Safe Alternatives</h3>
+                    <pre><code>// ✅ Safe: Use <= or >= for integer comparisons
+function safeCountDown(start) {
+    while (start &gt; 0) { // ✅ Use > instead of !==
+        start--;
+        console.log(start);
+    }
+}
+
+// ✅ Safe: Floating point comparison with tolerance
+function safeFloatLoop(start) {
+    const epsilon = 0.0001; // Small tolerance value
+    while (Math.abs(start) &gt; epsilon) {
+        start -= 0.1;
+        console.log(start.toFixed(2));
+    }
+}
+
+// ✅ Use for loops when you know iterations
+function safeForLoop() {
+    for (let i = 0; i &lt; 10; i++) { // ✅ Guaranteed termination
+        console.log(i);
+    }
+}
+
+// ✅ Add safety timeout
+function controlledLoop(maxIterations = 1000) {
+    let i = 0;
+    while (someCondition && i &lt; maxIterations) {
+        // do work
+        i++;
+    }
+    if (i === maxIterations) {
+        console.warn('Loop terminated due to safety limit');
+    }
+}</code></pre>
+
+                    <h3>Debugging Infinite Loops</h3>
+                    <ul>
+                        <li>Add <code>console.log()</code> statements to track loop variables</li>
+                        <li>Use browser DevTools to break execution</li>
+                        <li>Set breakpoints and step through code</li>
+                        <li>Implement maximum iteration limits as safeguards</li>
+                        <li>Use <code>debugger;</code> statement to pause execution</li>
+                    </ul>
+
+                    <h3>Pro Tip: The Safety Net</h3>
+                    <pre><code>// Always consider adding a safety net
+function processData(data) {
+    let attempts = 0;
+    const MAX_ATTEMPTS = 100;
+    
+    while (shouldContinue() && attempts &lt; MAX_ATTEMPTS) {
+        // Process data
+        attempts++;
+    }
+    
+    if (attempts === MAX_ATTEMPTS) {
+        throw new Error('Process failed to complete within safe limits');
+    }
+}</code></pre>
+                </div>
+            </details>
+        </section>
+    </div>
+
+    <!-- Scroll indicator -->
+    <div class="scroll-indicator" id="scrollTop">
+        <i class="bi bi-arrow-up"></i>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // JavaScript Utilities
+        document.addEventListener('DOMContentLoaded', function() {
+            
+            // Search functionality for TOC
+            const searchInput = document.getElementById('searchToc');
+            const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
+            
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                
+                tocItems.forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    if (text.includes(searchTerm)) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+
+            // Expand/Collapse All
+            document.getElementById('expandAll').addEventListener('click', () => {
+                document.querySelectorAll('details').forEach(detail => {
+                    detail.open = true;
+                });
+            });
+
+            document.getElementById('collapseAll').addEventListener('click', () => {
+                document.querySelectorAll('details').forEach(detail => {
+                    detail.open = false;
+                });
+            });
+
+            // Smooth scrolling for TOC navigation
+            document.querySelectorAll('[data-target]').forEach(link => {
+                link.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const targetElement = document.getElementById(targetId);
+                    
+                    if (targetElement) {
+                        // Remove active class from all items
+                        document.querySelectorAll('.toc-item, .toc-subitem').forEach(el => {
+                            el.classList.remove('active');
+                        });
+                        
+                        // Add active class to clicked item
+                        this.classList.add('active');
+                        
+                        // Smooth scroll to target
+                        targetElement.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+
+            // Scroll to top button
+            const scrollTopButton = document.getElementById('scrollTop');
+            scrollTopButton.addEventListener('click', () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
+
+            // Show/hide scroll button based on scroll position
+            window.addEventListener('scroll', () => {
+                if (window.pageYOffset > 300) {
+                    scrollTopButton.style.opacity = '1';
+                } else {
+                    scrollTopButton.style.opacity = '0.7';
+                }
+            });
+
+            // Syntax highlighting for code blocks
+            document.querySelectorAll('pre code').forEach(block => {
+                // Highlight keywords
+                block.innerHTML = block.innerHTML
+                    .replace(/\b(function|return|if|else|for|while|try|catch|finally|throw|new|this|const|let|var)\b/g, '<span class="code-keyword">$1</span>')
+                    .replace(/(['"`])(.*?)\1/g, '<span class="code-string">$&</span>')
+                    .replace(/\/\/.*$/gm, '<span class="code-comment">$&</span>');
+            });
+
+            // Auto-expand first section on load for better UX
+            const firstDetails = document.querySelector('details');
+            if (firstDetails) {
+                setTimeout(() => {
+                    firstDetails.open = true;
+                }, 500);
+            }
+        });
+    </script>
+</body>
+</html>
+```

@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>12.2 – Inheritance & Extends in JavaScript</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+body{background:#050816;color:#e5e7eb;font-family:sans-serif;overflow:hidden;}
+.sidebar{background:#07101f;border-right:1px solid #1f2933;height:100vh;overflow-y:auto;padding:20px;}
+.content{height:100vh;overflow-y:auto;padding:30px;}
+h1,h2,h3{color:#22d3ee;}
+details{background:#0a1326;border:1px solid #234; padding:10px 15px;border-radius:10px;margin:10px 0;}
+summary{cursor:pointer;color:#fbbf24;font-weight:600;}
+pre{background:#020617;border:1px solid #0a7d7d;padding:10px;border-radius:10px;overflow-x:auto;}
+code{color:#c3dafe;font-family:"JetBrains Mono", monospace;font-size:0.85rem;}
+.toc a{color:#9ca3af;text-decoration:none;font-size:0.85rem;display:block;margin-bottom:6px;}
+.toc a:hover{color:#22d3ee;}
+button{background:none;border:1px solid #666;border-radius:20px;color:#aaa;font-size:0.75rem;padding:3px 10px;margin-right:4px;}
+</style>
+</head>
+
+<body>
+<div class="container-fluid">
+<div class="row">
+
+<!-- SIDEBAR -->
+<div class="col-12 col-md-4 col-lg-3 sidebar">
+<h3>12.2 – Inheritance & Extends</h3>
+<p style="color:#9ca3af;">Complete deep-dive with syntax, examples & internals.</p>
+
+<div class="toc">
+<h5 style="color:#fbbf24;">On this page</h5>
+<a href="#sec1">12.2.1 Class Inheritance with extends</a>
+<a href="#sec2">12.2.2 super keyword usage</a>
+<a href="#sec3">12.2.3 Method overriding</a>
+<a href="#sec4">12.2.4 Constructor chaining</a>
+<a href="#sec5">12.2.5 Multiple inheritance patterns</a>
+</div>
+
+<button onclick="expandAll()">Expand all</button>
+<button onclick="collapseAll()">Collapse all</button>
+</div>
+
+<!-- CONTENT -->
+<div class="col content">
+
+<h1>12.2 – Inheritance and Extends in JavaScript</h1>
+<p>JavaScript uses prototype-based inheritance, and ES6 <code>class</code> syntax provides a clean declarative structure for parent → child relationships. This chapter teaches deep internal behaviour, memory models, <code>super()</code>, overriding rules, constructor order, and safe multiple inheritance patterns.</p>
+
+<div style="background:#0a1a2d;border:1px solid #345;padding:15px;border-radius:10px;margin-bottom:20px;">
+<b style="color:#fbbf24;">Executive intuition:</b><br>
+<em>ES6 class inheritance is syntactic sugar for setting the child’s prototype to the parent’s prototype. Calling <code>super()</code> links instance initialization to the base class and ensures proper prototype chain creation.</em>
+</div>
+
+<!-- SECTION 1 -->
+<section id="sec1">
+<h2>12.2.1 Class Inheritance with extends</h2>
+
+<details open>
+<summary>Concept: How <code>extends</code> really works internally</summary>
+<div>
+<p><code>extends</code> sets:</p>
+<ul>
+<li><code>Child.prototype.__proto__ = Parent.prototype</code></li>
+<li><code>Child.__proto__ = Parent</code> (linking static inheritance)</li>
+</ul>
+
+<p>Basic syntax:</p>
+<pre><code>
+class Person {
+    speak() { console.log("Person speaking"); }
+}
+
+class Student extends Person {}
+
+const s = new Student();
+s.speak(); // inherited
+</code></pre>
+</div>
+</details>
+
+<details>
+<summary>Example demonstrating prototype chain</summary>
+<div>
+<pre><code>
+console.log(Object.getPrototypeOf(Student.prototype) === Person.prototype); // true
+console.log(Object.getPrototypeOf(Student) === Person); // true
+</code></pre>
+<p>This mirrors old-style inheritance:</p>
+<pre><code>
+Student.prototype = Object.create(Person.prototype);
+Object.setPrototypeOf(Student, Person);
+</code></pre>
+</div>
+</details>
+</section>
+
+<!-- SECTION 2 -->
+<section id="sec2">
+<h2>12.2.2 super keyword usage</h2>
+
+<details open>
+<summary>Using <code>super()</code> inside constructors</summary>
+<div>
+<p><code>super()</code> must be called before using <code>this</code> inside subclasses.</p>
+
+<pre><code>
+class Person {
+    constructor(name) { this.name = name; }
+}
+
+class Student extends Person {
+    constructor(name, roll) {
+        super(name);     // MUST be first
+        this.roll = roll;
+    }
+}
+</code></pre>
+</div>
+</details>
+
+<details>
+<summary>Using <code>super.method()</code> to call parent implementation</summary>
+<div>
+<pre><code>
+class A {
+    hi() { console.log("A says hi"); }
+}
+class B extends A {
+    hi() {
+        super.hi();
+        console.log("B also says hi");
+    }
+}
+new B().hi();
+</code></pre>
+</div>
+</details>
+</section>
+
+<!-- SECTION 3 -->
+<section id="sec3">
+<h2>12.2.3 Method Overriding</h2>
+
+<details open>
+<summary>Overriding rules</summary>
+<div>
+<ul>
+<li>Child method with same name replaces parent’s version.</li>
+<li>You may still call parent version with <code>super.method()</code>.</li>
+<li>Prototype chain determines which function is executed.</li>
+</ul>
+</div>
+</details>
+
+<details>
+<summary>Example with polymorphism</summary>
+<div>
+<pre><code>
+class Animal {
+    speak() { console.log("Some generic animal sound"); }
+}
+
+class Dog extends Animal {
+    speak() { console.log("Woof woof"); }
+}
+
+class Cat extends Animal {
+    speak() { console.log("Meow"); }
+}
+
+function listen(a) { a.speak(); }
+
+listen(new Dog()); // Woof
+listen(new Cat()); // Meow
+</code></pre>
+</div>
+</details>
+</section>
+
+<!-- SECTION 4 -->
+<section id="sec4">
+<h2>12.2.4 Constructor Chaining</h2>
+
+<details open>
+<summary>Execution order of constructors in inheritance</summary>
+<div>
+<p>Order:</p>
+<ol>
+<li>Child constructor runs</li>
+<li>It calls <code>super()</code></li>
+<li>Parent constructor runs</li>
+<li>Control returns to child</li>
+</ol>
+
+<pre><code>
+class A {
+    constructor() { console.log("A constructor"); }
+}
+class B extends A {
+    constructor() {
+        super(); // first
+        console.log("B constructor");
+    }
+}
+new B();
+</code></pre>
+</div>
+</details>
+
+<details>
+<summary>Why calling <code>super()</code> is required</summary>
+<div>
+<pre><code>
+class Car extends Vehicle {
+    constructor() {
+        // ERROR: 'this' not initialized
+        this.type = "car";
+    }
+}
+</code></pre>
+
+<p>Fix:</p>
+
+<pre><code>
+class Car extends Vehicle {
+    constructor() {
+        super();
+        this.type = "car";
+    }
+}
+</code></pre>
+</div>
+</details>
+</section>
+
+<!-- SECTION 5 -->
+<section id="sec5">
+<h2>12.2.5 Multiple Inheritance Patterns in JavaScript</h2>
+
+<details open>
+<summary>Why JS cannot have direct multiple inheritance</summary>
+<div>
+<p>Because objects have only one <code>[[Prototype]]</code> slot.</p>
+</div>
+</details>
+
+<details>
+<summary>Pattern 1: Mixins (Most common)</summary>
+<div>
+<pre><code>
+const CanWalk = {
+    walk() { console.log("Walking"); }
+};
+
+const CanEat = {
+    eat() { console.log("Eating"); }
+};
+
+function mixin(target, ...sources) {
+    Object.assign(target.prototype, ...sources);
+}
+
+class Person {}
+mixin(Person, CanWalk, CanEat);
+
+new Person().walk();
+new Person().eat();
+</code></pre>
+</div>
+</details>
+
+<details>
+<summary>Pattern 2: Functional inheritance</summary>
+<div>
+<pre><code>
+function mover(obj) {
+    return {
+        ...obj,
+        move() { console.log("move"); }
+    };
+}
+
+const robot = mover({ id: 1 });
+robot.move();
+</code></pre>
+</details>
+
+<details>
+<summary>Pattern 3: Class factory returning extended class</summary>
+<div>
+<pre><code>
+const Jumping = Base => class extends Base {
+    jump() { console.log("jumping"); }
+};
+
+class Animal {}
+
+class Kangaroo extends Jumping(Animal) {}
+
+new Kangaroo().jump();
+</code></pre>
+</details>
+
+</section>
+
+</div>
+</div>
+</div>
+
+<script>
+function expandAll(){ document.querySelectorAll("details").forEach(d=>d.open=true); }
+function collapseAll(){ document.querySelectorAll("details").forEach(d=>d.open=false); }
+</script>
+
+</body>
+</html>

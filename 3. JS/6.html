@@ -1,0 +1,1048 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4. Conditional Statements & Loops - Deep Learning Notes</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00f5ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --border-color: #00b3e6;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            position: fixed;
+            width: 280px;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: rgba(10, 25, 47, 0.9);
+            border-right: 1px solid var(--border-color);
+            box-shadow: 5px 0 15px rgba(0, 245, 255, 0.1);
+            z-index: 1000;
+        }
+
+        .right-panel {
+            margin-left: 280px;
+            padding: 20px;
+            height: 100vh;
+            overflow-y: auto;
+            max-height: 100vh;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: var(--amber);
+        }
+
+        .subtitle {
+            color: var(--cyan);
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+
+        .author {
+            color: var(--amber);
+            font-weight: 500;
+            margin-bottom: 25px;
+            font-size: 0.9rem;
+        }
+
+        .toc-item {
+            margin: 8px 0;
+            transition: all 0.3s ease;
+        }
+
+        .toc-item a {
+            color: var(--cyan);
+            text-decoration: none;
+            display: block;
+            padding: 6px 8px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .toc-item a:hover {
+            background-color: rgba(0, 245, 255, 0.1);
+            padding-left: 12px;
+        }
+
+        .toc-subitem {
+            margin-left: 15px;
+            font-size: 0.92rem;
+            color: #aaa;
+        }
+
+        .toc-subitem a {
+            color: #88c;
+            padding-left: 10px;
+        }
+
+        .toc-subitem a:hover {
+            background-color: rgba(0, 245, 255, 0.08);
+            color: var(--cyan);
+        }
+
+        .btn-control {
+            background-color: rgba(0, 245, 255, 0.1);
+            border: 1px solid var(--border-color);
+            color: var(--cyan);
+            margin: 10px 0;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-control:hover {
+            background-color: rgba(0, 245, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        details {
+            margin: 15px 0;
+            border-left: 3px solid var(--amber);
+            padding-left: 15px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border-radius: 0 8px 8px 0;
+        }
+
+        summary {
+            list-style: none;
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--amber);
+            padding: 10px 15px;
+            background-color: rgba(0, 245, 255, 0.08);
+            border-radius: 6px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        summary::before {
+            content: "▶";
+            margin-right: 10px;
+            transition: transform 0.3s;
+        }
+
+        details[open] > summary::before {
+            transform: rotate(90deg);
+        }
+
+        pre code {
+            display: block;
+            padding: 16px;
+            overflow-x: auto;
+            background-color: #0d1b2a;
+            border-radius: 8px;
+            border-left: 4px solid var(--amber);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--cyan);
+        }
+
+        .highlight {
+            color: var(--amber);
+            font-weight: bold;
+        }
+
+        .code-keyword {
+            color: var(--amber);
+        }
+
+        .code-string {
+            color: #a5f3fc;
+        }
+
+        .code-comment {
+            color: #666;
+            font-style: italic;
+        }
+
+        .formula {
+            background-color: rgba(0, 245, 255, 0.1);
+            padding: 8px 12px;
+            border-radius: 6px;
+            border-left: 3px solid var(--cyan);
+            font-family: 'Courier New', Courier, monospace;
+            display: inline-block;
+            margin: 10px 0;
+        }
+
+        .example-box {
+            background-color: rgba(10, 25, 47, 0.5);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            border-left: 4px solid var(--cyan);
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: #000;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 8px;
+        }
+
+        .search-box {
+            width: 100%;
+            margin: 10px 0;
+            background-color: rgba(0, 245, 255, 0.1);
+            border: 1px solid var(--border-color);
+            color: var(--text-light);
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+
+        .section-marker {
+            display: block;
+            color: var(--amber);
+            font-size: 0.8rem;
+            margin-bottom: 5px;
+            opacity: 0.8;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 991px) {
+            .left-panel {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .right-panel {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Left Panel -->
+            <div class="col-md-3 left-panel">
+                <h1>Chapter 4</h1>
+                <div class="subtitle">Conditional Statements & Loops in Programming</div>
+                <div class="author">— Mastering Control Flow with Real Examples —</div>
+
+                <input type="text" class="search-box" id="searchToc" placeholder="Search topics...">
+                
+                <button class="btn-control w-100 mb-2" id="expandAll">Expand All</button>
+                <button class="btn-control w-100" id="collapseAll">Collapse All</button>
+
+                <h4 class="mt-4">Table of Contents</h4>
+                <nav id="toc">
+                    <div class="toc-item">
+                        <a href="#if-statements">4.1.1 If, if/else Statements</a>
+                    </div>
+                    <div class="toc-item">
+                        <a href="#else-if-chains">4.1.2 else if Chains</a>
+                    </div>
+                    <div class="toc-item">
+                        <a href="#switch-statements">4.1.3 switch Statements and Fall-through</a>
+                    </div>
+                    <div class="toc-item">
+                        <a href="#ternary-operator">4.1.4 Conditional (Ternary) Operator</a>
+                    </div>
+                    <div class="toc-item">
+                        <a href="#short-circuit">4.1.5 Short-Circuit Evaluation Patterns</a>
+                    </div>
+                    <div class="toc-item">
+                        <a href="#for-loops">4.2.1 for Loops and Variations</a>
+                    </div>
+                    <div class="toc-item">
+                        <a href="#while-loops">4.2.2 while and do-while Loops</a>
+                    </div>
+                    <div class="toc-item">
+                        <a href="#for-in">4.2.3 for...in Loops for Objects</a>
+                    </div>
+                    <div class="toc-item">
+                        <a href="#for-of">4.2.4 for...of Loops for Iterables</a>
+                    </div>
+                    <div class="toc-item">
+                        <a href="#break-continue">4.2.5 break and continue Statements</a>
+                    </div>
+                </nav>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="col-md-9 right-panel">
+                <!-- 4.1.1 If, if/else Statements -->
+                <section id="if-statements">
+                    <h2>4.1.1 If, if/else Statements</h2>
+                    <p class="section-marker">The foundation of decision-making in code</p>
+
+                    <details>
+                        <summary>Definition</summary>
+                        <p><strong>If statements</strong> allow your program to execute different blocks of code based on whether a condition is true or false. They are the most basic form of conditional logic.</p>
+                    </details>
+
+                    <details>
+                        <summary>Detail</summary>
+                        <p>When the JavaScript engine encounters an <code>if</code> statement, it evaluates the condition inside parentheses. If the result is <code>true</code>, the code block within the curly braces executes. If false, it skips the block entirely.</p>
+                        <p>An <code>else</code> clause provides an alternative path when the condition is false.</p>
+                    </details>
+
+                    <details>
+                        <summary>Syntax</summary>
+                        <pre><code>if (condition) {
+    // code to run if condition is true
+} else {
+    // code to run if condition is false
+}</code></pre>
+                    </details>
+
+                    <details>
+                        <summary>Example</summary>
+                        <div class="example-box">
+                            <pre><code>// Check if user is eligible to vote
+let age = 17;
+
+if (age >= 18) {
+    console.log("You can vote!");
+} else {
+    console.log("You must be 18+ to vote.");
+}
+
+// Output: "You must be 18+ to vote."</code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Uses</summary>
+                        <ul>
+                            <li>Validating user input</li>
+                            <li>Controlling game logic (e.g., win/lose conditions)</li>
+                            <li>Handling different user roles (admin vs guest)</li>
+                            <li>Branching paths in algorithms</li>
+                        </ul>
+                    </details>
+                </section>
+
+                <!-- 4.1.2 else if Chains -->
+                <section id="else-if-chains">
+                    <h2>4.1.2 else if Chains</h2>
+                    <p class="section-marker">Multiple conditions in sequence</p>
+
+                    <details>
+                        <summary>Definition</summary>
+                        <p><strong>else if chains</strong> allow you to test multiple conditions in order, executing only the first block whose condition is true.</p>
+                    </details>
+
+                    <details>
+                        <summary>Detail</summary>
+                        <p>Think of an else-if chain as a series of doors. You check each door in order. As soon as you find one that opens (condition is true), you enter through it and ignore all remaining doors. This is called <em>early exit</em>.</p>
+                        <p>Only one block in the entire chain will ever execute — even if multiple conditions are true.</p>
+                    </details>
+
+                    <details>
+                        <summary>Syntax</summary>
+                        <pre><code>if (condition1) {
+    // runs if condition1 is true
+} else if (condition2) {
+    // runs if condition1 is false AND condition2 is true
+} else if (condition3) {
+    // runs if condition1 & 2 are false AND condition3 is true
+} else {
+    // runs if ALL above conditions are false
+}</code></pre>
+                    </details>
+
+                    <details>
+                        <summary>Example</summary>
+                        <div class="example-box">
+                            <pre><code>// Grade calculator based on score
+let score = 85;
+
+if (score >= 90) {
+    console.log("Grade: A");
+} else if (score >= 80) {
+    console.log("Grade: B");
+} else if (score >= 70) {
+    console.log("Grade: C");
+} else if (score >= 60) {
+    console.log("Grade: D");
+} else {
+    console.log("Grade: F");
+}
+
+// Output: "Grade: B"</code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Uses</summary>
+                        <ul>
+                            <li>Classifying data (e.g., age groups, income brackets)</li>
+                            <li>Priority-based routing in applications</li>
+                            <li>Menu systems with ranked options</li>
+                            <li>Game difficulty scaling</li>
+                        </ul>
+                    </details>
+                </section>
+
+                <!-- 4.1.3 switch Statements and Fall-through -->
+                <section id="switch-statements">
+                    <h2>4.1.3 switch Statements and Fall-through</h2>
+                    <p class="section-marker">Efficient multi-way branching</p>
+
+                    <details>
+                        <summary>Definition</summary>
+                        <p>A <strong>switch statement</strong> evaluates an expression and matches its value against multiple cases, executing the matching block.</p>
+                    </details>
+
+                    <details>
+                        <summary>Detail</summary>
+                        <p>Switches are more efficient than long if/else chains when comparing a single variable against many possible values. However, they have a unique behavior called <em>fall-through</em>: if you forget to use <code>break</code>, execution continues into the next case!</p>
+                        <p>This fall-through can be intentional (to group multiple cases together) but often causes bugs if forgotten.</p>
+                    </details>
+
+                    <details>
+                        <summary>Syntax</summary>
+                        <pre><code>switch (expression) {
+    case value1:
+        // code
+        break;
+    case value2:
+        // code
+        break;
+    default:
+        // optional fallback
+}</code></pre>
+                    </details>
+
+                    <details>
+                        <summary>Example</summary>
+                        <div class="example-box">
+                            <pre><code>// Day of week to English name
+let dayNumber = 3;
+let dayName;
+
+switch (dayNumber) {
+    case 1:
+        dayName = "Sunday";
+        break;
+    case 2:
+        dayName = "Monday";
+        break;
+    case 3:
+        dayName = "Tuesday";
+        break;
+    case 4:
+        dayName = "Wednesday";
+        break;
+    case 5:
+        dayName = "Thursday";
+        break;
+    case 6:
+        dayName = "Friday";
+        break;
+    case 7:
+        dayName = "Saturday";
+        break;
+    default:
+        dayName = "Invalid day";
+}
+
+console.log(dayName); // Output: "Tuesday"
+
+// ✅ FALL-THROUGH EXAMPLE: Grouping cases
+let month = 12;
+let season;
+
+switch (month) {
+    case 12:
+    case 1:
+    case 2:
+        season = "Winter";
+        break;
+    case 3:
+    case 4:
+    case 5:
+        season = "Spring";
+        break;
+    case 6:
+    case 7:
+    case 8:
+        season = "Summer";
+        break;
+    case 9:
+    case 10:
+    case 11:
+        season = "Autumn";
+        break;
+    default:
+        season = "Unknown";
+}
+
+console.log(season); // Output: "Winter"</code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Uses</summary>
+                        <ul>
+                            <li>Menu selections (1-5 options)</li>
+                            <li>HTTP status code handling</li>
+                            <li>State machine transitions</li>
+                            <li>Color codes or enum-like values</li>
+                        </ul>
+                    </details>
+                </section>
+
+                <!-- 4.1.4 Conditional (Ternary) Operator -->
+                <section id="ternary-operator">
+                    <h2>4.1.4 Conditional (Ternary) Operator</h2>
+                    <p class="section-marker">One-line conditional assignment</p>
+
+                    <details>
+                        <summary>Definition</summary>
+                        <p>The <strong>ternary operator</strong> (<code>condition ? exprIfTrue : exprIfFalse</code>) is a compact way to write simple if/else statements as expressions.</p>
+                    </details>
+
+                    <details>
+                        <summary>Detail</summary>
+                        <p>It's called "ternary" because it takes three operands: a condition, a value if true, and a value if false. Unlike regular if/else, it returns a value — so you can assign it directly to a variable or use it in expressions.</p>
+                        <p>Best used for simple conditions. Avoid nesting ternaries — it becomes unreadable!</p>
+                    </details>
+
+                    <details>
+                        <summary>Syntax</summary>
+                        <pre><code>condition ? valueIfTrue : valueIfFalse</code></pre>
+                    </details>
+
+                    <details>
+                        <summary>Example</summary>
+                        <div class="example-box">
+                            <pre><code>// Simple example
+let age = 20;
+let status = (age >= 18) ? "Adult" : "Minor";
+console.log(status); // Output: "Adult"
+
+// Used in string templates
+let isLoggedIn = false;
+let greeting = isLoggedIn ? "Welcome back!" : "Please log in.";
+console.log(greeting); // Output: "Please log in."
+
+// Assigning different values
+let temperature = 28;
+let clothing = temperature > 25 ? "t-shirt" : "jacket";
+console.log(`Wear a ${clothing}`); // Output: "Wear a t-shirt"
+
+// ❌ Avoid this nested mess!
+let result = (score >= 90) ? "A" : (score >= 80) ? "B" : (score >= 70) ? "C" : "F";</code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Uses</summary>
+                        <ul>
+                            <li>Assigning default values</li>
+                            <li>Dynamic text/content generation</li>
+                            <li>Conditional rendering in UI frameworks</li>
+                            <li>Short-circuit assignments</li>
+                        </ul>
+                    </details>
+                </section>
+
+                <!-- 4.1.5 Short-Circuit Evaluation Patterns -->
+                <section id="short-circuit">
+                    <h2>4.1.5 Short-Circuit Evaluation Patterns</h2>
+                    <p class="section-marker">Smart boolean logic tricks</p>
+
+                    <details>
+                        <summary>Definition</summary>
+                        <p><strong>Short-circuit evaluation</strong> means JavaScript stops evaluating logical expressions as soon as the final result is known.</p>
+                    </details>
+
+                    <details>
+                        <summary>Detail</summary>
+                        <p>For <code>&amp;&amp;</code> (AND): If the first operand is falsy, the second isn't evaluated — result is the first operand.</p>
+                        <p>For <code>||</code> (OR): If the first operand is truthy, the second isn't evaluated — result is the first operand.</p>
+                        <p>This isn't just optimization — it enables powerful patterns like default values and safe property access.</p>
+                    </details>
+
+                    <details>
+                        <summary>Syntax</summary>
+                        <pre><code>value1 &amp;&amp; value2   // Returns value1 if falsy, else value2
+value1 || value2   // Returns value1 if truthy, else value2</code></pre>
+                    </details>
+
+                    <details>
+                        <summary>Example</summary>
+                        <div class="example-box">
+                            <pre><code>// ✅ Default parameter pattern
+function greet(name) {
+    name = name || "Guest";  // if name is null/undefined/empty, use "Guest"
+    console.log("Hello, " + name);
+}
+
+greet();          // "Hello, Guest"
+greet("Alice");   // "Hello, Alice"
+
+// ✅ Safe object property access
+let user = { profile: { name: "Bob" } };
+let userName = user &amp;&amp; user.profile &amp;&amp; user.profile.name;
+console.log(userName); // "Bob"
+
+// With modern optional chaining (ES2020):
+userName = user?.profile?.name; // safer!
+
+// ✅ Conditional execution
+let showNotification = true;
+showNotification &amp;&amp; alert("New message!"); // Only alerts if true
+
+// ✅ Logical OR for choosing first truthy value
+let theme = localStorage.getItem("theme") || "light" || "dark";
+console.log(theme); // "light" (if stored value is null)</code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Uses</summary>
+                        <ul>
+                            <li>Providing default values for function parameters</li>
+                            <li>Safe navigation in nested objects</li>
+                            <li>Conditional execution without if statements</li>
+                            <li>Choosing between multiple fallback options</li>
+                        </ul>
+                    </details>
+                </section>
+
+                <!-- 4.2.1 for Loops and Variations -->
+                <section id="for-loops">
+                    <h2>4.2.1 for Loops and Variations</h2>
+                    <p class="section-marker">Count-controlled iteration</p>
+
+                    <details>
+                        <summary>Definition</summary>
+                        <p>A <strong>for loop</strong> repeats a block of code a specific number of times, controlled by initialization, condition, and update expressions.</p>
+                    </details>
+
+                    <details>
+                        <summary>Detail</summary>
+                        <p>The classic for loop has three parts separated by semicolons:</p>
+                        <ol>
+                            <li><strong>Initialization</strong>: Runs once before loop starts</li>
+                            <li><strong>Condition</strong>: Checked before each iteration — if false, loop ends</li>
+                            <li><strong>Update</strong>: Runs after each iteration</li>
+                        </ol>
+                        <p>This structure makes it perfect for iterating arrays, counting, or repeating actions.</p>
+                    </details>
+
+                    <details>
+                        <summary>Syntax</summary>
+                        <pre><code>for (initialization; condition; update) {
+    // loop body
+}</code></pre>
+                    </details>
+
+                    <details>
+                        <summary>Example</summary>
+                        <div class="example-box">
+                            <pre><code>// Basic counting
+for (let i = 0; i &lt; 5; i++) {
+    console.log("Iteration:", i);
+}
+// Output: 0, 1, 2, 3, 4
+
+// Array iteration
+let fruits = ["apple", "banana", "orange"];
+for (let i = 0; i &lt; fruits.length; i++) {
+    console.log(fruits[i]);
+}
+// Output: apple, banana, orange
+
+// Reverse iteration
+for (let i = fruits.length - 1; i >= 0; i--) {
+    console.log(fruits[i]);
+}
+// Output: orange, banana, apple
+
+// Complex increment
+for (let n = 10; n <= 50; n += 5) {
+    console.log(n); // 10, 15, 20, 25, 30, 35, 40, 45, 50
+}</code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Uses</summary>
+                        <ul>
+                            <li>Iterating over arrays by index</li>
+                            <li>Generating sequences (numbers, patterns)</li>
+                            <li>Repeating animations or timers</li>
+                            <li>Matrix/grid processing</li>
+                        </ul>
+                    </details>
+                </section>
+
+                <!-- 4.2.2 while and do-while Loops -->
+                <section id="while-loops">
+                    <h2>4.2.2 while and do-while Loops</h2>
+                    <p class="section-marker">Condition-controlled iteration</p>
+
+                    <details>
+                        <summary>Definition</summary>
+                        <p><strong>while</strong> loops repeat while a condition remains true. <strong>do-while</strong> loops execute at least once, then check the condition.</p>
+                    </details>
+
+                    <details>
+                        <summary>Detail</summary>
+                        <p>Use <code>while</code> when you don’t know how many iterations you need — e.g., waiting for user input or processing until a state changes.</p>
+                        <p>Use <code>do-while</code> when you want to guarantee at least one execution — like showing a menu before checking selection.</p>
+                        <p>⚠️ Be careful! Infinite loops occur if the condition never becomes false.</p>
+                    </details>
+
+                    <details>
+                        <summary>Syntax</summary>
+                        <pre><code>// while
+while (condition) {
+    // body
+}
+
+// do-while
+do {
+    // body
+} while (condition);</code></pre>
+                    </details>
+
+                    <details>
+                        <summary>Example</summary>
+                        <div class="example-box">
+                            <pre><code>// while: count down
+let counter = 5;
+while (counter > 0) {
+    console.log(counter);
+    counter--;
+}
+// Output: 5, 4, 3, 2, 1
+
+// do-while: menu system
+let userInput = "";
+do {
+    userInput = prompt("Enter 'quit' to exit:");
+    console.log("You entered:", userInput);
+} while (userInput !== "quit");
+
+// Game: roll dice until you get a 6
+let roll;
+do {
+    roll = Math.floor(Math.random() * 6) + 1;
+    console.log("Rolled:", roll);
+} while (roll !== 6);
+console.log("You rolled a 6! Game over!");</code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Uses</summary>
+                        <ul>
+                            <li>Reading files until end</li>
+                            <li>Waiting for network responses</li>
+                            <li>User input validation loops</li>
+                            <li>Game loops and real-time simulations</li>
+                        </ul>
+                    </details>
+                </section>
+
+                <!-- 4.2.3 for...in Loops for Objects -->
+                <section id="for-in">
+                    <h2>4.2.3 for...in Loops for Objects</h2>
+                    <p class="section-marker">Iterating object keys</p>
+
+                    <details>
+                        <summary>Definition</summary>
+                        <p>The <strong>for...in</strong> loop iterates over all enumerable properties (keys) of an object.</p>
+                    </details>
+
+                    <details>
+                        <summary>Detail</summary>
+                        <p>It loops through property names (strings), not values. It includes inherited properties from prototypes unless filtered with <code>hasOwnProperty()</code>.</p>
+                        <p>Use for...in only for objects. For arrays, prefer for...of or traditional for loops.</p>
+                    </details>
+
+                    <details>
+                        <summary>Syntax</summary>
+                        <pre><code>for (key in object) {
+    // use object[key] to access value
+}</code></pre>
+                    </details>
+
+                    <details>
+                        <summary>Example</summary>
+                        <div class="example-box">
+                            <pre><code>// Object with properties
+let person = {
+    name: "Alice",
+    age: 28,
+    city: "Berlin",
+    job: "Designer"
+};
+
+for (let key in person) {
+    console.log(key + ": " + person[key]);
+}
+// Output:
+// name: Alice
+// age: 28
+// city: Berlin
+// job: Designer
+
+// ✅ Safer version with hasOwnProperty
+for (let key in person) {
+    if (person.hasOwnProperty(key)) {
+        console.log(key + ": " + person[key]);
+    }
+}
+
+// ⚠️ Don't use for...in on arrays!
+let arr = ['a', 'b', 'c'];
+for (let index in arr) {
+    console.log(typeof index); // "string" — not number!
+    console.log(arr[index]);   // works, but confusing
+}</code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Uses</summary>
+                        <ul>
+                            <li>Inspecting object configuration</li>
+                            <li>Serializing objects to JSON</li>
+                            <li>Dynamic property access</li>
+                            <li>Debugging object structures</li>
+                        </ul>
+                    </details>
+                </section>
+
+                <!-- 4.2.4 for...of Loops for Iterables -->
+                <section id="for-of">
+                    <h2>4.2.4 for...of Loops for Iterables</h2>
+                    <p class="section-marker">Direct value iteration</p>
+
+                    <details>
+                        <summary>Definition</summary>
+                        <p>The <strong>for...of</strong> loop iterates over <em>values</em> of iterable objects (arrays, strings, maps, sets, etc.).</p>
+                    </details>
+
+                    <details>
+                        <summary>Detail</summary>
+                        <p>Unlike for...in (which gives keys), for...of gives you the actual values. It’s clean, readable, and ideal for collections where you care about contents, not positions.</p>
+                        <p>Works on any object implementing the iterator protocol (Array, String, Map, Set, NodeList, etc.)</p>
+                    </details>
+
+                    <details>
+                        <summary>Syntax</summary>
+                        <pre><code>for (value of iterable) {
+    // use value directly
+}</code></pre>
+                    </details>
+
+                    <details>
+                        <summary>Example</summary>
+                        <div class="example-box">
+                            <pre><code>// Array iteration — best practice!
+let colors = ["red", "green", "blue"];
+
+for (let color of colors) {
+    console.log(color.toUpperCase());
+}
+// Output: RED, GREEN, BLUE
+
+// String iteration
+let word = "hello";
+for (let char of word) {
+    console.log(char); // h, e, l, l, o
+}
+
+// Set iteration
+let uniqueNumbers = new Set([1, 2, 2, 3, 3, 4]);
+for (let num of uniqueNumbers) {
+    console.log(num); // 1, 2, 3, 4 (no duplicates)
+}
+
+// Map iteration
+let map = new Map([["a", 1], ["b", 2]]);
+for (let [key, value] of map) {
+    console.log(key, "->", value);
+}
+// Output: a -> 1, b -> 2</code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Uses</summary>
+                        <ul>
+                            <li>Processing array elements without indexes</li>
+                            <li>Looping through characters in strings</li>
+                            <li>Iterating Map/Set collections</li>
+                            <li>Modern, readable alternatives to for loops</li>
+                        </ul>
+                    </details>
+                </section>
+
+                <!-- 4.2.5 break and continue Statements -->
+                <section id="break-continue">
+                    <h2>4.2.5 break and continue Statements</h2>
+                    <p class="section-marker">Control flow modifiers</p>
+
+                    <details>
+                        <summary>Definition</summary>
+                        <p><strong>break</strong> exits the current loop entirely. <strong>continue</strong> skips the rest of the current iteration and jumps to the next one.</p>
+                    </details>
+
+                    <details>
+                        <summary>Detail</summary>
+                        <p>These are control statements that alter normal loop progression. Use them to optimize performance or handle edge cases gracefully.</p>
+                        <p>Think of <code>break</code> as "stop everything now" and <code>continue</code> as "skip this one, move to next".</p>
+                    </details>
+
+                    <details>
+                        <summary>Syntax</summary>
+                        <pre><code>for (...) {
+    if (condition) break;      // exit loop immediately
+    if (condition) continue;   // skip rest of this iteration
+    // other code
+}</code></pre>
+                    </details>
+
+                    <details>
+                        <summary>Example</summary>
+                        <div class="example-box">
+                            <pre><code>// break: find first even number
+let numbers = [1, 3, 5, 8, 9, 12];
+for (let num of numbers) {
+    if (num % 2 === 0) {
+        console.log("First even number found:", num);
+        break; // Stops loop immediately
+    }
+}
+// Output: "First even number found: 8"
+
+// continue: skip odd numbers
+for (let i = 1; i &lt;= 10; i++) {
+    if (i % 2 !== 0) continue; // skip odd numbers
+    console.log(i); // Only prints: 2, 4, 6, 8, 10
+}
+
+// Nested loop break (breaks innermost)
+outer: for (let x = 0; x &lt; 3; x++) {
+    for (let y = 0; y &lt; 3; y++) {
+        if (x === 1 &amp;&amp; y === 1) break outer; // breaks both loops!
+        console.log(x, y);
+    }
+}
+// Output: (0,0), (0,1), (0,2), (1,0)</code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Uses</summary>
+                        <ul>
+                            <li>Early exit from search functions</li>
+                            <li>Skipping invalid data points</li>
+                            <li>Optimizing loops by avoiding unnecessary work</li>
+                            <li>Breaking out of nested loops cleanly</li>
+                        </ul>
+                    </details>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Utilities -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Search functionality
+            const searchInput = document.getElementById('searchToc');
+            const tocItems = document.querySelectorAll('#toc .toc-item, #toc .toc-subitem');
+
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                tocItems.forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    if (text.includes(searchTerm)) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+
+            // Expand/Collapse All
+            document.getElementById('expandAll').addEventListener('click', () => {
+                document.querySelectorAll('details').forEach(detail => {
+                    detail.open = true;
+                });
+            });
+
+            document.getElementById('collapseAll').addEventListener('click', () => {
+                document.querySelectorAll('details').forEach(detail => {
+                    detail.open = false;
+                });
+            });
+
+            // Smooth scrolling for TOC links
+            document.querySelectorAll('#toc a').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+
+            // Syntax highlighting for code blocks
+            document.querySelectorAll('pre code').forEach(block => {
+                // Highlight keywords
+                let content = block.innerHTML;
+                content = content.replace(/\b(if|else|for|while|do|switch|case|break|continue|return|function|let|const|var)\b/g, '<span class="code-keyword">$1</span>');
+                content = content.replace(/(['"`])(.*?)(\1)/g, '<span class="code-string">$1$2$3</span>');
+                content = content.replace(/\/\/.*$/gm, '<span class="code-comment">$&</span>');
+                block.innerHTML = content;
+            });
+        });
+    </script>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+```

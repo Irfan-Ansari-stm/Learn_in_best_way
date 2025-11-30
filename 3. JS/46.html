@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>14.4 – WeakMap and WeakSet (JavaScript Deep Dive)</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+/* ===============================
+   BASE THEME
+================================*/
+:root {
+    --bg-main: #050816;
+    --bg-sidebar: #060b18;
+    --accent-cyan: #22d3ee;
+    --accent-amber: #fbbf24;
+    --text-main: #e5e7eb;
+    --text-muted: #9ca3af;
+    --border-subtle: #1f2937;
+    --code-bg: #020617;
+}
+
+body {
+    background: var(--bg-main);
+    color: var(--text-main);
+    font-family: "Inter", system-ui, sans-serif;
+    overflow: hidden;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+/* ===============================
+   LAYOUT
+================================*/
+.app {
+    height: 100vh;
+}
+
+.sidebar {
+    background: radial-gradient(circle at top left, #0f172a, var(--bg-sidebar));
+    border-right: 1px solid var(--border-subtle);
+    height: 100vh;
+    overflow-y: auto;
+    padding: 1.2rem 1rem;
+}
+
+.content {
+    height: 100vh;
+    overflow-y: auto;
+    padding: 1.6rem 2rem;
+    background: radial-gradient(circle at top right, #020617, var(--bg-main));
+}
+
+/* Scrollbars */
+.sidebar::-webkit-scrollbar,
+.content::-webkit-scrollbar {
+    width: 8px;
+}
+.sidebar::-webkit-scrollbar-thumb,
+.content::-webkit-scrollbar-thumb {
+    background: #1f2937;
+    border-radius: 10px;
+}
+
+/* Sidebar text */
+.title {
+    font-size: 1.5rem;
+    color: var(--accent-cyan);
+    font-weight: 700;
+}
+.subtitle {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+.meta {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* TOC */
+.toc {
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid #1e293b;
+    border-radius: 0.7rem;
+    padding: 0.9rem;
+    margin-top: 1rem;
+}
+.toc-title {
+    color: var(--accent-amber);
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+.toc-search input {
+    width: 100%;
+    background: #020617;
+    border: 1px solid #0f172a;
+    font-size: 0.78rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    color: var(--text-main);
+}
+.toc ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.toc a {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    text-decoration: none;
+    font-size: 0.8rem;
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.4rem;
+    color: var(--text-muted);
+}
+.toc a:hover {
+    background: #0f172a;
+    color: var(--accent-cyan);
+}
+.toc a.active {
+    background: #0a2b3a;
+    color: var(--accent-cyan);
+}
+.toc-dot {
+    width: 6px;
+    height: 6px;
+    background: #94a3b8;
+    border-radius: 50%;
+}
+.toc a.active .toc-dot {
+    background: var(--accent-cyan);
+}
+
+/* Buttons */
+button {
+    background: none;
+    border: 1px solid var(--border-subtle);
+    border-radius: 999px;
+    color: var(--text-muted);
+    padding: 3px 10px;
+    font-size: 0.75rem;
+}
+
+/* Content styles */
+h1 {
+    font-size: 1.6rem;
+    color: var(--accent-cyan);
+}
+h2 {
+    color: var(--accent-amber);
+    font-size: 1.1rem;
+    margin-top: 1.3rem;
+}
+
+.summary-box {
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid rgba(148, 163, 184, 0.4);
+    border-radius: 0.8rem;
+    padding: 0.9rem 1rem;
+    margin-bottom: 1rem;
+}
+
+/* Details */
+details {
+    background: #0f172a;
+    border: 1px solid #1e3a8a;
+    border-radius: 0.7rem;
+    padding: 0.4rem 0.7rem;
+    margin-bottom: 0.9rem;
+}
+details[open] {
+    border-color: #38bdf8;
+}
+summary {
+    cursor: pointer;
+    font-size: 0.93rem;
+    font-weight: 600;
+    color: var(--accent-amber);
+}
+
+/* Code blocks */
+pre {
+    background: var(--code-bg);
+    border: 1px solid #0e7e7e;
+    padding: 0.8rem;
+    border-radius: 0.7rem;
+    overflow-x: auto;
+}
+code {
+    font-family: "JetBrains Mono", monospace;
+    font-size: 0.83rem;
+}
+
+/* Syntax highlighting */
+.token-comment {color:#6b7280;font-style:italic;}
+.token-string {color:#fb923c;}
+.token-number {color:#a855f7;}
+.token-keyword {color:#22c55e;font-weight:600;}
+.token-fn {color:#38bdf8;}
+.token-builtin {color:#facc15;}
+
+</style>
+</head>
+
+<body>
+
+<div class="container-fluid app">
+<div class="row flex-nowrap">
+
+<!-- SIDEBAR -->
+<div class="col-12 col-md-4 col-lg-3 sidebar">
+
+  <div class="title">14.4 – WeakMap & WeakSet</div>
+  <div class="subtitle">GC-aware collections, private data, leak-free systems</div>
+  <div class="meta">College → Master → PhD level deep dive</div>
+
+  <div class="toc">
+    <div class="toc-title">On this page</div>
+    <div class="toc-search"><input id="tocSearch" placeholder="Search sections..."></div>
+
+    <ul id="tocMenu">
+      <li><a href="#wm-vs-map" class="toc-link"><span class="toc-dot"></span>14.4.1 WeakMap vs Map</a></li>
+      <li><a href="#ws-vs-set" class="toc-link"><span class="toc-dot"></span>14.4.2 WeakSet vs Set</a></li>
+      <li><a href="#gc" class="toc-link"><span class="toc-dot"></span>14.4.3 Garbage Collection</a></li>
+      <li><a href="#private" class="toc-link"><span class="toc-dot"></span>14.4.4 Private Data Patterns</a></li>
+      <li><a href="#leaks" class="toc-link"><span class="toc-dot"></span>14.4.5 Memory Leak Prevention</a></li>
+    </ul>
+
+    <div class="mt-2">
+      <button onclick="expandAll()">Expand all</button>
+      <button onclick="collapseAll()">Collapse all</button>
+    </div>
+  </div>
+
+</div>
+
+<!-- CONTENT -->
+<div class="col content">
+
+<h1>14.4 – WeakMap and WeakSet in JavaScript</h1>
+
+<div class="summary-box">
+<strong>Executive Summary:</strong>  
+WeakMap and WeakSet store “weak” object references.  
+If an object has no other references, the garbage collector removes it automatically even if it remains inside a WeakMap/WeakSet.  
+This makes them perfect for private data, caching, memoization, DOM metadata, and leak-free structures.
+</div>
+
+<!-- 14.4.1 -->
+<section id="wm-vs-map">
+<h2>14.4.1 WeakMap vs Map Differences</h2>
+
+<details open>
+  <summary>Core difference: keys must be objects</summary>
+  <div class="inner">
+
+<pre><code>
+const wm = new WeakMap();
+const m  = new Map();
+
+wm.set({}, "ok");    // ✔ allowed
+wm.set("x", "nope"); // ❌ TypeError
+</code></pre>
+
+<p>WeakMap keys must be objects because GC needs to track them.</p>
+
+  </div>
+</details>
+
+<details>
+  <summary>WeakMap keys are not enumerable</summary>
+  <div class="inner">
+
+<pre><code>
+const wm = new WeakMap();
+const obj = {};
+
+wm.set(obj, 123);
+
+console.log(wm.keys);       // undefined
+console.log([...wm]);       // ❌ cannot iterate
+</code></pre>
+
+<p>This prevents accidental leaks or exposure of private keys.</p>
+
+  </div>
+</details>
+
+<details>
+  <summary>Use cases where WeakMap is superior</summary>
+  <div class="inner">
+
+<ul>
+  <li>Private internal data in classes</li>
+  <li>Caching objects with automatic cleanup</li>
+  <li>DOM metadata without memory leaks</li>
+  <li>Event listener book-keeping</li>
+</ul>
+
+  </div>
+</details>
+
+</section>
+
+<!-- 14.4.2 -->
+<section id="ws-vs-set">
+<h2>14.4.2 WeakSet vs Set Differences</h2>
+
+<details open>
+  <summary>WeakSet stores only objects & no enumeration</summary>
+  <div class="inner">
+
+<pre><code>
+const ws = new WeakSet();
+
+ws.add({});   // ✔
+ws.add(5);    // ❌ only objects allowed
+</code></pre>
+
+No:
+
+<ul>
+<li><code>ws.size</code></li>
+<li><code>for...of ws</code></li>
+<li><code>[...ws]</code></li>
+</ul>
+
+  </div>
+</details>
+
+<details>
+  <summary>Use case: object presence tracking</summary>
+  <div class="inner">
+
+<pre><code>
+const visited = new WeakSet();
+
+function visit(node){
+  if(visited.has(node)) return;
+  visited.add(node);
+  console.log("Visiting:", node.id);
+}
+</code></pre>
+
+  </div>
+</details>
+</section>
+
+<!-- 14.4.3 -->
+<section id="gc">
+<h2>14.4.3 Garbage Collection Implications</h2>
+
+<details open>
+  <summary>Weak references allow GC to delete unreachable objects</summary>
+  <div class="inner">
+
+<pre><code>
+let obj = {name: "Irfan"};
+
+const wm = new WeakMap();
+wm.set(obj, "secret");
+
+obj = null; // remove the only strong reference
+
+// Later GC removes internal entry automatically
+</code></pre>
+
+<p>Thus the entry disappears without manual cleanup.</p>
+  </div>
+</details>
+
+<details>
+  <summary>No way to observe GC events</summary>
+  <div class="inner">
+JavaScript does not allow:
+
+<ul>
+  <li>checking if WeakMap key got GC’d</li>
+  <li>checking WeakMap size</li>
+  <li>iterating WeakMap contents</li>
+</ul>
+
+<p>This is intentional for security and engine optimization.</p>
+  </div>
+</details>
+
+</section>
+
+<!-- 14.4.4 -->
+<section id="private">
+<h2>14.4.4 Private Data Patterns Using WeakMap</h2>
+
+<details open>
+  <summary>Pattern: Private fields with WeakMap</summary>
+  <div class="inner">
+
+<pre><code>
+const _data = new WeakMap();
+
+class User {
+  constructor(name, password){
+    _data.set(this, {password});
+    this.name = name;
+  }
+  checkPassword(p){
+    return _data.get(this).password === p;
+  }
+}
+
+const u = new User("Irfan","123");
+console.log(u.checkPassword("123")); // true
+console.log(u.password);             // undefined
+</code></pre>
+
+<p>Cleaner than symbols because data fully disappears after GC.</p>
+  </div>
+</details>
+
+<details>
+  <summary>Pattern: Hidden state machines</summary>
+  <div class="inner">
+
+<pre><code>
+const _state = new WeakMap();
+
+class Machine {
+  constructor(){
+    _state.set(this, {count:0});
+  }
+
+  tick(){
+    _state.get(this).count++;
+  }
+
+  read(){
+    return _state.get(this).count;
+  }
+}
+</code></pre>
+
+  </div>
+</details>
+
+<details>
+  <summary>Pattern: DOM metadata without leaks</summary>
+  <div class="inner">
+
+<pre><code>
+const meta = new WeakMap();
+
+function attachInfo(el, info){
+  meta.set(el, info);
+}
+
+function getInfo(el){
+  return meta.get(el);
+}
+
+// When el is removed from DOM, metadata vanishes automatically.
+</code></pre>
+
+  </div>
+</details>
+
+</section>
+
+<!-- 14.4.5 -->
+<section id="leaks">
+<h2>14.4.5 Memory Leak Prevention</h2>
+
+<details open>
+  <summary>Common leak scenario: Map holding DOM keys</summary>
+  <div class="inner">
+
+<pre><code>
+// ❌ leak
+const map = new Map();
+const el = document.getElementById("box");
+
+map.set(el, "info");
+
+document.body.removeChild(el);
+// entry lives forever unless map.delete(el)
+</code></pre>
+
+  </div>
+</details>
+
+<details>
+  <summary>Fix with WeakMap</summary>
+  <div class="inner">
+
+<pre><code>
+// ✔ leak-free
+const wm = new WeakMap();
+const el = document.getElementById("box");
+
+wm.set(el, "info");
+
+document.body.removeChild(el);
+// entry disappears automatically
+</code></pre>
+
+  </div>
+</details>
+
+<details>
+  <summary>Memoization with automatic cleanup</summary>
+  <div class="inner">
+
+<pre><code>
+const cache = new WeakMap();
+
+function heavy(obj){
+  if(cache.has(obj)) return cache.get(obj);
+
+  const result = compute(obj);
+  cache.set(obj, result);
+  return result;
+}
+</code></pre>
+
+  </div>
+</details>
+
+</section>
+
+</div>
+</div>
+</div>
+
+<script>
+// Expand/collapse
+function expandAll(){ document.querySelectorAll("details").forEach(d=>d.open=true); }
+function collapseAll(){ document.querySelectorAll("details").forEach(d=>d.open=false); }
+
+// TOC Active Highlight
+document.addEventListener("DOMContentLoaded", () => {
+  const content = document.querySelector(".content");
+  const links = [...document.querySelectorAll(".toc-link")];
+  const sections = links.map(l => ({link:l, el:document.querySelector(l.getAttribute("href"))}));
+
+  content.addEventListener("scroll", () => {
+    const y = content.scrollTop;
+    let current = null;
+    sections.forEach(({link, el}) => {
+      if(el.offsetTop - 80 <= y) current = link;
+    });
+    links.forEach(l=>l.classList.remove("active"));
+    if(current) current.classList.add("active");
+  });
+
+  // TOC search
+  const search = document.getElementById("tocSearch");
+  const items = [...document.querySelectorAll("#tocMenu li")];
+  search.addEventListener("input", () => {
+    const q = search.value.toLowerCase();
+    items.forEach(li => {
+      li.style.display = li.textContent.toLowerCase().includes(q) ? "" : "none";
+    });
+  });
+
+  // Syntax highlighting (simple)
+  const escape=(s)=>s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+  const keywords=["class","return","function","let","const","new","if","else","while","for"];
+  const builtins=["WeakMap","WeakSet","Object","Array","Map","Set","Date","Promise"];
+  document.querySelectorAll("pre code").forEach(block=>{
+    let html=escape(block.textContent);
+    html=html.replace(/(\/\/.*?$)/gm,"<span class='token-comment'>$1</span>");
+    html=html.replace(/(['\"`].*?['\"`])/g,"<span class='token-string'>$1</span>");
+    html=html.replace(/\b(\d+)\b/g,"<span class='token-number'>$1</span>");
+    builtins.forEach(b=>{
+      html=html.replace(new RegExp("\\b"+b+"\\b","g"),"<span class='token-builtin'>"+b+"</span>");
+    });
+    keywords.forEach(k=>{
+      html=html.replace(new RegExp("\\b"+k+"\\b","g"),"<span class='token-keyword'>"+k+"</span>");
+    });
+    html=html.replace(/([a-zA-Z_]\w*)(?=\()/g,"<span class='token-fn'>$1</span>");
+    block.innerHTML=html;
+  });
+});
+</script>
+
+</body>
+</html>

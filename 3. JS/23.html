@@ -1,0 +1,738 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>9.1 Array Destructuring - Deep Learning Notes</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00d1ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --text-muted: #b8cde0;
+        }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .left-panel {
+            background-color: rgba(10, 25, 47, 0.9);
+            border-right: 1px solid rgba(0, 209, 255, 0.2);
+            height: 100vh;
+            position: fixed;
+            width: 300px;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5);
+        }
+        
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+        
+        h1, h2, h3, h4 {
+            color: var(--cyan);
+            border-bottom: 1px solid rgba(0, 209, 255, 0.3);
+            padding-bottom: 8px;
+            margin-top: 30px;
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            color: var(--amber);
+        }
+        
+        h2 {
+            font-size: 1.8rem;
+            color: var(--cyan);
+        }
+        
+        h3 {
+            font-size: 1.4rem;
+            color: var(--amber);
+        }
+        
+        .subtitle {
+            color: var(--text-muted);
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+        
+        .author-info {
+            color: var(--amber);
+            font-weight: 500;
+            margin: 15px 0;
+            font-size: 0.9rem;
+        }
+        
+        .toc-item {
+            margin: 8px 0;
+            padding: 6px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .toc-item:hover {
+            background-color: rgba(0, 209, 255, 0.1);
+            transform: translateX(5px);
+        }
+        
+        .toc-subitem {
+            margin-left: 20px;
+            padding: 5px 8px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-left: 2px solid rgba(0, 209, 255, 0.2);
+        }
+        
+        .toc-subitem:hover {
+            background-color: rgba(0, 209, 255, 0.08);
+            color: var(--cyan);
+        }
+        
+        .search-box {
+            background-color: rgba(10, 25, 47, 0.7);
+            border: 1px solid rgba(0, 209, 255, 0.3);
+            color: var(--text-light);
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .btn-control {
+            background-color: rgba(0, 209, 255, 0.1);
+            border: 1px solid rgba(0, 209, 255, 0.3);
+            color: var(--cyan);
+            margin: 10px 0;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+        }
+        
+        .btn-control:hover {
+            background-color: rgba(0, 209, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        pre code {
+            display: block;
+            padding: 15px;
+            background-color: rgba(10, 25, 47, 0.8);
+            border-left: 4px solid var(--amber);
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--cyan);
+        }
+        
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.1);
+            padding: 2px 5px;
+            border-radius: 3px;
+            color: var(--amber);
+            font-weight: 500;
+        }
+        
+        .details-container {
+            margin-bottom: 30px;
+            border: 1px solid rgba(0, 209, 255, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .details-container summary {
+            padding: 15px;
+            background-color: rgba(0, 209, 255, 0.1);
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--cyan);
+            list-style: none;
+            font-size: 1.1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .details-container summary::-webkit-details-marker {
+            display: none;
+        }
+        
+        .details-container summary::after {
+            content: "▼";
+            color: var(--amber);
+            font-size: 0.8rem;
+        }
+        
+        .details-container[open] summary::after {
+            content: "▲";
+        }
+        
+        .details-container div {
+            padding: 15px;
+            border-top: 1px solid rgba(0, 209, 255, 0.1);
+            color: var(--text-light);
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+        
+        .code-block {
+            margin: 15px 0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .formula {
+            background-color: rgba(10, 25, 47, 0.6);
+            padding: 12px;
+            border-left: 3px solid var(--cyan);
+            margin: 15px 0;
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--amber);
+            font-size: 1.1rem;
+            text-align: center;
+            border-radius: 5px;
+        }
+        
+        .note {
+            background-color: rgba(255, 183, 77, 0.1);
+            border-left: 4px solid var(--amber);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+        }
+        
+        .badge {
+            background-color: var(--amber);
+            color: #000;
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-left: 8px;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 992px) {
+            .left-panel {
+                width: 250px;
+            }
+            .right-panel {
+                margin-left: 250px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .left-panel {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding: 15px;
+            }
+            .right-panel {
+                margin-left: 0;
+                padding: 15px;
+            }
+            h1 {
+                font-size: 1.8rem;
+            }
+            h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Left Panel -->
+    <div class="left-panel">
+        <h1>9.1 Array Destructuring</h1>
+        <p class="subtitle">Mastering JavaScript's Powerful Array Extraction Technique</p>
+        <p class="author-info">By: Master Tutor • Advanced JavaScript Concepts</p>
+        
+        <input type="text" class="form-control search-box" id="searchTOC" placeholder="Search topics...">
+        
+        <button class="btn btn-sm btn-control w-100 mb-2" id="expandAll">Expand All</button>
+        <button class="btn btn-sm btn-control w-100 mb-3" id="collapseAll">Collapse All</button>
+        
+        <h4 class="mb-3">Table of Contents</h4>
+        <div id="tocContainer">
+            <div class="toc-item" data-target="#basicDestructuring">Basic array destructuring</div>
+            <div class="toc-item" data-target="#skippingElements">Skipping elements</div>
+            <div class="toc-item" data-target="#defaultValues">Default values</div>
+            <div class="toc-item" data-target="#restElements">Rest elements in destructuring</div>
+            <div class="toc-item" data-target="#swappingVariables">Swapping variables</div>
+        </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="right-panel">
+        <section id="basicDestructuring">
+            <details class="details-container">
+                <summary>Definition & Basic Array Destructuring</summary>
+                <div>
+                    <p><strong>Array destructuring</strong> is a JavaScript expression that allows us to unpack values from arrays into distinct variables in a single, clean statement.</p>
+                    
+                    <p>This is one of the most elegant features introduced in ES6 (ECMAScript 2015), making code more readable and reducing boilerplate.</p>
+                    
+                    <div class="formula">[variable1, variable2, ...] = array</div>
+                    
+                    <h5>Basic Syntax:</h5>
+                    <pre><code>const fruits = ['apple', 'banana', 'orange'];
+const [firstFruit, secondFruit, thirdFruit] = fruits;
+
+console.log(firstFruit);   // 'apple'
+console.log(secondFruit);  // 'banana'
+console.log(thirdFruit);   // 'orange'</code></pre>
+                    
+                    <div class="note">
+                        <strong>Key Insight:</strong> The left side pattern must match the structure of the right side array. Position matters! 
+                        The first variable gets the first element, second variable gets the second element, and so on.
+                    </div>
+                    
+                    <h5>Why it's better than traditional assignment:</h5>
+                    <pre><code>// BEFORE: Traditional way
+const fruits = ['apple', 'banana', 'orange'];
+const firstFruit = fruits[0];
+const secondFruit = fruits[1];
+const thirdFruit = fruits[2];
+
+// AFTER: Destructuring way
+const [firstFruit, secondFruit, thirdFruit] = fruits;</code></pre>
+                    
+                    <p>Notice how we reduced 3 lines of code to just 1 while maintaining clarity!</p>
+                </div>
+            </details>
+        </section>
+
+        <section id="skippingElements">
+            <details class="details-container">
+                <summary>Skip Elements with Commas</summary>
+                <div>
+                    <p>When you only need specific elements from an array, you can skip unwanted elements by leaving empty commas in the destructuring pattern.</p>
+                    
+                    <h5>Syntax:</h5>
+                    <pre><code>[, , thirdElement] = array;  // Skip first two elements</code></pre>
+                    
+                    <h5>Example: Extracting coordinates</h5>
+                    <pre><code>const point = [10, 25, 50]; // x, y, z coordinates
+
+// We only care about y and z coordinates
+const [, y, z] = point;
+
+console.log(y); // 25
+console.log(z); // 50
+console.log(x); // ReferenceError: x is not defined</code></pre>
+                    
+                    <h5>Real-world use case: API response</h5>
+                    <pre><code>// Imagine receiving user data from an API:
+const userData = ['John', 'Doe', 28, 'Engineer', 'New York', 'john@email.com'];
+
+// We only need first name and email
+const [firstName, , , , , email] = userData;
+
+console.log(firstName); // 'John'
+console.log(email);     // 'john@email.com'</code></pre>
+                    
+                    <div class="note">
+                        <strong>Pro Tip:</strong> Skipping elements is perfect when working with APIs or libraries that return arrays with many fields where you only need 1-2.
+                    </div>
+                    
+                    <h5>Multiple skips example:</h5>
+                    <pre><code>const colors = ['red', 'green', 'blue', 'yellow', 'purple'];
+
+// Get first, third, and fifth elements, skipping others
+const [first, , third, , fifth] = colors;
+
+console.log(first);  // 'red'
+console.log(third);  // 'blue'
+console.log(fifth);  // 'purple'</code></pre>
+                </div>
+            </details>
+        </section>
+
+        <section id="defaultValues">
+            <details class="details-container">
+                <summary>Default Values in Destructuring</summary>
+                <div>
+                    <p>JavaScript allows you to assign default values to variables in case the corresponding array element is <code>undefined</code>.</p>
+                    
+                    <h5>Syntax:</h5>
+                    <pre><code>[variable = defaultValue] = array;</code></pre>
+                    
+                    <h5>Example: Configuration settings</h5>
+                    <pre><code>// Function that receives configuration options as array
+function configureApp([host = 'localhost', port = 3000, debug = false]) {
+    console.log('Host:', host);
+    console.log('Port:', port);
+    console.log('Debug mode:', debug);
+}
+
+// Call with partial arguments
+configureApp(['myserver.com']); 
+// Output:
+// Host: myserver.com
+// Port: 3000
+// Debug mode: false
+
+// Call with no arguments
+configureApp(); 
+// Output:
+// Host: localhost
+// Port: 3000
+// Debug mode: false</code></pre>
+                    
+                    <h5>More examples:</h5>
+                    <pre><code>const numbers = [10, undefined, 30];
+
+// With defaults
+const [a = 1, b = 2, c = 3] = numbers;
+
+console.log(a); // 10 (actual value)
+console.log(b); // 2  (default because undefined)
+console.log(c); // 30 (actual value)</code></pre>
+                    
+                    <div class="note">
+                        <strong>Important Note:</strong> Default values are only used when the element is <code>undefined</code>. They are NOT used for <code>null</code>, <code>0</code>, <code>''</code> (empty string), or <code>false</code>.
+                    </div>
+                    
+                    <h5>What doesn't work as expected:</h5>
+                    <pre><code>const values = [0, '', false, null];
+
+const [x = 100, y = 200, z = 300, w = 400] = values;
+
+console.log(x); // 0 (not 100!)
+console.log(y); // '' (not 200!)
+console.log(z); // false (not 300!)
+console.log(w); // null (not 400!)</code></pre>
+                    
+                    <h5>Practical application: React hooks</h5>
+                    <pre><code>// In React, useState returns an array [value, setter]
+const [count, setCount] = useState(0);
+
+// You could even provide defaults for destructured values
+const [name = 'Guest', setName] = useState(undefined); // Will use 'Guest' if undefined</code></pre>
+                </div>
+            </details>
+        </section>
+
+        <section id="restElements">
+            <details class="details-container">
+                <summary>Rest Elements in Destructuring</summary>
+                <div>
+                    <p>The <strong>rest operator</strong> (<code>...</code>) collects remaining elements of an array into a new array.</p>
+                    
+                    <h5>Syntax:</h5>
+                    <pre><code>[first, second, ...rest] = array;</code></pre>
+                    
+                    <h5>Example: Processing sensor data</h5>
+                    <pre><code>const temperatureReadings = [22.5, 23.1, 21.8, 24.2, 20.9, 25.5, 23.7];
+
+// Get first two readings, collect rest in one array
+const [today, tomorrow, ...remainingWeek] = temperatureReadings;
+
+console.log(today);       // 22.5
+console.log(tomorrow);    // 23.1
+console.log(remainingWeek); // [21.8, 24.2, 20.9, 25.5, 23.7]
+console.log(remainingWeek.length); // 5</code></pre>
+                    
+                    <h5>Rest element must be last</h5>
+                    <pre><code>// ✅ Correct
+const [first, ...rest] = [1, 2, 3, 4];
+
+// ❌ Incorrect - Syntax Error!
+const [...rest, last] = [1, 2, 3, 4];</code></pre>
+                    
+                    <div class="note">
+                        <strong>Key Rule:</strong> The rest parameter must be the last item in the destructuring pattern. JavaScript doesn't know where to stop collecting otherwise!
+                    </div>
+                    
+                    <h5>Real-world example: Processing command-line arguments</h5>
+                    <pre><code>// Node.js process.argv example
+// process.argv = ['node', 'script.js', '--verbose', 'file1.txt', 'file2.txt']
+
+const [, , flag, ...files] = process.argv;
+
+console.log(flag);  // '--verbose'
+console.log(files); // ['file1.txt', 'file2.txt']</code></pre>
+                    
+                    <h5>Combined with default values</h5>
+                    <pre><code>const numbers = [5];
+
+const [first = 0, second = 10, ...rest] = numbers;
+
+console.log(first);  // 5
+console.log(second); // 10 (default)
+console.log(rest);   // [] (empty array since no more elements)</code></pre>
+                    
+                    <h5>Advanced: Nested destructuring with rest</h5>
+                    <pre><code>const matrix = [
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9]
+];
+
+const [[row1col1, row1col2, ...row1Rest], ...otherRows] = matrix;
+
+console.log(row1col1);  // 1
+console.log(row1col2);  // 2
+console.log(row1Rest);  // [3]
+console.log(otherRows); // [[4, 5, 6], [7, 8, 9]]</code></pre>
+                </div>
+            </details>
+        </section>
+
+        <section id="swappingVariables">
+            <details class="details-container">
+                <summary>Swapping Variables with Array Destructuring</summary>
+                <div>
+                    <p>One of the most beautiful applications of destructuring is swapping two variables without needing a temporary variable!</p>
+                    
+                    <h5>Traditional swap method (requires temp variable):</h5>
+                    <pre><code>let a = 5;
+let b = 10;
+
+let temp = a;
+a = b;
+b = temp;
+
+console.log(a, b); // 10, 5</code></pre>
+                    
+                    <h5>Modern swap using destructuring:</h5>
+                    <pre><code>let a = 5;
+let b = 10;
+
+[b, a] = [a, b];
+
+console.log(a, b); // 10, 5</code></pre>
+                    
+                    <div class="note">
+                        <strong>Elegance Alert:</strong> This one-liner is not just shorter—it's more readable and less error-prone!
+                    </div>
+                    
+                    <h5>Swapping multiple variables:</h5>
+                    <pre><code>let red = 'red';
+let green = 'green';
+let blue = 'blue';
+
+// Swap all three at once!
+[blue, red, green] = [red, green, blue];
+
+console.log(red);  // 'green'
+console.log(green); // 'blue'
+console.log(blue);  // 'red'</code></pre>
+                    
+                    <h5>Function returning multiple values</h5>
+                    <pre><code>// A function that returns both quotient and remainder
+function divideAndRemainder(dividend, divisor) {
+    return [Math.floor(dividend / divisor), dividend % divisor];
+}
+
+// Use destructuring to capture both results
+const [quotient, remainder] = divideAndRemainder(17, 5);
+
+console.log(quotient);  // 3
+console.log(remainder); // 2</code></pre>
+                    
+                    <h5>Practical example: DOM manipulation</h5>
+                    <pre><code>// Imagine you have two elements and want to swap their positions
+const elementA = document.getElementById('a');
+const elementB = document.getElementById('b');
+
+// Swap their CSS classes
+[elementA.className, elementB.className] = [elementB.className, elementA.className];
+
+// Or swap their content
+[elementA.innerHTML, elementB.innerHTML] = [elementB.innerHTML, elementA.innerHTML];</code></pre>
+                    
+                    <h5>Swapping with complex data structures</h5>
+                    <pre><code>// Swap nested objects within an array
+let users = [
+    {name: 'Alice', role: 'admin'},
+    {name: 'Bob', role: 'user'}
+];
+
+// Swap the entire objects
+[users[0], users[1]] = [users[1], users[0]];
+
+console.log(users);
+// Result: [
+//   {name: 'Bob', role: 'user'},
+//   {name: 'Alice', role: 'admin'}
+// ]</code></pre>
+                    
+                    <div class="note">
+                        <strong>Memory Efficiency:</strong> No temporary variables means less memory allocation during the operation—especially useful in performance-critical code.
+                    </div>
+                </div>
+            </details>
+        </section>
+
+        <section id="summary">
+            <details class="details-container">
+                <summary>Summary & Best Practices</summary>
+                <div>
+                    <h4>✅ Key Takeaways</h4>
+                    <ul>
+                        <li><strong>Basic destructuring:</strong> <code>[a, b, c] = array</code> assigns each array element to a variable</li>
+                        <li><strong>Skipping elements:</strong> Use empty commas <code>[, , value]</code> to ignore unwanted elements</li>
+                        <li><strong>Default values:</strong> Use <code>value = default</code> to handle missing/undefined elements</li>
+                        <li><strong>Rest operator:</strong> Use <code>...rest</code> to collect remaining elements into an array (must be last)</li>
+                        <li><strong>Variable swapping:</strong> <code>[a, b] = [b, a]</code> swaps values in one elegant line</li>
+                    </ul>
+                    
+                    <h4>🚫 Common Mistakes</h4>
+                    <ul>
+                        <li>Forgetting that rest operator must be the last item</li>
+                        <li>Expecting defaults to work with <code>null</code>, <code>0</code>, or <code>''</code> (they don't!)</li>
+                        <li>Using destructuring on non-array values (causes TypeError)</li>
+                    </ul>
+                    
+                    <h4>💡 Pro Tips</h4>
+                    <ul>
+                        <li>Use destructuring with functions that return arrays (like <code>split()</code>, <code>match()</code>, custom utility functions)</li>
+                        <li>Combine with object destructuring for complex data extraction</li>
+                        <li>Great for React hooks, API responses, and functional programming patterns</li>
+                        <li>Always validate that the source is actually an array before destructuring</li>
+                    </ul>
+                    
+                    <h4>🚀 Advanced Challenge</h4>
+                    <pre><code>// Can you solve this?
+// Given: const data = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+// Create variables: first, middle, last, rest
+// Where: first = 1, last = 9, middle = 5, rest = [2, 3, 4, 6, 7, 8]
+
+// Solution:
+const data = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+const [first, , , , middle, ...rest] = data;
+const last = rest.pop(); // pop removes and returns last element
+// Now rest contains [2, 3, 4, 6, 7, 8] (without 9)
+
+// Alternative solution using multiple destructuring:
+const [first, second, third, fourth, fifth, sixth, seventh, eighth, ninth] = data;
+const middle = fifth;
+const first = first;
+const last = ninth;
+const rest = [second, third, fourth, sixth, seventh, eighth];</code></pre>
+                </div>
+            </details>
+        </section>
+    </div>
+
+    <!-- JavaScript Utilities -->
+    <script>
+        // Expand/Collapse All Controls
+        document.getElementById('expandAll').addEventListener('click', () => {
+            document.querySelectorAll('.details-container').forEach(detail => {
+                detail.open = true;
+            });
+        });
+
+        document.getElementById('collapseAll').addEventListener('click', () => {
+            document.querySelectorAll('.details-container').forEach(detail => {
+                detail.open = false;
+            });
+        });
+
+        // Search TOC functionality
+        document.getElementById('searchTOC').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const tocItems = document.querySelectorAll('.toc-item');
+            
+            tocItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        // Smooth scrolling to TOC sections
+        document.querySelectorAll('.toc-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Highlight code blocks with syntax highlighting
+        document.querySelectorAll('pre code').forEach(block => {
+            hljs.highlightBlock(block);
+        });
+
+        // Add smooth scroll for internal links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Initialize TOC navigation
+        document.addEventListener('DOMContentLoaded', () => {
+            // Scroll spy - highlight active TOC item based on visible section
+            const sections = document.querySelectorAll('section');
+            const tocItems = document.querySelectorAll('.toc-item');
+            
+            window.addEventListener('scroll', () => {
+                let currentSection = '';
+                
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+                    if (pageYOffset >= sectionTop - 100) {
+                        currentSection = section.id;
+                    }
+                });
+                
+                tocItems.forEach(item => {
+                    item.classList.remove('active');
+                    if (item.getAttribute('data-target') === '#' + currentSection) {
+                        item.classList.add('active');
+                        item.style.backgroundColor = 'rgba(0, 209, 255, 0.2)';
+                        item.style.color = 'var(--cyan)';
+                    } else {
+                        item.style.backgroundColor = '';
+                        item.style.color = '';
+                    }
+                });
+            });
+        });
+    </script>
+
+    <!-- Include highlight.js for syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/darkula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+</html>
+```

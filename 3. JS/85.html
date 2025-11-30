@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>24.4 Advanced Testing Techniques — Deep Learning Note</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
+
+  <style>
+    :root{--bg:#0b0f10;--surface:#111518;--cyan:#06b6d4;--amber:#f59e0b;--muted:#9aa6a6;--panel-width:340px;--radius:12px}
+    html,body{height:100%}
+    body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:#e6eef0}
+    .app{display:flex;gap:18px;height:100vh;padding:20px}
+    .left-panel{width:var(--panel-width);background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.04));padding:18px;border-radius:var(--radius);position:sticky;top:20px;height:calc(100vh - 40px);flex-shrink:0;border:1px solid rgba(255,255,255,0.03)}
+    .right-panel{flex:1;background:linear-gradient(180deg,rgba(255,255,255,0.01),rgba(255,255,255,0.00));padding:22px;border-radius:var(--radius);overflow:auto;box-shadow:0 6px 18px rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.02)}
+    .brand{display:flex;gap:12px;align-items:center}
+    .brand-mark{width:46px;height:46px;border-radius:10px;background:linear-gradient(90deg,var(--cyan),var(--amber));display:flex;align-items:center;justify-content:center;color:#071018;font-weight:700}
+    .title{font-weight:700}
+    .subtitle{font-size:0.82rem;color:var(--muted)}
+    .toc{margin-top:12px}
+    .search{margin-bottom:10px}
+    .controls{display:flex;gap:8px;margin-bottom:8px}
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);padding:6px 8px;border-radius:8px}
+    .toc-list{max-height:58vh;overflow:auto;padding-right:6px}
+    a.toc-item{display:block;padding:8px;border-radius:8px;margin-bottom:6px;color:inherit;text-decoration:none}
+    a.toc-item:hover{background:rgba(255,255,255,0.02);color:var(--cyan)}
+    details{background:rgba(255,255,255,0.015);padding:12px;border-radius:10px;margin-bottom:12px;border:1px solid rgba(255,255,255,0.02)}
+    summary{cursor:pointer;font-weight:600}
+    pre{background:rgba(0,0,0,0.35);padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,'Roboto Mono','Courier New',monospace}
+    h1,h2,h3{color:#dff7fb}
+    p{color:#cfe8ea}
+    .muted{color:var(--muted)}
+    table.table thead th{border-bottom:1px solid rgba(255,255,255,0.04)}
+    @media (max-width:900px){.left-panel{display:none}}
+  </style>
+</head>
+<body>
+  <div class="app container-fluid">
+    <aside class="left-panel" aria-label="Table of contents">
+      <div class="brand">
+        <div class="brand-mark">24.4</div>
+        <div>
+          <div class="title">Advanced Testing Techniques</div>
+          <div class="subtitle">Property-based, mutation, visual, API & DB testing</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">
+        <div class="muted">Author: <strong>Irfan</strong></div>
+        <div style="background:linear-gradient(90deg,var(--cyan),rgba(0,0,0,0.12));padding:4px 8px;border-radius:999px;color:#021417;font-weight:700">Advanced</div>
+      </div>
+
+      <div class="toc">
+        <input id="tocSearch" class="form-control search" placeholder="Search TOC..." />
+        <div class="controls">
+          <button class="btn-ghost" id="expandAll">Expand all</button>
+          <button class="btn-ghost" id="collapseAll">Collapse all</button>
+          <button class="btn-ghost" id="tocReset">Reset</button>
+        </div>
+        <div class="toc-list" id="tocList">
+          <a class="toc-item" href="#property">Property-based testing</a>
+          <a class="toc-item" href="#mutation">Mutation testing</a>
+          <a class="toc-item" href="#visual">Visual regression testing</a>
+          <a class="toc-item" href="#api">API testing & mocking</a>
+          <a class="toc-item" href="#database">Database testing strategies</a>
+          <a class="toc-item" href="#tools">Tools & integrations</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="right-panel" id="content" tabindex="0">
+      <article>
+        <h1 id="top">24.4 Advanced Testing Techniques — Deep Learning Note</h1>
+        <p class="muted">Deep practical guide: property-based testing (fast-check), mutation testing (Stryker), visual regression, robust API testing, and database testing patterns. All examples formatted with HTML entities for safe rendering. Use TOC to navigate and expand sections for layered study.</p>
+
+        <!-- PROPERTY-BASED -->
+        <section id="property" class="anchor-target">
+          <h2>Property-based testing</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>Property-based testing asserts that a property (invariant) holds for many generated inputs, instead of example-based unit tests. It finds edge cases automatically and complements unit tests.</p>
+          </details>
+
+          <details>
+            <summary>Quick example using fast-check</summary>
+            <pre><code class="language-javascript">// install: npm install -D fast-check
+const fc = require('fast-check');
+
+// property: reversing twice returns original
+fc.assert(
+  fc.property(fc.string(), (s) =&gt; s.split('').reverse().reverse().join('') === s)
+);
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Designing useful properties</summary>
+            <ul>
+              <li>Focus on invariants: serialization roundtrip, commutativity, idempotence.</li>
+              <li>Shrinking: when a failing case is found, the framework reduces it to a minimal example.</li>
+            </ul>
+          </details>
+
+          <details>
+            <summary>When to use</summary>
+            <p>Great for algorithms, parsers, serializers, and libraries where broad input space matters. Not a replacement for E2E tests but a powerful complement.</p>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- MUTATION -->
+        <section id="mutation" class="anchor-target">
+          <h2>Mutation testing</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>Mutation testing evaluates the quality of your test suite by introducing small code changes (mutations) and ensuring tests fail. If tests still pass, the suite may be insufficient.</p>
+          </details>
+
+          <details>
+            <summary>Example with Stryker</summary>
+            <pre><code class="language-bash"># install
+npm install -D @stryker-mutator/core @stryker-mutator/jest-runner
+npx stryker init
+
+# run
+npx stryker run
+</code></pre>
+            <p class="muted">Stryker reports mutation score and highlights surviving mutants (tests didn't catch the injected change).</p>
+          </details>
+
+          <details>
+            <summary>Interpreting results & improving tests</summary>
+            <ul>
+              <li>Surviving mutants point to untested branches or weak assertions.</li>
+              <li>Use higher-quality assertions, add edge-case tests, or refactor code to be more testable.</li>
+            </ul>
+          </details>
+
+          <details>
+            <summary>Costs & strategies</summary>
+            <p>Mutation testing is compute-intensive; run it on CI nightly or as an on-demand gate. Use targeted mutation (focus on critical modules) to reduce runtime.</p>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- VISUAL -->
+        <section id="visual" class="anchor-target">
+          <h2>Visual regression testing</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>Visual tests compare screenshots of UI components/pages against baselines to detect unintended UI changes. Integrate with CI to catch regressions in styling/layout.</p>
+          </details>
+
+          <details>
+            <summary>Tools & example (Percy with Playwright)</summary>
+            <pre><code class="language-bash"># Percy + Playwright
+npm install -D @percy/cli @percy/playwright
+npx percy exec -- npx playwright test
+</code></pre>
+            <pre><code class="language-javascript">// playwright test example
+const percySnapshot = require('@percy/playwright');
+// inside test
+await percySnapshot(page, 'Homepage');
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Strategies for stable snapshots</summary>
+            <ul>
+              <li>Mask non-deterministic regions (timestamps, ads).</li>
+              <li>Use component-level snapshots instead of full-page where possible.</li>
+              <li>Keep baseline updates intentional and reviewed.</li>
+            </ul>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- API TESTING -->
+        <section id="api" class="anchor-target">
+          <h2>API testing &amp; mocking</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>API testing verifies contract, schema, and behavior of HTTP APIs. Use contract tests, integration tests with test containers, and mocking for unit-level isolation.</p>
+          </details>
+
+          <details>
+            <summary>Contract testing (Pact) example</summary>
+            <pre><code class="language-bash"># consumer side
+npm install -D @pact-foundation/pact
+
+// write consumer tests to produce pact file
+</code></pre>
+            <p class="muted">Provider tests use the pact file to verify provider meets consumer expectations.</p>
+          </details>
+
+          <details>
+            <summary>Mocking HTTP: msw (Mock Service Worker)</summary>
+            <pre><code class="language-javascript">// install: npm install msw --save-dev
+// setup in tests
+import { setupServer } from 'msw/node';
+import { rest } from 'msw';
+
+const server = setupServer(
+  rest.get('/api/user', (req, res, ctx) =&gt; res(ctx.json({ id: 1, name: 'Irfan' })))
+);
+
+beforeAll(() =&gt; server.listen());
+afterAll(() =&gt; server.close());
+</code></pre>
+          </details>
+
+          <details>
+            <summary>API testing patterns</summary>
+            <ul>
+              <li>Use schema validation (OpenAPI/JSON Schema) in tests to assert responses.</li>
+              <li>Keep contract tests as source of truth for integrations between teams.</li>
+            </ul>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- DATABASE -->
+        <section id="database" class="anchor-target">
+          <h2>Database testing strategies</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>Database tests range from unit-level repository tests with fakes to full integration tests using testcontainers or ephemeral databases. Aim for isolated, repeatable tests with realistic data and cleanup.</p>
+          </details>
+
+          <details>
+            <summary>Testcontainers example (Node)</summary>
+            <pre><code class="language-javascript">const { GenericContainer } = require('testcontainers');
+let container;
+beforeAll(async () =&gt; { container = await new GenericContainer('postgres:13').start(); process.env.DB_URL = container.getConnectionUri(); });
+afterAll(() =&gt; container.stop());
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Alternative: in-memory databases & fakes</summary>
+            <p>Use SQLite in-memory or in-process databases for fast tests, but beware production differences (SQL dialects, behavior). For complex integrations prefer containers or dedicated test environments.</p>
+          </details>
+
+          <details>
+            <summary>Seeding & teardown</summary>
+            <pre><code class="language-javascript">beforeEach(async () =&gt; {
+  await db.migrate.latest();
+  await db.seed.run();
+});
+
+afterEach(async () =&gt; { await db.destroy(); });
+</code></pre>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- TOOLS -->
+        <section id="tools" class="anchor-target">
+          <h2>Tools &amp; integrations</h2>
+
+          <details>
+            <summary>Summary table</summary>
+            <table class="table table-dark table-striped">
+              <thead><tr><th>Technique</th><th>Tool</th><th>Notes</th></tr></thead>
+              <tbody>
+                <tr><td>Property-based</td><td>fast-check</td><td>Shrinking finds minimal failing case</td></tr>
+                <tr><td>Mutation</td><td>Stryker</td><td>Run nightly or targeted modules</td></tr>
+                <tr><td>Visual</td><td>Percy, Backstop, Loki</td><td>Mask dynamic regions</td></tr>
+                <tr><td>API</td><td>Pact, msw, Postman</td><td>Contract & mock-based tests</td></tr>
+                <tr><td>DB</td><td>Testcontainers, SQLite</td><td>Prefer containers for parity</td></tr>
+              </tbody>
+            </table>
+          </details>
+
+          <details>
+            <summary>CI considerations</summary>
+            <ul>
+              <li>Run fast property & unit tests on PRs; schedule mutation & visual runs nightly.</li>
+              <li>Store artifacts (screenshots, mutation reports) and fail builds on regressions exceeding thresholds.</li>
+            </ul>
+          </details>
+        </section>
+
+        <footer style="margin-top:20px;padding-bottom:40px;">
+          <p class="muted">End of note. Use the left TOC to navigate and expand/collapse sections. Want runnable sample projects for any technique (e.g., a fast-check suite, Stryker config tuned for Node, or a Playwright+Percy setup)? Tell me which and I will insert it into this same file.</p>
+        </footer>
+      </article>
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/javascript.min.js"></script>
+  <script>
+    if(window.hljs){ hljs.highlightAll(); }
+
+    document.querySelectorAll('#tocList a').forEach(a=>{
+      a.addEventListener('click', function(e){ e.preventDefault(); const id=this.getAttribute('href').slice(1); const el=document.getElementById(id); if(el){ el.scrollIntoView({behavior:'smooth',block:'start'}); const d=el.querySelector('details'); if(d && !d.open) d.open=true; } });
+    });
+
+    document.getElementById('expandAll').addEventListener('click', ()=> document.querySelectorAll('details').forEach(d=> d.open=true));
+    document.getElementById('collapseAll').addEventListener('click', ()=> document.querySelectorAll('details').forEach(d=> d.open=false));
+    document.getElementById('tocReset').addEventListener('click', ()=> document.getElementById('content').scrollTo({top:0,behavior:'smooth'}));
+
+    document.getElementById('tocSearch').addEventListener('input', ()=>{ const q=document.getElementById('tocSearch').value.trim().toLowerCase(); document.querySelectorAll('#tocList a').forEach(a=>{ a.style.display = a.textContent.toLowerCase().includes(q) ? 'block' : 'none'; }); });
+
+    document.addEventListener('keydown',(e)=>{ if(e.key==='E' || e.key==='e') document.querySelectorAll('details').forEach(d=> d.open=true); if(e.key==='C' || e.key==='c') document.querySelectorAll('details').forEach(d=> d.open=false); });
+  </script>
+</body>
+</html>

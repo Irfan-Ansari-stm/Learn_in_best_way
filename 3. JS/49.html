@@ -1,0 +1,1059 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>15.3 & 15.4 – Testing & Production Error Handling (JavaScript)</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+<style>
+:root{
+  --bg-main:#050816;
+  --bg-sidebar:#060b18;
+  --accent-cyan:#22d3ee;
+  --accent-amber:#fbbf24;
+  --text-main:#e5e7eb;
+  --text-muted:#9ca3af;
+  --border-subtle:#1f2937;
+  --code-bg:#020617;
+}
+
+/* Base */
+*{box-sizing:border-box;}
+html,body{
+  margin:0;
+  padding:0;
+  height:100%;
+  background:var(--bg-main);
+  color:var(--text-main);
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  scroll-behavior:smooth;
+}
+body{overflow:hidden;}
+
+/* Layout */
+.app-wrapper{height:100vh;}
+.sidebar{
+  background:radial-gradient(circle at top left,#0f172a,var(--bg-sidebar));
+  border-right:1px solid var(--border-subtle);
+  height:100vh;
+  overflow-y:auto;
+  padding:1.2rem 1rem;
+}
+.content-panel{
+  height:100vh;
+  overflow-y:auto;
+  padding:1.6rem 2rem;
+  background:radial-gradient(circle at top right,#020617,var(--bg-main));
+}
+
+/* Scrollbars */
+.sidebar::-webkit-scrollbar,
+.content-panel::-webkit-scrollbar{width:8px;}
+.sidebar::-webkit-scrollbar-thumb,
+.content-panel::-webkit-scrollbar-thumb{
+  background:#1f2937;
+  border-radius:10px;
+}
+
+/* Sidebar text */
+.main-title{
+  font-size:1.45rem;
+  font-weight:700;
+  color:var(--accent-cyan);
+}
+.subtitle{
+  font-size:0.9rem;
+  color:var(--text-muted);
+}
+.meta{
+  font-size:0.78rem;
+  color:var(--text-muted);
+}
+
+/* TOC */
+.toc-card{
+  margin-top:1rem;
+  background:rgba(15,23,42,0.95);
+  border-radius:0.7rem;
+  border:1px solid #1f2937;
+  padding:0.9rem;
+}
+.toc-title{
+  font-size:0.9rem;
+  font-weight:600;
+  color:var(--accent-amber);
+}
+.toc-search input{
+  width:100%;
+  border-radius:999px;
+  border:1px solid #111827;
+  background:#020617;
+  color:var(--text-main);
+  font-size:0.78rem;
+  padding:0.2rem 0.6rem;
+}
+.toc-list{
+  list-style:none;
+  margin:0.4rem 0 0 0;
+  padding-left:0;
+}
+.toc-link{
+  display:flex;
+  align-items:center;
+  gap:0.4rem;
+  font-size:0.8rem;
+  padding:0.2rem 0.4rem;
+  border-radius:0.4rem;
+  text-decoration:none;
+  color:var(--text-muted);
+}
+.toc-link-dot{
+  width:6px;
+  height:6px;
+  border-radius:999px;
+  background:#64748b;
+}
+.toc-link:hover{
+  background:#0f172a;
+  color:var(--accent-cyan);
+}
+.toc-link.active{
+  background:#082f49;
+  color:var(--accent-cyan);
+}
+.toc-link.active .toc-link-dot{
+  background:var(--accent-cyan);
+}
+.toc-actions button{
+  border-radius:999px;
+  border:1px solid var(--border-subtle);
+  background:transparent;
+  color:var(--text-muted);
+  font-size:0.75rem;
+  padding:0.1rem 0.7rem;
+}
+
+/* Content */
+h1{
+  font-size:1.6rem;
+  color:var(--accent-cyan);
+}
+h2{
+  font-size:1.1rem;
+  color:var(--accent-amber);
+  margin-top:1.4rem;
+}
+.section-label{
+  font-size:0.72rem;
+  text-transform:uppercase;
+  letter-spacing:0.18em;
+  color:#9ca3af;
+}
+.summary-strip{
+  background:rgba(56,189,248,0.15);
+  border-radius:0.8rem;
+  border:1px solid rgba(148,163,184,0.45);
+  padding:0.9rem 1rem;
+  font-size:0.86rem;
+  margin-bottom:1rem;
+}
+
+/* details / summary */
+details{
+  background:#0f172a;
+  border-radius:0.7rem;
+  border:1px solid #1e3a8a;
+  padding:0.45rem 0.75rem 0.6rem;
+  margin-bottom:0.9rem;
+}
+details[open]{border-color:#38bdf8;}
+summary{
+  list-style:none;
+  cursor:pointer;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:0.3rem 0;
+  font-size:0.93rem;
+  font-weight:600;
+  color:var(--accent-amber);
+}
+summary::-webkit-details-marker{display:none;}
+.inner{
+  font-size:0.84rem;
+  color:var(--text-muted);
+}
+.inner ul{padding-left:1.1rem;}
+.inner li{margin-bottom:0.25rem;}
+.hint{
+  border-left:3px solid var(--accent-cyan);
+  padding-left:0.6rem;
+  margin:0.35rem 0;
+  font-size:0.8rem;
+}
+
+/* code */
+pre{
+  background:var(--code-bg);
+  border-radius:0.7rem;
+  border:1px solid #0e7e7e;
+  padding:0.75rem 0.9rem;
+  overflow-x:auto;
+  margin:0.5rem 0;
+}
+code{
+  font-family:"JetBrains Mono","Fira Code",ui-monospace,monospace;
+  font-size:0.82rem;
+}
+.token-comment{color:#6b7280;font-style:italic;}
+.token-string{color:#fb923c;}
+.token-number{color:#a855f7;}
+.token-keyword{color:#22c55e;font-weight:600;}
+.token-builtin{color:#facc15;}
+.token-fn{color:#38bdf8;}
+
+/* Responsive */
+@media (max-width:991.98px){
+  body{overflow:auto;}
+  .app-wrapper{height:auto;}
+  .sidebar{
+    height:auto;
+    border-right:none;
+    border-bottom:1px solid var(--border-subtle);
+  }
+  .content-panel{height:auto;}
+}
+</style>
+</head>
+
+<body>
+<div class="container-fluid app-wrapper">
+  <div class="row flex-nowrap">
+    <!-- SIDEBAR -->
+    <aside class="col-12 col-md-4 col-lg-3 sidebar">
+      <div class="main-title">15.3 &amp; 15.4 – Testing &amp; Production Errors</div>
+      <div class="subtitle">Unit tests, TDD, mocks, coverage &amp; robust production handling</div>
+      <div class="meta">College → Master → PhD level • Deep, practical JavaScript</div>
+
+      <div class="toc-card">
+        <div class="toc-title">On this page</div>
+        <div class="toc-search mt-1">
+          <input id="tocSearch" type="text" placeholder="Search sections…">
+        </div>
+        <ul id="tocList" class="toc-list mt-1">
+          <!-- 15.3 Testing -->
+          <li><a href="#sec-15-3-1" class="toc-link"><span class="toc-link-dot"></span><span>15.3.1 Unit testing concepts</span></a></li>
+          <li><a href="#sec-15-3-2" class="toc-link"><span class="toc-link-dot"></span><span>15.3.2 Test-driven development (TDD)</span></a></li>
+          <li><a href="#sec-15-3-3" class="toc-link"><span class="toc-link-dot"></span><span>15.3.3 Assertion libraries</span></a></li>
+          <li><a href="#sec-15-3-4" class="toc-link"><span class="toc-link-dot"></span><span>15.3.4 Mocking and stubbing</span></a></li>
+          <li><a href="#sec-15-3-5" class="toc-link"><span class="toc-link-dot"></span><span>15.3.5 Code coverage analysis</span></a></li>
+          <!-- 15.4 Production error handling -->
+          <li><a href="#sec-15-4-1" class="toc-link"><span class="toc-link-dot"></span><span>15.4.1 Error monitoring strategies</span></a></li>
+          <li><a href="#sec-15-4-2" class="toc-link"><span class="toc-link-dot"></span><span>15.4.2 Graceful degradation</span></a></li>
+          <li><a href="#sec-15-4-3" class="toc-link"><span class="toc-link-dot"></span><span>15.4.3 User-friendly error messages</span></a></li>
+          <li><a href="#sec-15-4-4" class="toc-link"><span class="toc-link-dot"></span><span>15.4.4 Error reporting &amp; logging</span></a></li>
+          <li><a href="#sec-15-4-5" class="toc-link"><span class="toc-link-dot"></span><span>15.4.5 Recovery strategies</span></a></li>
+        </ul>
+        <div class="toc-actions mt-2">
+          <button id="btnExpandAll" type="button">Expand all</button>
+          <button id="btnCollapseAll" type="button">Collapse all</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="col content-panel">
+      <header>
+        <h1>15.3 Testing &amp; Quality Assurance / 15.4 Production Error Handling</h1>
+        <div class="summary-strip">
+          <strong>Executive intuition:</strong>
+          Testing is about creating executable specifications that guarantee behaviour before and after
+          changes. Production error handling is about assuming everything can fail and still delivering
+          a calm, reliable experience to the user. Together, they form your real quality strategy:
+          prevent what you can with tests, and gracefully handle the rest with robust runtime design.
+        </div>
+      </header>
+
+      <!-- ================= 15.3.1 ================= -->
+      <section id="sec-15-3-1">
+        <div class="section-label">15.3.1</div>
+        <h2>Unit testing concepts</h2>
+
+        <details open>
+          <summary>What is a “unit” test in JavaScript?</summary>
+          <div class="inner">
+            <p>
+              A <strong>unit test</strong> checks a small piece of your system in isolation:
+            </p>
+            <ul>
+              <li>Usually a single function, class method, or module.</li>
+              <li>Inputs &rarr; exercise behaviour &rarr; verify outputs / side effects.</li>
+              <li>Should be fast and deterministic.</li>
+            </ul>
+            <pre><code>
+// Pseudo test structure (framework-agnostic)
+function add(a, b) {
+  return a + b;
+}
+
+// Test case
+const result = add(2, 3);
+if (result !== 5) {
+  throw new Error("add(2,3) should be 5");
+}
+            </code></pre>
+            <p>
+              Testing frameworks automate this pattern, provide reporters, and let you group tests.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Characteristics of good unit tests</summary>
+          <div class="inner">
+            <ul>
+              <li><strong>Deterministic</strong>: same inputs, same result every time.</li>
+              <li><strong>Isolated</strong>: does not depend on network, filesystem, or global state (unless mocked).</li>
+              <li><strong>Small</strong>: focuses on a single behaviour (“one assertion concept”).</li>
+              <li><strong>Fast</strong>: can run hundreds/thousands within seconds.</li>
+            </ul>
+            <pre><code>
+// Bad: many behaviours in one test
+it("does everything", () =&gt; {
+  // many, many asserts here...
+});
+
+// Better: split by behaviour
+it("adds two positive numbers", () =&gt; { /* ... */ });
+it("adds negative numbers", () =&gt; { /* ... */ });
+it("handles zero", () =&gt; { /* ... */ });
+            </code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary>Pure functions as testing training ground</summary>
+          <div class="inner">
+            <p>
+              Pure functions (no side effects) are easiest to test:
+            </p>
+            <pre><code>
+function normalizeEmail(email) {
+  return email.trim().toLowerCase();
+}
+
+it("normalizes email", () =&gt; {
+  const input = "  IRFAN@example.COM ";
+  const output = normalizeEmail(input);
+  expect(output).toBe("irfan@example.com");
+});
+            </code></pre>
+            <p class="hint">
+              Once you are comfortable with pure functions, move to testing I/O heavy pieces using mocks,
+              stubs and dependency injection.
+            </p>
+          </div>
+        </details>
+      </section>
+
+      <!-- ================= 15.3.2 ================= -->
+      <section id="sec-15-3-2">
+        <div class="section-label">15.3.2</div>
+        <h2>Test-driven development (TDD)</h2>
+
+        <details open>
+          <summary>The TDD cycle: Red → Green → Refactor</summary>
+          <div class="inner">
+            <ol>
+              <li><strong>Red</strong>: write a failing test that describes behaviour you want.</li>
+              <li><strong>Green</strong>: implement minimal code to make the test pass.</li>
+              <li><strong>Refactor</strong>: clean up code and tests while keeping them green.</li>
+            </ol>
+            <pre><code>
+// RED: write test first
+it("formats price with currency", () =&gt; {
+  const result = formatPrice(1000);
+  expect(result).toBe("₹1,000.00");
+});
+            </code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary>Example mini TDD session</summary>
+          <div class="inner">
+            <pre><code>
+// Step 1: failing test
+it("clamps value", () =&gt; {
+  expect(clamp(10, 0, 5)).toBe(5);
+  expect(clamp(-2, 0, 5)).toBe(0);
+  expect(clamp(3, 0, 5)).toBe(3);
+});
+
+// Step 2: minimal implementation
+function clamp(value, min, max) {
+  if (value &lt; min) return min;
+  if (value &gt; max) return max;
+  return value;
+}
+
+// Step 3: refactor (maybe add input checks, docs, etc.)
+            </code></pre>
+            <p>
+              TDD ensures you always have tests describing new behaviour before code exists, which can significantly reduce bugs.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Where TDD shines vs where it struggles</summary>
+          <div class="inner">
+            <ul>
+              <li>Shines for algorithmic code, business rules, validation logic.</li>
+              <li>Harder for UI-heavy code, asynchronous flows, or integration boundaries.</li>
+              <li>Still useful to drive core logic design, then integrate with UI/infrastructure later.</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
+      <!-- ================= 15.3.3 ================= -->
+      <section id="sec-15-3-3">
+        <div class="section-label">15.3.3</div>
+        <h2>Assertion libraries</h2>
+
+        <details open>
+          <summary>Basic assertion styles</summary>
+          <div class="inner">
+            <p>
+              Most testing frameworks expose assertion APIs such as:
+            </p>
+            <pre><code>
+// Typical "expect" style
+expect(sum(2, 3)).toBe(5);
+expect(user).toEqual({ name: "Irfan", role: "admin" });
+expect(list).toContain("item");
+
+// Assert style (conceptual)
+assert.equal(sum(2, 3), 5);
+assert.deepStrictEqual(user, { name: "Irfan", role: "admin" });
+            </code></pre>
+            <p>
+              Under the hood each assertion throws an error if the condition is not met.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Deep equality vs reference equality</summary>
+          <div class="inner">
+            <pre><code>
+const a = { x: 1 };
+const b = { x: 1 };
+
+console.log(a === b); // false (different references)
+
+// In tests:
+expect(a).toEqual(b); // deep equality (properties)
+expect(a).toBe(b);    // strict equality (same reference)
+            </code></pre>
+            <p class="hint">
+              Use deep equality for structural checks, strict equality for identity (same object).
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Asserting thrown errors</summary>
+          <div class="inner">
+            <pre><code>
+function divide(a, b) {
+  if (b === 0) throw new Error("Division by zero");
+  return a / b;
+}
+
+// Pseudo-test
+expect(() =&gt; divide(4, 0)).toThrow("Division by zero");
+            </code></pre>
+            <p>
+              Testing error paths is as important as testing success paths, especially for security and resilience.
+            </p>
+          </div>
+        </details>
+      </section>
+
+      <!-- ================= 15.3.4 ================= -->
+      <section id="sec-15-3-4">
+        <div class="section-label">15.3.4</div>
+        <h2>Mocking and stubbing</h2>
+
+        <details open>
+          <summary>Why do we mock?</summary>
+          <div class="inner">
+            <ul>
+              <li>Isolate the unit under test from external dependencies (network, DB, APIs).</li>
+              <li>Force specific scenarios (errors, timeouts, edge cases).</li>
+              <li>Speed up tests by avoiding real I/O.</li>
+            </ul>
+            <p class="hint">
+              A <strong>stub</strong> is a fake implementation; a <strong>mock</strong> additionally records calls and expectations.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Example: stubbing a network call</summary>
+          <div class="inner">
+            <pre><code>
+// Production code
+async function fetchUser(api, id) {
+  const res = await api.get("/users/" + id);
+  return res.data;
+}
+
+// Test: stub "api" dependency
+it("fetches user via api client", async () =&gt; {
+  const fakeApi = {
+    async get(url) {
+      return { data: { id: 1, name: "Irfan" } };
+    }
+  };
+  const user = await fetchUser(fakeApi, 1);
+  expect(user.name).toBe("Irfan");
+});
+            </code></pre>
+            <p>
+              No real HTTP request is made; tests remain fast and stable.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Example: spies / mocks to verify interactions</summary>
+          <div class="inner">
+            <pre><code>
+function notify(logger, msg) {
+  logger.info("NOTIFY: " + msg);
+}
+
+// Pseudo test spy
+const calls = [];
+const fakeLogger = {
+  info(message) {
+    calls.push(message);
+  }
+};
+
+notify(fakeLogger, "hello");
+expect(calls.length).toBe(1);
+expect(calls[0]).toBe("NOTIFY: hello");
+            </code></pre>
+            <p>
+              In real-world libraries you get built-in spies (<em>jest.fn()</em>, etc.), but the concept is the same.
+            </p>
+          </div>
+        </details>
+      </section>
+
+      <!-- ================= 15.3.5 ================= -->
+      <section id="sec-15-3-5">
+        <div class="section-label">15.3.5</div>
+        <h2>Code coverage analysis</h2>
+
+        <details open>
+          <summary>What is code coverage?</summary>
+          <div class="inner">
+            <p>Coverage answers: “Which parts of my code were executed by tests?”</p>
+            <ul>
+              <li><strong>Line coverage</strong> – which lines ran.</li>
+              <li><strong>Branch coverage</strong> – which branches (if/else, switch) ran.</li>
+              <li><strong>Function coverage</strong> – which functions were called.</li>
+            </ul>
+            <p class="hint">
+              High coverage does <em>not</em> guarantee bug-free code, but low coverage guarantees a lack of tests.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Example of untested branch</summary>
+          <div class="inner">
+            <pre><code>
+function classify(score) {
+  if (score &gt;= 90) return "A";
+  if (score &gt;= 75) return "B";
+  return "C";
+}
+
+// Tests only cover A and C:
+it("returns A for high score", () =&gt; {
+  expect(classify(95)).toBe("A");
+});
+it("returns C for low score", () =&gt; {
+  expect(classify(40)).toBe("C");
+});
+
+// Branch for "B" never executed &rarr; coverage shows a gap
+            </code></pre>
+            <p>
+              Coverage tools will highlight the second <code>if</code> as partially / not covered.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>How to use coverage reports effectively</summary>
+          <div class="inner">
+            <ul>
+              <li>Identify critical code with low coverage (e.g., security logic, billing, auth).</li>
+              <li>Add tests to cover important branches and edge cases.</li>
+              <li>Avoid chasing “100% coverage” as a pure metric; focus on risk and behaviour.</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
+      <!-- ================= 15.4.1 ================= -->
+      <section id="sec-15-4-1">
+        <div class="section-label">15.4.1</div>
+        <h2>Error monitoring strategies</h2>
+
+        <details open>
+          <summary>Why runtime monitoring matters</summary>
+          <div class="inner">
+            <p>
+              No matter how good your tests are, real users and real environments will find new paths:
+            </p>
+            <ul>
+              <li>Different browsers / OS versions.</li>
+              <li>Unstable networks.</li>
+              <li>Unexpected inputs and flows.</li>
+            </ul>
+            <p>
+              Monitoring error events lets you:
+            </p>
+            <ul>
+              <li>See which errors users actually encounter.</li>
+              <li>Measure error rate per release.</li>
+              <li>Prioritize fixes based on impact.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary>Basic browser global handlers</summary>
+          <div class="inner">
+            <pre><code>
+// Synchronous / runtime errors
+window.addEventListener("error", (event) =&gt; {
+  console.log("Global error:", event.message, "at", event.filename, event.lineno);
+});
+
+// Unhandled promise rejections
+window.addEventListener("unhandledrejection", (event) =&gt; {
+  console.log("Unhandled rejection:", event.reason);
+});
+            </code></pre>
+            <p class="hint">
+              In production, instead of <code>console.log</code>, send these to your logging / monitoring backend.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Client-side error event payload</summary>
+          <div class="inner">
+            <ul>
+              <li><code>message</code> – error message string.</li>
+              <li><code>filename</code>, <code>lineno</code>, <code>colno</code>.</li>
+              <li><code>error</code> – actual Error object (stack, name).</li>
+            </ul>
+            <pre><code>
+window.addEventListener("error", (event) =&gt; {
+  sendToServer({
+    message: event.message,
+    stack: event.error &amp;&amp; event.error.stack,
+    url: window.location.href
+  });
+});
+            </code></pre>
+          </div>
+        </details>
+      </section>
+
+      <!-- ================= 15.4.2 ================= -->
+      <section id="sec-15-4-2">
+        <div class="section-label">15.4.2</div>
+        <h2>Graceful degradation</h2>
+
+        <details open>
+          <summary>Principle: “Something is better than nothing”</summary>
+          <div class="inner">
+            <p>
+              Graceful degradation means the app still works in a reduced form when some feature fails:
+            </p>
+            <ul>
+              <li>Network error &rarr; show cached data instead of blank screen.</li>
+              <li>Feature unsupported &rarr; provide simpler fallback UI.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary>Example: network failure fallback</summary>
+          <div class="inner">
+            <pre><code>
+async function loadDashboard(api) {
+  try {
+    const data = await api.fetchDashboard();
+    renderDashboard(data);
+  } catch (err) {
+    console.error("Failed to load dashboard", err);
+    renderDashboardFallback();
+    showToast("We could not load live data, showing last known state.");
+  }
+}
+            </code></pre>
+            <p>
+              User sees a useful screen instead of a crash or infinite spinner.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Feature detection instead of user-agent sniffing</summary>
+          <div class="inner">
+            <pre><code>
+if ("serviceWorker" in navigator) {
+  // advanced offline caching
+  navigator.serviceWorker.register("/sw.js");
+} else {
+  // degrade gracefully: maybe just show a note about offline limitations
+}
+            </code></pre>
+            <p class="hint">
+              Prefer checking for capabilities rather than guessing from browser names.
+            </p>
+          </div>
+        </details>
+      </section>
+
+      <!-- ================= 15.4.3 ================= -->
+      <section id="sec-15-4-3">
+        <div class="section-label">15.4.3</div>
+        <h2>User-friendly error messages</h2>
+
+        <details open>
+          <summary>Separate messages for users vs logs</summary>
+          <div class="inner">
+            <ul>
+              <li><strong>Developer logs</strong> – detailed stack, internal error codes, debug info.</li>
+              <li><strong>User messages</strong> – short, polite, actionable, localized.</li>
+            </ul>
+            <pre><code>
+function showUserError(errorCode) {
+  const messages = {
+    NETWORK_DOWN: "Network error. Please check your connection.",
+    SERVER_ERROR: "Something went wrong on our side. Please try again.",
+    UNKNOWN: "Unexpected error occurred."
+  };
+  alert(messages[errorCode] || messages.UNKNOWN);
+}
+            </code></pre>
+            <p>
+              Internally, you still log the full stack and error code for debugging.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Don’t leak sensitive internal details</summary>
+          <div class="inner">
+            <p>
+              Never show raw stack traces, SQL errors, or internal hostnames to end users. Instead:
+            </p>
+            <ul>
+              <li>Show a simple message (“We hit a problem, and our team has been notified”).</li>
+              <li>Log the full details server-side.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary>Contextual error UI vs generic error screens</summary>
+          <div class="inner">
+            <p>
+              Whenever possible, show errors in context:
+            </p>
+            <ul>
+              <li>Form field error messages near the input.</li>
+              <li>Inline banners near the failed widget.</li>
+            </ul>
+            <pre><code>
+// Example: form-level error handling
+async function submitForm(data) {
+  try {
+    await api.save(data);
+    showToast("Saved successfully");
+  } catch (err) {
+    setFormError("Could not save. Please fix highlighted fields or try later.");
+    highlightErrorsFromServer(err);
+  }
+}
+            </code></pre>
+          </div>
+        </details>
+      </section>
+
+      <!-- ================= 15.4.4 ================= -->
+      <section id="sec-15-4-4">
+        <div class="section-label">15.4.4</div>
+        <h2>Error reporting and logging</h2>
+
+        <details open>
+          <summary>Structured logging basics</summary>
+          <div class="inner">
+            <p>
+              Instead of logging random strings, log <em>structured</em> data:
+            </p>
+            <pre><code>
+function logError(err, context) {
+  const payload = {
+    message: err.message,
+    stack: err.stack,
+    name: err.name,
+    context,
+    url: window.location.href,
+    time: new Date().toISOString()
+  };
+  // send payload to backend
+  navigator.sendBeacon("/log-error", JSON.stringify(payload));
+}
+            </code></pre>
+            <p class="hint">
+              Using <code>navigator.sendBeacon</code> helps send logs even when the page is unloading.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Tagging errors with identifiers</summary>
+          <div class="inner">
+            <p>
+              Attach stable error codes so you can search logs easily:
+            </p>
+            <pre><code>
+class AppError extends Error {
+  constructor(code, message) {
+    super(message);
+    this.code = code;
+    this.name = "AppError";
+  }
+}
+
+try {
+  throw new AppError("AUTH_EXPIRED", "Session expired");
+} catch (err) {
+  logError(err, { userId: "123" });
+}
+            </code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary>Sampling and rate limiting logs</summary>
+          <div class="inner">
+            <p>
+              For very noisy errors or high traffic:
+            </p>
+            <ul>
+              <li>Sample only a percentage of similar errors.</li>
+              <li>Aggregate identical errors with counts instead of logging each event separately.</li>
+            </ul>
+            <pre><code>
+function shouldSample(probability) {
+  return Math.random() &lt; probability;
+}
+
+if (shouldSample(0.1)) {
+  logError(err, context); // only 10% of events
+}
+            </code></pre>
+          </div>
+        </details>
+      </section>
+
+      <!-- ================= 15.4.5 ================= -->
+      <section id="sec-15-4-5">
+        <div class="section-label">15.4.5</div>
+        <h2>Recovery strategies</h2>
+
+        <details open>
+          <summary>Retry with backoff</summary>
+          <div class="inner">
+            <p>
+              For transient failures (network flakiness, 5xx errors), retries with delay can help:
+            </p>
+            <pre><code>
+async function retryWithBackoff(task, retries = 3, baseDelay = 200) {
+  let attempt = 0;
+  while (true) {
+    try {
+      return await task();
+    } catch (err) {
+      if (attempt &gt;= retries) throw err;
+      const delay = baseDelay * Math.pow(2, attempt); // 200, 400, 800...
+      await new Promise(r =&gt; setTimeout(r, delay));
+      attempt++;
+    }
+  }
+}
+            </code></pre>
+            <p class="hint">
+              Always put an upper bound on retries to avoid infinite loops and server overload.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>State reset / fallback flow</summary>
+          <div class="inner">
+            <p>
+              Sometimes the safest recovery is to reset partial state:
+            </p>
+            <ul>
+              <li>Flush invalid caches.</li>
+              <li>Clear corrupted localStorage data.</li>
+              <li>Force re-authentication if tokens are invalid.</li>
+            </ul>
+            <pre><code>
+function handleAuthError(err) {
+  clearAuthTokens();
+  redirectToLogin({
+    message: "Your session expired. Please sign in again."
+  });
+}
+            </code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary>“Emergency stop” patterns</summary>
+          <div class="inner">
+            <p>
+              In some critical scenarios (data corruption, security issues), the correct recovery is to:
+            </p>
+            <ul>
+              <li>Stop executing certain features entirely.</li>
+              <li>Show a maintenance / safe-mode UI.</li>
+            </ul>
+            <pre><code>
+function fatal(err) {
+  logError(err, { fatal: true });
+  document.body.innerHTML =
+    "&lt;h1&gt;We hit a serious problem&lt;/h1&gt;" +
+    "&lt;p&gt;Our team has been notified. Please try again later.&lt;/p&gt;";
+}
+            </code></pre>
+            <p>
+              This prevents further damage at the cost of temporarily reduced functionality.
+            </p>
+          </div>
+        </details>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<script>
+// Expand / collapse all details
+document.getElementById("btnExpandAll").onclick =
+  () => document.querySelectorAll("details").forEach(d => d.open = true);
+document.getElementById("btnCollapseAll").onclick =
+  () => document.querySelectorAll("details").forEach(d => d.open = false);
+
+// TOC active highlight + search
+document.addEventListener("DOMContentLoaded", () => {
+  const contentPanel = document.querySelector(".content-panel");
+  const tocLinks = Array.from(document.querySelectorAll(".toc-link"));
+  const sections = tocLinks.map(link => {
+    const id = link.getAttribute("href");
+    return { link, target: document.querySelector(id) };
+  });
+
+  function updateActive() {
+    const y = contentPanel.scrollTop;
+    let current = null;
+    sections.forEach(({ link, target }) => {
+      if (!target) return;
+      const top = target.offsetTop;
+      if (top - 90 <= y) current = link;
+    });
+    tocLinks.forEach(l => l.classList.remove("active"));
+    if (current) current.classList.add("active");
+  }
+
+  contentPanel.addEventListener("scroll", updateActive);
+  updateActive();
+
+  // TOC search
+  const tocSearch = document.getElementById("tocSearch");
+  const tocItems = Array.from(document.querySelectorAll("#tocList li"));
+  tocSearch.addEventListener("input", () => {
+    const q = tocSearch.value.toLowerCase();
+    tocItems.forEach(li => {
+      const text = li.textContent.toLowerCase();
+      li.style.display = text.includes(q) ? "" : "none";
+    });
+  });
+
+  // Simple syntax highlighting
+  function esc(str){
+    return str.replace(/&/g,"&amp;")
+              .replace(/</g,"&lt;")
+              .replace(/>/g,"&gt;");
+  }
+  const keywords = [
+    "class","extends","constructor","super","function","return",
+    "const","let","var","if","else","while","for","new",
+    "try","catch","throw","async","await"
+  ];
+  const builtins = [
+    "Object","Array","Map","Set","Date","Promise",
+    "console","window","document","navigator"
+  ];
+
+  document.querySelectorAll("pre code").forEach(codeEl => {
+    const raw = codeEl.textContent;
+    let html = esc(raw);
+
+    // comments
+    html = html.replace(/(\/\/.*?$)/gm,"<span class='token-comment'>$1</span>");
+    // strings
+    html = html.replace(/(&quot;.*?&quot;|'.*?'|`.*?`)/g,
+      "<span class='token-string'>$1</span>");
+    // numbers
+    html = html.replace(/\b(\d+(\.\d+)?)\b/g,
+      "<span class='token-number'>$1</span>");
+    // builtins
+    builtins.forEach(b => {
+      const re = new RegExp("\\b"+b+"\\b","g");
+      html = html.replace(re,"<span class='token-builtin'>"+b+"</span>");
+    });
+    // keywords
+    keywords.forEach(k => {
+      const re = new RegExp("\\b"+k+"\\b","g");
+      html = html.replace(re,"<span class='token-keyword'>"+k+"</span>");
+    });
+    // functions (simple heuristic)
+    html = html.replace(/([a-zA-Z_$][\w$]*)\s*(?=\()/g,
+      "<span class='token-fn'>$1</span>");
+
+    codeEl.innerHTML = html;
+  });
+});
+</script>
+</body>
+</html>

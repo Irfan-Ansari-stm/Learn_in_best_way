@@ -1,0 +1,1133 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10.4 Generator Functions - Deep Learning Notes</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00f5ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --border-color: #1a3b60;
+        }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .left-panel {
+            background-color: #0c213d;
+            border-right: 1px solid var(--border-color);
+            height: 100vh;
+            position: fixed;
+            width: 300px;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5);
+        }
+        
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--amber);
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+        
+        .toc-item {
+            margin: 8px 0;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .toc-item:hover {
+            background-color: rgba(0, 245, 255, 0.1);
+            color: var(--amber);
+        }
+        
+        .toc-subitem {
+            margin-left: 20px;
+            margin-top: 5px;
+            padding: 5px 8px;
+            border-radius: 3px;
+            color: #b8daff;
+        }
+        
+        .toc-subitem:hover {
+            background-color: rgba(0, 245, 255, 0.1);
+            color: var(--amber);
+        }
+        
+        .search-input {
+            background-color: #1a3b60;
+            border: 1px solid var(--amber);
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+        
+        .btn-control {
+            background-color: transparent;
+            border: 1px solid var(--amber);
+            color: var(--amber);
+            margin: 10px 0;
+            padding: 6px 12px;
+            font-size: 0.9rem;
+        }
+        
+        .btn-control:hover {
+            background-color: rgba(255, 183, 77, 0.2);
+        }
+        
+        pre code {
+            display: block;
+            padding: 16px;
+            overflow-x: auto;
+            background-color: #0f2a45 !important;
+            border-left: 4px solid var(--amber);
+            border-radius: 6px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--cyan);
+        }
+        
+        code {
+            background-color: #1a3b60;
+            color: var(--amber);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        
+        .details-summary {
+            cursor: pointer;
+            padding: 12px;
+            background-color: #0f2a45;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 8px;
+            color: var(--cyan);
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .details-summary:hover {
+            background-color: #13375e;
+            color: var(--amber);
+        }
+        
+        .details-content {
+            background-color: #0f2a45;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--cyan);
+        }
+        
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.15);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        
+        .definition {
+            border-left: 4px solid var(--cyan);
+        }
+        
+        .detail {
+            border-left: 4px solid var(--amber);
+        }
+        
+        .syntax {
+            border-left: 4px solid #a0f;
+        }
+        
+        .example {
+            border-left: 4px solid #00ff99;
+        }
+        
+        .uses {
+            border-left: 4px solid #ff6b6b;
+        }
+        
+        .table-of-contents h4 {
+            color: var(--amber);
+            margin-top: 20px;
+            border-bottom: 1px dashed var(--amber);
+            padding-bottom: 5px;
+        }
+        
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #0a192f;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--amber);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ffcc80;
+        }
+        
+        .badge {
+            background-color: var(--amber);
+            color: #000;
+            font-weight: bold;
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+        }
+        
+        .note-box {
+            background-color: rgba(0, 245, 255, 0.1);
+            border-left: 4px solid var(--cyan);
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 0 6px 6px 0;
+        }
+        
+        .code-inline {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #1a3b60;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: var(--amber);
+        }
+        
+        .generator-diagram {
+            background-color: #0f2a45;
+            padding: 15px;
+            border: 1px solid #1a3b60;
+            border-radius: 6px;
+            margin: 20px 0;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+        
+        .state-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+        }
+        
+        .state-table th, .state-table td {
+            border: 1px solid #1a3b60;
+            padding: 10px;
+            text-align: left;
+        }
+        
+        .state-table th {
+            background-color: #1a3b60;
+            color: var(--amber);
+        }
+        
+        .state-table tr:nth-child(even) {
+            background-color: #0f2a45;
+        }
+        
+        .state-table tr:hover {
+            background-color: #13375e;
+        }
+        
+        .yield-example {
+            background-color: #0f2a45;
+            border: 1px solid var(--amber);
+            border-radius: 6px;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre;
+        }
+    </style>
+</head>
+<body>
+    <!-- Left Panel -->
+    <div class="left-panel">
+        <h1 class="text-center">10.4 Generator Functions</h1>
+        <p class="text-muted text-center">Mastering function* and yield</p>
+        <hr style="border-color: var(--border-color);">
+        
+        <div class="mb-3">
+            <input type="text" class="form-control search-input" id="searchToc" placeholder="Search topics...">
+        </div>
+        
+        <div class="d-grid gap-2 mb-3">
+            <button class="btn btn-control" id="expandAll">Expand All</button>
+            <button class="btn btn-control" id="collapseAll">Collapse All</button>
+        </div>
+        
+        <div class="table-of-contents">
+            <h4>Table of Contents</h4>
+            <div class="toc-item" data-target="generator-syntax">
+                • 10.4 Generator Functions
+            </div>
+            <div class="toc-subitem" data-target="generator-syntax">○ Generator syntax (function*)</div>
+            <div class="toc-subitem" data-target="yield-keyword">○ yield keyword</div>
+            <div class="toc-subitem" data-target="generator-objects">○ Generator objects and iteration</div>
+            <div class="toc-subitem" data-target="yield-star">○ yield* for delegation</div>
+            <div class="toc-subitem" data-target="practical-use-cases">○ Practical generator use cases</div>
+        </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="right-panel">
+        <!-- Section: Generator syntax -->
+        <details id="generator-syntax" open>
+            <summary class="details-summary">Generator syntax (function*)</summary>
+            <div class="details-content">
+                <h5>Definition</h5>
+                <p>A <span class="highlight">generator function</span> is a special type of function that can pause its execution and resume later, allowing it to produce a sequence of values over time rather than computing them all at once.</p>
+                
+                <h5>Detail</h5>
+                <p>Traditional functions execute from start to finish in one go. Generator functions use the <code>*</code> symbol after <code>function</code> to indicate they're generators. When called, they return a <em>generator object</em> (not the result), which can be iterated to produce values on demand.</p>
+                
+                <h5>Syntax</h5>
+                <pre><code>// Basic generator function syntax
+function* generatorName() {
+    // function body with yield statements
+}
+
+// Alternative syntax forms
+const genFunc = function* () { /* ... */ };
+const obj = {
+    *generatorMethod() { /* ... */ }
+};
+const genExpr = function* () { /* ... */ };</code></pre>
+                
+                <h5>Example</h5>
+                <pre><code>// Simple counter generator
+function* countUp() {
+    let i = 0;
+    while (true) {
+        yield i++;
+    }
+}
+
+// Create a generator instance
+const counter = countUp();
+
+console.log(counter.next().value); // 0
+console.log(counter.next().value); // 1
+console.log(counter.next().value); // 2
+console.log(counter.next().value); // 3
+
+// Another example: Generating Fibonacci sequence
+function* fibonacci() {
+    let a = 0, b = 1;
+    while (true) {
+        yield a;
+        [a, b] = [b, a + b];
+    }
+}
+
+const fib = fibonacci();
+console.log(fib.next().value); // 0
+console.log(fib.next().value); // 1
+console.log(fib.next().value); // 1
+console.log(fib.next().value); // 2
+console.log(fib.next().value); // 3
+console.log(fib.next().value); // 5
+console.log(fib.next().value); // 8</code></pre>
+                
+                <h5>Uses</h5>
+                <ul>
+                    <li>Creating infinite sequences without memory issues</li>
+                    <li>Defining custom iterable objects</li>
+                    <li>Implementing lazy evaluation</li>
+                    <li>Building data pipelines</li>
+                    <li>Asynchronous programming patterns</li>
+                </ul>
+                
+                <div class="note-box">
+                    <strong>Key Insight:</strong> The <code>*</code> in <code>function*</code> doesn't mean "returns multiple values" — it means "this function can be paused and resumed." The magic happens with <code>yield</code>.
+                </div>
+            </div>
+        </details>
+
+        <!-- Section: yield keyword -->
+        <details id="yield-keyword">
+            <summary class="details-summary">yield keyword</summary>
+            <div class="details-content">
+                <h5>Definition</h5>
+                <p>The <span class="highlight">yield</span> keyword pauses a generator function's execution and returns a value to the caller. Execution resumes when the next() method is called again.</p>
+                
+                <h5>Detail</h5>
+                <p>When a generator encounters a <code>yield</code> statement, it:
+                <ol>
+                    <li>Suspends execution immediately</li>
+                    <li>Returns an object with <code>{value: ..., done: false}</code></li>
+                    <li>Remembers its state (variables, execution point)</li>
+                    <li>Waits for the next call to next()</li>
+                </ol>
+                </p>
+                
+                <h5>Syntax</h5>
+                <pre><code>yield expression
+yield* iterable</code></pre>
+                
+                <h5>Example</h5>
+                <pre><code>// Basic yield usage
+function* simpleGenerator() {
+    console.log('Starting generator...');
+    yield 'First value';
+    console.log('Resumed after first yield');
+    yield 'Second value';
+    console.log('Resumed after second yield');
+    yield 'Third value';
+    console.log('Generator finished');
+    return 'Done!';
+}
+
+const gen = simpleGenerator();
+
+// First call: starts execution until first yield
+console.log(gen.next()); 
+// Output: {value: 'First value', done: false}
+// Console logs: "Starting generator..."
+
+// Second call: resumes from after first yield
+console.log(gen.next()); 
+// Output: {value: 'Second value', done: false}
+// Console logs: "Resumed after first yield"
+
+// Third call
+console.log(gen.next()); 
+// Output: {value: 'Third value', done: false}
+// Console logs: "Resumed after second yield"
+
+// Fourth call: reaches end
+console.log(gen.next()); 
+// Output: {value: 'Done!', done: true}
+// Console logs: "Generator finished"</code></pre>
+                
+                <h5>Yield as Expression</h5>
+                <pre><code>// yield can be used as an expression (receives values)
+function* echoGenerator() {
+    let received;
+    while (true) {
+        received = yield received; // yield returns what was passed to next()
+        console.log('Received:', received);
+    }
+}
+
+const echo = echoGenerator();
+console.log(echo.next());           // {value: undefined, done: false} - first yield
+console.log(echo.next('Hello'));    // {value: 'Hello', done: false} - sends 'Hello' back
+console.log(echo.next('World'));    // {value: 'World', done: false} - sends 'World' back
+console.log(echo.next(42));         // {value: 42, done: false} - sends 42 back</code></pre>
+                
+                <h5>Uses</h5>
+                <ul>
+                    <li>Producing values on-demand</li>
+                    <li>Creating bidirectional communication between generator and caller</li>
+                    <li>Implementing coroutines and cooperative multitasking</li>
+                    <li>Control flow management in complex algorithms</li>
+                </ul>
+                
+                <div class="note-box">
+                    <strong>Deep Understanding:</strong> Each <code>yield</code> creates a checkpoint. The generator remembers exactly where it stopped — including variable values and the call stack — so it can resume precisely where it left off.
+                </div>
+            </div>
+        </details>
+
+        <!-- Section: Generator objects and iteration -->
+        <details id="generator-objects">
+            <summary class="details-summary">Generator objects and iteration</summary>
+            <div class="details-content">
+                <h5>Definition</h5>
+                <p>A <span class="highlight">generator object</span> is returned when a generator function is called. It implements both the Iterator and Iterable protocols, making it usable with <code>for...of</code> loops and spread operators.</p>
+                
+                <h5>Detail</h5>
+                <p>Generator objects have a <code>next()</code> method that returns an object with two properties:
+                <ul>
+                    <li><code>value</code>: The yielded value or the return value if generator completed</li>
+                    <li><code>done</code>: Boolean indicating whether the generator has finished executing</li>
+                </ul>
+                </p>
+                
+                <h5>Syntax</h5>
+                <pre><code>const genObj = generatorFunction();
+genObj.next(); // Returns {value: any, done: boolean}</code></pre>
+                
+                <h5>Example</h5>
+                <pre><code>// Creating a generator that yields numbers
+function* numberGenerator(start, end) {
+    for (let i = start; i &lt;= end; i++) {
+        yield i;
+    }
+}
+
+const nums = numberGenerator(1, 5);
+
+// Using next() manually
+console.log(nums.next()); // {value: 1, done: false}
+console.log(nums.next()); // {value: 2, done: false}
+console.log(nums.next()); // {value: 3, done: false}
+console.log(nums.next()); // {value: 4, done: false}
+console.log(nums.next()); // {value: 5, done: false}
+console.log(nums.next()); // {value: undefined, done: true}
+
+// Using with for...of loop (automatic iteration)
+function* colors() {
+    yield 'red';
+    yield 'green';
+    yield 'blue';
+}
+
+console.log('Using for...of:');
+for (let color of colors()) {
+    console.log(color);
+}
+// Output: red, green, blue
+
+// Using with spread operator
+const colorArray = [...colors()];
+console.log(colorArray); // ['red', 'green', 'blue']
+
+// Using with Array.from()
+const colorList = Array.from(colors());
+console.log(colorList); // ['red', 'green', 'blue']
+
+// Using with destructuring
+const [first, second, third] = colors();
+console.log(first, second, third); // red green blue
+
+// Generator with conditional logic
+function* evenNumbers(max) {
+    let i = 0;
+    while (i &lt; max) {
+        if (i % 2 === 0) {
+            yield i;
+        }
+        i++;
+    }
+}
+
+const evens = evenNumbers(10);
+console.log([...evens]); // [0, 2, 4, 6, 8]</code></pre>
+                
+                <h5>Generator Object Properties</h5>
+                <table class="state-table">
+                    <thead>
+                        <tr>
+                            <th>Property</th>
+                            <th>Description</th>
+                            <th>Example</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>next()</code></td>
+                            <td>Resumes execution until next yield or return</td>
+                            <td><code>gen.next('input')</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>return()</code></td>
+                            <td>Terminates generator early and returns specified value</td>
+                            <td><code>gen.return('finished')</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>throw()</code></td>
+                            <td>Throws an error inside the generator</td>
+                            <td><code>gen.throw(new Error('Oops!'))</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h5>Uses</h5>
+                <ul>
+                    <li>Creating custom iterators for complex data structures</li>
+                    <li>Working with large datasets without loading everything into memory</li>
+                    <li>Building streaming data processors</li>
+                    <li>Implementing lazy evaluation patterns</li>
+                    <li>Integrating with modern JavaScript APIs that expect iterables</li>
+                </ul>
+                
+                <div class="note-box">
+                    <strong>Important:</strong> Generator objects are single-use. Once they're done (done: true), calling next() again will always return {value: undefined, done: true}. To iterate again, create a new generator instance.
+                </div>
+            </div>
+        </details>
+
+        <!-- Section: yield* for delegation -->
+        <details id="yield-star">
+            <summary class="details-summary">yield* for delegation</summary>
+            <div class="details-content">
+                <h5>Definition</h5>
+                <p>The <span class="highlight">yield*</span> keyword delegates to another generator or iterable, yielding all its values before continuing.</p>
+                
+                <h5>Detail</h5>
+                <p><code>yield*</code> is like a "foreach" for generators. Instead of yielding individual values, you can delegate the entire iteration process to another generator, making code modular and reusable.</p>
+                
+                <h5>Syntax</h5>
+                <pre><code>yield* iterable</code></pre>
+                
+                <h5>Example</h5>
+                <pre><code>// Basic yield* delegation
+function* numbers1to3() {
+    yield 1;
+    yield 2;
+    yield 3;
+}
+
+function* numbers4to6() {
+    yield 4;
+    yield 5;
+    yield 6;
+}
+
+function* allNumbers() {
+    yield* numbers1to3(); // Delegates to first generator
+    yield* numbers4to6(); // Delegates to second generator
+    yield 7;              // Continue with own values
+}
+
+console.log([...allNumbers()]); // [1, 2, 3, 4, 5, 6, 7]
+
+// Yield* with arrays and strings
+function* letters() {
+    yield* 'abc'; // Delegates to string iterator
+}
+
+function* numbersAndLetters() {
+    yield* [1, 2, 3]; // Delegates to array iterator
+    yield* letters(); // Delegates to generator
+    yield* 'xyz';     // Delegates to string iterator
+}
+
+console.log([...numbersAndLetters()]); // [1, 2, 3, 'a', 'b', 'c', 'x', 'y', 'z']
+
+// Complex example: Nested delegation
+function* fruits() {
+    yield 'apple';
+    yield 'banana';
+}
+
+function* vegetables() {
+    yield 'carrot';
+    yield 'broccoli';
+}
+
+function* food() {
+    yield* fruits();      // Yields 'apple', 'banana'
+    yield 'meat';         // Yields 'meat'
+    yield* vegetables();  // Yields 'carrot', 'broccoli'
+}
+
+console.log([...food()]); // ['apple', 'banana', 'meat', 'carrot', 'broccoli']
+
+// yield* returns the final value of the delegated generator
+function* generatorA() {
+    yield 1;
+    yield 2;
+    return 'done A';
+}
+
+function* generatorB() {
+    const result = yield* generatorA(); // capture return value
+    yield result; // yield the returned value
+    yield 'done B';
+}
+
+console.log([...generatorB()]); // [1, 2, 'done A', 'done B']</code></pre>
+                
+                <h5>Practical Use Case: Building Modular Generators</h5>
+                <pre><code>// Real-world example: Data pipeline with delegation
+function* fetchDataFromAPI(endpoint) {
+    // Simulate async data fetching
+    const data = {
+        users: ['Alice', 'Bob', 'Charlie'],
+        posts: ['Post 1', 'Post 2', 'Post 3']
+    };
+    
+    yield data.users;
+    yield data.posts;
+}
+
+function* processUserPosts() {
+    const [users, posts] = yield* fetchDataFromAPI('/api/data');
+    
+    // Process each user
+    for (const user of users) {
+        yield `Processing user: ${user}`;
+    }
+    
+    // Process each post
+    for (const post of posts) {
+        yield `Processing post: ${post}`;
+    }
+}
+
+// Consume the pipeline
+for (const item of processUserPosts()) {
+    console.log(item);
+}
+// Output:
+// Processing user: Alice
+// Processing user: Bob
+// Processing user: Charlie
+// Processing post: Post 1
+// Processing post: Post 2
+// Processing post: Post 3</code></pre>
+                
+                <h5>Uses</h5>
+                <ul>
+                    <li>Composing multiple generators into complex workflows</li>
+                    <li>Reusing existing generators instead of duplicating code</li>
+                    <li>Creating data transformation pipelines</li>
+                    <li>Implementing composite iterators</li>
+                    <li>Modularizing asynchronous operations</li>
+                </ul>
+                
+                <div class="note-box">
+                    <strong>Pro Tip:</strong> <code>yield*</code> is perfect for building "data processing pipelines" where each stage handles a specific transformation, and <code>yield*</code> connects them seamlessly.
+                </div>
+            </div>
+        </details>
+
+        <!-- Section: Practical generator use cases -->
+        <details id="practical-use-cases">
+            <summary class="details-summary">Practical generator use cases</summary>
+            <div class="details-content">
+                <h5>Use Case 1: Infinite Sequences</h5>
+                <pre><code>// Generate prime numbers (infinite sequence)
+function* primes() {
+    yield 2;
+    let num = 3;
+    while (true) {
+        let isPrime = true;
+        for (let i = 2; i &lt; Math.sqrt(num) + 1; i++) {
+            if (num % i === 0) {
+                isPrime = false;
+                break;
+            }
+        }
+        if (isPrime) {
+            yield num;
+        }
+        num += 2;
+    }
+}
+
+// Get first 10 primes
+const primeGen = primes();
+const firstTenPrimes = [];
+for (let i = 0; i &lt; 10; i++) {
+    firstTenPrimes.push(primeGen.next().value);
+}
+console.log(firstTenPrimes); // [2, 3, 5, 7, 11, 13, 17, 19, 23, 29]</code></pre>
+                
+                <h5>Use Case 2: Lazy Loading Large Datasets</h5>
+                <pre><code>// Imagine reading a 10GB log file line by line
+function* readLargeFile(filename) {
+    // In real implementation, this would stream from disk
+    // Here we simulate with a large array
+    const lines = Array.from({length: 1000000}, (_, i) => `Line ${i + 1}`);
+    
+    for (const line of lines) {
+        yield line; // Only loads one line at a time into memory!
+    }
+}
+
+// Memory efficient: only keeps one line in memory at a time
+const logReader = readLargeFile('huge-log.txt');
+let count = 0;
+for (const line of logReader) {
+    if (line.includes('ERROR')) {
+        console.log('Found error:', line);
+        count++;
+    }
+    if (count >= 5) break; // Stop after finding 5 errors
+}</code></pre>
+                
+                <h5>Use Case 3: Async/Await Pattern Implementation</h5>
+                <pre><code>// Implementing async/await using generators and promises
+function run(generator) {
+    const it = generator();
+    
+    function step(value) {
+        const result = it.next(value);
+        if (result.done) return result.value;
+        
+        return Promise.resolve(result.value)
+            .then(val => step(val))
+            .catch(err => it.throw(err));
+    }
+    
+    return step();
+}
+
+// Usage example
+function* asyncExample() {
+    console.log('Starting async operation...');
+    
+    const response = yield fetch('https://jsonplaceholder.typicode.com/posts/1');
+    const data = yield response.json();
+    
+    console.log('Data received:', data.title);
+    
+    const commentsResponse = yield fetch('https://jsonplaceholder.typicode.com/comments?postId=1');
+    const comments = yield commentsResponse.json();
+    
+    console.log('Comments count:', comments.length);
+    
+    return data.title;
+}
+
+// Run the generator-based async function
+run(asyncExample)
+    .then(result => console.log('Final result:', result))
+    .catch(err => console.error('Error:', err));</code></pre>
+                
+                <h5>Use Case 4: State Machines</h5>
+                <pre><code>// Simple traffic light state machine
+function* trafficLight() {
+    while (true) {
+        yield 'red';
+        yield 'yellow';
+        yield 'green';
+    }
+}
+
+const light = trafficLight();
+
+// Simulate traffic light cycle
+setInterval(() =&gt; {
+    const state = light.next().value;
+    console.log(`Traffic light: ${state.toUpperCase()}`);
+}, 2000);
+
+// Output:
+// Traffic light: RED
+// Traffic light: YELLOW
+// Traffic light: GREEN
+// Traffic light: RED
+// ... continues indefinitely</code></pre>
+                
+                <h5>Use Case 5: Pagination and Streaming</h5>
+                <pre><code>// Generator for paginated API results
+function* paginateResults(apiCall, pageSize = 10) {
+    let page = 1;
+    let hasMore = true;
+    
+    while (hasMore) {
+        const results = yield apiCall(page, pageSize);
+        
+        // Check if there are more results
+        hasMore = results.length === pageSize;
+        page++;
+        
+        // Yield each item in the current page
+        for (const item of results) {
+            yield item;
+        }
+    }
+}
+
+// Usage
+function mockApiCall(page, size) {
+    // Simulate API returning 10 items per page
+    return Array.from({length: size}, (_, i) => ({
+        id: (page - 1) * size + i + 1,
+        name: `Item ${(page - 1) * size + i + 1}`
+    }));
+}
+
+const paginatedItems = paginateResults(mockApiCall, 5);
+const first20 = [];
+
+for (let i = 0; i &lt; 20; i++) {
+    const item = paginatedItems.next().value;
+    if (!item) break;
+    first20.push(item);
+}
+
+console.log(first20.length); // 20
+console.log(first20[0].name); // "Item 1"
+console.log(first20[19].name); // "Item 20"</code></pre>
+                
+                <h5>Use Case 6: Custom Range Iterator</h5>
+                <pre><code>// Create a range generator with custom step
+function* range(start, end, step = 1) {
+    if (step === 0) throw new Error('Step cannot be zero');
+    
+    let current = start;
+    if (step > 0) {
+        while (current &lt; end) {
+            yield current;
+            current += step;
+        }
+    } else {
+        while (current > end) {
+            yield current;
+            current += step;
+        }
+    }
+}
+
+// Usage examples
+console.log([...range(0, 10, 2)]);   // [0, 2, 4, 6, 8]
+console.log([...range(5, 0, -1)]);   // [5, 4, 3, 2, 1]
+console.log([...range(-3, 3, 1)]);   // [-3, -2, -1, 0, 1, 2]
+
+// Works with for...of loops
+for (const num of range(1, 6)) {
+    console.log(`Number: ${num}`);
+}</code></pre>
+                
+                <h5>Summary of Practical Uses</h5>
+                <table class="state-table">
+                    <thead>
+                        <tr>
+                            <th>Use Case</th>
+                            <th>Why Generators?</th>
+                            <th>Benefit</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Infinite Sequences</td>
+                            <td>Can generate values forever without memory explosion</td>
+                            <td>Memory efficient, mathematically elegant</td>
+                        </tr>
+                        <tr>
+                            <td>Large Dataset Processing</td>
+                            <td>One item at a time, no need to load everything</td>
+                            <td>Handles gigabytes of data on small devices</td>
+                        </tr>
+                        <tr>
+                            <td>Async Programming</td>
+                            <td>Sequencing async operations cleanly</td>
+                            <td>Precursor to async/await, great for learning</td>
+                        </tr>
+                        <tr>
+                            <td>State Machines</td>
+                            <td>Clear state transitions with natural pauses</td>
+                            <td>Easier to reason about than complex conditionals</td>
+                        </tr>
+                        <tr>
+                            <td>Pagination</td>
+                            <td>Load data as needed, not all at once</td>
+                            <td>Faster initial load, better UX</td>
+                        </tr>
+                        <tr>
+                            <td>Custom Iterators</td>
+                            <td>Create domain-specific iteration logic</td>
+                            <td>Reusable, clean code organization</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h5>Generators vs Traditional Functions</h5>
+                <div class="generator-diagram">
+// TRADITIONAL FUNCTION
+function processData(data) {
+    const results = [];
+    for (const item of data) {
+        results.push(transform(item));
+    }
+    return results; // ALL results computed and stored in memory
+}
+
+// GENERATOR FUNCTION
+function* processData(data) {
+    for (const item of data) {
+        yield transform(item); // ONE result at a time, computed on demand
+    }
+}
+
+// Memory comparison:
+// Traditional: O(n) memory for storing all results
+// Generator: O(1) memory - only stores current state
+                </div>
+                
+                <h5>Uses</h5>
+                <ul>
+                    <li>Memory-efficient data processing</li>
+                    <li>Streaming applications</li>
+                    <li>Lazy evaluation systems</li>
+                    <li>Coroutines and cooperative multitasking</li>
+                    <li>Implementation of async/await syntax</li>
+                    <li>Finite state machines</li>
+                </ul>
+                
+                <div class="note-box">
+                    <strong>Final Wisdom:</strong> Generators are not just about producing sequences — they're about <em>controlling execution flow</em>. They give you fine-grained control over when and how your code runs, making them powerful tools for managing complexity in data-intensive applications.
+                </div>
+            </div>
+        </details>
+
+        <!-- Summary Section -->
+        <details>
+            <summary class="details-summary">Summary & Best Practices</summary>
+            <div class="details-content">
+                <h5>Key Takeaways</h5>
+                <ol>
+                    <li><strong>Generator functions</strong> are defined with <code>function*</code> and return generator objects</li>
+                    <li><strong>yield</strong> pauses execution and produces a value; <strong>yield*</strong> delegates to another generator</li>
+                    <li>Generator objects implement the Iterator protocol and work with <code>for...of</code>, spread, etc.</li>
+                    <li>Generators enable lazy evaluation: compute values only when needed</li>
+                    <li>They're foundational to understanding async/await and modern data pipelines</li>
+                </ol>
+                
+                <h5>Best Practices</h5>
+                <ul>
+                    <li>Use generators for infinite or very large sequences</li>
+                    <li>Prefer generators over arrays when memory efficiency matters</li>
+                    <li>Combine generators with <code>yield*</code> to build modular data pipelines</li>
+                    <li>Always handle the <code>done</code> property when manually iterating</li>
+                    <li>Use generators for state machines and complex control flows</li>
+                    <li>Remember: generators are single-use — create a new instance for each iteration</li>
+                </ul>
+                
+                <h5>Common Pitfalls</h5>
+                <ul>
+                    <li>Forgetting the <code>*</code> in <code>function*</code> → regular function</li>
+                    <li>Trying to use <code>yield</code> outside a generator function → SyntaxError</li>
+                    <li>Assuming generators are faster than arrays (they're not — they're more memory efficient)</li>
+                    <li>Calling <code>next()</code> on a completed generator expecting new values</li>
+                    <li>Not understanding that <code>yield*</code> returns the final value of the delegated generator</li>
+                </ul>
+                
+                <h5>Modern Context</h5>
+                <p>While async/await has largely replaced manual generator-based async patterns, generators remain essential because:</p>
+                <ul>
+                    <li>They're the foundation of how async/await works internally</li>
+                    <li>They're still widely used in libraries like Redux-Saga</li>
+                    <li>They provide unparalleled control over data streams</li>
+                    <li>They're critical for understanding advanced JavaScript concepts</li>
+                    <li>They enable truly lazy evaluation patterns impossible with traditional functions</li>
+                </ul>
+                
+                <h5>Mastery Challenge</h5>
+                <p>Try implementing these yourself:</p>
+                <ol>
+                    <li>A generator that yields powers of 2: 1, 2, 4, 8, 16...</li>
+                    <li>A generator that yields random numbers between min/max</li>
+                    <li>A generator that reads from a simulated database cursor</li>
+                    <li>A generator that implements a circular buffer</li>
+                </ol>
+                
+                <div class="note-box">
+                    <strong>Remember:</strong> Think of generators as "functions that can take breaks." They're not about speed — they're about <em>control</em>, <em>memory efficiency</em>, and <em>composability</em>. Mastering generators transforms how you think about data and execution flow in JavaScript.
+                </div>
+            </div>
+        </details>
+    </div>
+
+    <!-- JavaScript Utilities -->
+    <script>
+        // Expand/Collapse All
+        document.getElementById('expandAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.setAttribute('open', '');
+            });
+        });
+
+        document.getElementById('collapseAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.removeAttribute('open');
+            });
+        });
+
+        // Smooth scrolling to TOC items
+        document.querySelectorAll('.toc-item, .toc-subitem').forEach(item => {
+            item.addEventListener('click', () => {
+                const targetId = item.getAttribute('data-target');
+                const targetElement = document.getElementById(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 100,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Highlight clicked item
+                    document.querySelectorAll('.toc-item, .toc-subitem').forEach(el => {
+                        el.style.backgroundColor = '';
+                    });
+                    item.style.backgroundColor = 'rgba(0, 245, 255, 0.2)';
+                }
+            });
+        });
+
+        // Search functionality
+        document.getElementById('searchToc').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
+            
+            tocItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        // Syntax highlighting enhancement (basic)
+        document.querySelectorAll('pre code').forEach(block => {
+            const code = block.textContent;
+            // Simple keyword highlighting
+            block.innerHTML = code
+                .replace(/(&lt;|&gt;|&amp;)/g, '<span class="highlight">$1</span>')
+                .replace(/\b(function|\*|yield|yield\*|return|while|for|if|else|break|continue|new|this|const|let|var|true|false|null|undefined)\b/g, '<span style="color: #ffcc80;">$1</span>')
+                .replace(/\/\/.*$/gm, '<span style="color: #666;">$&</span>')
+                .replace(/\/\*[\s\S]*?\*\//g, '<span style="color: #666;">$&</span>');
+        });
+
+        // Add smooth scrolling to headings
+        document.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach(heading => {
+            heading.addEventListener('click', () => {
+                window.scrollTo({
+                    top: heading.offsetTop - 80,
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Ensure TOC items are visible on load
+            const currentHash = window.location.hash;
+            if (currentHash) {
+                const target = document.querySelector(currentHash);
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        });
+    </script>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+```

@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>13.4 – Modern Inheritance Patterns in JavaScript</title>
+
+<!-- Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+:root{
+    --bg-main:#050816;
+    --bg-sidebar:#060b18;
+    --accent-cyan:#22d3ee;
+    --accent-amber:#fbbf24;
+    --text-main:#e5e7eb;
+    --text-muted:#9ca3af;
+    --border-subtle:#1f2937;
+    --code-bg:#020617;
+}
+
+/* Base */
+*{box-sizing:border-box;}
+html,body{
+    margin:0;
+    padding:0;
+    height:100%;
+    background:var(--bg-main);
+    color:var(--text-main);
+    font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    scroll-behavior:smooth;
+}
+body{overflow:hidden;}
+
+/* Layout */
+.app-wrapper{height:100vh;}
+.sidebar{
+    background:radial-gradient(circle at top left,#0f172a,var(--bg-sidebar));
+    border-right:1px solid var(--border-subtle);
+    height:100vh;
+    position:sticky;top:0;
+    overflow-y:auto;
+    padding:1.2rem 1rem;
+}
+.content-panel{
+    height:100vh;
+    overflow-y:auto;
+    padding:1.5rem 2rem;
+    background:radial-gradient(circle at top right,#020617,var(--bg-main));
+}
+
+/* Scrollbars */
+.sidebar::-webkit-scrollbar,
+.content-panel::-webkit-scrollbar{width:8px;}
+.sidebar::-webkit-scrollbar-thumb,
+.content-panel::-webkit-scrollbar-thumb{
+    background:#1f2937;border-radius:999px;
+}
+
+/* Sidebar text */
+.course-tag{
+    font-size:0.75rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--accent-amber);
+}
+.main-title{
+    font-size:1.4rem;
+    font-weight:700;
+    color:var(--accent-cyan);
+}
+.subtitle{
+    font-size:0.9rem;
+    color:var(--text-muted);
+}
+.meta-text{
+    font-size:0.8rem;
+    color:var(--text-muted);
+}
+.pill{
+    display:inline-flex;
+    align-items:center;
+    border-radius:999px;
+    padding:0.15rem 0.55rem;
+    font-size:0.72rem;
+    border:1px solid rgba(148,163,184,0.6);
+    color:var(--text-muted);
+    margin:0.15rem 0.25rem 0.15rem 0;
+}
+.pill span.bullet{
+    width:6px;height:6px;border-radius:999px;
+    background:var(--accent-cyan);
+    margin-right:0.25rem;
+}
+
+/* TOC */
+.toc-card{
+    margin-top:1rem;
+    background:rgba(15,23,42,0.95);
+    border-radius:0.75rem;
+    border:1px solid rgba(148,163,184,0.3);
+    padding:0.9rem;
+}
+.toc-title{
+    font-size:0.9rem;
+    font-weight:600;
+    color:var(--accent-amber);
+}
+.toc-search input{
+    width:100%;
+    border-radius:999px;
+    border:1px solid #111827;
+    background:#020617;
+    color:var(--text-main);
+    font-size:0.78rem;
+    padding:0.2rem 0.6rem;
+}
+.toc-list{
+    list-style:none;
+    padding-left:0;
+    margin:0.4rem 0 0 0;
+}
+.toc-link{
+    display:flex;
+    align-items:center;
+    gap:0.4rem;
+    font-size:0.8rem;
+    padding:0.18rem 0.4rem;
+    border-radius:0.4rem;
+    text-decoration:none;
+    color:var(--text-muted);
+}
+.toc-link-dot{
+    width:6px;height:6px;border-radius:999px;
+    background:rgba(148,163,184,0.7);
+}
+.toc-link:hover{
+    background:rgba(15,23,42,0.9);
+    color:var(--accent-cyan);
+}
+.toc-link.active{
+    background:rgba(8,47,73,0.85);
+    color:var(--accent-cyan);
+}
+.toc-link.active .toc-link-dot{background:var(--accent-cyan);}
+.toc-actions button{
+    border-radius:999px;
+    border:1px solid rgba(148,163,184,0.45);
+    background:rgba(15,23,42,0.9);
+    color:var(--text-muted);
+    font-size:0.72rem;
+    padding:0.12rem 0.6rem;
+}
+
+/* Content */
+.content-heading h1{
+    font-size:1.6rem;
+    color:var(--accent-cyan);
+}
+.content-heading p{
+    font-size:0.9rem;
+    color:var(--text-muted);
+}
+.badge-level,.badge-topic{
+    font-size:0.75rem;
+    border-radius:999px;
+    padding:0.12rem 0.6rem;
+}
+.badge-level{
+    border:1px solid rgba(56,189,248,0.6);
+    color:var(--accent-cyan);
+}
+.badge-topic{
+    border:1px dashed rgba(251,191,36,0.6);
+    color:var(--accent-amber);
+}
+.summary-strip{
+    background:radial-gradient(circle at left,rgba(56,189,248,0.2),transparent);
+    border-radius:0.8rem;
+    border:1px solid rgba(148,163,184,0.5);
+    padding:0.8rem 1rem;
+    font-size:0.86rem;
+    margin-bottom:1.1rem;
+}
+.summary-strip strong{color:var(--accent-amber);}
+.section-label{
+    font-size:0.7rem;
+    text-transform:uppercase;
+    letter-spacing:0.16em;
+    color:#9ca3af;
+}
+.section-title{
+    font-size:1.05rem;
+    font-weight:600;
+    color:var(--accent-amber);
+}
+.section-subtitle{
+    font-size:0.85rem;
+    color:var(--text-muted);
+    margin-bottom:0.6rem;
+}
+
+/* Details blocks */
+details{
+    background:rgba(15,23,42,0.9);
+    border-radius:0.8rem;
+    border:1px solid rgba(30,64,175,0.8);
+    padding:0.25rem 0.85rem 0.6rem;
+    margin-bottom:0.8rem;
+}
+details[open]{border-color:rgba(56,189,248,0.85);}
+summary{
+    list-style:none;
+    cursor:pointer;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0.35rem 0;
+    font-size:0.92rem;
+    font-weight:600;
+}
+summary::-webkit-details-marker{display:none;}
+.summary-label{display:flex;align-items:center;gap:0.4rem;}
+.summary-label .dot{
+    width:7px;height:7px;border-radius:999px;
+    background:var(--accent-cyan);
+}
+.summary-tag{
+    font-size:0.75rem;
+    color:var(--accent-amber);
+}
+details .inner{
+    font-size:0.84rem;
+    color:var(--text-muted);
+}
+details .inner ul{padding-left:1.1rem;}
+details .inner li{margin-bottom:0.2rem;}
+.hint{
+    border-left:3px solid var(--accent-cyan);
+    padding-left:0.6rem;
+    margin:0.4rem 0;
+    font-size:0.8rem;
+}
+
+/* Code */
+pre{
+    background:var(--code-bg);
+    border-radius:0.7rem;
+    border:1px solid rgba(15,118,110,0.7);
+    padding:0.7rem 0.9rem;
+    overflow-x:auto;
+    margin:0.4rem 0;
+}
+code{
+    font-family:"JetBrains Mono","Fira Code",ui-monospace,monospace;
+    font-size:0.8rem;
+}
+.token-comment{color:#6b7280;font-style:italic;}
+.token-string{color:#fb923c;}
+.token-number{color:#a855f7;}
+.token-keyword{color:#22c55e;font-weight:600;}
+.token-builtins{color:#facc15;}
+.token-function{color:#38bdf8;}
+
+/* Responsive */
+@media (max-width:991.98px){
+    body{overflow:auto;}
+    .app-wrapper{height:auto;}
+    .sidebar{
+        height:auto;
+        position:static;
+        border-right:none;
+        border-bottom:1px solid var(--border-subtle);
+    }
+    .content-panel{height:auto;}
+}
+</style>
+</head>
+
+<body>
+<div class="container-fluid app-wrapper">
+  <div class="row flex-nowrap">
+    <!-- SIDEBAR -->
+    <aside class="col-12 col-md-4 col-lg-3 sidebar">
+      <div>
+        <div class="course-tag">Modern JavaScript Deep Dive</div>
+        <div class="main-title">13.4 – Modern Inheritance Patterns</div>
+        <div class="subtitle">Beyond classical OOP: parasitic, functional &amp; composition</div>
+        <div class="meta-text">
+          Prepared for: College → Master / PhD level<br>
+          Focus: Real-world patterns &amp; security implications
+        </div>
+      </div>
+
+      <div class="mt-2">
+        <span class="pill"><span class="bullet"></span>Classical simulation</span>
+        <span class="pill"><span class="bullet"></span>Parasitic inheritance</span>
+        <span class="pill"><span class="bullet"></span>Functional inheritance</span>
+        <span class="pill"><span class="bullet"></span>Composition</span>
+        <span class="pill"><span class="bullet"></span>Prototype pollution</span>
+      </div>
+
+      <div class="toc-card mt-2">
+        <div class="toc-title mb-1">On this page</div>
+        <div class="mb-2">
+          <input id="tocSearch" type="text" placeholder="Search sections…">
+        </div>
+        <ul id="tocList" class="toc-list">
+          <li data-label="classical inheritance simulation">
+            <a href="#sec-classical" class="toc-link">
+              <span class="toc-link-dot"></span>
+              <span>13.4.1 Classical inheritance simulation</span>
+            </a>
+          </li>
+          <li data-label="parasitic inheritance">
+            <a href="#sec-parasitic" class="toc-link">
+              <span class="toc-link-dot"></span>
+              <span>13.4.2 Parasitic inheritance</span>
+            </a>
+          </li>
+          <li data-label="functional inheritance">
+            <a href="#sec-functional" class="toc-link">
+              <span class="toc-link-dot"></span>
+              <span>13.4.3 Functional inheritance</span>
+            </a>
+          </li>
+          <li data-label="object composition patterns">
+            <a href="#sec-composition" class="toc-link">
+              <span class="toc-link-dot"></span>
+              <span>13.4.4 Object composition patterns</span>
+            </a>
+          </li>
+          <li data-label="prototype pollution and security">
+            <a href="#sec-security" class="toc-link">
+              <span class="toc-link-dot"></span>
+              <span>13.4.5 Prototype pollution &amp; security</span>
+            </a>
+          </li>
+        </ul>
+        <div class="toc-actions mt-2">
+          <button id="btnExpandAll" type="button">Expand all</button>
+          <button id="btnCollapseAll" type="button">Collapse all</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="col content-panel">
+      <section class="content-heading">
+        <div class="d-flex flex-wrap align-items-center mb-2">
+          <span class="badge-level">Level: Advanced</span>
+          <span class="badge-topic ms-1">Topic: Inheritance patterns &amp; secure design</span>
+        </div>
+        <h1>13.4 – Modern Inheritance Patterns in JavaScript</h1>
+        <p>
+          JavaScript’s prototype system is flexible enough to support many “inheritance styles”:
+          classical-style chains, parasitic wrappers, functional factories, and pure object composition.
+          This chapter walks through each pattern in depth, highlights where it shines or fails, and
+          finishes with a critical topic: <strong>prototype pollution</strong>, one of the most common
+          security issues in JS ecosystems.
+        </p>
+      </section>
+
+      <section>
+        <div class="summary-strip">
+          <strong>Executive intuition:</strong>
+          You don’t “have to” choose a single inheritance style forever. Use classical-style patterns
+          when you truly benefit from a type hierarchy, use composition for flexible behaviour reuse,
+          and carefully avoid unsafe patterns that can mutate prototypes globally (prototype pollution).
+          Modern JavaScript is less about “classes vs prototypes” and more about <em>choosing the right
+          delegation and composition tools for your domain</em>.
+        </div>
+      </section>
+
+      <!-- 13.4.1 Classical inheritance simulation -->
+      <section id="sec-classical" class="mb-4">
+        <div class="section-label">13.4.1</div>
+        <div class="section-title">Classical inheritance simulation</div>
+        <div class="section-subtitle">Mimicking class hierarchies using constructor functions.</div>
+
+        <details open>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Classic pattern: constructor + prototype + Object.create</span>
+            <span class="summary-tag">pattern</span>
+          </summary>
+          <div class="inner">
+            <p>
+              Before ES6 classes, the standard way to simulate classical OO looked like this:
+            </p>
+            <pre><code>
+function Animal(name) {
+    this.name = name;
+}
+Animal.prototype.speak = function () {
+    console.log(this.name + " makes a noise.");
+};
+
+function Dog(name, breed) {
+    Animal.call(this, name); // "super" constructor
+    this.breed = breed;
+}
+
+// Inherit prototype methods
+Dog.prototype = Object.create(Animal.prototype);
+Dog.prototype.constructor = Dog;
+
+Dog.prototype.speak = function () {
+    console.log(this.name + " barks. Breed:", this.breed);
+};
+
+const d = new Dog("Tommy", "Labrador");
+d.speak(); // "Tommy barks. Breed: Labrador"
+
+console.log(d instanceof Dog);    // true
+console.log(d instanceof Animal); // true
+            </code></pre>
+
+            <p class="hint">
+              ES6 <code>class Dog extends Animal</code> mostly compiles down to this pattern internally:
+              a constructor function + prototype chain built with <code>Object.create</code>.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Reusable helper for “extends”</span>
+            <span class="summary-tag">utility</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+function inherit(Child, Parent) {
+    Child.prototype = Object.create(Parent.prototype);
+    Child.prototype.constructor = Child;
+}
+
+function Vehicle(name) {
+    this.name = name;
+}
+Vehicle.prototype.move = function () {
+    console.log(this.name + " is moving");
+};
+
+function Car(name) {
+    Vehicle.call(this, name);
+}
+inherit(Car, Vehicle);
+
+Car.prototype.move = function () {
+    console.log(this.name + " is driving on the road");
+};
+
+const c = new Car("MyCar");
+c.move();
+            </code></pre>
+
+            <p>
+              This helper encapsulates the prototype wiring step so you don’t repeat the
+              <code>Object.create / constructor</code> boilerplate everywhere.
+            </p>
+          </div>
+        </details>
+      </section>
+
+      <!-- 13.4.2 Parasitic inheritance -->
+      <section id="sec-parasitic" class="mb-4">
+        <div class="section-label">13.4.2</div>
+        <div class="section-title">Parasitic inheritance</div>
+        <div class="section-subtitle">Wrapping an object and adding new behaviour.</div>
+
+        <details open>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Concept: inherit + extend in one step</span>
+            <span class="summary-tag">concept</span>
+          </summary>
+          <div class="inner">
+            <p>
+              <strong>Parasitic inheritance</strong> means:
+            </p>
+            <ul>
+              <li>Start from an existing object.</li>
+              <li>Create a new object that delegates to it (via <code>Object.create</code> or similar).</li>
+              <li>Add or override properties on the new object.</li>
+              <li>Return the new object.</li>
+            </ul>
+
+            <pre><code>
+function createLoggedArray() {
+    const arr = [];
+
+    const proxy = Object.create(arr);
+
+    proxy.push = function (...args) {
+        console.log("Adding items:", args);
+        return Array.prototype.push.apply(this, args);
+    };
+
+    return proxy;
+}
+
+const logged = createLoggedArray();
+logged.push(1, 2, 3);
+console.log(logged.length); // 3
+            </code></pre>
+
+            <p class="hint">
+              The new object “parasites” on the behaviour of the original while injecting extra logic.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Parasitic pattern with custom base</span>
+            <span class="summary-tag">example</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+const personProto = {
+    describe() {
+        console.log(this.name + " (" + this.role + ")");
+    }
+};
+
+function createAdmin(name) {
+    const obj = Object.create(personProto);
+    obj.name = name;
+    obj.role = "admin";
+
+    obj.deleteUser = function (user) {
+        console.log(this.name + " deletes", user);
+    };
+
+    return obj;
+}
+
+const admin = createAdmin("Irfan");
+admin.describe();
+admin.deleteUser("Kittu");
+            </code></pre>
+
+            <p>
+              Notice: no <code>new</code>, no <code>constructor</code>. We are just using objects +
+              <code>Object.create</code> to shape the behaviour.
+            </p>
+          </div>
+        </details>
+      </section>
+
+      <!-- 13.4.3 Functional inheritance -->
+      <section id="sec-functional" class="mb-4">
+        <div class="section-label">13.4.3</div>
+        <div class="section-title">Functional inheritance</div>
+        <div class="section-subtitle">Using closures to create “instances” and inheritance-like layers.</div>
+
+        <details open>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Core pattern: factory + closure</span>
+            <span class="summary-tag">pattern</span>
+          </summary>
+          <div class="inner">
+            <p>
+              In <strong>functional inheritance</strong>, each “constructor” is a function that:
+            </p>
+            <ul>
+              <li>Creates an object (or receives one).</li>
+              <li>Adds methods that close over private variables.</li>
+              <li>Returns the object.</li>
+            </ul>
+
+            <pre><code>
+function person(spec) {
+    const { name = "Anonymous" } = spec;
+    const that = {};
+
+    that.getName = function () {
+        return name;
+    };
+
+    that.greet = function () {
+        console.log("Hi, I am " + name);
+    };
+
+    return that;
+}
+
+const p = person({ name: "Irfan" });
+p.greet();
+            </code></pre>
+
+            <p class="hint">
+              <code>name</code> is truly private here: it is not on <code>that</code>, only captured in closure.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Functional “subtype” inheriting from base</span>
+            <span class="summary-tag">inheritance</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+function person(spec) {
+    const { name = "Anonymous" } = spec;
+    const that = {};
+
+    that.getName = function () { return name; };
+    that.greet = function () {
+        console.log("Hi, I am " + name);
+    };
+    return that;
+}
+
+function employee(spec) {
+    const { salary = 0 } = spec;
+    const that = person(spec); // inherit behaviour
+
+    that.getSalary = function () {
+        return salary;
+    };
+
+    that.greet = function () { // override
+        console.log("Hi, I am " + that.getName() +
+            " and my salary is " + salary);
+    };
+
+    return that;
+}
+
+const e = employee({ name: "Irfan", salary: 100000 });
+e.greet();
+            </code></pre>
+
+            <p>
+              Here, “inheritance” is just layering factories. No prototypes, no <code>new</code>, only objects and closures.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Trade-offs of functional inheritance</span>
+            <span class="summary-tag">trade-offs</span>
+          </summary>
+          <div class="inner">
+            <ul>
+              <li>✔ True privacy using closures.</li>
+              <li>✔ Works nicely with functional programming style.</li>
+              <li>✖ Methods not shared on prototype &rarr; new function per instance (more memory per object).</li>
+              <li>✖ <code>instanceof</code> does not work nicely unless you set prototypes explicitly.</li>
+            </ul>
+            <p>
+              In codebases where instance counts are modest and clarity/encapsulation matter more than micro memory,
+              functional inheritance can be very pleasant.
+            </p>
+          </div>
+        </details>
+      </section>
+
+      <!-- 13.4.4 Object composition patterns -->
+      <section id="sec-composition" class="mb-4">
+        <div class="section-label">13.4.4</div>
+        <div class="section-title">Object composition patterns</div>
+        <div class="section-subtitle">“Has-a” + behaviour mixing instead of “is-a” chains.</div>
+
+        <details open>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Composition over inheritance revisited</span>
+            <span class="summary-tag">concept</span>
+          </summary>
+          <div class="inner">
+            <p>
+              Instead of building deep inheritance chains, composition says:
+              <em>build small capability units and glue them together</em>.
+            </p>
+            <pre><code>
+function canWalk(state) {
+    return {
+        walk() {
+            state.steps++;
+            console.log(state.name + " walked. Steps:", state.steps);
+        }
+    };
+}
+
+function canEat(state) {
+    return {
+        eat(food) {
+            console.log(state.name + " eats " + food);
+        }
+    };
+}
+
+function canSleep(state) {
+    return {
+        sleep() {
+            console.log(state.name + " is sleeping...");
+        }
+    };
+}
+
+function createPerson(name) {
+    const state = { name, steps: 0 };
+    return {
+        ...canWalk(state),
+        ...canEat(state),
+        ...canSleep(state),
+        get name() { return state.name; }
+    };
+}
+
+const p = createPerson("Irfan");
+p.walk();
+p.eat("biryani");
+p.sleep();
+            </code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Prototype-powered composition</span>
+            <span class="summary-tag">hybrid</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+const movable = {
+    move(dx, dy) {
+        this.x += dx;
+        this.y += dy;
+    }
+};
+
+const drawable = {
+    draw() {
+        console.log("Drawing at (" + this.x + "," + this.y + ")");
+    }
+};
+
+function createEntity(x, y) {
+    const base = { x, y };
+    const entity = Object.create(
+        Object.assign({}, movable, drawable)
+    );
+    entity.x = x;
+    entity.y = y;
+    return entity;
+}
+
+const e = createEntity(0, 0);
+e.move(5, 10);
+e.draw();
+            </code></pre>
+
+            <p class="hint">
+              Here we merged mixin objects into a prototype and created instances that delegate to it.
+              Behaviour is shared; state is per-instance.
+            </p>
+          </div>
+        </details>
+      </section>
+
+      <!-- 13.4.5 Prototype pollution & security -->
+      <section id="sec-security" class="mb-4">
+        <div class="section-label">13.4.5</div>
+        <div class="section-title">Prototype pollution &amp; security</div>
+        <div class="section-subtitle">When inheritance patterns become dangerous.</div>
+
+        <details open>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>What is prototype pollution?</span>
+            <span class="summary-tag">security</span>
+          </summary>
+          <div class="inner">
+            <p>
+              <strong>Prototype pollution</strong> happens when untrusted input can add or modify
+              properties on <code>Object.prototype</code> (or another shared prototype). Because almost
+              all objects inherit from <code>Object.prototype</code>, this can:
+            </p>
+            <ul>
+              <li>Change behaviour application-wide.</li>
+              <li>Bypass security checks.</li>
+              <li>Break invariants in subtle ways.</li>
+            </ul>
+
+            <pre><code>
+// BAD: merging untrusted data into Object.prototype
+function unsafeMerge(target, source) {
+    for (const key in source) {
+        target[key] = source[key];
+    }
+}
+
+const payload = JSON.parse('{"__proto__": {"isAdmin": true}}');
+
+unsafeMerge({}, payload);
+
+console.log({}.isAdmin); // true on ALL plain objects in some runtimes!
+            </code></pre>
+
+            <p class="hint">
+              If attacker controls something like <code>"__proto__"</code> or <code>"constructor.prototype"</code>,
+              they can sometimes poison prototypes globally.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Safe patterns for merging objects</span>
+            <span class="summary-tag">defense</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+function safeMerge(target, source) {
+    for (const key of Object.keys(source)) {
+        if (key === "__proto__" || key === "constructor" || key === "prototype") {
+            continue; // skip dangerous keys
+        }
+        target[key] = source[key];
+    }
+    return target;
+}
+
+const clean = safeMerge({}, payload);
+console.log(clean.isAdmin); // undefined
+console.log({}.isAdmin);    // undefined
+            </code></pre>
+
+            <ul>
+              <li>Always use <code>Object.keys</code> or <code>Object.getOwnPropertyNames</code> instead of <code>for...in</code> on untrusted objects.</li>
+              <li>Filter out dangerous property names.</li>
+              <li>Use <code>Object.create(null)</code> for untrusted dictionaries, so there’s no prototype to poison.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Checklist for safe inheritance usage</span>
+            <span class="summary-tag">checklist</span>
+          </summary>
+          <div class="inner">
+            <ul>
+              <li>Do not copy user-controlled keys directly onto <code>Object.prototype</code> or other shared prototypes.</li>
+              <li>Beware of JSON data containing <code>"__proto__"</code>, <code>"prototype"</code>, <code>"constructor"</code>.</li>
+              <li>For key-value stores, prefer <code>Object.create(null)</code> to avoid inherited keys entirely.</li>
+              <li>Avoid unnecessary mutation of prototypes at runtime (easier to reason about security).</li>
+              <li>Use composition and plain objects where possible; deep inheritance + mutation is harder to audit.</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script>
+// Smooth scrolling + active TOC + search + expand/collapse + simple highlighting
+document.addEventListener("DOMContentLoaded", () => {
+  const contentPanel = document.querySelector(".content-panel");
+  const tocLinks = Array.from(document.querySelectorAll(".toc-link"));
+  const sections = tocLinks.map(link => {
+    const id = link.getAttribute("href");
+    return { link, target: document.querySelector(id) };
+  });
+
+  // Smooth scroll
+  tocLinks.forEach(link => {
+    link.addEventListener("click", e => {
+      e.preventDefault();
+      const id = link.getAttribute("href");
+      const target = document.querySelector(id);
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+        history.replaceState(null, "", id);
+      }
+    });
+  });
+
+  // Active TOC highlight
+  function updateActive() {
+    const y = contentPanel.scrollTop;
+    let current = null;
+    sections.forEach(({ link, target }) => {
+      if (!target) return;
+      const top = target.offsetTop;
+      if (top - 80 <= y) current = link;
+    });
+    tocLinks.forEach(l => l.classList.remove("active"));
+    if (current) current.classList.add("active");
+  }
+  contentPanel.addEventListener("scroll", updateActive);
+  updateActive();
+
+  // TOC search
+  const tocSearch = document.getElementById("tocSearch");
+  const tocItems = Array.from(document.querySelectorAll("#tocList li"));
+  tocSearch.addEventListener("input", () => {
+    const q = tocSearch.value.toLowerCase();
+    tocItems.forEach(li => {
+      const text = li.textContent.toLowerCase() || "";
+      li.style.display = text.includes(q) ? "" : "none";
+    });
+  });
+
+  // Expand / collapse all
+  document.getElementById("btnExpandAll").onclick =
+    () => document.querySelectorAll("details").forEach(d => d.open = true);
+  document.getElementById("btnCollapseAll").onclick =
+    () => document.querySelectorAll("details").forEach(d => d.open = false);
+
+  // Simple syntax highlighting
+  function escapeHtml(str){
+    return str.replace(/&/g,"&amp;")
+              .replace(/</g,"&lt;")
+              .replace(/>/g,"&gt;");
+  }
+  const keywords = [
+    "class","extends","constructor","super",
+    "function","return","const","let","var",
+    "if","else","while","for","new","async","await",
+    "try","catch","throw","in","instanceof"
+  ];
+  const builtins = [
+    "Object","Array","Map","Set","Date","Promise",
+    "console","Math","JSON","fetch"
+  ];
+
+  document.querySelectorAll("pre code").forEach(codeEl => {
+    const raw = codeEl.textContent;
+    let html = escapeHtml(raw);
+
+    // comments
+    html = html.replace(/(\/\/.*?$)/gm,"<span class='token-comment'>$1</span>");
+    // strings
+    html = html.replace(/(&quot;.*?&quot;|'.*?'|`.*?`)/g,
+      "<span class='token-string'>$1</span>");
+    // numbers
+    html = html.replace(/\b(\d+(\.\d+)?)\b/g,
+      "<span class='token-number'>$1</span>");
+    // builtins
+    builtins.forEach(b => {
+      const re = new RegExp("\\b"+b+"\\b","g");
+      html = html.replace(re,"<span class='token-builtins'>"+b+"</span>");
+    });
+    // keywords
+    keywords.forEach(k => {
+      const re = new RegExp("\\b"+k+"\\b","g");
+      html = html.replace(re,"<span class='token-keyword'>"+k+"</span>");
+    });
+    // functions (simple heuristic)
+    html = html.replace(/([a-zA-Z_$][\w$]*)\s*(?=\()/g,
+      "<span class='token-function'>$1</span>");
+
+    codeEl.innerHTML = html;
+  });
+});
+</script>
+</body>
+</html>

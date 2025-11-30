@@ -1,0 +1,524 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>22.1 JavaScript Modules — Deep Learning Note</title>
+
+  <!-- Bootstrap CSS (CDN) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <!-- Highlight.js CSS (default style will be applied by JS) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
+
+  <style>
+    :root{
+      --bg:#0b0f10; /* very dark */
+      --surface:#111518; /* panels */
+      --cyan:#06b6d4;
+      --amber:#f59e0b;
+      --muted:#9aa6a6;
+      --accent-gradient: linear-gradient(90deg,var(--cyan),var(--amber));
+      --panel-width:320px;
+      --radius:12px;
+    }
+    html,body{height:100%;}
+    body{
+      margin:0; font-family:Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+      background:var(--bg); color:#e6eef0; -webkit-font-smoothing:antialiased;
+    }
+
+    /* Layout */
+    .app{
+      display:flex; height:100vh; gap:20px; padding:20px; box-sizing:border-box;
+    }
+    .left-panel{
+      width:var(--panel-width); background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.04));
+      border-radius:var(--radius); padding:18px; box-shadow:0 6px 18px rgba(0,0,0,0.6); position:relative; flex-shrink:0; 
+      border:1px solid rgba(255,255,255,0.03);
+    }
+    .right-panel{
+      flex:1; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00)); padding:22px; border-radius:var(--radius);
+      overflow:auto; height:100%; box-shadow:0 6px 18px rgba(0,0,0,0.6); border:1px solid rgba(255,255,255,0.02);
+    }
+
+    .app-header{display:flex; gap:12px; align-items:center}
+    .brand-mark{width:46px; height:46px; border-radius:10px; background:var(--accent-gradient); display:flex; align-items:center; justify-content:center; font-weight:700; color:#071018}
+    .title{font-size:1.05rem; font-weight:700}
+    .subtitle{font-size:0.78rem; color:var(--muted)}
+
+    /* TOC */
+    .toc{margin-top:12px;}
+    .toc .search{margin-bottom:10px}
+    .toc-list{max-height:52vh; overflow:auto; padding-right:6px}
+    .toc a{display:block; padding:6px 8px; border-radius:8px; margin-bottom:6px; color:inherit; text-decoration:none}
+    .toc a:hover{background:rgba(255,255,255,0.02); color:var(--cyan)}
+
+    /* buttons */
+    .controls{display:flex; gap:8px; margin-top:6px}
+    .btn-ghost{background:transparent; border:1px solid rgba(255,255,255,0.04); color:var(--muted); padding:6px 8px; border-radius:8px; font-size:0.82rem}
+
+    /* Right content styles */
+    h1,h2,h3{color:#dff7fb}
+    h1{font-size:1.45rem}
+    h2{font-size:1.15rem}
+    p{color:#cfe8ea}
+    details{background:rgba(255,255,255,0.015); padding:12px; border-radius:10px; margin-bottom:12px; border:1px solid rgba(255,255,255,0.02)}
+    summary{cursor:pointer; font-weight:600}
+    pre{background:rgba(0,0,0,0.35); padding:12px; border-radius:8px; overflow:auto}
+    code{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', 'Courier New', monospace; font-size:0.92rem}
+
+    .muted{color:var(--muted)}
+    .badge-accent{display:inline-block; padding:4px 8px; border-radius:999px; background:linear-gradient(90deg,var(--cyan),rgba(0,0,0,0.12)); color:#021417; font-weight:600}
+
+    /* Sticky left panel on scroll */
+    .left-panel{position:sticky; top:20px; height:calc(100vh - 40px);}
+
+    /* Smooth anchor highlight */
+    .anchor-target{scroll-margin-top:28px}
+
+    /* Responsive */
+    @media (max-width:900px){
+      .left-panel{display:none}
+      .app{padding:12px}
+    }
+  </style>
+</head>
+<body>
+  <div class="app container-fluid">
+    <aside class="left-panel" aria-label="Table of contents">
+      <div class="app-header">
+        <div class="brand-mark">22</div>
+        <div>
+          <div class="title">22.1 JavaScript Modules</div>
+          <div class="subtitle">Deep learning note — modules, bundling, dynamic imports</div>
+        </div>
+      </div>
+
+      <div style="margin-top:12px; display:flex; gap:8px; align-items:center; justify-content:space-between">
+        <div class="muted">Author: <strong>Irfan</strong></div>
+        <div class="badge-accent">Advanced</div>
+      </div>
+
+      <div class="toc">
+        <input class="form-control search" placeholder="Search TOC..." id="tocSearch" />
+        <div class="controls">
+          <button class="btn-ghost" id="expandAll">Expand all</button>
+          <button class="btn-ghost" id="collapseAll">Collapse all</button>
+          <button class="btn-ghost" id="tocReset">Reset</button>
+        </div>
+
+        <div class="toc-list" id="tocList">
+          <a href="#commonjs" data-target="commonjs">CommonJS modules (Node.js)</a>
+          <a href="#es6" data-target="es6">ES6 modules (import/export)</a>
+          <a href="#amd-umd" data-target="amd-umd">AMD &amp; UMD patterns</a>
+          <a href="#dynamic" data-target="dynamic">Dynamic imports &amp; code-splitting</a>
+          <a href="#bundling" data-target="bundling">Module bundling concepts</a>
+          <a href="#resolution" data-target="resolution">Module resolution algorithm (pseudocode)</a>
+          <a href="#bestpractices" data-target="bestpractices">Best practices &amp; real-world patterns</a>
+        </div>
+      </div>
+
+    </aside>
+
+    <main class="right-panel" id="content" tabindex="0">
+      <article>
+        <h1 id="top">22.1 JavaScript Modules — Deep Learning Note</h1>
+        <p class="muted">This note goes deep: conceptual foundations, runtime behaviour, syntax, interoperability, bundlers, loader internals and real-world patterns. Examples are encoded using HTML entities so the browser displays code correctly. Use the left TOC to jump to sections. Each subsection uses &lt;details&gt; for layered, research-friendly explanations.</p>
+
+        <!-- COMMONJS -->
+        <section id="commonjs" class="anchor-target">
+          <h2>CommonJS modules (Node.js)</h2>
+          <details open>
+            <summary>Executive summary</summary>
+            <p>CommonJS is the original Node.js module format. It is synchronous at load-time, uses <code>require()</code> to import and <code>module.exports</code> or <code>exports.</code> to expose values. Suitable for server-side IO-bound environments where filesystem access is available.</p>
+          </details>
+
+          <details>
+            <summary>Detail &amp; semantics</summary>
+            <p>In CommonJS, each file is wrapped in a function scope by Node.js that provides top-level variables: <code>exports</code>, <code>module</code>, <code>require</code>, <code>__filename</code>, and <code>__dirname</code>. Modules are executed the first time they are required, and the resolved <code>module.exports</code> is cached. Requiring the same module again returns the cached object.</p>
+          </details>
+
+          <details>
+            <summary>Syntax</summary>
+            <pre><code class="language-javascript">// math.js
+const add = (a, b) =&gt; a + b;
+const mul = (a, b) =&gt; a * b;
+
+module.exports = { add, mul };
+
+// app.js
+const math = require('./math');
+console.log(math.add(2,3)); // 5
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Example: lazy initialisation &amp; cyclic deps</summary>
+            <p>CommonJS caches exports by reference. This allows patterns like lazy-init and also introduces subtle behaviour during cyclic dependencies.</p>
+            <pre><code class="language-javascript">// a.js
+const b = require('./b');
+module.exports.value = 'A';
+console.log('a:', b.value);
+
+// b.js
+const a = require('./a');
+module.exports.value = 'B';
+console.log('b:', a.value);
+
+// Running node a.js prints:
+// b: undefined
+// a: B
+// Explanation: when a requires b, b requires a back before a has finished assigning module.exports.
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Real use cases</summary>
+            <ul>
+              <li>Server-side libraries, CLI tools</li>
+              <li>When synchronous require makes startup simpler (scripts)</li>
+              <li>Legacy NPM packages (many still ship CommonJS builds)</li>
+            </ul>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- ES6 MODULES -->
+        <section id="es6" class="anchor-target">
+          <h2>ES6 modules (import / export)</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>ES modules (ESM) are the standardized module format for JavaScript. They support static analysis, lexical scoping, named &amp; default exports, and asynchronous loading. Browsers and modern Node.js runtimes support ESM. Key advantage: static structure enables tree-shaking and better tooling.</p>
+          </details>
+
+          <details>
+            <summary>Core differences vs CommonJS</summary>
+            <ul>
+              <li>ESM are statically analyzable — imports are hoisted and cannot be conditional in the same way as <code>require()</code>.</li>
+              <li>Import syntax: <code>import x from './m'</code> or <code>import {a} from './m'</code>.</li>
+              <li>Exports are live bindings — they reflect the current value of the exported variable.</li>
+              <li>Module loading can be asynchronous in certain contexts (browsers, dynamic import).</li>
+            </ul>
+          </details>
+
+          <details>
+            <summary>Syntax</summary>
+            <pre><code class="language-javascript">// lib.js
+export const PI = 3.14159;
+export function area(r){ return PI * r * r }
+
+// default export
+export default function greet(name){ return `Hello, ${name}` }
+
+// app.js
+import greet, { PI, area } from './lib.js';
+console.log(greet('Irfan'));
+console.log(area(2));
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Live bindings &amp; hoisting</summary>
+            <p>ESM's exported variables are live: if module A exports <code>let count = 0</code> and module B imports it, B sees updates to <code>count</code> after A mutates it. Imports are hoisted — the module graph is instantiated before execution, which changes the behaviour of cyclic graphs compared to CommonJS.</p>
+          </details>
+
+          <details>
+            <summary>Interoperability: importing CommonJS in ESM and vice versa</summary>
+            <p>Node.js provides interop but semantics can be surprising: importing a CommonJS module into ESM gives a default import with the entire <code>module.exports</code> object; named import may not work unless the CommonJS module sets properties explicitly. Many build tools provide helpers to smooth this ("interopDefault").</p>
+          </details>
+
+          <details>
+            <summary>Real use cases &amp; benefits</summary>
+            <ul>
+              <li>Front-end code for browsers (native ESM), modern Node.js services</li>
+              <li>Better tooling: tree-shaking, static analysis, faster cold start for bundlers</li>
+            </ul>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- AMD & UMD -->
+        <section id="amd-umd" class="anchor-target">
+          <h2>AMD and UMD patterns</h2>
+          <details>
+            <summary>Executive summary</summary>
+            <p>AMD (Asynchronous Module Definition) was popular in the browser era before native modules. UMD (Universal Module Definition) is a wrapper that allows a module to work in AMD, CommonJS and as a global.</p>
+          </details>
+
+          <details>
+            <summary>AMD example (RequireJS)</summary>
+            <pre><code class="language-javascript">define(['dep1','dep2'], function(dep1, dep2){
+  const result = dep1.do() + dep2.do();
+  return { result };
+});
+
+// requirejs usage
+require(['module'], function(m){ console.log(m.result); });
+</code></pre>
+          </details>
+
+          <details>
+            <summary>UMD wrapper pattern</summary>
+            <pre><code class="language-javascript">(function(root, factory){
+  if(typeof define === 'function' && define.amd){
+    // AMD
+    define(['dep'], factory);
+  } else if(typeof module === 'object' && module.exports){
+    // Node / CommonJS
+    module.exports = factory(require('dep'));
+  } else {
+    // browser global
+    root.MyLib = factory(root.dep);
+  }
+}(this, function(dep){
+  return { doWork: function(){ return dep.x } };
+}));
+</code></pre>
+          </details>
+
+          <details>
+            <summary>When you see these Patterns today</summary>
+            <p>Mostly in legacy libraries and UMD builds that aim for maximum compatibility across loaders and environments. Modern projects prefer ESM + bundlers.</p>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- DYNAMIC IMPORTS -->
+        <section id="dynamic" class="anchor-target">
+          <h2>Dynamic imports &amp; code splitting</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>Dynamic import (<code>import(&#39;./module.js&#39;)</code>) returns a promise and enables on-demand loading of modules. This is the basis for code-splitting in modern apps, lazy-loading routes, and reducing initial bundle size.</p>
+          </details>
+
+          <details>
+            <summary>Syntax &amp; basic example</summary>
+            <pre><code class="language-javascript">// route handler (browser)
+async function loadChat(){
+  const module = await import('./chat-widget.js');
+  module.initChat('#root');
+}
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Bundler behaviour</summary>
+            <p>Bundlers (webpack, rollup, parcel, esbuild) detect dynamic imports and create separate chunks. The runtime loader fetches those chunks on demand. The chunk naming, prefetching and cache policies are controlled by bundler configuration.</p>
+          </details>
+
+          <details>
+            <summary>Example: conditional dynamic import</summary>
+            <pre><code class="language-javascript">if(userPrefersEditor === 'rich'){
+  import('./rich-editor.js').then(mod =&gt; mod.mount('#editor'));
+} else {
+  import('./light-editor.js').then(mod =&gt; mod.mount('#editor'));
+}
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Real use cases</summary>
+            <ul>
+              <li>Lazy-loading route handlers and large UI components</li>
+              <li>Feature flags to split rarely-used code</li>
+              <li>Loading heavy libraries (charting, editors) only when needed</li>
+            </ul>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- BUNDLING -->
+        <section id="bundling" class="anchor-target">
+          <h2>Module bundling concepts</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>Bundlers transform a module graph into optimized assets ready for production. They perform dependency resolution, transpilation, tree-shaking, code-splitting and minification. Popular bundlers: webpack, rollup, parcel, esbuild, Vite (dev server + build). Each has different trade-offs.</p>
+          </details>
+
+          <details>
+            <summary>Key steps in bundling pipeline</summary>
+            <ol>
+              <li><strong>Parsing &amp; AST generation:</strong> parse source into an AST for analysis.</li>
+              <li><strong>Dependency graph construction:</strong> statically analyze imports and build graph.</li>
+              <li><strong>Transformations:</strong> transpile modern syntax (e.g., TypeScript, JSX) into target JS.</li>
+              <li><strong>Tree-shaking:</strong> remove unused exports via dead-code elimination.</li>
+              <li><strong>Code splitting:</strong> split graph into chunks for lazy loading.</li>
+              <li><strong>Minification &amp; hashing:</strong> compress code and add content hashes for caching.</li>
+            </ol>
+          </details>
+
+          <details>
+            <summary>Tree-shaking: why static ESM helps</summary>
+            <p>Tree-shaking relies on static analysis. With ESM's static import/export syntax, bundlers can determine which exports are used and drop the rest. CommonJS dynamic patterns make tree-shaking harder.</p>
+          </details>
+
+          <details>
+            <summary>Source maps and debugging</summary>
+            <p>Source maps map minified/transpiled code back to original sources. They are essential for debugging in production and should be configured to balance bandwidth/security: e.g., use hidden-source-map or upload maps to error-reporting services.</p>
+          </details>
+
+          <details>
+            <summary>Real-world bundling strategies</summary>
+            <ul>
+              <li>Use ESM entry point for libraries to allow consumers to tree-shake.</li>
+              <li>Publish dual packages (module: ESM, main: CommonJS) for Node and browsers.</li>
+              <li>Prefer fast bundlers (esbuild / swc) for dev and use rollup/webpack for highly-optimized production builds when necessary.</li>
+            </ul>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- RESOLUTION PSEUDOCODE -->
+        <section id="resolution" class="anchor-target">
+          <h2>Module resolution algorithm (pseudocode)</h2>
+
+          <details>
+            <summary>Executive summary</summary>
+            <p>Module resolution translates an import specifier ("./a", "lodash", "pkg/sub") to a file path or package entry. Node and browsers have different algorithms; bundlers implement their own but often follow Node resolution for npm packages.</p>
+          </details>
+
+          <details>
+            <summary>Pseudocode (simplified)</summary>
+            <pre><code class="language-javascript">// Pseudocode for resolving an import specifier in Node-like environment
+function resolve(specifier, parentPath){
+  if(isRelative(specifier) || isAbsolute(specifier)){
+    // check file extensions
+    const candidates = [specifier, specifier + '.js', specifier + '.mjs', specifier + '/index.js'];
+    for(const c of candidates){ if(fs.exists(parentPath.join(c))) return parentPath.join(c); }
+  } else {
+    // bare specifier: find in node_modules
+    let dir = parentPath;
+    while(dir){
+      const pkgPath = path.join(dir, 'node_modules', specifier);
+      // read package.json main/module/exports fields
+      const pkg = readPackageJSON(pkgPath);
+      if(pkg){ return resolvePackageEntry(pkg, pkgPath); }
+      dir = parent(dir);
+    }
+  }
+  throw new Error('Cannot resolve module: '+specifier);
+}
+</code></pre>
+            <p class="muted">Note: real implementations handle <code>exports</code> field, conditional exports, browser fields, symlinks, package scopes and more.</p>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- BEST PRACTICES -->
+        <section id="bestpractices" class="anchor-target">
+          <h2>Best practices &amp; real-world patterns</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>Organize modules by responsibility, prefer small pure modules, use index barrels sparingly, and publish ESM-friendly packages. Design APIs for tree-shaking: avoid side-effectful top-level code. Use dynamic import for heavy optional features.</p>
+          </details>
+
+          <details>
+            <summary>Module design patterns</summary>
+            <ul>
+              <li><strong>Facade/Barrel:</strong> export a curated API surface from an <code>index.js</code> but avoid hiding too much to not impede tree-shaking.</li>
+              <li><strong>Feature split:</strong> split large features into separate modules/chunks with dynamic import.</li>
+              <li><strong>Provider pattern:</strong> pass dependencies explicitly to make modules easier to test and mock.</li>
+            </ul>
+          </details>
+
+          <details>
+            <summary>Performance considerations</summary>
+            <ol>
+              <li>Limit initial bundle size; lazy-load heavy dependencies.</li>
+              <li>Use HTTP/2 or HTTP/3 server push carefully with chunks; prefetch critical chunks.</li>
+              <li>Cache chunks with long-lived cache and content hashes for invalidation.</li>
+            </ol>
+          </details>
+
+          <details>
+            <summary>Security considerations</summary>
+            <p>Be careful with dynamic import using user-controlled strings. Validate inputs and avoid executing arbitrary code. When loading third-party modules, verify integrity (SRI) or pin versions.</p>
+          </details>
+
+          <details>
+            <summary>Checklist for library authors</summary>
+            <ul>
+              <li>Publish <code>module</code> (ESM) and <code>main</code> (CJS) fields where appropriate.</li>
+              <li>Use sideEffects:false in package.json when safe.</li>
+              <li>Provide TypeScript declarations if applicable.</li>
+              <li>Include a small ESM build for modern bundlers and a CJS fallback for older tooling.</li>
+            </ul>
+          </details>
+        </section>
+
+        <hr />
+
+        <footer style="margin-top:20px; padding-bottom:40px;">
+          <p class="muted">End of note. Use the controls in the left panel to expand/collapse all sections or search the TOC. This file is a single self-contained learning note designed for deep study.</p>
+        </footer>
+      </article>
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/javascript.min.js"></script>
+  <script>
+    // init highlight.js
+    (function(){
+      if(window.hljs){ hljs.highlightAll(); }
+    })();
+
+    // Smooth scrolling for TOC links
+    document.querySelectorAll('#tocList a').forEach(a =&gt; {
+      a.addEventListener('click', function(e){
+        e.preventDefault();
+        const id = this.getAttribute('href').slice(1);
+        const el = document.getElementById(id);
+        if(el){ el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          // expand the first details inside target section
+          const d = el.querySelector('details'); if(d && d.hasAttribute('open')===false) d.open = true;
+        }
+      });
+    });
+
+    // Expand / Collapse all
+    const expandAllBtn = document.getElementById('expandAll');
+    const collapseAllBtn = document.getElementById('collapseAll');
+    expandAllBtn.addEventListener('click', ()=> document.querySelectorAll('details').forEach(d=> d.open = true));
+    collapseAllBtn.addEventListener('click', ()=> document.querySelectorAll('details').forEach(d=> d.open = false));
+
+    // Reset TOC (scroll to top)
+    document.getElementById('tocReset').addEventListener('click', ()=>{ document.getElementById('content').scrollTo({top:0, behavior:'smooth'}); });
+
+    // TOC search filter
+    const tocSearch = document.getElementById('tocSearch');
+    tocSearch.addEventListener('input', ()=>{
+      const q = tocSearch.value.trim().toLowerCase();
+      document.querySelectorAll('#tocList a').forEach(a=>{
+        const txt = a.textContent.toLowerCase();
+        a.style.display = txt.includes(q) ? 'block' : 'none';
+      });
+    });
+
+    // keyboard: E to expand all, C to collapse
+    document.addEventListener('keydown', (e)=>{
+      if(e.key === 'E' || e.key === 'e') document.querySelectorAll('details').forEach(d=> d.open = true);
+      if(e.key === 'C' || e.key === 'c') document.querySelectorAll('details').forEach(d=> d.open = false);
+    });
+
+    // Accessibility: add aria attributes to details/summary
+    document.querySelectorAll('details').forEach((d, i)=>{
+      const s = d.querySelector('summary');
+      if(s){ s.setAttribute('aria-expanded', d.open ? 'true':'false');
+        s.addEventListener('click', ()=> s.setAttribute('aria-expanded', d.open ? 'true':'false'));
+      }
+    });
+  </script>
+</body>
+</html>

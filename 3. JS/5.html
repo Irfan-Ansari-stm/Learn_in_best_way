@@ -1,0 +1,1582 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 3: Bitwise, Advanced Operators and Precedence</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00f5ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --accent: #00c4cc;
+        }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .left-panel {
+            background-color: #0d213a;
+            height: 100vh;
+            position: fixed;
+            width: 300px;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 4px 0 15px rgba(0, 245, 255, 0.1);
+        }
+        
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--amber);
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+        
+        .toc-item {
+            margin: 8px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .toc-item a {
+            color: var(--text-light);
+            text-decoration: none;
+            display: block;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .toc-item a:hover {
+            background-color: rgba(0, 245, 255, 0.1);
+            padding-left: 16px;
+        }
+        
+        .toc-subitem {
+            margin-left: 20px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .toc-subitem.active {
+            display: block;
+        }
+        
+        .toc-subitem a {
+            color: var(--amber);
+            padding-left: 16px;
+            font-size: 0.9rem;
+        }
+        
+        .toc-subitem a:hover {
+            background-color: rgba(255, 183, 77, 0.1);
+        }
+        
+        details > summary {
+            list-style: none;
+            cursor: pointer;
+            padding: 12px;
+            background-color: rgba(0, 245, 255, 0.08);
+            border-radius: 6px;
+            margin: 12px 0;
+            border-left: 4px solid var(--amber);
+            font-weight: bold;
+            color: var(--cyan);
+            transition: all 0.3s;
+        }
+        
+        details > summary:hover {
+            background-color: rgba(0, 245, 255, 0.15);
+            transform: translateX(5px);
+        }
+        
+        details > summary::-webkit-details-marker {
+            display: none;
+        }
+        
+        details > summary::before {
+            content: "▶ ";
+            color: var(--amber);
+        }
+        
+        details[open] > summary::before {
+            content: "▼ ";
+            color: var(--amber);
+        }
+        
+        pre code {
+            display: block;
+            padding: 16px;
+            overflow-x: auto;
+            background-color: #112240;
+            border-radius: 8px;
+            border-left: 4px solid var(--amber);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        
+        .highlight {
+            color: var(--amber);
+            font-weight: bold;
+        }
+        
+        .badge {
+            background-color: var(--amber);
+            color: #000;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+        
+        .control-buttons {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-control {
+            background-color: rgba(0, 245, 255, 0.15);
+            color: var(--cyan);
+            border: 1px solid var(--amber);
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .btn-control:hover {
+            background-color: rgba(0, 245, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .search-box {
+            background-color: rgba(255, 183, 77, 0.1);
+            border: 1px solid var(--amber);
+            color: var(--text-light);
+            padding: 10px;
+            border-radius: 6px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .section-header {
+            border-bottom: 2px solid var(--amber);
+            padding-bottom: 10px;
+            margin: 30px 0 20px;
+            color: var(--cyan);
+        }
+        
+        .code-comment {
+            color: #888;
+        }
+        
+        .code-keyword {
+            color: var(--amber);
+        }
+        
+        .code-string {
+            color: #a5ff88;
+        }
+        
+        .code-function {
+            color: #00f5ff;
+        }
+        
+        .code-number {
+            color: #ff9e6d;
+        }
+        
+        .code-boolean {
+            color: #ff5e5e;
+        }
+        
+        .code-null {
+            color: #9d78ff;
+        }
+        
+        .operator {
+            color: #00f5ff;
+            font-weight: bold;
+        }
+        
+        table.table-dark {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        
+        table.table-dark th,
+        table.table-dark td {
+            border: 1px solid rgba(255, 183, 77, 0.3);
+            padding: 10px;
+        }
+        
+        table.table-dark tr:nth-child(even) {
+            background-color: rgba(0, 245, 255, 0.05);
+        }
+        
+        .operator-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+        }
+        
+        .operator-table th,
+        .operator-table td {
+            border: 1px solid rgba(255, 183, 77, 0.3);
+            padding: 10px;
+            text-align: center;
+        }
+        
+        .operator-table th {
+            background-color: rgba(0, 245, 255, 0.1);
+        }
+        
+        .operator-table tr:nth-child(even) {
+            background-color: rgba(0, 245, 255, 0.05);
+        }
+        
+        .bitwise-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+        }
+        
+        .bitwise-table th,
+        .bitwise-table td {
+            border: 1px solid rgba(255, 183, 77, 0.3);
+            padding: 10px;
+            text-align: center;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        
+        .bitwise-table th {
+            background-color: rgba(0, 245, 255, 0.1);
+        }
+        
+        .bitwise-table tr:nth-child(even) {
+            background-color: rgba(0, 245, 255, 0.05);
+        }
+        
+        .precedence-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+        }
+        
+        .precedence-table th,
+        .precedence-table td {
+            border: 1px solid rgba(255, 183, 77, 0.3);
+            padding: 10px;
+            text-align: left;
+        }
+        
+        .precedence-table th {
+            background-color: rgba(0, 245, 255, 0.1);
+        }
+        
+        .precedence-table tr:nth-child(even) {
+            background-color: rgba(0, 245, 255, 0.05);
+        }
+        
+        .memory-diagram {
+            background-color: #112240;
+            border: 1px dashed var(--amber);
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre;
+            line-height: 1.6;
+        }
+        
+        .footer-note {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(0, 245, 255, 0.2);
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 991px) {
+            .left-panel {
+                width: 100%;
+                position: relative;
+                height: auto;
+                padding-bottom: 20px;
+            }
+            
+            .right-panel {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Left Panel -->
+    <div class="left-panel">
+        <h2>JavaScript Fundamentals</h2>
+        <p class="text-muted">Module 3: Bitwise & Advanced Operators</p>
+        <p class="text-muted small">Author: Master Tutor • Last Updated: 2024</p>
+        
+        <div class="control-buttons">
+            <button id="expandAll" class="btn-control">Expand All</button>
+            <button id="collapseAll" class="btn-control">Collapse All</button>
+        </div>
+        
+        <input type="text" class="search-box" id="searchToc" placeholder="Search topics...">
+        
+        <div class="toc-container">
+            <div class="toc-item">
+                <a href="#3-3">3.3 Bitwise and Advanced Operators</a>
+                <div class="toc-subitem" id="sub-3-3">
+                    <a href="#bitwise">Bitwise operators</a>
+                    <a href="#ternary">Ternary operator</a>
+                    <a href="#typeof-instanceof">typeof and instanceof</a>
+                    <a href="#delete">delete operator</a>
+                    <a href="#void">void operator</a>
+                </div>
+            </div>
+            
+            <div class="toc-item">
+                <a href="#3-4">3.4 Operator Precedence and Associativity</a>
+                <div class="toc-subitem" id="sub-3-4">
+                    <a href="#precedence">Understanding precedence</a>
+                    <a href="#associativity">Left-to-right vs right-to-left</a>
+                    <a href="#parentheses">Grouping with parentheses</a>
+                    <a href="#gotchas">Common precedence gotchas</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="right-panel">
+        <h1>Module 3: Bitwise, Advanced Operators and Precedence</h1>
+        <p class="lead">Master the advanced operators and understand how JavaScript evaluates complex expressions</p>
+        
+        <hr class="my-4">
+        
+        <!-- 3.3 Bitwise and Advanced Operators -->
+        <section id="3-3">
+            <h2 class="section-header">3.3 Bitwise and Advanced Operators</h2>
+            
+            <details>
+                <summary>Definition: Bitwise operators (&, |, ^, ~, <<, >>)</summary>
+                <p>Bitwise operators perform operations on the binary representations of numbers.</p>
+                
+                <h5>Why Learn Bitwise Operators?</h5>
+                <ul>
+                    <li>Used in low-level programming, graphics, cryptography, and performance optimization</li>
+                    <li>Essential for understanding how computers work at the hardware level</li>
+                    <li>Can create highly efficient algorithms</li>
+                    <li>Used in flags and permissions systems</li>
+                </ul>
+                
+                <h5>The Six Bitwise Operators:</h5>
+                <table class="bitwise-table">
+                    <thead>
+                        <tr>
+                            <th>Operator</th>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Example</th>
+                            <th>Binary Result</th>
+                            <th>Decimal Result</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="operator">&amp;</span></td>
+                            <td>AND</td>
+                            <td>1 only if both bits are 1</td>
+                            <td><code>5 &amp; 3</code></td>
+                            <td><code>101 &amp; 011</code></td>
+                            <td><code>1</code></td>
+                        </tr>
+                        <tr>
+                            <td><span class="operator">|</span></td>
+                            <td>OR</td>
+                            <td>1 if at least one bit is 1</td>
+                            <td><code>5 | 3</code></td>
+                            <td><code>101 | 011</code></td>
+                            <td><code>7</code></td>
+                        </tr>
+                        <tr>
+                            <td><span class="operator">^</span></td>
+                            <td>XOR</td>
+                            <td>1 if bits are different</td>
+                            <td><code>5 ^ 3</code></td>
+                            <td><code>101 ^ 011</code></td>
+                            <td><code>6</code></td>
+                        </tr>
+                        <tr>
+                            <td><span class="operator">~</span></td>
+                            <td>NOT</td>
+                            <td>Inverts all bits</td>
+                            <td><code>~5</code></td>
+                            <td><code>~0101</code></td>
+                            <td><code>-6</code></td>
+                        </tr>
+                        <tr>
+                            <td><span class="operator">&lt;&lt;</span></td>
+                            <td>Left Shift</td>
+                            <td>Shift bits left, fill with 0s</td>
+                            <td><code>5 &lt;&lt; 1</code></td>
+                            <td><code>101 &lt;&lt; 1</code></td>
+                            <td><code>10</code></td>
+                        </tr>
+                        <tr>
+                            <td><span class="operator">&gt;&gt;</span></td>
+                            <td>Right Shift (Signed)</td>
+                            <td>Shift bits right, preserve sign</td>
+                            <td><code>10 &gt;&gt; 1</code></td>
+                            <td><code>1010 &gt;&gt; 1</code></td>
+                            <td><code>5</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h5>Visualizing Binary Operations:</h5>
+                <div class="memory-diagram">
+// 5 in binary:  00000101
+// 3 in binary:  00000011
+// ---------------
+// 5 & 3:        00000001  → 1
+// 5 | 3:        00000111  → 7  
+// 5 ^ 3:        00000110  → 6
+// ~5:           11111010  → -6 (two's complement)
+// 5 << 1:       00001010  → 10
+// 10 >> 1:      00000101  → 5
+                </div>
+                
+                <h5>Practical Examples:</h5>
+                <pre><code class="language-javascript">// 1. Checking if a number is even or odd
+function isEven(num) {
+    return (num &amp; 1) === 0; // Check if last bit is 0
+}
+
+console.log(isEven(4)); // true (binary: 100, last bit 0)
+console.log(isEven(7)); // false (binary: 111, last bit 1)
+
+// 2. Setting/Unsetting flags (permissions system)
+const PERMISSIONS = {
+    READ: 1,     // 0001
+    WRITE: 2,    // 0010
+    EXECUTE: 4,  // 0100
+    DELETE: 8    // 1000
+};
+
+let userPermissions = PERMISSIONS.READ | PERMISSIONS.WRITE; // 0011
+
+// Check if user has read permission
+console.log((userPermissions &amp; PERMISSIONS.READ) !== 0); // true
+
+// Add execute permission
+userPermissions |= PERMISSIONS.EXECUTE; // 0111
+console.log(userPermissions); // 7
+
+// Remove write permission
+userPermissions &amp;= ~PERMISSIONS.WRITE; // 0101
+console.log(userPermissions); // 5
+
+// 3. Fast multiplication/division by powers of 2
+function multiplyByTwo(n) {
+    return n &lt;&lt; 1; // Same as n * 2
+}
+
+function divideByTwo(n) {
+    return n &gt;&gt; 1; // Same as Math.floor(n / 2)
+}
+
+console.log(multiplyByTwo(5)); // 10
+console.log(divideByTwo(7)); // 3 (not 3.5!)
+
+// 4. Swapping two variables without temp variable
+let a = 5, b = 10;
+a ^= b; // a = 5 ^ 10 = 15
+b ^= a; // b = 10 ^ 15 = 5
+a ^= b; // a = 15 ^ 5 = 10
+console.log(a, b); // 10, 5
+
+// 5. Converting to integer (fast truncation)
+let num = 3.14159;
+let intNum = num | 0; // Truncates decimal part
+console.log(intNum); // 3
+
+// 6. Creating unique IDs with bitwise OR
+function generateId() {
+    return Date.now() | Math.random() * 1000000;
+}
+console.log(generateId()); // Large number</code></pre>
+                
+                <div class="highlight">💡 Pro Tip: Bitwise operators are faster than arithmetic operators for certain operations because they work directly on binary representation!</div>
+            </details>
+            
+            <details>
+                <summary>Definition: Ternary operator (condition ? true : false)</summary>
+                <p>The ternary operator is a concise way to write simple if-else statements.</p>
+                
+                <h5>Syntax:</h5>
+                <pre><code class="language-javascript">// Basic syntax
+condition ? valueIfTrue : valueIfFalse;</code></pre>
+                
+                <h5>Simple Examples:</h5>
+                <pre><code class="language-javascript">// Traditional if-else
+let age = 20;
+let status;
+if (age >= 18) {
+    status = "Adult";
+} else {
+    status = "Minor";
+}
+
+// Ternary equivalent
+let status2 = age >= 18 ? "Adult" : "Minor";
+
+// More examples
+let temperature = 25;
+let weather = temperature > 30 ? "Hot" : temperature > 20 ? "Warm" : "Cool";
+
+let score = 85;
+let grade = score >= 90 ? "A" : score >= 80 ? "B" : score >= 70 ? "C" : "D";
+
+let userName = "";
+let displayName = userName ? userName : "Guest";
+// Or better yet:
+let displayName2 = userName || "Guest"; // Simpler for truthy/falsy checks
+
+// Conditional rendering in templates
+let isLoggedIn = true;
+let greeting = `Hello, ${isLoggedIn ? "User" : "Guest"}!`;
+
+// Function returning different values
+function getDiscount(price, isMember) {
+    return isMember ? price * 0.9 : price;
+}</code></pre>
+                
+                <h5>Nested Ternaries (Be Careful!):</h5>
+                <pre><code class="language-javascript">// Nested ternary - hard to read!
+let result = condition1 ? value1 : condition2 ? value2 : condition3 ? value3 : defaultValue;
+
+// Equivalent if-else chain:
+let result2;
+if (condition1) {
+    result2 = value1;
+} else if (condition2) {
+    result2 = value2;
+} else if (condition3) {
+    result2 = value3;
+} else {
+    result2 = defaultValue;
+}
+
+// Better approach: Use switch or if-else for complex logic
+function determineCategory(score) {
+    if (score >= 90) return "Excellent";
+    if (score >= 80) return "Good";
+    if (score >= 70) return "Average";
+    if (score >= 60) return "Below Average";
+    return "Poor";
+}</code></pre>
+                
+                <h5>Practical Applications:</h5>
+                <pre><code class="language-javascript">// 1. Form validation
+function validateEmail(email) {
+    return email ? (email.includes('@') ? email : null) : null;
+}
+
+// 2. Dynamic styling
+let isActive = true;
+let buttonClass = isActive ? "btn btn-primary" : "btn btn-secondary";
+
+// 3. Conditional property assignment
+let user = {
+    name: "Alice",
+    role: "admin"
+};
+
+let displaySettings = {
+    showProfile: true,
+    showStats: user.role === "admin" ? true : false,
+    showSettings: user.role === "admin" ? true : false
+};
+
+// 4. Safe object property access with fallback
+function getUserName(user) {
+    return user && user.profile ? user.profile.name : "Unknown";
+}
+
+// 5. Array manipulation
+let items = [1, 2, 3, 4, 5];
+let evenItems = items.map(x => x % 2 === 0 ? x * 2 : x);
+console.log(evenItems); // [1, 4, 3, 8, 5]
+
+// 6. Conditional function calls
+function logMessage(message, isError) {
+    (isError ? console.error : console.log)(message);
+}
+
+logMessage("This is normal", false); // console.log
+logMessage("This is an error", true); // console.error
+
+// 7. React component example
+function UserProfile({ user }) {
+    return (
+        &lt;div&gt;
+            &lt;h1&gt;{user?.name ?? "Guest"}&lt;/h1&gt;
+            &lt;p&gt;Status: {user?.isActive ? "Active" : "Inactive"}&lt;/p&gt;
+            &lt;p&gt;Role: {user?.role === "admin" ? "Administrator" : "Regular User"}&lt;/p&gt;
+        &lt;/div&gt;
+    );
+}</code></pre>
+                
+                <div class="highlight">🎯 Best Practice: Use ternary operators for simple conditions. For complex logic, use if-else statements for readability!</div>
+            </details>
+            
+            <details>
+                <summary>Definition: typeof and instanceof operators</summary>
+                <p>These operators help you determine the type of a value.</p>
+                
+                <h5>typeof Operator:</h5>
+                <pre><code class="language-javascript">// Returns string indicating the type
+console.log(typeof 42); // "number"
+console.log(typeof "hello"); // "string"
+console.log(typeof true); // "boolean"
+console.log(typeof undefined); // "undefined"
+console.log(typeof Symbol()); // "symbol"
+console.log(typeof 10n); // "bigint"
+console.log(typeof function() {}); // "function"
+console.log(typeof {}); // "object"
+console.log(typeof []); // "object" (arrays are objects!)
+console.log(typeof null); // "object" (historical bug!)
+
+// Common pattern: Type checking
+function getType(value) {
+    if (value === null) return "null";
+    if (Array.isArray(value)) return "array";
+    return typeof value;
+}
+
+console.log(getType(null)); // "null"
+console.log(getType([])); // "array"
+console.log(getType({})); // "object"
+
+// Practical example: Validation
+function processData(data) {
+    if (typeof data !== "string") {
+        throw new Error("Data must be a string");
+    }
+    
+    if (data.length === 0) {
+        throw new Error("Data cannot be empty");
+    }
+    
+    return data.toUpperCase();
+}</code></pre>
+                
+                <h5>instanceof Operator:</h5>
+                <p>Checks if an object is an instance of a particular constructor.</p>
+                <pre><code class="language-javascript">// Works with constructors and classes
+console.log([] instanceof Array); // true
+console.log(new Date() instanceof Date); // true
+console.log(new Error() instanceof Error); // true
+console.log({} instanceof Object); // true
+console.log(function() {} instanceof Function); // true
+
+// Custom classes
+class Person {
+    constructor(name) {
+        this.name = name;
+    }
+}
+
+let alice = new Person("Alice");
+console.log(alice instanceof Person); // true
+console.log(alice instanceof Object); // true (inherits from Object)
+
+// instanceof with arrays
+let arr = [];
+console.log(arr instanceof Array); // true
+console.log(arr instanceof Object); // true
+
+// Important: instanceof doesn't work across frames/window contexts
+// In browser environments with iframes, objects created in one frame
+// won't be instances of constructors from another frame
+
+// Practical example: DOM element detection
+function handleElement(element) {
+    if (element instanceof HTMLInputElement) {
+        console.log("Input element:", element.value);
+    } else if (element instanceof HTMLButtonElement) {
+        console.log("Button element:", element.textContent);
+    } else if (element instanceof HTMLElement) {
+        console.log("Generic HTML element:", element.tagName);
+    } else {
+        console.log("Unknown element type");
+    }
+}</code></pre>
+                
+                <h5>When to Use Each:</h5>
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Use Case</th>
+                            <th>typeof</th>
+                            <th>instanceof</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Primitive types</td>
+                            <td>✓</td>
+                            <td>✗</td>
+                        </tr>
+                        <tr>
+                            <td>Arrays</td>
+                            <td>✗ (returns "object")</td>
+                            <td>✓</td>
+                        </tr>
+                        <tr>
+                            <td>Custom classes</td>
+                            <td>✗</td>
+                            <td>✓</td>
+                        </tr>
+                        <tr>
+                            <td>Functions</td>
+                            <td>✓</td>
+                            <td>✓</td>
+                        </tr>
+                        <tr>
+                            <td>Objects</td>
+                            <td>✓</td>
+                            <td>✓ (but returns true for Object)</td>
+                        </tr>
+                        <tr>
+                            <td>Null</td>
+                            <td>✓ (returns "object" - bug)</td>
+                            <td>✗ (throws TypeError)</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="highlight">🚨 Critical Insight: typeof null returns "object" due to a historical JavaScript bug that can never be fixed for backward compatibility!</div>
+            </details>
+            
+            <details>
+                <summary>Definition: delete operator</summary>
+                <p>The delete operator removes a property from an object.</p>
+                
+                <h5>Syntax and Usage:</h5>
+                <pre><code class="language-javascript">// Delete object properties
+let user = {
+    name: "Alice",
+    age: 25,
+    email: "alice@example.com",
+    isAdmin: true
+};
+
+console.log(user); // {name: "Alice", age: 25, email: "alice@example.com", isAdmin: true}
+
+delete user.age;
+delete user.isAdmin;
+
+console.log(user); // {name: "Alice", email: "alice@example.com"}
+
+// Delete array elements (creates holes!)
+let numbers = [1, 2, 3, 4, 5];
+delete numbers[2]; // Deletes index 2
+console.log(numbers); // [1, 2, empty, 4, 5]
+console.log(numbers.length); // 5 (length unchanged!)
+console.log(numbers[2]); // undefined
+
+// Can't delete variables declared with let/const
+let myVar = 10;
+delete myVar; // false (no effect)
+console.log(myVar); // 10
+
+const MY_CONST = 42;
+delete MY_CONST; // false (no effect)
+console.log(MY_CONST); // 42
+
+// Can delete global variables (in browser)
+window.myGlobal = "test";
+delete window.myGlobal; // true
+console.log(window.myGlobal); // undefined
+
+// Return value: true/false
+let obj = {prop: 1};
+console.log(delete obj.prop); // true (property deleted)
+console.log(delete obj.nonexistent); // true (nonexistent property - no error!)
+console.log(delete 10); // true (can't delete literals, but doesn't throw error)
+
+// Strict mode behavior
+'use strict';
+let strictObj = {prop: 1};
+delete strictObj.prop; // true
+delete strictObj.nonexistent; // true
+// delete myVar; // SyntaxError in strict mode</code></pre>
+                
+                <h5>Important Limitations:</h5>
+                <ul>
+                    <li>Cannot delete variables declared with <code>var</code>, <code>let</code>, or <code>const</code></li>
+                    <li>Cannot delete functions declared with <code>function</code> keyword</li>
+                    <li>Cannot delete properties marked as non-configurable</li>
+                    <li>Doesn't work reliably with host objects (browser APIs)</li>
+                </ul>
+                
+                <h5>Practical Example: Cleaning Up Objects</h5>
+                <pre><code class="language-javascript">// API response cleanup
+function cleanApiResponse(response) {
+    const cleaned = {...response}; // Create shallow copy
+    
+    // Remove sensitive information
+    delete cleaned.password;
+    delete cleaned.secretKey;
+    delete cleaned.token;
+    
+    // Remove empty/null fields
+    Object.keys(cleaned).forEach(key => {
+        if (cleaned[key] === null || cleaned[key] === undefined) {
+            delete cleaned[key];
+        }
+    });
+    
+    return cleaned;
+}
+
+let apiData = {
+    userId: 123,
+    username: "alice",
+    password: "secret123",
+    secretKey: "abc123",
+    token: "xyz789",
+    profile: null,
+    preferences: undefined,
+    createdAt: "2023-01-01"
+};
+
+let cleanData = cleanApiResponse(apiData);
+console.log(cleanData);
+// {userId: 123, username: "alice", createdAt: "2023-01-01"}</code></pre>
+                
+                <div class="highlight">⚠️ Warning: The delete operator should be used sparingly. Consider using object destructuring or spreading instead for creating modified copies!</div>
+            </details>
+            
+            <details>
+                <summary>Definition: void operator</summary>
+                <p>The void operator evaluates an expression and returns undefined.</p>
+                
+                <h5>Syntax:</h5>
+                <pre><code class="language-javascript">void expression</code></pre>
+                
+                <h5>Basic Usage:</h5>
+                <pre><code class="language-javascript">// Always returns undefined
+console.log(void 0); // undefined
+console.log(void 1); // undefined
+console.log(void "hello"); // undefined
+console.log(void true); // undefined
+console.log(void false); // undefined
+console.log(void null); // undefined
+console.log(void undefined); // undefined
+
+// With function calls
+function doSomething() {
+    console.log("Doing something...");
+    return "result";
+}
+
+let result1 = doSomething(); // Logs "Doing something..." and returns "result"
+let result2 = void doSomething(); // Logs "Doing something..." and returns undefined
+
+console.log(result1); // "result"
+console.log(result2); // undefined
+
+// In URLs (legacy use)
+// &lt;a href="javascript:void(0)"&gt;Click me&lt;/a&gt;
+// Prevents page navigation while allowing JS execution
+
+// Modern alternative: event.preventDefault()
+document.getElementById('myLink').addEventListener('click', function(e) {
+    e.preventDefault();
+    // Do something
+});</code></pre>
+                
+                <h5>Practical Applications:</h5>
+                
+                <h6>1. Ensuring undefined return value</h6>
+                <pre><code class="language-javascript">// IIFE (Immediately Invoked Function Expression)
+let result = (function() {
+    // Do some setup
+    console.log("Initializing...");
+    return 42;
+})();
+
+// If we want to ensure it returns undefined:
+let result2 = void (function() {
+    console.log("Initializing...");
+    return 42;
+})(); // returns undefined, not 42</code></pre>
+                
+                <h6>2. In arrow functions</h6>
+                <pre><code class="language-javascript">// Arrow functions with blocks return undefined implicitly
+let fn1 = () => {
+    console.log("Arrow function");
+    // No return statement means undefined
+};
+
+// Explicitly make it return undefined
+let fn2 = () => void console.log("Arrow function");
+
+// Both behave the same:
+console.log(fn1()); // undefined
+console.log(fn2()); // undefined</code></pre>
+                
+                <h6>3. TypeScript/Flow annotations</h6>
+                <pre><code class="language-javascript">// In type systems, void indicates a function that doesn't return anything meaningful
+function logAndReturnVoid(message) {
+    console.log(message);
+    return void 0; // Explicitly return undefined
+}
+
+// Used for functions that have side effects but don't return useful data
+function handleClick() {
+    void performAction(); // Indicates we're calling for side effects only
+    void updateUI(); // We don't care about return value
+}</code></pre>
+                
+                <h6>4. Preventing return values in expressions</h6>
+                <pre><code class="language-javascript">// In minified code or complex expressions
+// Without void:
+let x = (function() { 
+    console.log("Side effect");
+    return "value";
+})();
+
+// With void - ensures no return value interferes
+let y = void (function() { 
+    console.log("Side effect");
+    return "value";
+})();
+
+// Useful when you need to use a function call as an expression
+// but don't want its return value to affect the overall expression</code></pre>
+                
+                <div class="highlight">💡 Modern Alternative: In modern JavaScript, use explicit <code>return undefined;</code> or rely on implicit undefined return from functions without return statements.</div>
+            </details>
+        </section>
+        
+        <!-- 3.4 Operator Precedence and Associativity -->
+        <section id="3-4">
+            <h2 class="section-header">3.4 Operator Precedence and Associativity</h2>
+            
+            <details>
+                <summary>Definition: Understanding operator precedence</summary>
+                <p>Operator precedence determines the order in which operators are evaluated in an expression.</p>
+                
+                <h5>Precedence Levels (Highest to Lowest):</h5>
+                <table class="precedence-table">
+                    <thead>
+                        <tr>
+                            <th>Level</th>
+                            <th>Operators</th>
+                            <th>Associativity</th>
+                            <th>Examples</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td><code>()</code> <code>[]</code> <code>.</code> <code>?.</code></td>
+                            <td>Left-to-right</td>
+                            <td><code>a.b()</code>, <code>a[b]</code></td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td><code>++</code> <code>--</code> <code>!</code> <code>~</code> <code>+</code> <code>-</code> <code>typeof</code> <code>void</code> <code>delete</code></td>
+                            <td>Right-to-left</td>
+                            <td><code>++x</code>, <code>!a</code>, <code>typeof x</code></td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td><code>**</code></td>
+                            <td>Right-to-left</td>
+                            <td><code>2 ** 3 ** 2</code></td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td><code>*</code> <code>/</code> <code>%</code></td>
+                            <td>Left-to-right</td>
+                            <td><code>6 / 2 * 3</code></td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td><code>+</code> <code>-</code></td>
+                            <td>Left-to-right</td>
+                            <td><code>10 - 5 + 3</code></td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td><code>&lt;&lt;</code> <code>&gt;&gt;</code> <code>&gt;&gt;&gt;</code></td>
+                            <td>Left-to-right</td>
+                            <td><code>8 &lt;&lt; 2 &gt;&gt; 1</code></td>
+                        </tr>
+                        <tr>
+                            <td>7</td>
+                            <td><code>&lt;</code> <code>&lt;=</code> <code>&gt;</code> <code>&gt;=</code> <code>instanceof</code></td>
+                            <td>Left-to-right</td>
+                            <td><code>5 &lt; 10 &amp;&amp; 10 &lt; 20</code></td>
+                        </tr>
+                        <tr>
+                            <td>8</td>
+                            <td><code>==</code> <code>!=</code> <code>===</code> <code>!==</code></td>
+                            <td>Left-to-right</td>
+                            <td><code>5 == 5 &amp;&amp; 5 === 5</code></td>
+                        </tr>
+                        <tr>
+                            <td>9</td>
+                            <td><code>&amp;</code></td>
+                            <td>Left-to-right</td>
+                            <td><code>5 &amp; 3 &amp; 1</code></td>
+                        </tr>
+                        <tr>
+                            <td>10</td>
+                            <td><code>^</code></td>
+                            <td>Left-to-right</td>
+                            <td><code>5 ^ 3 ^ 1</code></td>
+                        </tr>
+                        <tr>
+                            <td>11</td>
+                            <td><code>|</code></td>
+                            <td>Left-to-right</td>
+                            <td><code>5 | 3 | 1</code></td>
+                        </tr>
+                        <tr>
+                            <td>12</td>
+                            <td><code>&amp;&amp;</code></td>
+                            <td>Left-to-right</td>
+                            <td><code>a &amp;&amp; b &amp;&amp; c</code></td>
+                        </tr>
+                        <tr>
+                            <td>13</td>
+                            <td><code>||</code></td>
+                            <td>Left-to-right</td>
+                            <td><code>a || b || c</code></td>
+                        </tr>
+                        <tr>
+                            <td>14</td>
+                            <td><code>??:</code></td>
+                            <td>Right-to-left</td>
+                            <td><code>a ?? b ?? c</code></td>
+                        </tr>
+                        <tr>
+                            <td>15</td>
+                            <td><code>=</code> <code>+=</code> <code>-=</code> <code>*=</code> etc.</td>
+                            <td>Right-to-left</td>
+                            <td><code>a = b = c</code></td>
+                        </tr>
+                        <tr>
+                            <td>16</td>
+                            <td><code>,</code></td>
+                            <td>Left-to-right</td>
+                            <td><code>(a, b, c)</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h5>Real-world Examples:</h5>
+                <pre><code class="language-javascript">// Example 1: Arithmetic precedence
+let result1 = 5 + 3 * 2; // 11, not 16
+// Multiplication (*) has higher precedence than addition (+)
+// So: 5 + (3 * 2) = 5 + 6 = 11
+
+let result2 = (5 + 3) * 2; // 16
+// Parentheses override precedence
+
+// Example 2: Logical operator precedence
+let a = true, b = false, c = true;
+let result3 = a || b &amp;&amp; c; // true
+// AND has higher precedence than OR
+// So: a || (b &amp;&amp; c) = true || (false &amp;&amp; true) = true || false = true
+
+let result4 = (a || b) &amp;&amp; c; // true
+// Different grouping gives different result
+
+// Example 3: Assignment precedence
+let x = 1, y = 2, z = 3;
+x = y = z + 1; // x = 4, y = 4, z = 3
+// Addition first: z + 1 = 4
+// Then right-to-left assignment: y = 4, then x = 4
+
+// Example 4: Complex expression
+let value = 5;
+let result5 = ++value * 2 + 3 - 1;
+// Step-by-step:
+// 1. ++value → value becomes 6, returns 6
+// 2. 6 * 2 → 12
+// 3. 12 + 3 → 15
+// 4. 15 - 1 → 14
+console.log(result5); // 14</code></pre>
+                
+                <div class="highlight">💡 Pro Tip: When in doubt, use parentheses! They make your code more readable and eliminate ambiguity.</div>
+            </details>
+            
+            <details>
+                <summary>Definition: Left-to-right vs right-to-left associativity</summary>
+                <p>Associativity determines the order of evaluation when operators have the same precedence.</p>
+                
+                <h5>Left-to-Right Associativity:</h5>
+                <p>Operators are evaluated from left to right.</p>
+                <pre><code class="language-javascript">// Left-to-right: Addition and subtraction
+let result1 = 10 - 5 - 2; // 3
+// Evaluated as: (10 - 5) - 2 = 5 - 2 = 3
+
+// Left-to-right: Multiplication and division
+let result2 = 12 / 3 / 2; // 2
+// Evaluated as: (12 / 3) / 2 = 4 / 2 = 2
+
+// Left-to-right: Logical AND
+let a = true, b = true, c = false;
+let result3 = a &amp;&amp; b &amp;&amp; c; // false
+// Evaluated as: (a &amp;&amp; b) &amp;&amp; c = (true &amp;&amp; true) &amp;&amp; false = true &amp;&amp; false = false
+
+// Left-to-right: Bitwise AND
+let result4 = 7 &amp; 3 &amp; 1; // 1
+// Evaluated as: (7 &amp; 3) &amp; 1 = 3 &amp; 1 = 1</code></pre>
+                
+                <h5>Right-to-Left Associativity:</h5>
+                <p>Operators are evaluated from right to left.</p>
+                <pre><code class="language-javascript">// Right-to-left: Exponentiation
+let result5 = 2 ** 3 ** 2; // 512
+// Evaluated as: 2 ** (3 ** 2) = 2 ** 9 = 512
+// NOT: (2 ** 3) ** 2 = 8 ** 2 = 64
+
+// Right-to-left: Assignment
+let x, y, z;
+x = y = z = 5; // All become 5
+// Evaluated as: x = (y = (z = 5))
+// Step 1: z = 5
+// Step 2: y = 5
+// Step 3: x = 5
+
+// Right-to-left: Ternary operator
+let a = true, b = false, c = true;
+let result6 = a ? 1 : b ? 2 : c ? 3 : 4;
+// Evaluated as: a ? 1 : (b ? 2 : (c ? 3 : 4))
+// Since a is true, result is 1
+
+// Right-to-left: Void operator
+let result7 = void a = 5; // undefined
+// Evaluated as: void (a = 5)
+// First: a = 5
+// Second: void 5 → undefined</code></pre>
+                
+                <h5>Why Associativity Matters:</h5>
+                <pre><code class="language-javascript">// Critical example: Exponentiation
+// Without knowing right-to-left associativity:
+console.log(2 ** 3 ** 2); // What do you expect?
+
+// Many think: (2 ** 3) ** 2 = 8 ** 2 = 64
+// But actual: 2 ** (3 ** 2) = 2 ** 9 = 512
+
+// This matters in scientific calculations!
+let base = 2;
+let exponent = 3;
+let power = 2;
+
+// Correct mathematical notation: base^(exponent^power)
+let correctResult = base ** (exponent ** power); // 512
+// Wrong: (base ** exponent) ** power = 64
+
+// Another example: Assignment chaining
+let user = {};
+let config = {};
+
+// This assigns the same object to both variables
+user.settings = config.settings = {theme: "dark"};
+// Same as: user.settings = (config.settings = {theme: "dark"})
+
+console.log(user.settings === config.settings); // true
+// Both point to the same object!
+
+// If you wanted separate objects:
+user.settings = {theme: "dark"};
+config.settings = {theme: "dark"};
+console.log(user.settings === config.settings); // false</code></pre>
+                
+                <div class="highlight">🎯 Key Insight: Right-to-left associativity is crucial for exponentiation and assignment operations. Misunderstanding this leads to serious bugs!</div>
+            </details>
+            
+            <details>
+                <summary>Definition: Grouping with parentheses</summary>
+                <p>Parantheses override default precedence and associativity rules.</p>
+                
+                <h5>Force Evaluation Order:</h5>
+                <pre><code class="language-javascript">// Without parentheses - default precedence
+let result1 = 5 + 3 * 2; // 11 (multiplication first)
+
+// With parentheses - force addition first
+let result2 = (5 + 3) * 2; // 16
+
+// Complex expression with multiple groupings
+let result3 = ((a + b) * c) / (d - e);
+
+// Multiple levels of nesting
+let result4 = (((a + b) * c) - d) / (e + f);
+
+// Practical example: Financial calculation
+let principal = 1000;
+let rate = 0.05;
+let years = 10;
+let compoundFrequency = 12;
+
+// Simple interest
+let simpleInterest = principal * rate * years;
+
+// Compound interest with proper grouping
+let compoundInterest = principal * Math.pow(1 + rate / compoundFrequency, compoundFrequency * years);
+
+// Without parentheses - wrong!
+let wrongCompound = principal * Math.pow(1 + rate / compoundFrequency, compoundFrequency * years);
+// This is actually correct due to precedence, but...
+
+// Even clearer with explicit grouping:
+let clearCompound = principal * Math.pow(
+    (1 + (rate / compoundFrequency)), 
+    (compoundFrequency * years)
+);
+
+// String concatenation with numbers
+let message = "Total: " + 10 + 5; // "Total: 105"
+let correctMessage = "Total: " + (10 + 5); // "Total: 15"</code></pre>
+                
+                <h5>Improving Readability:</h5>
+                <pre><code class="language-javascript">// Complex conditional - hard to read
+if (user && user.profile && user.profile.age >= 18 && user.profile.isActive) {
+    // Do something
+}
+
+// Better with parentheses for clarity
+if (
+    user && 
+    user.profile && 
+    (user.profile.age >= 18) && 
+    user.profile.isActive
+) {
+    // Do something
+}
+
+// Complex boolean logic
+let canAccess = 
+    (isAdmin || isManager) && 
+    (hasLicense || hasPermission) && 
+    (!isBlocked);
+
+// Using parentheses makes the logic crystal clear
+// You can see exactly what conditions must be met</code></pre>
+                
+                <h5>Workaround for Operator Precedence Issues:</h5>
+                <pre><code class="language-javascript">// Problem: Trying to use logical operators with assignment
+let flag = true;
+let result = flag && (flag = false); // Unexpected behavior!
+
+// Better approach: Split into separate statements
+let flag = true;
+let temp = flag;
+flag = false;
+let result = temp;
+
+// Another example: Ternary with assignment
+let count = 0;
+let result2 = count > 0 ? (count = count - 1) : 0;
+// This works but is confusing
+
+// Clearer approach:
+let count = 0;
+let newValue;
+if (count > 0) {
+    count -= 1;
+    newValue = count;
+} else {
+    newValue = 0;
+}
+let result2 = newValue;</code></pre>
+                
+                <div class="highlight">💡 Rule of Thumb: When in doubt, add parentheses. It's better to be slightly verbose than ambiguous!</div>
+            </details>
+            
+            <details>
+                <summary>Definition: Common precedence gotchas</summary>
+                <p>Here are the most common pitfalls developers encounter with operator precedence.</p>
+                
+                <h5>Gotcha 1: Logical AND/OR with Comparison Operators</h5>
+                <pre><code class="language-javascript">// ❌ Common mistake
+let age = 25;
+if (age >= 18 && age &lt;= 65) { // Correct
+    console.log("Adult");
+}
+
+// ❌ Mistake: Missing parentheses
+if (age >= 18 && age &lt;= 65) { // Actually correct!
+    // This works fine
+}
+
+// ❌ Real gotcha: Confusing precedence
+let isValid = false;
+let result1 = isValid && age >= 18 || age <= 65; // Unexpected result!
+// This is evaluated as: (isValid && age >= 18) || age <= 65
+// Since isValid is false, it becomes: false || age <= 65
+// Which is true if age <= 65, regardless of the first condition!
+
+// ✅ Fix: Use explicit grouping
+let result2 = (isValid && age >= 18) || (age <= 65); // Clear intent
+// Or better yet, restructure logic</code></pre>
+                
+                <h5>Gotcha 2: Assignment in Conditionals</h5>
+                <pre><code class="language-javascript">// ❌ Common mistake
+let x = 5;
+if (x = 10) { // Oops! Assignment instead of comparison
+    console.log("This always runs!");
+}
+
+// Why? Because assignment returns the assigned value
+// x = 10 returns 10, which is truthy
+
+// ✅ Fix: Use strict equality
+if (x === 10) {
+    console.log("Correct comparison");
+}
+
+// ✅ Intentional assignment in condition (rare cases)
+let user;
+while (user = getNextUser()) {
+    processUser(user);
+}
+// This is valid but dangerous - use comments to explain
+// while (user = getNextUser()) { // Assign and check</code></pre>
+                
+                <h5>Gotcha 3: Bitwise vs Logical Operators</h5>
+                <pre><code class="language-javascript">// ❌ Common confusion
+let flag1 = true;
+let flag2 = false;
+
+// These look similar but are completely different
+if (flag1 &amp;&amp; flag2) { // Logical AND - returns false
+    console.log("Both true");
+}
+
+if (flag1 &amp; flag2) { // Bitwise AND - converts to numbers: 1 & 0 = 0
+    console.log("Both true"); // This won't run
+}
+
+// In real code:
+let permissions = 7; // 111 in binary (read=1, write=2, execute=4)
+if (permissions &amp; 1) { // Check read permission
+    console.log("Can read");
+}
+
+// Don't mix them up!</code></pre>
+                
+                <h5>Gotcha 4: Nullish Coalescing vs Logical OR</h5>
+                <pre><code class="language-javascript">// ❌ Common mistake
+let config = {
+    timeout: 0, // User wants 0ms timeout
+    retries: "", // User wants no retries
+    debug: false // User wants debugging off
+};
+
+// Wrong: Using || for defaults
+let timeout = config.timeout || 5000; // 5000 (wrong! should be 0)
+let retries = config.retries || 3; // 3 (wrong! should be "")
+let debug = config.debug || true; // true (wrong! should be false)
+
+// ✅ Correct: Use ?? for nullish coalescing
+let timeout2 = config.timeout ?? 5000; // 0 (correct!)
+let retries2 = config.retries ?? 3; // "" (correct!)
+let debug2 = config.debug ?? true; // false (correct!)</code></pre>
+                
+                <h5>Gotcha 5: Exponentiation and Negative Numbers</h5>
+                <pre><code class="language-javascript">// ❌ Common mistake
+let x = -2;
+let square = x ** 2; // 4 (correct)
+
+// But what about this?
+let result = -2 ** 2; // -4 (not 4!)
+
+// Why? Because exponentiation has higher precedence than unary minus
+// So: -(2 ** 2) = -(4) = -4
+
+// ✅ Fix: Use parentheses
+let correctResult = (-2) ** 2; // 4
+let anotherCorrect = Math.pow(-2, 2); // 4
+
+// Another example:
+let a = 3;
+let b = -2;
+let result2 = a * b ** 2; // 3 * (-2 ** 2) = 3 * -4 = -12 (wrong!)
+let correctResult2 = a * (b ** 2); // 3 * 4 = 12 (correct!)</code></pre>
+                
+                <h5>Gotcha 6: Template Literals with Expressions</h5>
+                <pre><code class="language-javascript">// ❌ Common mistake
+let price = 10;
+let taxRate = 0.08;
+let total = `${price + taxRate}`; // "10.08" (wrong!)
+
+// Expected: Total price including tax
+// Actual: Just adding price and tax rate
+
+// ✅ Fix: Calculate properly
+let totalWithTax = `${price * (1 + taxRate)}`; // "10.8"
+
+// Even better: Format currency
+let formattedTotal = `$${(price * (1 + taxRate)).toFixed(2)}`; // "$10.80"
+
+// Another example:
+let name = "Alice";
+let greeting = `Hello ${name.toUpperCase()}`; // "Hello ALICE" (correct)
+let badGreeting = `Hello ${name.toUpperCase}`; // "Hello function toUpperCase() { ... }" (WRONG!)</code></pre>
+                
+                <div class="highlight">🚨 Ultimate Rule: When you're unsure about operator precedence, add parentheses. It's the safest and most readable approach!</div>
+            </details>
+        </section>
+        
+        <div class="footer-note">
+            <p>🎉 Congratulations! You've mastered advanced operators and operator precedence in JavaScript.</p>
+            <p>You now understand bitwise operations, the ternary operator, type-checking operators, and how JavaScript evaluates complex expressions according to precedence and associativity rules.</p>
+            <p>Next Module: Control Flow Statements - If, Switch, Loops</p>
+        </div>
+    </div>
+
+    <!-- JavaScript Utilities -->
+    <script>
+        // Expand/Collapse All functionality
+        document.getElementById('expandAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.open = true;
+            });
+        });
+
+        document.getElementById('collapseAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.open = false;
+            });
+        });
+
+        // Search functionality for TOC
+        document.getElementById('searchToc').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const tocItems = document.querySelectorAll('.toc-item');
+            
+            tocItems.forEach(item => {
+                const linkText = item.querySelector('a').textContent.toLowerCase();
+                const subItems = item.querySelectorAll('.toc-subitem a');
+                let matches = false;
+                
+                if (linkText.includes(searchTerm)) {
+                    matches = true;
+                } else {
+                    subItems.forEach(subItem => {
+                        if (subItem.textContent.toLowerCase().includes(searchTerm)) {
+                            matches = true;
+                        }
+                    });
+                }
+                
+                // Show/hide parent item based on search
+                item.style.display = matches ? 'block' : 'none';
+                
+                // Show subitems if parent matches
+                if (matches && searchTerm.length > 0) {
+                    item.querySelector('.toc-subitem').classList.add('active');
+                }
+            });
+        });
+
+        // Smooth scrolling for TOC links
+        document.querySelectorAll('.toc-container a').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Highlight active section in TOC as you scroll
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.toc-container a');
+            
+            let currentSection = '';
+            
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                
+                if (pageYOffset >= sectionTop - 100) {
+                    currentSection = section.id;
+                }
+            });
+            
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + currentSection) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // Simple syntax highlighting for code blocks
+        document.querySelectorAll('pre code').forEach((block) => {
+            const code = block.innerHTML;
+            
+            // Keywords
+            let highlighted = code
+                .replace(/\b(var|let|const|function|return|if|else|for|while|do|switch|case|break|continue|new|this|class|extends|import|export|default|from|as|try|catch|finally|throw|true|false|null|undefined|typeof|instanceof|BigInt|Symbol|String|Number|Boolean|parseInt|parseFloat|Array|Object)\b/g, '<span class="code-keyword">$1</span>')
+                // Operators
+                .replace(/(\+\+|--|\+\=|\-\=|\*\=|\/\=|\%\=|\*\*|\*\*\=|==|===|!=|!==|&lt;|&gt;|&lt;=|&gt;=|&amp;&amp;|\|\||!|\?\?|\?\.|&amp;|\||\^|~|&lt;&lt;|&gt;&gt;|&gt;&gt;&gt;|=|,)/g, '<span class="operator">$1</span>')
+                // Numbers (including BigInt)
+                .replace(/(\b\d+n\b|\b\d+\.\d+|\b\d+\b)/g, '<span class="code-number">$1</span>')
+                // Strings
+                .replace(/(['"])(?:(?!\1)[^\\]|\\.)*\1/g, '<span class="code-string">$&</span>')
+                // Comments
+                .replace(/\/\/.*$/gm, '<span class="code-comment">$&</span>')
+                .replace(/\/\*[\s\S]*?\*\//g, '<span class="code-comment">$&</span>')
+                // Boolean literals
+                .replace(/\b(true|false)\b/g, '<span class="code-boolean">$1</span>')
+                // null and undefined
+                .replace(/\b(null|undefined)\b/g, '<span class="code-null">$1</span>');
+            
+            block.innerHTML = highlighted;
+        });
+    </script>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+```

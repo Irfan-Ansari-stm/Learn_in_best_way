@@ -1,0 +1,2010 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Modern DOM APIs in JavaScript - Deep Learning Note</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
+    <style>
+        :root {
+            --bg-main: #050816;
+            --bg-panel: #020617;
+            --bg-panel-soft: #0b1120;
+            --border-subtle: #1f2937;
+            --text-main: #e5e7eb;
+            --text-muted: #9ca3af;
+            --accent-cyan: #06b6d4;
+            --accent-amber: #f59e0b;
+            --accent-danger: #fb7185;
+            --code-bg: #020617;
+            --code-border: #1f2937;
+            --shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.55);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle at top, #0f172a 0, #020617 45%, #020617 100%);
+            color: var(--text-main);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            min-height: 100vh;
+        }
+
+        /* Layout */
+        .app-shell {
+            display: flex;
+            min-height: 100vh;
+            max-width: 100%;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 320px;
+            max-width: 100%;
+            background: linear-gradient(180deg, #020617 0%, #020617 45%, #020617 100%);
+            border-right: 1px solid var(--border-subtle);
+            box-shadow: var(--shadow-soft);
+            padding: 1.5rem 1.25rem;
+            position: sticky;
+            top: 0;
+            align-self: flex-start;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 10;
+        }
+
+        .main-content {
+            flex: 1;
+            max-height: 100vh;
+            overflow-y: auto;
+            padding: 1.5rem 1.5rem 3rem;
+        }
+
+        @media (max-width: 767.98px) {
+            .app-shell {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                position: relative;
+                height: auto;
+                max-height: 60vh;
+            }
+
+            .main-content {
+                max-height: unset;
+            }
+        }
+
+        /* Sidebar styling */
+        .badge-level {
+            border-radius: 999px;
+            padding: 0.15rem 0.65rem;
+            font-size: 0.7rem;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            color: var(--accent-cyan);
+        }
+
+        .course-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+
+        .course-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .author-card {
+            background: radial-gradient(circle at top left, rgba(6, 182, 212, 0.12), transparent 55%);
+            border-radius: 0.95rem;
+            padding: 0.8rem 0.9rem;
+            border: 1px solid rgba(31, 41, 55, 0.9);
+            margin-top: 0.75rem;
+        }
+
+        .author-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .author-meta {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .toc-header {
+            margin-top: 1.3rem;
+            margin-bottom: 0.4rem;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--accent-amber);
+        }
+
+        .toc-search {
+            position: relative;
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-search input {
+            background: rgba(15, 23, 42, 0.95);
+            border-radius: 999px;
+            border: 1px solid rgba(31, 41, 55, 0.9);
+            color: var(--text-main);
+            font-size: 0.8rem;
+            padding-right: 1.9rem;
+        }
+
+        .toc-search input:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 1px rgba(6, 182, 212, 0.3);
+        }
+
+        .toc-search-icon {
+            position: absolute;
+            right: 0.6rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .toc-controls {
+            display: flex;
+            gap: 0.4rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .toc-controls button {
+            flex: 1;
+            border-radius: 999px;
+            border: 1px solid rgba(31, 41, 55, 0.85);
+            background: rgba(15, 23, 42, 0.85);
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+        }
+
+        .toc-controls button:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        .toc-list {
+            list-style: none;
+            padding-left: 0;
+            margin: 0;
+            font-size: 0.82rem;
+        }
+
+        .toc-item {
+            margin-bottom: 0.2rem;
+        }
+
+        .toc-link {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            text-decoration: none;
+            color: var(--text-muted);
+            padding: 0.35rem 0.45rem;
+            border-radius: 999px;
+            transition: background 150ms ease, color 150ms ease, transform 120ms ease;
+        }
+
+        .toc-link span.bullet {
+            width: 0.25rem;
+            height: 0.25rem;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.7);
+        }
+
+        .toc-link:hover {
+            background: rgba(15, 23, 42, 0.95);
+            color: var(--accent-cyan);
+            transform: translateX(1px);
+        }
+
+        .toc-link.active {
+            background: rgba(8, 47, 73, 0.85);
+            color: var(--accent-cyan);
+        }
+
+        .toc-link[data-level="2"] {
+            padding-left: 1.7rem;
+            font-size: 0.78rem;
+        }
+
+        .toc-link[data-level="3"] {
+            padding-left: 2.1rem;
+            font-size: 0.76rem;
+        }
+
+        .toc-link[data-level="2"] span.bullet,
+        .toc-link[data-level="3"] span.bullet {
+            transform: scale(0.8);
+            opacity: 0.7;
+        }
+
+        /* Main content styling */
+        .content-header {
+            margin-bottom: 1.4rem;
+            border-bottom: 1px solid rgba(31, 41, 55, 0.9);
+            padding-bottom: 0.9rem;
+        }
+
+        .content-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+
+        .content-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            margin-top: 0.5rem;
+        }
+
+        .content-badge {
+            font-size: 0.7rem;
+            border-radius: 999px;
+            padding: 0.15rem 0.55rem;
+            border: 1px solid rgba(55, 65, 81, 0.95);
+            color: var(--text-muted);
+        }
+
+        .content-badge.highlight {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        .pill-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            border-radius: 999px;
+            padding: 0.15rem 0.55rem;
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .pill-tag-dot {
+            width: 0.28rem;
+            height: 0.28rem;
+            border-radius: 999px;
+            background: var(--accent-amber);
+        }
+
+        .intro-callout {
+            background: radial-gradient(circle at top left, rgba(245, 158, 11, 0.12), rgba(15, 23, 42, 0.98));
+            border-radius: 1.2rem;
+            padding: 1rem 1.1rem;
+            border: 1px solid rgba(55, 65, 81, 0.95);
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 1.2rem;
+            font-size: 0.92rem;
+        }
+
+        .intro-callout h2 {
+            font-size: 1.05rem;
+            margin-bottom: 0.45rem;
+        }
+
+        .section-card {
+            background: radial-gradient(circle at top left, rgba(6, 182, 212, 0.08), rgba(15, 23, 42, 0.96));
+            border-radius: 1.2rem;
+            padding: 1rem 1.1rem;
+            border: 1px solid rgba(31, 41, 55, 0.95);
+            margin-bottom: 1.2rem;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            margin-bottom: 0.4rem;
+            color: var(--accent-cyan);
+        }
+
+        .section-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.7rem;
+        }
+
+        /* Details / summary styling */
+        details {
+            border-radius: 0.9rem;
+            border: 1px solid rgba(31, 41, 55, 0.9);
+            background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.96));
+            margin-bottom: 0.7rem;
+            padding: 0.1rem 0.85rem 0.6rem;
+        }
+
+        details[open] {
+            border-color: rgba(6, 182, 212, 0.8);
+            box-shadow: 0 0 0 1px rgba(6, 182, 212, 0.25);
+        }
+
+        summary {
+            cursor: pointer;
+            list-style: none;
+            padding: 0.55rem 0.2rem 0.55rem 0.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .summary-icon {
+            width: 1.1rem;
+            height: 1.1rem;
+            border-radius: 999px;
+            border: 1px solid rgba(75, 85, 99, 0.9);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            color: var(--accent-cyan);
+        }
+
+        details[open] .summary-icon {
+            border-color: var(--accent-cyan);
+            background: rgba(8, 47, 73, 0.9);
+        }
+
+        .summary-label {
+            flex: 1;
+        }
+
+        .summary-pill {
+            font-size: 0.7rem;
+            padding: 0.1rem 0.5rem;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            color: var(--text-muted);
+        }
+
+        .details-body {
+            padding-top: 0.4rem;
+            padding-bottom: 0.1rem;
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        .details-body p {
+            margin-bottom: 0.4rem;
+        }
+
+        .details-body ul {
+            margin-bottom: 0.35rem;
+        }
+
+        .details-body li {
+            margin-bottom: 0.2rem;
+        }
+
+        .badge-mini {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            border-radius: 999px;
+            font-size: 0.65rem;
+            padding: 0.05rem 0.45rem;
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            color: var(--text-muted);
+        }
+
+        .badge-mini-dot {
+            width: 0.26rem;
+            height: 0.26rem;
+            border-radius: 999px;
+            background: var(--accent-cyan);
+        }
+
+        .pill-warning {
+            border-color: rgba(248, 113, 113, 0.8);
+            color: #fecaca;
+        }
+
+        /* Code blocks */
+        pre {
+            margin: 0.5rem 0 0.8rem;
+            padding: 0.75rem 0.8rem;
+            background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 1));
+            border-radius: 0.75rem;
+            border: 1px solid var(--code-border);
+            overflow-x: auto;
+            font-size: 0.82rem;
+            line-height: 1.5;
+        }
+
+        code {
+            font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            background: transparent;
+            color: #e5e7eb;
+        }
+
+        .code-block {
+            position: relative;
+        }
+
+        .code-lang-label {
+            position: absolute;
+            top: 0.4rem;
+            right: 0.7rem;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+        }
+
+        .inline-code {
+            background: rgba(15, 23, 42, 0.95);
+            border-radius: 0.35rem;
+            padding: 0.05rem 0.35rem;
+            border: 1px solid rgba(31, 41, 55, 0.95);
+            font-size: 0.85em;
+        }
+
+        /* Simple syntax highlight tokens */
+        .token-keyword {
+            color: #38bdf8;
+            font-weight: 500;
+        }
+
+        .token-string {
+            color: #f97316;
+        }
+
+        .token-number {
+            color: #a5b4fc;
+        }
+
+        .token-comment {
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        .token-property {
+            color: #22c55e;
+        }
+
+        .token-method {
+            color: #fbbf24;
+        }
+
+        /* Utility text */
+        .text-muted-soft {
+            color: var(--text-muted);
+        }
+
+        .tip-box {
+            margin-top: 0.4rem;
+            padding: 0.45rem 0.6rem;
+            border-radius: 0.7rem;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px dashed rgba(55, 65, 81, 0.9);
+            font-size: 0.8rem;
+        }
+
+        .tip-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--accent-amber);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 0.7rem;
+        }
+
+        @media (max-width: 991.98px) {
+            .grid-2 {
+                grid-template-columns: minmax(0, 1fr);
+            }
+        }
+
+        .highlight-box {
+            border-radius: 0.85rem;
+            background: rgba(15, 23, 42, 0.98);
+            border: 1px solid rgba(31, 41, 55, 0.9);
+            padding: 0.6rem 0.7rem;
+            font-size: 0.85rem;
+        }
+
+        .highlight-box h4 {
+            font-size: 0.9rem;
+            margin-bottom: 0.35rem;
+        }
+
+        .api-signature {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.86rem;
+            background: rgba(15, 23, 42, 0.9);
+            padding: 0.4rem 0.55rem;
+            border-radius: 0.6rem;
+            border: 1px solid rgba(31, 41, 55, 0.9);
+        }
+
+        .step-list {
+            counter-reset: step-counter;
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .step-list li {
+            counter-increment: step-counter;
+            margin-bottom: 0.4rem;
+            position: relative;
+            padding-left: 1.3rem;
+        }
+
+        .step-list li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0.05rem;
+            width: 1rem;
+            height: 1rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(8, 47, 73, 0.95);
+            color: var(--accent-cyan);
+        }
+
+        .warning-text {
+            color: var(--accent-danger);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-shell">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="badge-level">DOM &amp; Browser APIs</span>
+                <span class="pill-tag">
+                    <span class="pill-tag-dot"></span>
+                    v1.0 Note
+                </span>
+            </div>
+
+            <div class="mt-2">
+                <div class="course-title text-uppercase">Modern DOM APIs in JavaScript</div>
+                <div class="course-subtitle">
+                    IntersectionObserver, MutationObserver, ResizeObserver, Custom Elements, and Shadow DOM — from basics
+                    to production patterns.
+                </div>
+            </div>
+
+            <div class="author-card mt-2">
+                <div class="author-name">Prepared for: College → Master / PhD learners</div>
+                <div class="author-meta">
+                    Focus: deep intuition, architecture patterns, and real-world performance-oriented examples.
+                </div>
+            </div>
+
+            <div class="toc-header mt-3">Table of Contents</div>
+
+            <div class="toc-search">
+                <input id="tocSearchInput" class="form-control form-control-sm" type="text" placeholder="Search sections...">
+                <span class="toc-search-icon">⌕</span>
+            </div>
+
+            <div class="toc-controls">
+                <button id="btnExpandAll" type="button">Expand all</button>
+                <button id="btnCollapseAll" type="button">Collapse all</button>
+            </div>
+
+            <ul class="toc-list mt-2" id="tocList">
+                <li class="toc-item">
+                    <a href="#overview" class="toc-link" data-scroll data-level="1">
+                        <span class="bullet"></span>
+                        <span>0. Executive Overview</span>
+                    </a>
+                </li>
+                <li class="toc-item">
+                    <a href="#intersection-observer" class="toc-link" data-scroll data-level="1">
+                        <span class="bullet"></span>
+                        <span>1. Intersection Observer API</span>
+                    </a>
+                </li>
+                <li class="toc-item">
+                    <a href="#mutation-observer" class="toc-link" data-scroll data-level="1">
+                        <span class="bullet"></span>
+                        <span>2. Mutation Observer API</span>
+                    </a>
+                </li>
+                <li class="toc-item">
+                    <a href="#resize-observer" class="toc-link" data-scroll data-level="1">
+                        <span class="bullet"></span>
+                        <span>3. ResizeObserver API</span>
+                    </a>
+                </li>
+                <li class="toc-item">
+                    <a href="#custom-elements" class="toc-link" data-scroll data-level="1">
+                        <span class="bullet"></span>
+                        <span>4. Custom Elements Basics</span>
+                    </a>
+                </li>
+                <li class="toc-item">
+                    <a href="#shadow-dom" class="toc-link" data-scroll data-level="1">
+                        <span class="bullet"></span>
+                        <span>5. Shadow DOM Introduction</span>
+                    </a>
+                </li>
+                <li class="toc-item">
+                    <a href="#integration-patterns" class="toc-link" data-scroll data-level="1">
+                        <span class="bullet"></span>
+                        <span>6. Integration Patterns &amp; Best Practices</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="mt-4">
+                <div class="tip-box">
+                    <div class="tip-title mb-1">Study workflow tip</div>
+                    <div class="text-muted-soft">
+                        For each API:
+                        <ul class="mt-1 mb-0">
+                            <li>Read executive summary</li>
+                            <li>Skim syntax</li>
+                            <li>Implement the example</li>
+                            <li>Modify it for your own use case</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <header class="content-header">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                    <div>
+                        <div class="content-title text-uppercase">Module 16.4 – Modern DOM APIs</div>
+                        <div class="text-muted-soft">
+                            Going beyond manual event listeners: declarative observation of visibility, mutations, sizes,
+                            and encapsulated components.
+                        </div>
+                    </div>
+                    <div class="content-badges">
+                        <span class="content-badge highlight">JavaScript</span>
+                        <span class="content-badge">Performance</span>
+                        <span class="content-badge">Browser internals</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- INTRO / OVERVIEW -->
+            <section id="overview" class="intro-callout">
+                <h2>0. Executive Overview</h2>
+                <p>
+                    Traditional DOM code relies heavily on a simple trio:
+                    <span class="inline-code">document.querySelector</span>,
+                    <span class="inline-code">addEventListener</span>, and imperative style updates. Modern web
+                    applications, however, need more: lazy-loaded sections, infinite scroll, mutation-aware UI, and
+                    fully encapsulated components that feel like built-in HTML elements. The browser now exposes
+                    powerful observer-style APIs and Web Components primitives that let you react to
+                    <strong>visibility</strong>, <strong>DOM mutations</strong>, and <strong>element size changes</strong>,
+                    and define your own <strong>custom tags with private DOM</strong>.
+                </p>
+                <p>
+                    In this note, we will go deeply into:
+                </p>
+                <ul>
+                    <li><strong>IntersectionObserver</strong> – efficiently react when an element enters or exits the viewport.</li>
+                    <li><strong>MutationObserver</strong> – watch the DOM tree for insertions, removals, and attribute changes.</li>
+                    <li><strong>ResizeObserver</strong> – track element size changes without polling or window resize hacks.</li>
+                    <li><strong>Custom Elements</strong> – define your own HTML tags with lifecycle callbacks.</li>
+                    <li><strong>Shadow DOM</strong> – encapsulate styles and structure so your component behaves like a black box.</li>
+                </ul>
+                <p>
+                    Conceptually, all observers follow a similar flow: <strong>configure once</strong> →
+                    <strong>register target(s)</strong> →
+                    <strong>browser asynchronously sends batched notifications</strong>. Web Components build on this to
+                    achieve framework-like encapsulation in plain JavaScript.
+                </p>
+                <div class="highlight-box mt-2">
+                    <h4>High-level pseudocode pattern for observers</h4>
+                    <pre class="code-block"><span class="code-lang-label">pseudocode</span><code>
+// 1. Create observer object with a callback and configuration
+observer = new ObserverType(callback(entries), options)
+
+// 2. Register one or more target elements
+for each element in elementsToObserve:
+    observer.observe(element)
+
+// 3. In callback, react to changes (visibility / mutations / size)
+function callback(entries):
+    for entry in entries:
+        if condition(entry):
+            performSideEffect(entry.target)
+
+// 4. Later, clean up to avoid leaks
+observer.disconnect()</code></pre>
+                </div>
+            </section>
+
+            <!-- 1. Intersection Observer -->
+            <section id="intersection-observer" class="section-card">
+                <div class="section-title">1. Intersection Observer API</div>
+                <div class="section-subtitle">
+                    Observe visibility of elements relative to a root (usually the viewport) and implement lazy-loading,
+                    scroll-triggered animations, and infinite scroll without manual scroll listeners.
+                </div>
+
+                <!-- Executive Summary -->
+                <details open>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Executive summary: why IntersectionObserver?</span>
+                        <span class="summary-pill">Concept</span>
+                    </summary>
+                    <div class="details-body">
+                        <p>
+                            The <strong>IntersectionObserver</strong> API lets you ask the browser:
+                            <em>"Tell me whenever this element becomes visible/invisible within a scrollable region."</em>
+                            Instead of manually handling <span class="inline-code">scroll</span> events and computing
+                            <span class="inline-code">getBoundingClientRect()</span> on every frame, you delegate this
+                            job to the browser’s rendering engine.
+                        </p>
+                        <ul>
+                            <li>Observation is <strong>asynchronous</strong> – callbacks are batched and efficient.</li>
+                            <li>You can specify <strong>thresholds</strong> – e.g., fire only when at least 50% of the element is visible.</li>
+                            <li>You can define a <strong>root</strong> – viewport or any scrollable container.</li>
+                        </ul>
+                        <p>
+                            Use cases: lazy-loading images, animating sections when they appear, auto-pausing videos
+                            when off-screen, analytics (section view tracking), infinite-scroll loaders, etc.
+                        </p>
+                    </div>
+                </details>
+
+                <!-- Deep Concepts -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Deep dive: core concepts &amp; terminology</span>
+                        <span class="summary-pill">Theory</span>
+                    </summary>
+                    <div class="details-body">
+                        <p>Important terms:</p>
+                        <ul>
+                            <li>
+                                <strong>Root</strong> – the container whose viewport is used for intersection; by
+                                default <span class="inline-code">null</span> (browser viewport).
+                            </li>
+                            <li>
+                                <strong>Root margin</strong> – virtual margins around the root, expressed like CSS
+                                (<span class="inline-code">'0px 0px -20% 0px'</span>).
+                            </li>
+                            <li>
+                                <strong>Thresholds</strong> – values between 0 and 1 (or an array) indicating what
+                                fraction of the target’s area must be visible to trigger the callback.
+                            </li>
+                        </ul>
+                        <p>
+                            Intersection events are delivered as <strong>entries</strong>:
+                            each entry is an <span class="inline-code">IntersectionObserverEntry</span> containing:
+                        </p>
+                        <ul>
+                            <li><span class="inline-code">entry.target</span> – the observed DOM element</li>
+                            <li><span class="inline-code">entry.isIntersecting</span> – boolean: currently intersecting?</li>
+                            <li><span class="inline-code">entry.intersectionRatio</span> – number between 0 and 1</li>
+                            <li><span class="inline-code">entry.boundingClientRect</span> – rect of target element</li>
+                            <li><span class="inline-code">entry.rootBounds</span> – rect of root</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <!-- Syntax -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Syntax &amp; options</span>
+                        <span class="summary-pill">Syntax</span>
+                    </summary>
+                    <div class="details-body">
+                        <div class="api-signature mb-2">
+                            const observer = new IntersectionObserver(callback, options)
+                        </div>
+                        <ul>
+                            <li>
+                                <span class="inline-code">callback(entries, observer)</span> – function executed whenever visibility crosses a threshold.
+                            </li>
+                            <li>
+                                <span class="inline-code">options.root</span> – element or <span class="inline-code">null</span>.
+                            </li>
+                            <li>
+                                <span class="inline-code">options.rootMargin</span> – e.g. <span class="inline-code">'0px 0px -20% 0px'</span>.
+                            </li>
+                            <li>
+                                <span class="inline-code">options.threshold</span> – number or array of numbers.
+                            </li>
+                        </ul>
+
+                        <div class="code-block">
+                            <span class="code-lang-label">js</span>
+                            <pre><code class="language-js">
+// 1. Create observer with callback and config
+const observer = new IntersectionObserver((entries, observer) =&gt; {
+  entries.forEach((entry) =&gt; {
+    // entry.isIntersecting = true when threshold is reached
+    if (entry.isIntersecting) {
+      console.log('Element visible:', entry.target);
+
+      // Optional: stop observing once we've acted
+      observer.unobserve(entry.target);
+    }
+  });
+}, {
+  root: null,                  // viewport
+  rootMargin: '0px 0px -20% 0px', // triggers slightly before bottom edge
+  threshold: 0.25              // 25% of element must be visible
+});
+
+// 2. Observe one or many targets
+document.querySelectorAll('.lazy-section').forEach((section) =&gt; {
+  observer.observe(section);
+});</code></pre>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Example: Lazy loading images -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Example: lazy-loading images when visible</span>
+                        <span class="summary-pill">Example &amp; Use case</span>
+                    </summary>
+                    <div class="details-body">
+                        <p>
+                            Assume you have many images below the fold. Instead of loading them all, you use a
+                            <span class="inline-code">data-src</span> attribute and only set the real <span class="inline-code">src</span>
+                            when the image is visible.
+                        </p>
+
+                        <div class="grid-2">
+                            <div>
+                                <div class="highlight-box mb-2">
+                                    <h4>HTML structure</h4>
+                                    <pre class="code-block"><span class="code-lang-label">html</span><code class="language-html">&lt;img
+  class="lazy-image"
+  src="placeholder.jpg"
+  data-src="real-large-image-1.jpg"
+  alt="Landscape"&gt;
+
+&lt;img
+  class="lazy-image"
+  src="placeholder.jpg"
+  data-src="real-large-image-2.jpg"
+  alt="Mountains"&gt;</code></pre>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="highlight-box mb-2">
+                                    <h4>JavaScript with IntersectionObserver</h4>
+                                    <pre class="code-block"><span class="code-lang-label">js</span><code class="language-js">
+const lazyImageObserver = new IntersectionObserver((entries, observer) =&gt; {
+  entries.forEach((entry) =&gt; {
+    if (!entry.isIntersecting) return;
+
+    const img = entry.target;
+    const realSrc = img.getAttribute('data-src');
+
+    if (realSrc) {
+      img.src = realSrc;
+      img.removeAttribute('data-src');
+    }
+
+    // Stop observing after loading
+    observer.unobserve(img);
+  });
+}, {
+  root: null,
+  threshold: 0.1,        // 10% visible is enough
+  rootMargin: '0px 0px 100px 0px' // preload a bit before
+});
+
+// Register all images
+document.querySelectorAll('.lazy-image').forEach((img) =&gt; {
+  lazyImageObserver.observe(img);
+});</code></pre>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tip-box">
+                            <div class="tip-title">Real-world extension</div>
+                            <div class="text-muted-soft">
+                                You can combine this with CSS classes:
+                                animate elements when visible by adding a class inside
+                                the callback, e.g. <span class="inline-code">entry.target.classList.add('fade-in')</span>.
+                            </div>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Pitfalls -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Common pitfalls &amp; mental model</span>
+                        <span class="summary-pill">Pitfalls</span>
+                    </summary>
+                    <div class="details-body">
+                        <ul class="step-list">
+                            <li>
+                                <strong>Not disconnecting observers</strong>: for single-page applications, unmounting a
+                                section without disconnecting its observer can cause memory leaks. Use
+                                <span class="inline-code">observer.disconnect()</span> during cleanup.
+                            </li>
+                            <li>
+                                <strong>Misunderstanding thresholds</strong>: a threshold of <span class="inline-code">0</span>
+                                fires the moment the element <em>starts</em> to intersect; a threshold of
+                                <span class="inline-code">1</span> means fully visible.
+                            </li>
+                            <li>
+                                <strong>Over-observing tiny elements</strong>: observing hundreds of small items is fine
+                                but keep your callback light; avoid heavy DOM operations inside.
+                            </li>
+                        </ul>
+                    </div>
+                </details>
+            </section>
+
+            <!-- 2. Mutation Observer -->
+            <section id="mutation-observer" class="section-card">
+                <div class="section-title">2. Mutation Observer API</div>
+                <div class="section-subtitle">
+                    Watch the DOM for changes (new nodes, removed nodes, updated attributes, or text content) without
+                    polling.
+                </div>
+
+                <!-- Executive summary -->
+                <details open>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Executive summary: why MutationObserver?</span>
+                        <span class="summary-pill">Concept</span>
+                    </summary>
+                    <div class="details-body">
+                        <p>
+                            <strong>MutationObserver</strong> is a low-level API that notifies you when the DOM tree
+                            changes beneath a node you’re interested in. This is useful when:
+                        </p>
+                        <ul>
+                            <li>You integrate with third-party scripts that inject elements dynamically.</li>
+                            <li>You want analytics or auto-instrumentation whenever specific nodes are added.</li>
+                            <li>You maintain a virtual structure that mirrors the DOM (e.g., building custom devtools).</li>
+                        </ul>
+                        <p>
+                            Historically, developers used <span class="inline-code">DOMSubtreeModified</span>-style
+                            events or timers (polling). Those are inefficient and deprecated. MutationObserver is
+                            asynchronous and batched, similar in spirit to IntersectionObserver.
+                        </p>
+                    </div>
+                </details>
+
+                <!-- Syntax -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Syntax &amp; configuration options</span>
+                        <span class="summary-pill">Syntax</span>
+                    </summary>
+                    <div class="details-body">
+                        <div class="api-signature mb-2">
+                            const observer = new MutationObserver(callback)
+                        </div>
+                        <p><strong>Config object:</strong></p>
+                        <ul>
+                            <li><span class="inline-code">childList</span> – observe additions/removals of child nodes.</li>
+                            <li><span class="inline-code">attributes</span> – observe attribute changes.</li>
+                            <li><span class="inline-code">characterData</span> – text node content changes.</li>
+                            <li><span class="inline-code">subtree</span> – if true, watch not only direct children but all descendants.</li>
+                            <li><span class="inline-code">attributeFilter</span> – array of attribute names to limit observation.</li>
+                        </ul>
+
+                        <div class="code-block">
+                            <span class="code-lang-label">js</span>
+                            <pre><code class="language-js">
+// Target node whose subtree you want to observe
+const targetNode = document.getElementById('chat-container');
+
+// Callback for DOM changes
+const mutationCallback = (mutationList, observer) =&gt; {
+  mutationList.forEach((mutation) =&gt; {
+    if (mutation.type === 'childList') {
+      console.log('Nodes added:', mutation.addedNodes);
+      console.log('Nodes removed:', mutation.removedNodes);
+    }
+    if (mutation.type === 'attributes') {
+      console.log(
+        'Attribute changed:',
+        mutation.attributeName,
+        'on',
+        mutation.target
+      );
+    }
+  });
+};
+
+// Create observer
+const mutationObserver = new MutationObserver(mutationCallback);
+
+// Start observing
+mutationObserver.observe(targetNode, {
+  childList: true,
+  attributes: true,
+  subtree: true,
+  attributeFilter: ['data-status', 'aria-hidden']
+});
+
+// Stop observing later
+// mutationObserver.disconnect();</code></pre>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Example: monitoring chat messages -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Example: monitoring a dynamic chat list</span>
+                        <span class="summary-pill">Example &amp; Use case</span>
+                    </summary>
+                    <div class="details-body">
+                        <p>
+                            Imagine a chat widget that appends new messages from the server. You may want to:
+                            <strong>auto-scroll</strong> to the latest message and <strong>log analytics</strong> whenever a
+                            new message arrives.
+                        </p>
+
+                        <div class="grid-2">
+                            <div>
+                                <div class="highlight-box mb-2">
+                                    <h4>HTML structure</h4>
+                                    <pre class="code-block"><span class="code-lang-label">html</span><code class="language-html">&lt;div id="chat-container" class="chat-container"&gt;
+  &lt;div class="chat-message"&gt;Hello&lt;/div&gt;
+  &lt;div class="chat-message"&gt;How are you?&lt;/div&gt;
+  &lt;!-- More messages dynamically added here --&gt;
+&lt;/div&gt;</code></pre>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="highlight-box mb-2">
+                                    <h4>JavaScript logic</h4>
+                                    <pre class="code-block"><span class="code-lang-label">js</span><code class="language-js">
+const chatContainer = document.getElementById('chat-container');
+
+const chatObserver = new MutationObserver((mutations) =&gt; {
+  mutations.forEach((mutation) =&gt; {
+    if (mutation.type === 'childList' &amp;&amp; mutation.addedNodes.length &gt; 0) {
+      mutation.addedNodes.forEach((node) =&gt; {
+        if (node.nodeType === Node.ELEMENT_NODE &amp;&amp;
+            node.classList.contains('chat-message')) {
+
+          // Auto-scroll to bottom
+          chatContainer.scrollTop = chatContainer.scrollHeight;
+
+          // Basic analytics
+          console.log('New chat message:', node.textContent.trim());
+        }
+      });
+    }
+  });
+});
+
+chatObserver.observe(chatContainer, {
+  childList: true,
+  subtree: false
+});</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Example: attributes watcher -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Example: reacting to attribute changes</span>
+                        <span class="summary-pill">Example</span>
+                    </summary>
+                    <div class="details-body">
+                        <p>
+                            Suppose you have a button whose <span class="inline-code">data-status</span> attribute is
+                            updated by some external script. You want to mirror that into CSS classes or trigger a toast.
+                        </p>
+
+                        <pre class="code-block"><span class="code-lang-label">js</span><code class="language-js">
+const statusButton = document.querySelector('[data-role="status-toggle"]');
+
+const attributeObserver = new MutationObserver((mutations) =&gt; {
+  mutations.forEach((mutation) =&gt; {
+    if (mutation.type === 'attributes' &amp;&amp; mutation.attributeName === 'data-status') {
+      const newStatus = mutation.target.getAttribute('data-status');
+      console.log('Status changed to:', newStatus);
+
+      // Map to CSS class
+      mutation.target.classList.toggle('is-active', newStatus === 'active');
+    }
+  });
+});
+
+attributeObserver.observe(statusButton, {
+  attributes: true,
+  attributeFilter: ['data-status']
+});</code></pre>
+
+                        <div class="tip-box">
+                            <div class="tip-title">Performance tip</div>
+                            <div class="text-muted-soft">
+                                Always narrow down your config with <span class="inline-code">attributeFilter</span> and
+                                avoid watching huge subtrees unless necessary.
+                            </div>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Pitfalls -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Pitfalls, limitations, and mental model</span>
+                        <span class="summary-pill">Pitfalls</span>
+                    </summary>
+                    <div class="details-body">
+                        <ul class="step-list">
+                            <li>
+                                <span class="warning-text">Infinite loops:</span> if you change the DOM inside the
+                                observer callback in a way that triggers another mutation that you also observe, you
+                                might create loops. Protect with guards or temporarily disconnect.
+                            </li>
+                            <li>
+                                <strong>Too broad observation:</strong> watching the entire <span class="inline-code">document.body</span>
+                                with <span class="inline-code">subtree: true</span> and all flags may be expensive.
+                            </li>
+                            <li>
+                                <strong>Not understanding batching:</strong> multiple DOM changes can be coalesced into a
+                                single callback call. Do not assume one mutation per DOM operation.
+                            </li>
+                        </ul>
+                    </div>
+                </details>
+            </section>
+
+            <!-- 3. ResizeObserver -->
+            <section id="resize-observer" class="section-card">
+                <div class="section-title">3. ResizeObserver API</div>
+                <div class="section-subtitle">
+                    Observe changes to the size of a DOM element, independent of window resize, without polling.
+                </div>
+
+                <!-- Executive summary -->
+                <details open>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Executive summary: why ResizeObserver?</span>
+                        <span class="summary-pill">Concept</span>
+                    </summary>
+                    <div class="details-body">
+                        <p>
+                            In responsive layouts, components may resize because of container size, content changes, or
+                            CSS rules. Traditionally, developers listened to <span class="inline-code">window.onresize</span>
+                            and manually recomputed things, or used <strong>ResizeObserver polyfills</strong> that relied
+                            on hacks. The <strong>ResizeObserver</strong> API provides a native, efficient way to respond
+                            whenever a specific element changes size.
+                        </p>
+                        <p>Typical use cases:</p>
+                        <ul>
+                            <li>Redrawing a chart or canvas when its container size changes.</li>
+                            <li>Switching UI layout (compact vs expanded) for a card based on its width.</li>
+                            <li>Logging layout issues (e.g., when an element repeatedly resizes due to layout thrashing).</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <!-- Syntax -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Syntax &amp; core pattern</span>
+                        <span class="summary-pill">Syntax</span>
+                    </summary>
+                    <div class="details-body">
+                        <div class="api-signature mb-2">
+                            const ro = new ResizeObserver(callback)
+                        </div>
+                        <ul>
+                            <li><span class="inline-code">callback(entries, observer)</span> – receives an array of <span class="inline-code">ResizeObserverEntry</span>.</li>
+                            <li>Each entry has <span class="inline-code">target</span> and <span class="inline-code">contentRect</span> (width, height, etc.).</li>
+                        </ul>
+
+                        <pre class="code-block"><span class="code-lang-label">js</span><code class="language-js">
+const container = document.querySelector('.chart-container');
+
+const resizeObserver = new ResizeObserver((entries) =&gt; {
+  for (const entry of entries) {
+    const { width, height } = entry.contentRect;
+    console.log('New size:', width, height);
+
+    // e.g. re-render chart with new dimensions
+    // renderChart({ width, height });
+  }
+});
+
+// Start observing
+resizeObserver.observe(container);
+
+// Later
+// resizeObserver.unobserve(container);
+// resizeObserver.disconnect();</code></pre>
+                    </div>
+                </details>
+
+                <!-- Example: responsive chart container -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Example: responsive card that changes layout by width</span>
+                        <span class="summary-pill">Example &amp; Use case</span>
+                    </summary>
+                    <div class="details-body">
+                        <p>
+                            Suppose you have a card component that should switch to a
+                            <em>compact mode</em> when its width is less than 400px (e.g., on mobile or narrow columns).
+                        </p>
+
+                        <pre class="code-block"><span class="code-lang-label">js</span><code class="language-js">
+const cards = document.querySelectorAll('.responsive-card');
+
+const cardResizeObserver = new ResizeObserver((entries) =&gt; {
+  entries.forEach((entry) =&gt; {
+    const card = entry.target;
+    const width = entry.contentRect.width;
+
+    if (width &lt; 400) {
+      card.classList.add('card-compact');
+      card.classList.remove('card-expanded');
+    } else {
+      card.classList.add('card-expanded');
+      card.classList.remove('card-compact');
+    }
+  });
+});
+
+cards.forEach((card) =&gt; cardResizeObserver.observe(card));</code></pre>
+
+                        <div class="tip-box">
+                            <div class="tip-title">CSS pairing</div>
+                            <div class="text-muted-soft">
+                                Combine with CSS:
+                                <pre class="code-block"><span class="code-lang-label">css</span><code class="language-css">.card-compact { font-size: 0.85rem; }
+.card-expanded { font-size: 1rem; }</code></pre>
+                                This gives you component-scoped responsiveness without depending solely on global media queries.
+                            </div>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Pitfalls -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Pitfalls: feedback loops &amp; performance</span>
+                        <span class="summary-pill">Pitfalls</span>
+                    </summary>
+                    <div class="details-body">
+                        <ul class="step-list">
+                            <li>
+                                <strong>Feedback loops:</strong> if your callback changes the size of the element,
+                                it may trigger another resize. Design your layout changes to be idempotent (e.g. switch
+                                classes only when needed).
+                            </li>
+                            <li>
+                                <strong>Watching too many nodes:</strong> observing hundreds of elements is okay, but
+                                keep the callback lightweight; push expensive work to
+                                <span class="inline-code">requestAnimationFrame</span> or debounce where needed.
+                            </li>
+                        </ul>
+                    </div>
+                </details>
+            </section>
+
+            <!-- 4. Custom Elements -->
+            <section id="custom-elements" class="section-card">
+                <div class="section-title">4. Custom Elements Basics</div>
+                <div class="section-subtitle">
+                    Define your own HTML tags with lifecycle callbacks, properties, and methods – the foundation of Web Components.
+                </div>
+
+                <!-- Executive summary -->
+                <details open>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Executive summary: what are Custom Elements?</span>
+                        <span class="summary-pill">Concept</span>
+                    </summary>
+                    <div class="details-body">
+                        <p>
+                            <strong>Custom Elements</strong> let you create your own HTML elements like
+                            <span class="inline-code">&lt;user-card&gt;</span> or
+                            <span class="inline-code">&lt;fancy-toggle&gt;</span> with encapsulated behavior, lifecycle hooks,
+                            and optional Shadow DOM.
+                        </p>
+                        <p>
+                            They integrate naturally with the DOM:
+                        </p>
+                        <ul>
+                            <li>Instantiated via HTML or <span class="inline-code">document.createElement('user-card')</span>.</li>
+                            <li>Controlled via attributes, properties, and methods.</li>
+                            <li>Lifecycle methods: <span class="inline-code">connectedCallback</span>,
+                                <span class="inline-code">disconnectedCallback</span>,
+                                <span class="inline-code">attributeChangedCallback</span>, etc.
+                            </li>
+                        </ul>
+                        <p>
+                            This is a framework-agnostic way to build reusable components that can be used in plain HTML,
+                            React, Vue, or server-side rendered environments.
+                        </p>
+                    </div>
+                </details>
+
+                <!-- Syntax -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Syntax: defining and using a custom element</span>
+                        <span class="summary-pill">Syntax</span>
+                    </summary>
+                    <div class="details-body">
+                        <div class="api-signature mb-2">
+                            class MyElement extends HTMLElement { /* lifecycle methods */ }
+                            <br>
+                            customElements.define('my-element', MyElement)
+                        </div>
+
+                        <pre class="code-block"><span class="code-lang-label">js</span><code class="language-js">
+// 1. Define class extending HTMLElement (or another built-in)
+class UserCard extends HTMLElement {
+  constructor() {
+    super();
+    // Optionally attach Shadow DOM here (later section)
+    this.innerHTML = `
+      &lt;div class="user-card"&gt;
+        &lt;strong&gt;User:&lt;/strong&gt;
+        &lt;span class="user-name"&gt;Anonymous&lt;/span&gt;
+      &lt;/div&gt;
+    `;
+  }
+
+  // Lifecycle: element added to the document
+  connectedCallback() {
+    console.log('UserCard connected to the DOM');
+    const name = this.getAttribute('name') || 'Anonymous';
+    this.querySelector('.user-name').textContent = name;
+  }
+
+  // Lifecycle: element removed from the document
+  disconnectedCallback() {
+    console.log('UserCard removed from the DOM');
+  }
+
+  // Observe specific attributes
+  static get observedAttributes() {
+    return ['name'];
+  }
+
+  // Called when observed attributes change
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === 'name' &amp;&amp; this.isConnected) {
+      this.querySelector('.user-name').textContent = newValue;
+    }
+  }
+}
+
+// 2. Register element with a custom tag name (must contain a dash)
+customElements.define('user-card', UserCard);</code></pre>
+
+                        <pre class="code-block"><span class="code-lang-label">html</span><code class="language-html">&lt;!-- 3. Use in HTML like any other element --&gt;
+&lt;user-card name="Irfan"&gt;&lt;/user-card&gt;
+&lt;user-card name="Ada Lovelace"&gt;&lt;/user-card&gt;</code></pre>
+
+                        <div class="tip-box">
+                            <div class="tip-title">Naming rule</div>
+                            <div class="text-muted-soft">
+                                Custom element names <strong>must contain a hyphen</strong> (e.g., <span class="inline-code">user-card</span>,
+                                <span class="inline-code">app-shell</span>), to avoid clashing with potential future native elements.
+                            </div>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Example: Toggle button element -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Example: &lt;toggle-button&gt; with state &amp; events</span>
+                        <span class="summary-pill">Example &amp; Use case</span>
+                    </summary>
+                    <div class="details-body">
+                        <p>
+                            We will build a simple <span class="inline-code">&lt;toggle-button&gt;</span> that
+                            maintains internal <span class="inline-code">on/off</span> state and dispatches a custom event
+                            when toggled.
+                        </p>
+
+                        <pre class="code-block"><span class="code-lang-label">js</span><code class="language-js">
+class ToggleButton extends HTMLElement {
+  constructor() {
+    super();
+    this._on = this.hasAttribute('on');
+
+    // Simple internal markup (Shadow DOM will be in the next section)
+    this.innerHTML = `
+      &lt;button type="button" class="toggle-btn"&gt;
+        &lt;span class="label"&gt;${this._on ? 'On' : 'Off'}&lt;/span&gt;
+      &lt;/button&gt;
+    `;
+
+    this._button = this.querySelector('button');
+    this._button.addEventListener('click', () =&gt; this.toggle());
+  }
+
+  static get observedAttributes() {
+    return ['on'];
+  }
+
+  attributeChangedCallback(name, oldValue, newValue) {
+    if (name === 'on') {
+      this._on = this.hasAttribute('on');
+      this._render();
+    }
+  }
+
+  connectedCallback() {
+    this._render();
+  }
+
+  _render() {
+    this._button.classList.toggle('is-on', this._on);
+    this._button.querySelector('.label').textContent = this._on ? 'On' : 'Off';
+  }
+
+  toggle() {
+    this._on = !this._on;
+    if (this._on) {
+      this.setAttribute('on', '');
+    } else {
+      this.removeAttribute('on');
+    }
+
+    // Dispatch a custom event for external listeners
+    this.dispatchEvent(new CustomEvent('toggle-change', {
+      detail: { on: this._on },
+      bubbles: true
+    }));
+  }
+}
+
+customElements.define('toggle-button', ToggleButton);</code></pre>
+
+                        <pre class="code-block"><span class="code-lang-label">html</span><code class="language-html">&lt;toggle-button id="demo-toggle"&gt;&lt;/toggle-button&gt;
+
+&lt;script&gt;
+  const toggle = document.getElementById('demo-toggle');
+  toggle.addEventListener('toggle-change', (event) =&gt; {
+    console.log('Toggle state:', event.detail.on);
+  });
+&lt;/script&gt;</code></pre>
+                    </div>
+                </details>
+
+                <!-- Pitfalls -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Pitfalls &amp; best practices</span>
+                        <span class="summary-pill">Pitfalls</span>
+                    </summary>
+                    <div class="details-body">
+                        <ul class="step-list">
+                            <li>
+                                <strong>Defining twice:</strong> calling <span class="inline-code">customElements.define</span>
+                                with the same name more than once throws an error. In libraries, always check
+                                <span class="inline-code">if (!customElements.get('user-card')) { ... }</span>.
+                            </li>
+                            <li>
+                                <strong>Blocking work in constructor:</strong> keep heavy logic out of the constructor;
+                                use <span class="inline-code">connectedCallback</span> for DOM-related operations.
+                            </li>
+                            <li>
+                                <strong>Remember: no Shadow DOM yet</strong> – without Shadow DOM your internal
+                                structure is still exposed to outer CSS. We fix this next.
+                            </li>
+                        </ul>
+                    </div>
+                </details>
+            </section>
+
+            <!-- 5. Shadow DOM -->
+            <section id="shadow-dom" class="section-card">
+                <div class="section-title">5. Shadow DOM Introduction</div>
+                <div class="section-subtitle">
+                    Encapsulate markup and styles so your component behaves like a black box, immune to outside CSS leaks.
+                </div>
+
+                <!-- Executive summary -->
+                <details open>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Executive summary: why Shadow DOM?</span>
+                        <span class="summary-pill">Concept</span>
+                    </summary>
+                    <div class="details-body">
+                        <p>
+                            <strong>Shadow DOM</strong> allows a DOM subtree to be attached to a host element, but kept
+                            logically separate from the main document:
+                        </p>
+                        <ul>
+                            <li>External CSS does not accidentally override internal styles.</li>
+                            <li>Internal structure (tags, class names) is hidden from normal selectors.</li>
+                            <li>Components become safer to reuse across projects and style systems.</li>
+                        </ul>
+                        <p>
+                            It is the core encapsulation mechanism behind many built-in elements like
+                            <span class="inline-code">&lt;video&gt;</span> and browser UI controls.
+                        </p>
+                    </div>
+                </details>
+
+                <!-- Syntax -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Syntax: attaching a shadow root</span>
+                        <span class="summary-pill">Syntax</span>
+                    </summary>
+                    <div class="details-body">
+                        <div class="api-signature mb-2">
+                            const shadow = this.attachShadow({ mode: 'open' })
+                        </div>
+                        <ul>
+                            <li><span class="inline-code">mode: 'open'</span> – external JS can access <span class="inline-code">element.shadowRoot</span>.</li>
+                            <li><span class="inline-code">mode: 'closed'</span> – <span class="inline-code">shadowRoot</span> is hidden.</li>
+                        </ul>
+
+                        <pre class="code-block"><span class="code-lang-label">js</span><code class="language-js">
+class ShadowUserCard extends HTMLElement {
+  constructor() {
+    super();
+
+    // 1. Attach shadow root
+    const shadow = this.attachShadow({ mode: 'open' });
+
+    // 2. Create template
+    const wrapper = document.createElement('div');
+    wrapper.setAttribute('class', 'user-card');
+
+    const nameEl = document.createElement('span');
+    nameEl.setAttribute('class', 'user-name');
+    nameEl.textContent = this.getAttribute('name') || 'Anonymous';
+
+    const style = document.createElement('style');
+    style.textContent = `
+      .user-card {
+        padding: 0.5rem 0.75rem;
+        border-radius: 999px;
+        background: rgba(15, 23, 42, 0.95);
+        border: 1px solid rgba(55, 65, 81, 0.9);
+        color: #e5e7eb;
+        font-size: 0.85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+      }
+      .user-name {
+        color: #22c55e;
+        font-weight: 600;
+      }
+    `;
+
+    wrapper.append('User:', nameEl);
+
+    // 3. Attach nodes to shadow
+    shadow.append(style, wrapper);
+  }
+}
+
+customElements.define('shadow-user-card', ShadowUserCard);</code></pre>
+
+                        <pre class="code-block"><span class="code-lang-label">html</span><code class="language-html">&lt;shadow-user-card name="Irfan"&gt;&lt;/shadow-user-card&gt;</code></pre>
+
+                        <div class="tip-box">
+                            <div class="tip-title">Key idea</div>
+                            <div class="text-muted-soft">
+                                Styles defined inside the shadow root only apply to nodes in that subtree. Global CSS
+                                cannot directly reach inside (except via CSS parts / variables).
+                            </div>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Slots -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Slots: composition &amp; external content</span>
+                        <span class="summary-pill">Concept &amp; Example</span>
+                    </summary>
+                    <div class="details-body">
+                        <p>
+                            Shadow DOM provides <strong>&lt;slot&gt;</strong> elements to render children passed from the
+                            outside. This is similar to <em>slots in Vue</em> or <em>children in React</em>.
+                        </p>
+
+                        <pre class="code-block"><span class="code-lang-label">js</span><code class="language-js">
+class AlertBox extends HTMLElement {
+  constructor() {
+    super();
+    const shadow = this.attachShadow({ mode: 'open' });
+
+    shadow.innerHTML = `
+      &lt;style&gt;
+        .alert {
+          border-radius: 0.75rem;
+          padding: 0.6rem 0.75rem;
+          border: 1px solid #f97316;
+          background: rgba(248, 250, 252, 0.02);
+          color: #fed7aa;
+          font-size: 0.85rem;
+        }
+        .title {
+          font-weight: 600;
+          margin-bottom: 0.25rem;
+        }
+      &lt;/style&gt;
+      &lt;div class="alert"&gt;
+        &lt;div class="title"&gt;&lt;slot name="title"&gt;Alert&lt;/slot&gt;&lt;/div&gt;
+        &lt;div class="body"&gt;&lt;slot&gt;Something happened.&lt;/slot&gt;&lt;/div&gt;
+      &lt;/div&gt;
+    `;
+  }
+}
+
+customElements.define('alert-box', AlertBox);</code></pre>
+
+                        <pre class="code-block"><span class="code-lang-label">html</span><code class="language-html">&lt;alert-box&gt;
+  &lt;span slot="title"&gt;Warning&lt;/span&gt;
+  This action is irreversible.
+&lt;/alert-box&gt;</code></pre>
+                    </div>
+                </details>
+
+                <!-- Shadow DOM pitfalls -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Pitfalls: debugging &amp; styling</span>
+                        <span class="summary-pill">Pitfalls</span>
+                    </summary>
+                    <div class="details-body">
+                        <ul class="step-list">
+                            <li>
+                                <strong>DevTools navigation:</strong> remember to enable “Show user agent shadow DOM”
+                                (browser-dependent) to inspect internal structure.
+                            </li>
+                            <li>
+                                <strong>Global CSS won't apply:</strong> if designers expect global CSS to override the
+                                component, Shadow DOM will block that. Use CSS variables or <span class="inline-code">::part</span>
+                                and <span class="inline-code">::theme</span> (where supported) to expose styling hooks.
+                            </li>
+                        </ul>
+                    </div>
+                </details>
+            </section>
+
+            <!-- 6. Integration Patterns -->
+            <section id="integration-patterns" class="section-card">
+                <div class="section-title">6. Integration Patterns &amp; Best Practices</div>
+                <div class="section-subtitle">
+                    Combining IntersectionObserver, MutationObserver, ResizeObserver, Custom Elements, and Shadow DOM in
+                    real-world architectures.
+                </div>
+
+                <!-- Pattern 1 -->
+                <details open>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Pattern: scroll-aware analytics component</span>
+                        <span class="summary-pill">Pattern</span>
+                    </summary>
+                    <div class="details-body">
+                        <p>
+                            Idea: Build a <span class="inline-code">&lt;viewport-tracker&gt;</span> custom element that
+                            fires a custom event the first time its content is 50% visible. This can be used for analytics.
+                        </p>
+
+                        <pre class="code-block"><span class="code-lang-label">js</span><code class="language-js">
+class ViewportTracker extends HTMLElement {
+  constructor() {
+    super();
+    this._hasFired = false;
+    this._observer = null;
+  }
+
+  connectedCallback() {
+    const threshold = Number(this.getAttribute('threshold') || 0.5);
+
+    this._observer = new IntersectionObserver((entries, observer) =&gt; {
+      entries.forEach((entry) =&gt; {
+        if (!this._hasFired &amp;&amp; entry.isIntersecting &amp;&amp;
+            entry.intersectionRatio &gt;= threshold) {
+
+          this._hasFired = true;
+          this.dispatchEvent(new CustomEvent('seen', {
+            detail: {
+              threshold,
+              timestamp: Date.now()
+            },
+            bubbles: true
+          }));
+
+          observer.unobserve(this);
+        }
+      });
+    }, { threshold });
+
+    this._observer.observe(this);
+  }
+
+  disconnectedCallback() {
+    if (this._observer) {
+      this._observer.disconnect();
+      this._observer = null;
+    }
+  }
+}
+
+customElements.define('viewport-tracker', ViewportTracker);</code></pre>
+
+                        <pre class="code-block"><span class="code-lang-label">html</span><code class="language-html">&lt;viewport-tracker id="chapter-1" threshold="0.5"&gt;
+  &lt;h2&gt;Chapter 1&lt;/h2&gt;
+  &lt;p&gt;Long content...&lt;/p&gt;
+&lt;/viewport-tracker&gt;
+
+&lt;script&gt;
+  document.addEventListener('seen', (event) =&gt; {
+    console.log('Section viewed:', event.target.id, event.detail);
+  });
+&lt;/script&gt;</code></pre>
+                    </div>
+                </details>
+
+                <!-- Pattern 2 -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Pattern: widget that adapts to container mutations &amp; size</span>
+                        <span class="summary-pill">Pattern</span>
+                    </summary>
+                    <div class="details-body">
+                        <p>
+                            Combine <strong>MutationObserver</strong> + <strong>ResizeObserver</strong> for a dashboard
+                            widget that reacts when moved to a different container or resized.
+                        </p>
+
+                        <pre class="code-block"><span class="code-lang-label">js</span><code class="language-js">
+class DashboardWidget extends HTMLElement {
+  constructor() {
+    super();
+    this._resizeObserver = null;
+    this._mutationObserver = null;
+  }
+
+  connectedCallback() {
+    // Observe size changes
+    this._resizeObserver = new ResizeObserver((entries) =&gt; {
+      for (const entry of entries) {
+        console.log('Widget resized:', entry.contentRect.width);
+        // Re-render charts, etc.
+      }
+    });
+    this._resizeObserver.observe(this);
+
+    // Observe parent changes (e.g., moved between containers)
+    const parent = this.parentElement;
+    if (parent) {
+      this._mutationObserver = new MutationObserver((mutations) =&gt; {
+        console.log('Parent mutated, maybe layout changed', mutations);
+      });
+      this._mutationObserver.observe(parent, { childList: true });
+    }
+  }
+
+  disconnectedCallback() {
+    if (this._resizeObserver) {
+      this._resizeObserver.disconnect();
+      this._resizeObserver = null;
+    }
+    if (this._mutationObserver) {
+      this._mutationObserver.disconnect();
+      this._mutationObserver = null;
+    }
+  }
+}
+
+customElements.define('dashboard-widget', DashboardWidget);</code></pre>
+                    </div>
+                </details>
+
+                <!-- Summary -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Final mental model &amp; checklist</span>
+                        <span class="summary-pill">Summary</span>
+                    </summary>
+                    <div class="details-body">
+                        <p><strong>When to use which API?</strong></p>
+                        <ul>
+                            <li><strong>IntersectionObserver</strong> – “Tell me when this element is visible.”</li>
+                            <li><strong>MutationObserver</strong> – “Tell me when this DOM subtree changes.”</li>
+                            <li><strong>ResizeObserver</strong> – “Tell me when this element’s size changes.”</li>
+                            <li><strong>Custom Elements</strong> – “I want a reusable, semantic component tag.”</li>
+                            <li><strong>Shadow DOM</strong> – “I want my component to be encapsulated and style-safe.”</li>
+                        </ul>
+                        <p>
+                            For advanced architectures, think of observers as <strong>event streams</strong> from
+                            the browser, and your custom elements + Shadow DOM as <strong>reactive components</strong>
+                            that subscribe to those streams and expose a clean, semantic interface.
+                        </p>
+                    </div>
+                </details>
+            </section>
+        </main>
+    </div>
+
+    <!-- Bootstrap JS (optional for layout, used here only for basic behavior) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+
+    <!-- Custom JS utilities: smooth scrolling, TOC search, expand/collapse all, simple syntax highlighting -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Smooth scrolling for TOC links
+            const tocLinks = document.querySelectorAll('.toc-link[data-scroll]');
+            const mainContent = document.querySelector('.main-content');
+
+            tocLinks.forEach(link => {
+                link.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    const targetId = link.getAttribute('href');
+                    const targetEl = document.querySelector(targetId);
+                    if (!targetEl) return;
+
+                    targetEl.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+
+                    // highlight active link
+                    tocLinks.forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                });
+            });
+
+            // TOC search filter
+            const tocSearchInput = document.getElementById('tocSearchInput');
+            const tocList = document.getElementById('tocList');
+            if (tocSearchInput && tocList) {
+                tocSearchInput.addEventListener('input', () => {
+                    const query = tocSearchInput.value.trim().toLowerCase();
+                    const items = tocList.querySelectorAll('.toc-item');
+
+                    items.forEach(item => {
+                        const link = item.querySelector('.toc-link');
+                        if (!link) return;
+                        const text = link.textContent.toLowerCase();
+                        item.style.display = text.includes(query) ? '' : 'none';
+                    });
+                });
+            }
+
+            // Expand / collapse all <details>
+            const allDetails = Array.from(document.querySelectorAll('details'));
+            const btnExpandAll = document.getElementById('btnExpandAll');
+            const btnCollapseAll = document.getElementById('btnCollapseAll');
+
+            if (btnExpandAll) {
+                btnExpandAll.addEventListener('click', () => {
+                    allDetails.forEach(d => d.open = true);
+                });
+            }
+
+            if (btnCollapseAll) {
+                btnCollapseAll.addEventListener('click', () => {
+                    allDetails.forEach(d => d.open = false);
+                });
+            }
+
+            // Simple syntax highlighting for code blocks
+            function escapeHtml(str) {
+                return str
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;');
+            }
+
+            function highlightCode(codeEl) {
+                const rawText = codeEl.textContent;
+                let html = escapeHtml(rawText);
+
+                // Comments
+                html = html.replace(/(\/\/.*?$)/gm, '<span class="token-comment">$1</span>');
+
+                // Strings
+                html = html.replace(/(".*?"|'.*?'|\`.*?\`)/g, '<span class="token-string">$1</span>');
+
+                // Numbers
+                html = html.replace(/\b(\d+(\.\d+)?)\b/g, '<span class="token-number">$1</span>');
+
+                // Keywords (basic set)
+                const keywordPattern = /\b(const|let|var|function|return|if|else|for|while|class|new|this|super|extends|null|true|false)\b/g;
+                html = html.replace(keywordPattern, '<span class="token-keyword">$1</span>');
+
+                // Properties / methods (simple heuristic: .something)
+                html = html.replace(/(\.[a-zA-Z_$][\w$]*)/g, '<span class="token-property">$1</span>');
+
+                codeEl.innerHTML = html;
+            }
+
+            document.querySelectorAll('pre code.language-js, pre code.language-html, pre code.language-css').forEach(codeEl => {
+                highlightCode(codeEl);
+            });
+        });
+    </script>
+</body>
+
+</html>

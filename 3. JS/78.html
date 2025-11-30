@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>22.4 Development Workflow — Deep Learning Note</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
+
+  <style>
+    :root{--bg:#0b0f10;--surface:#111518;--cyan:#06b6d4;--amber:#f59e0b;--muted:#9aa6a6;--panel-width:340px;--radius:12px}
+    html,body{height:100%}
+    body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:#e6eef0}
+    .app{display:flex;gap:18px;height:100vh;padding:20px}
+    .left-panel{width:var(--panel-width);background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.04));padding:18px;border-radius:var(--radius);position:sticky;top:20px;height:calc(100vh - 40px);flex-shrink:0;border:1px solid rgba(255,255,255,0.03)}
+    .right-panel{flex:1;background:linear-gradient(180deg,rgba(255,255,255,0.01),rgba(255,255,255,0.00));padding:22px;border-radius:var(--radius);overflow:auto;box-shadow:0 6px 18px rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.02)}
+    .brand{display:flex;gap:12px;align-items:center}
+    .brand-mark{width:46px;height:46px;border-radius:10px;background:linear-gradient(90deg,var(--cyan),var(--amber));display:flex;align-items:center;justify-content:center;color:#071018;font-weight:700}
+    .title{font-weight:700}
+    .subtitle{font-size:0.82rem;color:var(--muted)}
+    .toc{margin-top:12px}
+    .search{margin-bottom:10px}
+    .controls{display:flex;gap:8px;margin-bottom:8px}
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);padding:6px 8px;border-radius:8px}
+    .toc-list{max-height:58vh;overflow:auto;padding-right:6px}
+    a.toc-item{display:block;padding:8px;border-radius:8px;margin-bottom:6px;color:inherit;text-decoration:none}
+    a.toc-item:hover{background:rgba(255,255,255,0.02);color:var(--cyan)}
+    details{background:rgba(255,255,255,0.015);padding:12px;border-radius:10px;margin-bottom:12px;border:1px solid rgba(255,255,255,0.02)}
+    summary{cursor:pointer;font-weight:600}
+    pre{background:rgba(0,0,0,0.35);padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,'Roboto Mono','Courier New',monospace}
+    h1,h2,h3{color:#dff7fb}
+    p{color:#cfe8ea}
+    .muted{color:var(--muted)}
+    table.table thead th{border-bottom:1px solid rgba(255,255,255,0.04)}
+    @media (max-width:900px){.left-panel{display:none}}
+  </style>
+</head>
+<body>
+  <div class="app container-fluid">
+    <aside class="left-panel" aria-label="Table of contents">
+      <div class="brand">
+        <div class="brand-mark">22.4</div>
+        <div>
+          <div class="title">Development Workflow</div>
+          <div class="subtitle">ESLint, Prettier, Git hooks, CI/CD, Testing</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">
+        <div class="muted">Author: <strong>Irfan</strong></div>
+        <div style="background:linear-gradient(90deg,var(--cyan),rgba(0,0,0,0.12));padding:4px 8px;border-radius:999px;color:#021417;font-weight:700">Advanced</div>
+      </div>
+
+      <div class="toc">
+        <input id="tocSearch" class="form-control search" placeholder="Search TOC..." />
+        <div class="controls">
+          <button class="btn-ghost" id="expandAll">Expand all</button>
+          <button class="btn-ghost" id="collapseAll">Collapse all</button>
+          <button class="btn-ghost" id="tocReset">Reset</button>
+        </div>
+        <div class="toc-list" id="tocList">
+          <a class="toc-item" href="#eslint">Linting with ESLint</a>
+          <a class="toc-item" href="#prettier">Code formatting with Prettier</a>
+          <a class="toc-item" href="#githooks">Git hooks & automation (husky, lint-staged)</a>
+          <a class="toc-item" href="#ci-cd">CI/CD pipeline integration (GitHub Actions example)</a>
+          <a class="toc-item" href="#testing">Testing automation (unit, integration, e2e)</a>
+          <a class="toc-item" href="#bestpractices">Best practices & checklist</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="right-panel" id="content" tabindex="0">
+      <article>
+        <h1 id="top">22.4 Development Workflow — Deep Learning Note</h1>
+        <p class="muted">Comprehensive guide to creating a reliable dev workflow: linting, formatting, pre-commit automation, CI/CD pipelines, and testing strategies. Examples use HTML entities so code renders safely. Use TOC to navigate.</p>
+
+        <!-- ESLINT -->
+        <section id="eslint" class="anchor-target">
+          <h2>Linting with ESLint</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>ESLint analyzes code for style and correctness, enforces best practices, and can catch bugs early. Configure rule sets, extend recommended configs, and integrate autofixing into dev flow.</p>
+          </details>
+
+          <details>
+            <summary>Installation &amp; basic config</summary>
+            <pre><code class="language-bash"># install
+npm install -D eslint
+
+# initialize
+npx eslint --init
+</code></pre>
+            <pre><code class="language-json">// .eslintrc.json
+{
+  "env": { "browser": true, "es2021": true, "node": true },
+  "extends": ["eslint:recommended", "plugin:react/recommended", "plugin:@typescript-eslint/recommended"],
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint", "react"],
+  "rules": {
+    "no-unused-vars": "warn",
+    "semi": ["error", "always"]
+  }
+}
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Rules, plugins & shareable configs</summary>
+            <p>Use community configs (Airbnb, Google) as starting points. Write custom rules for project-specific patterns. Use plugins for React, TypeScript, Jest, Security, etc.</p>
+          </details>
+
+          <details>
+            <summary>Auto-fix and IDE integration</summary>
+            <p>Enable <code>--fix</code> in pre-commit hooks or editor actions. Configure your editor (VSCode ESLint extension) to lint on save and apply fixes.</p>
+            <pre><code class="language-bash"># run autofix
+npx eslint 'src/**/*.{js,ts,jsx,tsx}' --fix
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Example: custom rule to forbid console.log in production</summary>
+            <pre><code class="language-javascript">// .eslintrc.json rule
+{
+  "rules": {
+    "no-console": ["error", { "allow": ["warn", "error"] }]
+  }
+}
+</code></pre>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- PRETTIER -->
+        <section id="prettier" class="anchor-target">
+          <h2>Code formatting with Prettier</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>Prettier enforces a consistent code style by formatting code automatically. Combine with ESLint for linting rules that Prettier doesn't cover (use eslint-config-prettier to avoid conflicts).</p>
+          </details>
+
+          <details>
+            <summary>Install & config</summary>
+            <pre><code class="language-bash">npm install -D prettier
+# optionally add a config file: .prettierrc
+</code></pre>
+            <pre><code class="language-json">// .prettierrc
+{
+  "printWidth": 100,
+  "tabWidth": 2,
+  "semi": true,
+  "singleQuote": true,
+  "trailingComma": "es5"
+}
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Integrating Prettier with ESLint</summary>
+            <pre><code class="language-bash">npm install -D eslint-config-prettier eslint-plugin-prettier
+
+// .eslintrc.json
+{
+  "extends": ["plugin:prettier/recommended"]
+}
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Format on save & CI checks</summary>
+            <p>Enable format-on-save in IDEs and add a CI job to run <code>prettier --check .</code> to ensure committed code is formatted.</p>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- GIT HOOKS -->
+        <section id="githooks" class="anchor-target">
+          <h2>Git hooks & automation (husky, lint-staged)</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>Git hooks run scripts at key lifecycle events (pre-commit, pre-push). Use Husky to manage hooks declaratively and lint-staged to run linters/formatters only on changed files for speed.</p>
+          </details>
+
+          <details>
+            <summary>Setup example</summary>
+            <pre><code class="language-bash">npm install -D husky lint-staged
+npx husky install
+npx husky add .husky/pre-commit "npx lint-staged"
+
+// package.json
+{
+  "lint-staged": {
+    "src/**/*.{js,ts,jsx,tsx}": ["eslint --fix", "prettier --write"]
+  }
+}
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Performance: run only staged files</summary>
+            <p>lint-staged dramatically reduces overhead by running tasks on changed files only. Combine with <code>--cache</code> options for Babel/ESLint where available.</p>
+          </details>
+
+          <details>
+            <summary>Security & safety</summary>
+            <p>Do not rely solely on client-side hooks — enforce checks in CI as well. Husky helps developer experience; CI ensures policy enforcement.</p>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- CI/CD -->
+        <section id="ci-cd" class="anchor-target">
+          <h2>CI/CD pipeline integration</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>CI automates tests, linting, and builds on every push/PR. CD automates deployment. Use GitHub Actions, GitLab CI, or other runners. Keep jobs small and parallelize where possible.</p>
+          </details>
+
+          <details>
+            <summary>GitHub Actions example (tests, lint, build)</summary>
+            <pre><code class="language-yaml">name: CI
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [16.x]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with: { node-version: ${{ matrix.node-version }} }
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test -- --coverage
+  build:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v4
+        with: { node-version: 16 }
+      - run: npm ci
+      - run: npm run build
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: dist/
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Deployments & CD strategies</summary>
+            <ul>
+              <li>Use staging environments and gated releases.</li>
+              <li>Blue/green or canary deployments for low-risk rollouts.</li>
+              <li>Automate rollbacks on failure and monitor health checks post-deploy.</li>
+            </ul>
+          </details>
+
+          <details>
+            <summary>CI caching & speedups</summary>
+            <p>Cache node_modules, build caches, and test caches. Use dependency layer caching and incremental builds (Vite/esbuild caches) to reduce wall time.</p>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- TESTING -->
+        <section id="testing" class="anchor-target">
+          <h2>Testing automation (unit, integration, e2e)</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>Automated tests ensure regressions are caught early. Use unit tests for logic, integration tests for modules interaction, and end-to-end (E2E) tests for user flows. Keep tests fast and reliable.</p>
+          </details>
+
+          <details>
+            <summary>Unit testing with Jest (example)</summary>
+            <pre><code class="language-bash">npm install -D jest @testing-library/react
+
+// example test: add.test.js
+const add = require('./add');
+test('adds numbers', () =&gt; { expect(add(1,2)).toBe(3); });
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Integration tests & mocks</summary>
+            <p>Use test doubles and dependency injection to isolate integration points. For databases, use in-memory instances or test containers to run realistic tests.</p>
+          </details>
+
+          <details>
+            <summary>End-to-end testing (Playwright / Cypress)</summary>
+            <pre><code class="language-bash"># install Playwright
+npm install -D @playwright/test
+npx playwright install
+
+# sample test
+// example.spec.js
+const { test, expect } = require('@playwright/test');
+
+test('homepage loads', async ({ page }) =&gt; {
+  await page.goto('http://localhost:3000');
+  await expect(page).toHaveTitle(/My App/);
+});
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Test organization & flakiness</summary>
+            <ol>
+              <li>Keep unit tests small and independent.</li>
+              <li>Run fast tests in CI pre-merge; run slower E2E tests on main branch or nightly.</li>
+              <li>Address flakiness by isolating external dependencies and using retries sparingly.</li>
+            </ol>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- BEST PRACTICES -->
+        <section id="bestpractices" class="anchor-target">
+          <h2>Best practices & checklist</h2>
+
+          <details open>
+            <summary>Final checklist for a healthy workflow</summary>
+            <ul>
+              <li>Lint and format on commit with Husky + lint-staged.</li>
+              <li>Enforce lint/format/test in CI on PRs.</li>
+              <li>Use caching in CI and parallelize jobs.</li>
+              <li>Run quick unit tests pre-merge, slower integration/e2e in nightly or gated pipeline.</li>
+              <li>Automate releases with semantic-release or changesets for reproducible versioning.</li>
+              <li>Monitor test coverage but don't gate on 100% — focus on critical paths.</li>
+            </ul>
+          </details>
+
+          <details>
+            <summary>Further reading & tools</summary>
+            <ul>
+              <li>ESLint docs, Prettier docs, Husky, lint-staged</li>
+              <li>GitHub Actions, GitLab CI, CircleCI docs</li>
+              <li>Jest, Playwright, Cypress, Testcontainers</li>
+            </ul>
+          </details>
+        </section>
+
+        <footer style="margin-top:20px;padding-bottom:40px;">
+          <p class="muted">End of note. Use the left TOC to navigate. Want deeper examples (full GitHub Actions release pipeline, semantic-release setup, or Playwright advanced patterns)? Tell me which one and I'll extend the same file.</p>
+        </footer>
+      </article>
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/javascript.min.js"></script>
+  <script>
+    if(window.hljs){ hljs.highlightAll(); }
+
+    document.querySelectorAll('#tocList a').forEach(a=>{
+      a.addEventListener('click', function(e){ e.preventDefault(); const id=this.getAttribute('href').slice(1); const el=document.getElementById(id); if(el){ el.scrollIntoView({behavior:'smooth',block:'start'}); const d=el.querySelector('details'); if(d && !d.open) d.open=true; } });
+    });
+
+    document.getElementById('expandAll').addEventListener('click', ()=> document.querySelectorAll('details').forEach(d=> d.open=true));
+    document.getElementById('collapseAll').addEventListener('click', ()=> document.querySelectorAll('details').forEach(d=> d.open=false));
+    document.getElementById('tocReset').addEventListener('click', ()=> document.getElementById('content').scrollTo({top:0,behavior:'smooth'}));
+
+    document.getElementById('tocSearch').addEventListener('input', ()=>{ const q=document.getElementById('tocSearch').value.trim().toLowerCase(); document.querySelectorAll('#tocList a').forEach(a=>{ a.style.display = a.textContent.toLowerCase().includes(q) ? 'block' : 'none'; }); });
+
+    document.addEventListener('keydown',(e)=>{ if(e.key==='E' || e.key==='e') document.querySelectorAll('details').forEach(d=> d.open=true); if(e.key==='C' || e.key==='c') document.querySelectorAll('details').forEach(d=> d.open=false); });
+  </script>
+</body>
+</html>

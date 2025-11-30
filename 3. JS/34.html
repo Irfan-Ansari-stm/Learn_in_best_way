@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>11.4 – Advanced Asynchronous Patterns in JavaScript</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<style>
+/* ---------- GLOBAL THEME VARIABLES ---------- */
+:root {
+    --bg-main: #050816;
+    --bg-sidebar: #050b14;
+    --bg-card: #06111f;
+    --accent-cyan: #22d3ee;
+    --accent-amber: #fbbf24;
+    --text-main: #e5e7eb;
+    --text-muted: #9ca3af;
+    --border-subtle: #1f2933;
+    --code-bg: #020617;
+}
+
+/* ---------- BASE ---------- */
+html,body{
+    margin:0;
+    padding:0;
+    height:100%;
+    background:var(--bg-main);
+    color:var(--text-main);
+    font-family:system-ui, sans-serif;
+    scroll-behavior:smooth;
+}
+body{ overflow:hidden; }
+
+/* ---------- LAYOUT ---------- */
+.app-wrapper{ height:100vh; }
+.sidebar{
+    background:radial-gradient(circle at top left,#0f172a,var(--bg-sidebar));
+    border-right:1px solid var(--border-subtle);
+    position:sticky;top:0;
+    height:100vh;
+    overflow-y:auto;
+    padding:1.25rem 1rem;
+}
+.content-panel{
+    max-height:100vh;
+    overflow-y:auto;
+    padding:1.5rem 2rem;
+    background:radial-gradient(circle at top right,#0b1120,var(--bg-main));
+}
+
+/* Scrollbars */
+.sidebar::-webkit-scrollbar,.content-panel::-webkit-scrollbar{ width:8px; }
+.sidebar::-webkit-scrollbar-thumb,.content-panel::-webkit-scrollbar-thumb{
+    background:#1f2937;border-radius:999px;
+}
+
+/* ---------- SIDEBAR TEXT ---------- */
+.course-tag{font-size:0.75rem;letter-spacing:0.12em;color:var(--accent-amber);}
+.main-title{font-size:1.45rem;font-weight:700;color:var(--accent-cyan);}
+.subtitle{font-size:0.92rem;color:var(--text-muted);}
+.meta-text{font-size:0.8rem;color:var(--text-muted);}
+
+/* TAG PILLS */
+.pill{
+    display:inline-flex;align-items:center;
+    border-radius:999px;padding:0.15rem 0.55rem;
+    font-size:0.7rem;border:1px solid rgba(148,163,184,0.6);
+    color:var(--text-muted);margin-right:0.3rem;margin-bottom:0.3rem;
+}
+.pill span.bullet{
+    width:6px;height:6px;border-radius:999px;
+    background:var(--accent-cyan);margin-right:0.25rem;
+}
+
+/* ---------- TOC CARD ---------- */
+.toc-card{
+    margin-top:1rem;
+    background:rgba(15,23,42,0.9);
+    border-radius:0.75rem;
+    border:1px solid rgba(148,163,184,0.25);
+    padding:0.9rem 0.85rem;
+}
+.toc-title{font-size:0.9rem;font-weight:600;color:var(--accent-amber);}
+.toc-search input{
+    background:#020617;border:1px solid #111827;color:var(--text-main);
+    width:100%;border-radius:999px;font-size:0.78rem;padding:0.2rem 0.6rem;
+}
+.toc-list{list-style:none;padding-left:0;margin-top:0.4rem;}
+.toc-link{
+    font-size:0.8rem;padding:0.2rem 0.4rem;border-radius:0.4rem;
+    display:flex;align-items:center;gap:0.4rem;
+    text-decoration:none;color:var(--text-muted);
+}
+.toc-link:hover{background:rgba(15,23,42,0.85);color:var(--accent-cyan);}
+.toc-link-dot{
+    width:6px;height:6px;border-radius:999px;background:rgba(148,163,184,0.7);
+}
+.toc-actions button{
+    border-radius:999px;border:1px solid rgba(148,163,184,0.4);
+    background:rgba(15,23,42,0.85);color:var(--text-muted);
+    font-size:0.72rem;padding:0.12rem 0.6rem;
+}
+
+/* ---------- CONTENT SIDE ---------- */
+.content-heading h1{
+    font-size:1.6rem;font-weight:700;color:var(--accent-cyan);
+}
+.summary-strip{
+    background:radial-gradient(circle at left,rgba(56,189,248,0.18),transparent);
+    border-radius:0.9rem;border:1px solid rgba(148,163,184,0.45);
+    padding:0.9rem;font-size:0.85rem;
+}
+
+/* ---------- DETAILS COLLAPSERS ---------- */
+details{
+    background:rgba(15,23,42,0.85);
+    border-radius:0.9rem;
+    border:1px solid rgba(30,64,175,0.8);
+    padding:0.25rem 0.9rem 0.7rem;
+    margin-bottom:0.9rem;
+}
+details summary{
+    font-weight:600;font-size:0.95rem;cursor:pointer;
+    display:flex;justify-content:space-between;
+}
+.summary-label{display:flex;align-items:center;gap:0.4rem;}
+.summary-label .dot{
+    width:7px;height:7px;border-radius:999px;background:var(--accent-cyan);
+}
+.summary-tag{font-size:0.75rem;color:var(--accent-amber);}
+
+/* ---------- CODE BLOCKS ---------- */
+pre{
+    background:var(--code-bg);border-radius:0.7rem;padding:0.75rem;
+    border:1px solid rgba(15,118,110,0.65);overflow-x:auto;
+}
+code{font-family:"JetBrains Mono", monospace;font-size:0.8rem;}
+
+</style>
+</head>
+
+<body>
+<div class="container-fluid app-wrapper">
+<div class="row flex-nowrap">
+
+<!-- ========== SIDEBAR ========== -->
+<aside class="col-12 col-md-4 col-lg-3 sidebar">
+    <div>
+        <div class="course-tag">Modern JavaScript Deep Dive</div>
+        <div class="main-title">11.4 – Advanced Asynchronous Patterns</div>
+        <div class="subtitle">Promise mastery, iteration, cancellation & performance</div>
+        <div class="meta-text">
+            Prepared for: College → Master → PhD-level<br>
+            Style: Deep, Example-driven, Research-friendly
+        </div>
+    </div>
+
+    <div class="mt-2">
+        <span class="pill"><span class="bullet"></span>Promise Patterns</span>
+        <span class="pill"><span class="bullet"></span>Anti-patterns</span>
+        <span class="pill"><span class="bullet"></span>for-await-of</span>
+        <span class="pill"><span class="bullet"></span>AbortController</span>
+        <span class="pill"><span class="bullet"></span>Performance</span>
+    </div>
+
+    <div class="toc-card">
+        <div class="toc-title">On this page</div>
+        <div class="toc-search mt-2">
+            <input id="tocSearch" placeholder="Search sections…">
+        </div>
+
+        <ul class="toc-list" id="tocList">
+            <li data-label="Promise patterns">
+                <a href="#sec-patterns" class="toc-link"><span class="toc-link-dot"></span>11.4.1 Promise Patterns & Anti-patterns</a>
+            </li>
+            <li data-label="Async iteration">
+                <a href="#sec-async-iter" class="toc-link"><span class="toc-link-dot"></span>11.4.2 Async Iteration (for-await-of)</a>
+            </li>
+            <li data-label="AbortController cancellation">
+                <a href="#sec-abort" class="toc-link"><span class="toc-link-dot"></span>11.4.3 AbortController for Cancellation</a>
+            </li>
+            <li data-label="Custom promise implementation">
+                <a href="#sec-custom" class="toc-link"><span class="toc-link-dot"></span>11.4.4 Custom Promise Implementation</a>
+            </li>
+            <li data-label="Performance considerations">
+                <a href="#sec-perf" class="toc-link"><span class="toc-link-dot"></span>11.4.5 Performance Considerations</a>
+            </li>
+        </ul>
+
+        <div class="toc-actions mt-3">
+            <button id="btnExpandAll">Expand all</button>
+            <button id="btnCollapseAll">Collapse all</button>
+        </div>
+    </div>
+</aside>
+
+<!-- ========== CONTENT PANEL ========== -->
+<main class="col content-panel">
+
+<section class="content-heading">
+<h1>11.4 – Advanced Asynchronous Patterns</h1>
+<p>This chapter covers the *highest level* asynchronous techniques used in modern JavaScript engines, real production systems, browsers, servers, and high-performance systems. We move beyond basic Promises and async/await, and explore how to structure, cancel, iterate, and optimize asynchronous work.</p>
+</section>
+
+<div class="summary-strip">
+<strong>Executive intuition:</strong>  
+Advanced async patterns allow you to orchestrate multiple async tasks efficiently, manage streaming data, abort expensive requests, avoid memory leaks, and even design your own Promise-like abstractions. These patterns appear in browsers, Node.js, distributed systems, databases, cloud services, and every major framework.
+</div>
+
+<!-- =====================================================================
+     11.4.1 — PROMISE PATTERNS & ANTI-PATTERNS
+===================================================================== -->
+<section id="sec-patterns" class="mb-4">
+<div class="section-title" style="color:var(--accent-amber);">11.4.1 Promise Patterns & Anti-patterns</div>
+
+<!-- Overview -->
+<details open>
+<summary><span class="summary-label"><span class="dot"></span>Overview: Why patterns matter</span><span class="summary-tag">concept</span></summary>
+<div class="inner">
+<p>Promises are powerful, but **misuse leads to bugs, deadlocks, memory waste, and unpredictable behavior**. Understanding patterns helps build robust async systems.</p>
+</div>
+</details>
+
+<!-- Pattern: Safe Promise.all -->
+<details>
+<summary><span class="summary-label"><span class="dot"></span>Pattern: Safe Promise.all()</span><span class="summary-tag">pattern</span></summary>
+<div class="inner">
+<pre><code>
+// SAFE PARALLEL EXECUTION
+async function loadAll() {
+    const [u, p, n] = await Promise.all([
+        fetch("/api/user"),
+        fetch("/api/payments"),
+        fetch("/api/notifications")
+    ]);
+    return { u, p, n };
+}
+</code></pre>
+
+<p><strong>Correct when tasks are independent.</strong></p>
+</div>
+</details>
+
+<!-- Anti-pattern: forEach + async -->
+<details>
+<summary><span class="summary-label"><span class="dot"></span>Anti-pattern: async inside forEach</span><span class="summary-tag">anti-pattern</span></summary>
+<div class="inner">
+<pre><code>
+// WRONG: forEach ignores awaits
+list.forEach(async item =&gt; {
+    await save(item); // runs but not awaited globally
+});
+
+// CORRECT:
+for (const item of list) {
+    await save(item);
+}
+</code></pre>
+<p>forEach does not respect async semantics → leads to unhandled rejections.</p>
+</div>
+</details>
+
+<!-- Pattern: Promise.race timeout -->
+<details>
+<summary><span class="summary-label"><span class="dot"></span>Pattern: Timeout with Promise.race</span><span class="summary-tag">race</span></summary>
+<div class="inner">
+<pre><code>
+function timeout(ms) {
+    return new Promise((_, reject) =&gt;
+        setTimeout(() =&gt; reject(new Error("Timeout")), ms)
+    );
+}
+
+async function fetchWithTimeout(url, ms = 3000) {
+    return Promise.race([
+        fetch(url),
+        timeout(ms)
+    ]);
+}
+</code></pre>
+<p>Used in network-heavy systems, microservices, realtime dashboards.</p>
+</div>
+</details>
+
+</section>
+
+<!-- =====================================================================
+     11.4.2 — ASYNC ITERATION with for-await-of
+===================================================================== -->
+<section id="sec-async-iter" class="mb-4">
+<div class="section-title" style="color:var(--accent-amber);">11.4.2 Async Iteration with <code>for-await-of</code></div>
+
+<!-- Overview -->
+<details open>
+<summary><span class="summary-label"><span class="dot"></span>What async iteration solves</span><span class="summary-tag">concept</span></summary>
+<div class="inner">
+<p>Async iteration lets you consume **streams of Promises** one at a time. Examples:</p>
+<ul>
+<li>Streaming API responses</li>
+<li>Reading files chunk-by-chunk</li>
+<li>Database cursors</li>
+<li>Real-time WebSocket messages</li>
+<li>Event emitters</li>
+</ul>
+</div>
+</details>
+
+<!-- Basic example -->
+<details>
+<summary><span class="summary-label"><span class="dot"></span>Example: Async generator function</span><span class="summary-tag">syntax</span></summary>
+<div class="inner">
+<pre><code>
+// PRODUCER
+async function* streamNumbers() {
+    for (let i = 1; i &lt;= 5; i++) {
+        await new Promise(res =&gt; setTimeout(res, 500)); 
+        yield i;
+    }
+}
+
+// CONSUMER
+async function run() {
+    for await (const n of streamNumbers()) {
+        console.log("Got:", n);
+    }
+}
+run();
+</code></pre>
+<p>The loop pauses until each Promise resolves.</p>
+</div>
+</details>
+
+</section>
+
+<!-- =====================================================================
+     11.4.3 — ABORTCONTROLLER for CANCELLATION
+===================================================================== -->
+<section id="sec-abort" class="mb-4">
+<div class="section-title" style="color:var(--accent-amber);">11.4.3 AbortController for Cancellation</div>
+
+<details open>
+<summary><span class="summary-label"><span class="dot"></span>Why cancellation matters</span><span class="summary-tag">concept</span></summary>
+<div class="inner">
+<p>Cancelling ongoing async operations saves:</p>
+<ul>
+<li>Bandwidth</li>
+<li>Battery</li>
+<li>CPU</li>
+<li>Memory</li>
+</ul>
+<p>Especially important for SPAs, dashboards, infinite scroll, and React apps.</p>
+</div>
+</details>
+
+<!-- Example -->
+<details>
+<summary><span class="summary-label"><span class="dot"></span>Example: Abort fetch request</span><span class="summary-tag">example</summary></span>
+<div class="inner">
+<pre><code>
+async function loadData() {
+    const controller = new AbortController();
+    const id = setTimeout(() =&gt; controller.abort(), 1000);
+
+    try {
+        const res = await fetch("/api/slow", {
+            signal: controller.signal
+        });
+        clearTimeout(id);
+        return await res.json();
+    } catch (err) {
+        if (err.name === "AbortError") {
+            console.warn("Request aborted!");
+        } else {
+            throw err;
+        }
+    }
+}
+</code></pre>
+</div>
+</details>
+
+</section>
+
+<!-- =====================================================================
+     11.4.4 — CUSTOM PROMISE IMPLEMENTATION
+===================================================================== -->
+<section id="sec-custom" class="mb-4">
+<div class="section-title" style="color:var(--accent-amber);">11.4.4 Custom Promise Implementation (Mini)</div>
+
+<details open>
+<summary><span class="summary-label"><span class="dot"></span>Why write your own Promise?</span><span class="summary-tag">deep</span></summary>
+<div class="inner">
+<p>For interviews, systems design, or internal frameworks, understanding the core implementation reveals how async behavior actually works.</p>
+</div>
+</details>
+
+<!-- Mini Promise -->
+<details>
+<summary><span class="summary-label"><span class="dot"></span>Minimal custom Promise code</span><span class="summary-tag">implementation</span></summary>
+<div class="inner">
+<pre><code>
+class MyPromise {
+    constructor(executor) {
+        this.state = "pending";
+        this.value = undefined;
+        this.handlers = [];
+
+        const resolve = (val) =&gt; {
+            if (this.state !== "pending") return;
+            this.state = "fulfilled";
+            this.value = val;
+            this.handlers.forEach(h =&gt; h.onFulfilled(val));
+        };
+
+        const reject = (err) =&gt; {
+            if (this.state !== "pending") return;
+            this.state = "rejected";
+            this.value = err;
+            this.handlers.forEach(h =&gt; h.onRejected(err));
+        };
+
+        try {
+            executor(resolve, reject);
+        } catch (err) {
+            reject(err);
+        }
+    }
+
+    then(onFulfilled, onRejected) {
+        return new MyPromise((resolve, reject) =&gt; {
+            const handler = {
+                onFulfilled: (val) =&gt; {
+                    try { resolve(onFulfilled(val)); }
+                    catch (e) { reject(e); }
+                },
+                onRejected: (err) =&gt; {
+                    try { resolve(onRejected(err)); }
+                    catch (e) { reject(e); }
+                }
+            };
+
+            if (this.state === "pending") {
+                this.handlers.push(handler);
+            } else if (this.state === "fulfilled") {
+                handler.onFulfilled(this.value);
+            } else {
+                handler.onRejected(this.value);
+            }
+        });
+    }
+}
+</code></pre>
+
+<p>This is only ~20% of a real Promise (missing microtask queue, thenable adoption, etc.), but excellent for conceptual mastery.</p>
+</div>
+</details>
+
+</section>
+
+<!-- =====================================================================
+     11.4.5 — PERFORMANCE CONSIDERATIONS
+===================================================================== -->
+<section id="sec-perf" class="mb-4">
+<div class="section-title" style="color:var(--accent-amber);">11.4.5 Performance Considerations</div>
+
+<details open>
+<summary><span class="summary-label"><span class="dot"></span>Key performance rules</span><span class="summary-tag">perf</span></summary>
+<div class="inner">
+<ul>
+<li>Avoid unnecessary awaits in loops.</li>
+<li>Batch async requests (Promise.all).</li>
+<li>Use caching + memoization for repeated async calls.</li>
+<li>Use web workers for CPU-heavy tasks.</li>
+<li>Abort long operations early.</li>
+</ul>
+</div>
+</details>
+
+<details>
+<summary><span class="summary-label"><span class="dot"></span>Example: Breaking long loops to avoid blocking</span><span class="summary-tag">example</span></summary>
+<div class="inner">
+<pre><code>
+// BAD: blocks event loop
+for (let i = 0; i &lt; 1e8; i++) { doWork(i); }
+
+// GOOD: yield control periodically
+async function processLarge(n) {
+    for (let i = 0; i &lt; n; i++) {
+        doWork(i);
+        if (i % 1000 === 0) await Promise.resolve(); 
+    }
+}
+</code></pre>
+</div>
+</details>
+
+</section>
+
+</main>
+</div>
+</div>
+
+<!-- ========== JS UTILITY SCRIPT ========== -->
+<script>
+// TOC SEARCH
+document.getElementById("tocSearch").addEventListener("input", function () {
+    const q = this.value.toLowerCase();
+    document.querySelectorAll("#tocList li").forEach(li => {
+        li.style.display = li.textContent.toLowerCase().includes(q) ? "" : "none";
+    });
+});
+
+// EXPAND/COLLAPSE
+document.getElementById("btnExpandAll").onclick = () =>
+    document.querySelectorAll("details").forEach(d => d.open = true);
+
+document.getElementById("btnCollapseAll").onclick = () =>
+    document.querySelectorAll("details").forEach(d => d.open = false);
+
+// SIMPLE SYNTAX HIGHLIGHTER
+document.querySelectorAll("pre code").forEach(block => {
+    block.innerHTML = block.innerHTML
+        .replace(/(\/\/.*?$)/gm, "<span style='color:#6b7280'>$1</span>")
+        .replace(/(".*?"|'.*?'|`.*?`)/g, "<span style='color:#f97316'>$1</span>")
+        .replace(/\b(\d+)\b/g, "<span style='color:#a855f7'>$1</span>")
+        .replace(/\b(async|await|return|const|let|var|throw|try|catch|new)\b/g,
+                 "<span style='color:#22c55e'>$1</span>");
+});
+</script>
+
+</body>
+</html>

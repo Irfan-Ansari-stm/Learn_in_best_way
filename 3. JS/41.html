@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>13.3 – Object.create() and Prototype Methods in JavaScript</title>
+
+<!-- Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+:root{
+    --bg-main:#050816;
+    --bg-sidebar:#060b18;
+    --accent-cyan:#22d3ee;
+    --accent-amber:#fbbf24;
+    --text-main:#e5e7eb;
+    --text-muted:#9ca3af;
+    --border-subtle:#1f2937;
+    --code-bg:#020617;
+}
+
+/* Base */
+*{box-sizing:border-box;}
+html,body{
+    margin:0;
+    padding:0;
+    height:100%;
+    background:var(--bg-main);
+    color:var(--text-main);
+    font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    scroll-behavior:smooth;
+}
+body{overflow:hidden;}
+
+/* Layout */
+.app-wrapper{height:100vh;}
+.sidebar{
+    background:radial-gradient(circle at top left,#0f172a,var(--bg-sidebar));
+    border-right:1px solid var(--border-subtle);
+    height:100vh;
+    position:sticky;top:0;
+    overflow-y:auto;
+    padding:1.2rem 1rem;
+}
+.content-panel{
+    height:100vh;
+    overflow-y:auto;
+    padding:1.5rem 2rem;
+    background:radial-gradient(circle at top right,#020617,var(--bg-main));
+}
+
+/* Scrollbars */
+.sidebar::-webkit-scrollbar,
+.content-panel::-webkit-scrollbar{width:8px;}
+.sidebar::-webkit-scrollbar-thumb,
+.content-panel::-webkit-scrollbar-thumb{
+    background:#1f2937;border-radius:999px;
+}
+
+/* Sidebar text */
+.course-tag{
+    font-size:0.75rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--accent-amber);
+}
+.main-title{
+    font-size:1.4rem;
+    font-weight:700;
+    color:var(--accent-cyan);
+}
+.subtitle{
+    font-size:0.9rem;
+    color:var(--text-muted);
+}
+.meta-text{
+    font-size:0.8rem;
+    color:var(--text-muted);
+}
+.pill{
+    display:inline-flex;
+    align-items:center;
+    border-radius:999px;
+    padding:0.15rem 0.55rem;
+    font-size:0.72rem;
+    border:1px solid rgba(148,163,184,0.6);
+    color:var(--text-muted);
+    margin:0.15rem 0.25rem 0.15rem 0;
+}
+.pill span.bullet{
+    width:6px;height:6px;border-radius:999px;
+    background:var(--accent-cyan);
+    margin-right:0.25rem;
+}
+
+/* TOC */
+.toc-card{
+    margin-top:1rem;
+    background:rgba(15,23,42,0.95);
+    border-radius:0.75rem;
+    border:1px solid rgba(148,163,184,0.3);
+    padding:0.9rem;
+}
+.toc-title{
+    font-size:0.9rem;
+    font-weight:600;
+    color:var(--accent-amber);
+}
+.toc-search input{
+    width:100%;
+    border-radius:999px;
+    border:1px solid #111827;
+    background:#020617;
+    color:var(--text-main);
+    font-size:0.78rem;
+    padding:0.2rem 0.6rem;
+}
+.toc-list{
+    list-style:none;
+    padding-left:0;
+    margin:0.4rem 0 0 0;
+}
+.toc-link{
+    display:flex;
+    align-items:center;
+    gap:0.4rem;
+    font-size:0.8rem;
+    padding:0.18rem 0.4rem;
+    border-radius:0.4rem;
+    text-decoration:none;
+    color:var(--text-muted);
+}
+.toc-link-dot{
+    width:6px;height:6px;border-radius:999px;
+    background:rgba(148,163,184,0.7);
+}
+.toc-link:hover{
+    background:rgba(15,23,42,0.9);
+    color:var(--accent-cyan);
+}
+.toc-link.active{
+    background:rgba(8,47,73,0.85);
+    color:var(--accent-cyan);
+}
+.toc-link.active .toc-link-dot{background:var(--accent-cyan);}
+.toc-actions button{
+    border-radius:999px;
+    border:1px solid rgba(148,163,184,0.45);
+    background:rgba(15,23,42,0.9);
+    color:var(--text-muted);
+    font-size:0.72rem;
+    padding:0.12rem 0.6rem;
+}
+
+/* Content */
+.content-heading h1{
+    font-size:1.6rem;
+    color:var(--accent-cyan);
+}
+.content-heading p{
+    font-size:0.9rem;
+    color:var(--text-muted);
+}
+.badge-level,.badge-topic{
+    font-size:0.75rem;
+    border-radius:999px;
+    padding:0.12rem 0.6rem;
+}
+.badge-level{
+    border:1px solid rgba(56,189,248,0.6);
+    color:var(--accent-cyan);
+}
+.badge-topic{
+    border:1px dashed rgba(251,191,36,0.6);
+    color:var(--accent-amber);
+}
+.summary-strip{
+    background:radial-gradient(circle at left,rgba(56,189,248,0.2),transparent);
+    border-radius:0.8rem;
+    border:1px solid rgba(148,163,184,0.5);
+    padding:0.8rem 1rem;
+    font-size:0.86rem;
+    margin-bottom:1.1rem;
+}
+.summary-strip strong{color:var(--accent-amber);}
+.section-label{
+    font-size:0.7rem;
+    text-transform:uppercase;
+    letter-spacing:0.16em;
+    color:#9ca3af;
+}
+.section-title{
+    font-size:1.05rem;
+    font-weight:600;
+    color:var(--accent-amber);
+}
+.section-subtitle{
+    font-size:0.85rem;
+    color:var(--text-muted);
+    margin-bottom:0.6rem;
+}
+
+/* Details blocks */
+details{
+    background:rgba(15,23,42,0.9);
+    border-radius:0.8rem;
+    border:1px solid rgba(30,64,175,0.8);
+    padding:0.25rem 0.85rem 0.6rem;
+    margin-bottom:0.8rem;
+}
+details[open]{border-color:rgba(56,189,248,0.85);}
+summary{
+    list-style:none;
+    cursor:pointer;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0.35rem 0;
+    font-size:0.92rem;
+    font-weight:600;
+}
+summary::-webkit-details-marker{display:none;}
+.summary-label{display:flex;align-items:center;gap:0.4rem;}
+.summary-label .dot{
+    width:7px;height:7px;border-radius:999px;
+    background:var(--accent-cyan);
+}
+.summary-tag{
+    font-size:0.75rem;
+    color:var(--accent-amber);
+}
+details .inner{
+    font-size:0.84rem;
+    color:var(--text-muted);
+}
+details .inner ul{padding-left:1.1rem;}
+details .inner li{margin-bottom:0.2rem;}
+.hint{
+    border-left:3px solid var(--accent-cyan);
+    padding-left:0.6rem;
+    margin:0.4rem 0;
+    font-size:0.8rem;
+}
+
+/* Code */
+pre{
+    background:var(--code-bg);
+    border-radius:0.7rem;
+    border:1px solid rgba(15,118,110,0.7);
+    padding:0.7rem 0.9rem;
+    overflow-x:auto;
+    margin:0.4rem 0;
+}
+code{
+    font-family:"JetBrains Mono","Fira Code",ui-monospace,monospace;
+    font-size:0.8rem;
+}
+.token-comment{color:#6b7280;font-style:italic;}
+.token-string{color:#fb923c;}
+.token-number{color:#a855f7;}
+.token-keyword{color:#22c55e;font-weight:600;}
+.token-builtins{color:#facc15;}
+.token-function{color:#38bdf8;}
+
+/* Responsive */
+@media (max-width:991.98px){
+    body{overflow:auto;}
+    .app-wrapper{height:auto;}
+    .sidebar{
+        height:auto;
+        position:static;
+        border-right:none;
+        border-bottom:1px solid var(--border-subtle);
+    }
+    .content-panel{height:auto;}
+}
+</style>
+</head>
+
+<body>
+<div class="container-fluid app-wrapper">
+  <div class="row flex-nowrap">
+    <!-- SIDEBAR -->
+    <aside class="col-12 col-md-4 col-lg-3 sidebar">
+      <div>
+        <div class="course-tag">Modern JavaScript Deep Dive</div>
+        <div class="main-title">13.3 – Object.create() &amp; Prototype Methods</div>
+        <div class="subtitle">Low-level prototype control &amp; custom hierarchies</div>
+        <div class="meta-text">
+          Prepared for: College → Master / PhD level<br>
+          Focus: Prototype wiring &amp; inspection APIs
+        </div>
+      </div>
+
+      <div class="mt-2">
+        <span class="pill"><span class="bullet"></span>Object.create()</span>
+        <span class="pill"><span class="bullet"></span>get/setPrototypeOf</span>
+        <span class="pill"><span class="bullet"></span>isPrototypeOf()</span>
+        <span class="pill"><span class="bullet"></span>Prototype trees</span>
+      </div>
+
+      <div class="toc-card mt-2">
+        <div class="toc-title mb-1">On this page</div>
+        <div class="mb-2">
+          <input id="tocSearch" type="text" placeholder="Search sections…">
+        </div>
+        <ul id="tocList" class="toc-list">
+          <li data-label="object create usage">
+            <a href="#sec-create" class="toc-link">
+              <span class="toc-link-dot"></span>
+              <span>13.3.1 Object.create() usage</span>
+            </a>
+          </li>
+          <li data-label="object setprototypeof">
+            <a href="#sec-setproto" class="toc-link">
+              <span class="toc-link-dot"></span>
+              <span>13.3.2 Object.setPrototypeOf()</span>
+            </a>
+          </li>
+          <li data-label="object getprototypeof">
+            <a href="#sec-getproto" class="toc-link">
+              <span class="toc-link-dot"></span>
+              <span>13.3.3 Object.getPrototypeOf()</span>
+            </a>
+          </li>
+          <li data-label="isprototypeof method">
+            <a href="#sec-isproto" class="toc-link">
+              <span class="toc-link-dot"></span>
+              <span>13.3.4 isPrototypeOf() method</span>
+            </a>
+          </li>
+          <li data-label="creating prototype hierarchies">
+            <a href="#sec-hierarchies" class="toc-link">
+              <span class="toc-link-dot"></span>
+              <span>13.3.5 Creating prototype hierarchies</span>
+            </a>
+          </li>
+        </ul>
+        <div class="toc-actions mt-2">
+          <button id="btnExpandAll" type="button">Expand all</button>
+          <button id="btnCollapseAll" type="button">Collapse all</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="col content-panel">
+      <section class="content-heading">
+        <div class="d-flex flex-wrap align-items-center mb-2">
+          <span class="badge-level">Level: Advanced</span>
+          <span class="badge-topic ms-1">Topic: Prototype APIs &amp; object graphs</span>
+        </div>
+        <h1>13.3 – Object.create() and Prototype Methods</h1>
+        <p>
+          ES6 classes and constructor functions are high-level faces of a deeper system: the prototype
+          chain. In this chapter, we work directly with low-level APIs<br>
+          <code>Object.create()</code>, <code>Object.setPrototypeOf()</code>, <code>Object.getPrototypeOf()</code>,
+          and <code>isPrototypeOf()</code> to build, inspect, and reason about prototype hierarchies like a language designer.
+        </p>
+      </section>
+
+      <section>
+        <div class="summary-strip">
+          <strong>Executive intuition:</strong>
+          <code>Object.create(proto)</code> lets you say: “make me a new object that delegates to <code>proto</code>”.
+          <code>getPrototypeOf</code> and <code>setPrototypeOf</code> let you inspect and modify that link.
+          <code>isPrototypeOf</code> answers “does this object appear anywhere in that chain?”. Together,
+          they give you full surgical control over how objects inherit behaviour.
+        </div>
+      </section>
+
+      <!-- 13.3.1 Object.create() usage -->
+      <section id="sec-create" class="mb-4">
+        <div class="section-label">13.3.1</div>
+        <div class="section-title">Object.create() usage</div>
+        <div class="section-subtitle">Creating objects with an explicit prototype.</div>
+
+        <details open>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Basic Object.create(proto) pattern</span>
+            <span class="summary-tag">core</span>
+          </summary>
+          <div class="inner">
+            <p>
+              Signature: <code>Object.create(proto, [propertiesObject])</code>.
+            </p>
+            <ul>
+              <li><code>proto</code> – the object to be used as the new object's [[Prototype]].</li>
+              <li><code>propertiesObject</code> – optional property descriptors, like in <code>Object.defineProperties</code>.</li>
+            </ul>
+
+            <pre><code>
+const animal = {
+    eats: true,
+    speak() {
+        console.log("generic sound");
+    }
+};
+
+const dog = Object.create(animal);
+dog.barks = true;
+
+console.log(dog.eats);           // true (from prototype)
+console.log(dog.barks);          // true (own)
+dog.speak();                     // "generic sound"
+console.log(Object.getPrototypeOf(dog) === animal); // true
+            </code></pre>
+
+            <p class="hint">
+              This is essentially the minimal, clean way of saying “create <code>dog</code> that delegates to <code>animal</code>”.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Creating objects with null prototype</span>
+            <span class="summary-tag">dictionary</span>
+          </summary>
+          <div class="inner">
+            <p>
+              <code>Object.create(null)</code> creates an object with no prototype. Great for dictionaries
+              where you don’t want collisions with inherited properties.
+            </p>
+
+            <pre><code>
+const dict = Object.create(null);
+dict.x = 1;
+dict.toString = "danger"; // safe, doesn't collide with Object.prototype.toString
+
+console.log(dict.x);              // 1
+console.log(dict.toString);       // "danger"
+console.log(Object.getPrototypeOf(dict)); // null
+            </code></pre>
+
+            <p>
+              Looping:
+            </p>
+            <pre><code>
+for (const key in dict) {
+    console.log(key); // "x", "toString" (only own, no inherited)
+}
+            </code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Using property descriptors with Object.create()</span>
+            <span class="summary-tag">descriptors</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+const proto = {
+    describe() {
+        return this.id + ": " + this.name;
+    }
+};
+
+const obj = Object.create(proto, {
+    id: {
+        value: 1,
+        writable: true,
+        configurable: true,
+        enumerable: true
+    },
+    name: {
+        value: "Irfan",
+        writable: false,
+        configurable: false,
+        enumerable: true
+    }
+});
+
+console.log(obj.describe()); // "1: Irfan"
+obj.id = 2;
+console.log(obj.id);         // 2
+obj.name = "New";            // silently ignored in non-strict mode
+console.log(obj.name);       // "Irfan"
+            </code></pre>
+
+            <p class="hint">
+              This is similar to <code>Object.defineProperties(obj, descriptors)</code> but combined with
+              prototype setup in a single call.
+            </p>
+          </div>
+        </details>
+      </section>
+
+      <!-- 13.3.2 Object.setPrototypeOf -->
+      <section id="sec-setproto" class="mb-4">
+        <div class="section-label">13.3.2</div>
+        <div class="section-title">Object.setPrototypeOf()</div>
+        <div class="section-subtitle">Changing an object’s prototype at runtime (with care).</div>
+
+        <details open>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Basic usage &amp; behaviour</span>
+            <span class="summary-tag">syntax</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+const base = { kind: "base" };
+const obj = { x: 1 };
+
+console.log(Object.getPrototypeOf(obj) === Object.prototype); // true
+
+Object.setPrototypeOf(obj, base);
+
+console.log(obj.kind); // "base"
+console.log(Object.getPrototypeOf(obj) === base); // true
+            </code></pre>
+
+            <p>
+              Effectively, <code>Object.setPrototypeOf(target, proto)</code> mutates the internal [[Prototype]]
+              of <code>target</code> so that future property accesses follow the new chain.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Performance implications</span>
+            <span class="summary-tag">perf</span>
+          </summary>
+          <div class="inner">
+            <p>
+              Engines heavily optimize objects assuming their prototype does not change after creation.
+              Using <code>Object.setPrototypeOf</code> can de-optimize those fast paths.
+            </p>
+            <ul>
+              <li>Use <code>Object.create()</code> to set prototype at creation time whenever possible.</li>
+              <li>Avoid calling <code>setPrototypeOf</code> inside hot loops.</li>
+              <li>Think of <code>setPrototypeOf</code> as “toolbox for metaprogramming / polyfills”, not for everyday use.</li>
+            </ul>
+
+            <p class="hint">
+              Many style guides: “prefer <code>Object.create</code> over <code>setPrototypeOf</code>.”
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Example: dynamic role switching</span>
+            <span class="summary-tag">example</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+const guestProto = {
+    role: "guest",
+    canEdit() { return false; }
+};
+
+const adminProto = {
+    role: "admin",
+    canEdit() { return true; }
+};
+
+const user = Object.create(guestProto);
+user.name = "Irfan";
+
+console.log(user.role, user.canEdit()); // guest false
+
+// Promote user at runtime:
+Object.setPrototypeOf(user, adminProto);
+
+console.log(user.role, user.canEdit()); // admin true
+            </code></pre>
+
+            <p>
+              This is an extreme dynamic pattern; in a real system you may prefer explicit roles over prototype switching, but this demonstrates the power.
+            </p>
+          </div>
+        </details>
+      </section>
+
+      <!-- 13.3.3 Object.getPrototypeOf -->
+      <section id="sec-getproto" class="mb-4">
+        <div class="section-label">13.3.3</div>
+        <div class="section-title">Object.getPrototypeOf()</div>
+        <div class="section-subtitle">Inspecting prototype chains safely.</div>
+
+        <details open>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Simple usage &amp; relation to __proto__</span>
+            <span class="summary-tag">inspection</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+const animal = { eats: true };
+const dog = Object.create(animal);
+
+console.log(Object.getPrototypeOf(dog) === animal); // true
+
+// In many environments:
+console.log(dog.__proto__ === animal); // true (legacy, avoid in production code)
+            </code></pre>
+
+            <p class="hint">
+              <code>Object.getPrototypeOf</code> is the official, spec-sanctioned way to read prototypes.
+              <code>__proto__</code> is mostly for dev tools and legacy code.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Walking a prototype chain with getPrototypeOf</span>
+            <span class="summary-tag">tool</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+function getPrototypeChain(obj) {
+    const chain = [];
+    let current = obj;
+    while (current !== null) {
+        chain.push(current);
+        current = Object.getPrototypeOf(current);
+    }
+    return chain;
+}
+
+const base = { base: true };
+const mid = Object.create(base);
+const top = Object.create(mid);
+
+const chain = getPrototypeChain(top);
+console.log(chain.length); // typically 4: [top, mid, base, Object.prototype]
+            </code></pre>
+
+            <p>
+              You can log the chain for debugging prototype issues in large systems.
+            </p>
+          </div>
+        </details>
+      </section>
+
+      <!-- 13.3.4 isPrototypeOf -->
+      <section id="sec-isproto" class="mb-4">
+        <div class="section-label">13.3.4</div>
+        <div class="section-title">isPrototypeOf() method</div>
+        <div class="section-subtitle">Asking “Am I on your prototype chain?”.</div>
+
+        <details open>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Definition &amp; intuition</span>
+            <span class="summary-tag">concept</span>
+          </summary>
+          <div class="inner">
+            <p>
+              <code>A.isPrototypeOf(B)</code> returns <code>true</code> if <code>A</code> appears anywhere
+              on <code>B</code>'s prototype chain.
+            </p>
+
+            <pre><code>
+const grandparent = {};
+const parent = Object.create(grandparent);
+const child = Object.create(parent);
+
+console.log(grandparent.isPrototypeOf(child)); // true
+console.log(parent.isPrototypeOf(child));      // true
+console.log(child.isPrototypeOf(parent));      // false
+            </code></pre>
+
+            <p class="hint">
+              This is the conceptual inverse of the <code>instanceof</code> operator, where
+              <code>obj instanceof Ctor</code> checks if <code>Ctor.prototype</code> is in the chain.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Implementing isPrototypeOf manually</span>
+            <span class="summary-tag">mechanism</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+function myIsPrototypeOf(proto, obj) {
+    let current = Object.getPrototypeOf(obj);
+    while (current !== null) {
+        if (current === proto) return true;
+        current = Object.getPrototypeOf(current);
+    }
+    return false;
+}
+
+const a = {};
+const b = Object.create(a);
+console.log(myIsPrototypeOf(a, b)); // true
+            </code></pre>
+          </div>
+        </details>
+      </section>
+
+      <!-- 13.3.5 Creating prototype hierarchies -->
+      <section id="sec-hierarchies" class="mb-4">
+        <div class="section-label">13.3.5</div>
+        <div class="section-title">Creating prototype hierarchies</div>
+        <div class="section-subtitle">Building class-like chains using Object.create &amp; friends.</div>
+
+        <details open>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Manual “class” hierarchy with Object.create()</span>
+            <span class="summary-tag">example</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+const Shape = {
+    type: "shape",
+    area() {
+        throw new Error("area() not implemented");
+    },
+    describe() {
+        console.log("I am a " + this.type);
+    }
+};
+
+const Rectangle = Object.create(Shape);
+Rectangle.type = "rectangle";
+Rectangle.create = function (width, height) {
+    const obj = Object.create(Rectangle);
+    obj.width = width;
+    obj.height = height;
+    return obj;
+};
+Rectangle.area = function () {
+    return this.width * this.height;
+};
+
+const Circle = Object.create(Shape);
+Circle.type = "circle";
+Circle.create = function (radius) {
+    const obj = Object.create(Circle);
+    obj.radius = radius;
+    return obj;
+};
+Circle.area = function () {
+    return Math.PI * this.radius * this.radius;
+};
+
+const r = Rectangle.create(3, 4);
+const c = Circle.create(2);
+
+r.describe(); // "I am a rectangle"
+c.describe(); // "I am a circle"
+
+console.log(r.area()); // 12
+console.log(c.area()); // ~12.56
+            </code></pre>
+
+            <p>
+              Here we used objects as “class-like” prototypes with <code>.create</code> factory methods
+              that call <code>Object.create</code> to produce instances.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Constructor functions wired via Object.create()</span>
+            <span class="summary-tag">pattern</span>
+          </summary>
+          <div class="inner">
+            <p>
+              Even in constructor-based hierarchies, <code>Object.create</code> is used to wire up
+              prototypes for inheritance.
+            </p>
+
+            <pre><code>
+function Animal(name) {
+    this.name = name;
+}
+Animal.prototype.speak = function () {
+    console.log(this.name + " makes a noise.");
+};
+
+function Dog(name) {
+    Animal.call(this, name); // super constructor
+}
+
+// Inheritance:
+// Dog.prototype.__proto__ = Animal.prototype (conceptually)
+Dog.prototype = Object.create(Animal.prototype);
+Dog.prototype.constructor = Dog;
+
+Dog.prototype.speak = function () {
+    console.log(this.name + " barks.");
+};
+
+const d = new Dog("Pluto");
+d.speak(); // "Pluto barks."
+
+console.log(Animal.prototype.isPrototypeOf(d)); // true
+            </code></pre>
+
+            <p class="hint">
+              ES6 <code>class Dog extends Animal</code> is essentially doing this for you behind the scenes.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Prototype tree visualization helper</span>
+            <span class="summary-tag">tool</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+function printPrototypeTree(obj, label = "obj") {
+    let current = obj;
+    let level = 0;
+    console.log("Prototype chain for", label);
+    while (current !== null) {
+        const own = Object.getOwnPropertyNames(current);
+        console.log(
+            "#".repeat(level + 1),
+            "level", level,
+            "props:", own.join(", ")
+        );
+        current = Object.getPrototypeOf(current);
+        level++;
+    }
+}
+
+const base = { baseMethod() {} };
+const mid = Object.create(base);
+mid.midMethod = function () {};
+const top = Object.create(mid);
+top.topMethod = function () {};
+
+printPrototypeTree(top, "top");
+            </code></pre>
+
+            <p>
+              This kind of helper is very useful when debugging complex prototype hierarchies
+              (e.g., in frameworks or when mixing multiple libraries).
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Summary &amp; mental model</span>
+            <span class="summary-tag">summary</span>
+          </summary>
+          <div class="inner">
+            <ul>
+              <li><code>Object.create(proto)</code> – create a new object whose [[Prototype]] is <code>proto</code>.</li>
+              <li><code>Object.create(null)</code> – create a dictionary object with no inherited properties.</li>
+              <li><code>Object.setPrototypeOf(obj, proto)</code> – change the prototype at runtime (powerful but potentially slow).</li>
+              <li><code>Object.getPrototypeOf(obj)</code> – inspect the prototype; preferred over <code>__proto__</code>.</li>
+              <li><code>proto.isPrototypeOf(obj)</code> – check if <code>proto</code> is anywhere in the prototype chain of <code>obj</code>.</li>
+              <li>Use these APIs to implement class-like inheritance, mixins, and domain-specific prototype trees without needing ES6 class syntax.</li>
+            </ul>
+            <p>
+              If you can comfortably design a small inheritance system using only
+              <code>Object.create</code>, <code>getPrototypeOf</code>, <code>setPrototypeOf</code>,
+              and <code>isPrototypeOf</code>, you fully understand JavaScript’s prototype machinery.
+            </p>
+          </div>
+        </details>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script>
+// Smooth scrolling + active TOC + search + expand/collapse + simple highlighting
+document.addEventListener("DOMContentLoaded", () => {
+  const contentPanel = document.querySelector(".content-panel");
+  const tocLinks = Array.from(document.querySelectorAll(".toc-link"));
+  const sections = tocLinks.map(link => {
+    const id = link.getAttribute("href");
+    return { link, target: document.querySelector(id) };
+  });
+
+  // Smooth scroll
+  tocLinks.forEach(link => {
+    link.addEventListener("click", e => {
+      e.preventDefault();
+      const id = link.getAttribute("href");
+      const target = document.querySelector(id);
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+        history.replaceState(null, "", id);
+      }
+    });
+  });
+
+  // Active TOC highlight
+  function updateActive() {
+    const y = contentPanel.scrollTop;
+    let current = null;
+    sections.forEach(({ link, target }) => {
+      if (!target) return;
+      const top = target.offsetTop;
+      if (top - 80 <= y) current = link;
+    });
+    tocLinks.forEach(l => l.classList.remove("active"));
+    if (current) current.classList.add("active");
+  }
+  contentPanel.addEventListener("scroll", updateActive);
+  updateActive();
+
+  // TOC search
+  const tocSearch = document.getElementById("tocSearch");
+  const tocItems = Array.from(document.querySelectorAll("#tocList li"));
+  tocSearch.addEventListener("input", () => {
+    const q = tocSearch.value.toLowerCase();
+    tocItems.forEach(li => {
+      const text = li.textContent.toLowerCase() || "";
+      li.style.display = text.includes(q) ? "" : "none";
+    });
+  });
+
+  // Expand / collapse all
+  document.getElementById("btnExpandAll").onclick =
+    () => document.querySelectorAll("details").forEach(d => d.open = true);
+  document.getElementById("btnCollapseAll").onclick =
+    () => document.querySelectorAll("details").forEach(d => d.open = false);
+
+  // Simple syntax highlighting
+  function escapeHtml(str){
+    return str.replace(/&/g,"&amp;")
+              .replace(/</g,"&lt;")
+              .replace(/>/g,"&gt;");
+  }
+  const keywords = [
+    "class","extends","constructor","super",
+    "function","return","const","let","var",
+    "if","else","while","for","new","async","await",
+    "try","catch","throw","in","instanceof"
+  ];
+  const builtins = [
+    "Object","Array","Map","Set","Date","Promise",
+    "console","Math","JSON","fetch"
+  ];
+
+  document.querySelectorAll("pre code").forEach(codeEl => {
+    const raw = codeEl.textContent;
+    let html = escapeHtml(raw);
+
+    // comments
+    html = html.replace(/(\/\/.*?$)/gm,"<span class='token-comment'>$1</span>");
+    // strings
+    html = html.replace(/(&quot;.*?&quot;|'.*?'|`.*?`)/g,
+      "<span class='token-string'>$1</span>");
+    // numbers
+    html = html.replace(/\b(\d+(\.\d+)?)\b/g,
+      "<span class='token-number'>$1</span>");
+    // builtins
+    builtins.forEach(b => {
+      const re = new RegExp("\\b"+b+"\\b","g");
+      html = html.replace(re,"<span class='token-builtins'>"+b+"</span>");
+    });
+    // keywords
+    keywords.forEach(k => {
+      const re = new RegExp("\\b"+k+"\\b","g");
+      html = html.replace(re,"<span class='token-keyword'>"+k+"</span>");
+    });
+    // functions (simple heuristic)
+    html = html.replace(/([a-zA-Z_$][\w$]*)\s*(?=\()/g,
+      "<span class='token-function'>$1</span>");
+
+    codeEl.innerHTML = html;
+  });
+});
+</script>
+</body>
+</html>

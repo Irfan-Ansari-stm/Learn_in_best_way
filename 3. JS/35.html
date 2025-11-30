@@ -1,0 +1,1413 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>12.1 – ES6 Classes in JavaScript</title>
+    <!-- Bootstrap CDN -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+    </script>
+
+    <style>
+        :root {
+            --bg-main: #050816;
+            --bg-sidebar: #050b14;
+            --bg-card: #06111f;
+            --accent-cyan: #22d3ee;
+            --accent-amber: #fbbf24;
+            --text-main: #e5e7eb;
+            --text-muted: #9ca3af;
+            --border-subtle: #1f2933;
+            --code-bg: #020617;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            overflow: hidden;
+        }
+
+        .app-wrapper {
+            height: 100vh;
+        }
+
+        /* Layout */
+        .sidebar {
+            background: radial-gradient(circle at top left, #0f172a, var(--bg-sidebar));
+            border-right: 1px solid var(--border-subtle);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 1.25rem 1rem;
+        }
+
+        .content-panel {
+            max-height: 100vh;
+            overflow-y: auto;
+            padding: 1.5rem 2rem;
+            background: radial-gradient(circle at top right, #0b1120, var(--bg-main));
+        }
+
+        /* Scrollbars */
+        .sidebar::-webkit-scrollbar,
+        .content-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .sidebar::-webkit-scrollbar-track,
+        .content-panel::-webkit-scrollbar-track {
+            background: #020617;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb,
+        .content-panel::-webkit-scrollbar-thumb {
+            background: #1f2937;
+            border-radius: 999px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover,
+        .content-panel::-webkit-scrollbar-thumb:hover {
+            background: #4b5563;
+        }
+
+        /* Sidebar content */
+        .course-tag {
+            font-size: 0.75rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--accent-amber);
+        }
+
+        .main-title {
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            margin-bottom: 0.25rem;
+        }
+
+        .subtitle {
+            font-size: 0.92rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .meta-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 0.15rem 0.55rem;
+            font-size: 0.7rem;
+            border: 1px solid rgba(148, 163, 184, 0.6);
+            color: var(--text-muted);
+            margin-right: 0.3rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .pill span.bullet {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            margin-right: 0.25rem;
+            background: var(--accent-cyan);
+        }
+
+        .toc-card {
+            margin-top: 1rem;
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 0.75rem;
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            padding: 0.9rem 0.85rem;
+        }
+
+        .toc-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.65rem;
+        }
+
+        .toc-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--accent-amber);
+        }
+
+        .toc-search {
+            font-size: 0.8rem;
+        }
+
+        .toc-search input {
+            background: #020617;
+            border: 1px solid #111827;
+            border-radius: 999px;
+            padding: 0.18rem 0.65rem;
+            color: var(--text-main);
+            width: 100%;
+            font-size: 0.78rem;
+        }
+
+        .toc-search input::placeholder {
+            color: #64748b;
+        }
+
+        .toc-list {
+            list-style: none;
+            padding-left: 0;
+            margin-bottom: 0;
+            margin-top: 0.4rem;
+        }
+
+        .toc-list li {
+            margin-bottom: 0.28rem;
+        }
+
+        .toc-link {
+            font-size: 0.8rem;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.4rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            text-decoration: none;
+            color: var(--text-muted);
+            transition: all 0.15s ease;
+        }
+
+        .toc-link-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.7);
+        }
+
+        .toc-link:hover {
+            background: rgba(15, 23, 42, 0.85);
+            color: var(--accent-cyan);
+        }
+
+        .toc-link.active {
+            background: rgba(8, 47, 73, 0.8);
+            color: var(--accent-cyan);
+        }
+
+        .toc-link.active .toc-link-dot {
+            background: var(--accent-cyan);
+        }
+
+        .toc-actions {
+            display: flex;
+            gap: 0.25rem;
+            margin-top: 0.5rem;
+        }
+
+        .toc-actions button {
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            background: rgba(15, 23, 42, 0.85);
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            padding: 0.12rem 0.6rem;
+        }
+
+        .toc-actions button:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        /* Content area */
+        .content-heading {
+            margin-bottom: 1rem;
+        }
+
+        .content-heading h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+        }
+
+        .content-heading p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .badge-level {
+            font-size: 0.75rem;
+            border-radius: 999px;
+            padding: 0.16rem 0.6rem;
+            border: 1px solid rgba(56, 189, 248, 0.6);
+            color: var(--accent-cyan);
+            margin-right: 0.35rem;
+        }
+
+        .badge-topic {
+            font-size: 0.75rem;
+            border-radius: 999px;
+            padding: 0.16rem 0.6rem;
+            border: 1px dashed rgba(251, 191, 36, 0.6);
+            color: var(--accent-amber);
+        }
+
+        .summary-strip {
+            background: radial-gradient(circle at left, rgba(56, 189, 248, 0.18), transparent);
+            border-radius: 0.9rem;
+            border: 1px solid rgba(148, 163, 184, 0.45);
+            padding: 0.9rem 1rem;
+            font-size: 0.85rem;
+            margin-bottom: 1.1rem;
+        }
+
+        .summary-strip strong {
+            color: var(--accent-amber);
+        }
+
+        details {
+            background: rgba(15, 23, 42, 0.85);
+            border-radius: 0.9rem;
+            border: 1px solid rgba(30, 64, 175, 0.8);
+            margin-bottom: 0.9rem;
+            padding: 0.25rem 0.9rem 0.7rem 0.9rem;
+        }
+
+        details summary {
+            cursor: pointer;
+            list-style: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 0.35rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #e5e7eb;
+        }
+
+        details summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .summary-label {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .summary-label .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 999px;
+            background: var(--accent-cyan);
+        }
+
+        .summary-tag {
+            font-size: 0.75rem;
+            color: var(--accent-amber);
+        }
+
+        details[open] {
+            border-color: rgba(56, 189, 248, 0.85);
+            box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.08);
+        }
+
+        details .inner {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .inner p {
+            margin-bottom: 0.45rem;
+        }
+
+        .inner ul {
+            padding-left: 1.2rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .inner li {
+            margin-bottom: 0.25rem;
+        }
+
+        /* Code blocks */
+        pre {
+            background: var(--code-bg);
+            border-radius: 0.7rem;
+            padding: 0.75rem 0.9rem;
+            overflow-x: auto;
+            border: 1px solid rgba(15, 118, 110, 0.65);
+            margin-bottom: 0.55rem;
+        }
+
+        code {
+            font-family: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.8rem;
+        }
+
+        .token-keyword {
+            color: #22c55e;
+            font-weight: 600;
+        }
+
+        .token-function {
+            color: #38bdf8;
+        }
+
+        .token-builtins {
+            color: #facc15;
+        }
+
+        .token-comment {
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        .token-string {
+            color: #f97316;
+        }
+
+        .token-number {
+            color: #a855f7;
+        }
+
+        .section-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: #9ca3af;
+            margin-bottom: 0.35rem;
+        }
+
+        .section-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--accent-amber);
+            margin-bottom: 0.2rem;
+        }
+
+        .section-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.55rem;
+        }
+
+        .hint {
+            border-left: 3px solid var(--accent-cyan);
+            padding-left: 0.6rem;
+            margin: 0.45rem 0;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .pill-inline {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.55);
+            padding: 0.05rem 0.4rem;
+            font-size: 0.7rem;
+            margin-left: 0.25rem;
+            color: #cbd5f5;
+        }
+
+        @media (max-width: 991.98px) {
+            body {
+                overflow: auto;
+            }
+
+            .app-wrapper {
+                height: auto;
+            }
+
+            .sidebar {
+                position: static;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border-subtle);
+            }
+
+            .content-panel {
+                max-height: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid app-wrapper">
+        <div class="row flex-nowrap">
+            <!-- LEFT SIDEBAR -->
+            <aside class="col-12 col-md-4 col-lg-3 sidebar">
+                <div class="mb-2">
+                    <div class="course-tag">Modern JavaScript Deep Dive</div>
+                    <div class="main-title">12.1 – ES6 Classes</div>
+                    <div class="subtitle">Object-oriented patterns with modern syntax</div>
+                    <div class="meta-text mb-2">
+                        Prepared for: College → Master / PhD level understanding<br>
+                        Style: Deep, detailed, example-driven, research-friendly
+                    </div>
+                </div>
+
+                <div class="mb-2">
+                    <span class="pill">
+                        <span class="bullet"></span>
+                        Class syntax
+                    </span>
+                    <span class="pill">
+                        <span class="bullet"></span>
+                        Constructors
+                    </span>
+                    <span class="pill">
+                        <span class="bullet"></span>
+                        Instance members
+                    </span>
+                    <span class="pill">
+                        <span class="bullet"></span>
+                        Static members
+                    </span>
+                    <span class="pill">
+                        <span class="bullet"></span>
+                        Class expressions
+                    </span>
+                </div>
+
+                <div class="toc-card">
+                    <div class="toc-header">
+                        <span class="toc-title">On this page</span>
+                    </div>
+
+                    <div class="toc-search mb-2">
+                        <input type="text" id="tocSearch" placeholder="Search sections…">
+                    </div>
+
+                    <ul class="toc-list" id="tocList">
+                        <li data-label="class declaration syntax">
+                            <a href="#sec-class-decl" class="toc-link">
+                                <span class="toc-link-dot"></span>
+                                <span>12.1.1 Class declaration syntax</span>
+                            </a>
+                        </li>
+                        <li data-label="constructor methods">
+                            <a href="#sec-constructor" class="toc-link">
+                                <span class="toc-link-dot"></span>
+                                <span>12.1.2 Constructor methods</span>
+                            </a>
+                        </li>
+                        <li data-label="instance methods and properties">
+                            <a href="#sec-instance" class="toc-link">
+                                <span class="toc-link-dot"></span>
+                                <span>12.1.3 Instance methods &amp; properties</span>
+                            </a>
+                        </li>
+                        <li data-label="static methods and properties">
+                            <a href="#sec-static" class="toc-link">
+                                <span class="toc-link-dot"></span>
+                                <span>12.1.4 Static methods &amp; properties</span>
+                            </a>
+                        </li>
+                        <li data-label="class expressions">
+                            <a href="#sec-class-expr" class="toc-link">
+                                <span class="toc-link-dot"></span>
+                                <span>12.1.5 Class expressions</span>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="toc-actions">
+                        <button id="btnExpandAll" type="button">Expand all</button>
+                        <button id="btnCollapseAll" type="button">Collapse all</button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- RIGHT CONTENT PANEL -->
+            <main class="col content-panel">
+                <section class="content-heading">
+                    <div class="d-flex flex-wrap align-items-center mb-2">
+                        <span class="badge-level">Level: Intermediate → Advanced</span>
+                        <span class="badge-topic">Topic: ES6 Classes &amp; OO abstractions</span>
+                    </div>
+                    <h1>12.1 – ES6 Classes in JavaScript</h1>
+                    <p>
+                        ES6 classes are a syntactic layer on top of JavaScript's prototype-based inheritance model. They do
+                        not change the underlying object model, but they offer a cleaner and more declarative way to define
+                        constructors, instance methods, and static members. In this module, we explore class declarations,
+                        constructors, instance and static members, and class expressions, linking each concept back to
+                        prototypes so you can understand both how classes feel and how they actually work under the hood.
+                    </p>
+                </section>
+
+                <section>
+                    <div class="summary-strip">
+                        <strong>Executive intuition:</strong>
+                        A JavaScript class is a function with a prototype, plus a well-defined syntactic structure for
+                        defining instance methods, static methods, and constructors. It is sugar over prototypes, but with
+                        strict semantics that prevent some common mistakes (like calling a constructor without
+                        <code>new</code>) and enable cleaner patterns for inheritance and encapsulation.
+                    </div>
+                </section>
+
+                <!-- 12.1.1 – Class declaration syntax -->
+                <section id="sec-class-decl" class="mb-4">
+                    <div class="section-label">12.1.1</div>
+                    <div class="section-title">Class declaration syntax</div>
+                    <div class="section-subtitle">
+                        Defining blueprints for objects using ES6 syntax.
+                    </div>
+
+                    <!-- Overview -->
+                    <details open>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                High-level overview of classes
+                            </span>
+                            <span class="summary-tag">concept</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                A <strong>class declaration</strong> introduces a new class with a given name. Under the hood,
+                                the class is actually a <strong>constructor function</strong>, and its methods are assigned to
+                                <code>ClassName.prototype</code> or to the class itself (for static methods).
+                            </p>
+                            <p>
+                                Basic pattern:
+                            </p>
+                            <ul>
+                                <li><code>class</code> keyword.</li>
+                                <li>Class name (identifier).</li>
+                                <li>Optional <code>extends</code> for inheritance (covered later).</li>
+                                <li>Body block <code>{ ... }</code> containing methods and special <code>constructor</code>.</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <!-- Syntax & translation -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Syntax &amp; how it maps to prototypes
+                            </span>
+                            <span class="summary-tag">syntax</span>
+                        </summary>
+                        <div class="inner">
+                            <pre><code>
+// ES6 class declaration
+class Person {
+    constructor(name, age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    // instance method
+    describe() {
+        return this.name + " is " + this.age + " years old.";
+    }
+}
+
+// Usage
+const p = new Person("Irfan", 25);
+console.log(p.describe());
+                            </code></pre>
+
+                            <p>
+                                Rough (conceptual) pre-ES6 equivalent:
+                            </p>
+
+                            <pre><code>
+// "Old-style" constructor function
+function PersonOld(name, age) {
+    this.name = name;
+    this.age = age;
+}
+
+PersonOld.prototype.describe = function () {
+    return this.name + " is " + this.age + " years old.";
+};
+
+const p2 = new PersonOld("Irfan", 25);
+console.log(p2.describe());
+                            </code></pre>
+
+                            <p class="hint">
+                                Key insight: <strong>classes are syntax over prototypes</strong>. Understanding this makes
+                                debugging advanced issues much easier.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Class hoisting & TDZ -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Hoisting &amp; temporal dead zone (TDZ)
+                            </span>
+                            <span class="summary-tag">behaviour</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                Class declarations are hoisted like <code>let</code> and <code>const</code>: the binding is
+                                put in a <strong>temporal dead zone</strong> (TDZ) and you cannot use the class before its
+                                declaration line.
+                            </p>
+
+                            <pre><code>
+const p = new Person("X", 20); // ReferenceError: Cannot access 'Person' before initialization
+
+class Person {
+    // ...
+}
+                            </code></pre>
+
+                            <p>
+                                This differs from function declarations, which are fully hoisted and callable before their
+                                definition.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 12.1.2 – Constructor methods -->
+                <section id="sec-constructor" class="mb-4">
+                    <div class="section-label">12.1.2</div>
+                    <div class="section-title">Constructor methods</div>
+                    <div class="section-subtitle">
+                        Initializing new instances with <code>constructor</code>.
+                    </div>
+
+                    <!-- Overview -->
+                    <details open>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Role of the constructor
+                            </span>
+                            <span class="summary-tag">concept</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                In a class, <code>constructor</code> is a special method that runs when you call
+                                <code>new ClassName(...)</code>. Its main job is to:
+                            </p>
+                            <ul>
+                                <li>Initialize instance fields.</li>
+                                <li>Validate or normalize inputs.</li>
+                                <li>Optionally, set up event listeners or resources.</li>
+                            </ul>
+                            <p>
+                                If you omit a constructor, JavaScript creates a default one:
+                            </p>
+                            <pre><code>
+class A {}
+// is equivalent to
+class A2 {
+    constructor() {}
+}
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <!-- Syntax & 'this' -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Syntax, <code>this</code> binding &amp; rules
+                            </span>
+                            <span class="summary-tag">syntax</span>
+                        </summary>
+                        <div class="inner">
+                            <pre><code>
+class Rectangle {
+    constructor(width, height) {
+        // 'this' refers to the new instance
+        this.width = width;
+        this.height = height;
+        this.createdAt = new Date();
+    }
+
+    area() {
+        return this.width * this.height;
+    }
+}
+
+const r = new Rectangle(4, 5);
+console.log(r.area()); // 20
+                            </code></pre>
+
+                            <ul>
+                                <li>You cannot explicitly return a non-object from constructor &mdash; <code>this</code> is returned.</li>
+                                <li>Returning an object overrides the normal <code>this</code> instance, but this is rarely used in practice.</li>
+                            </ul>
+
+                            <pre><code>
+class Weird {
+    constructor() {
+        this.x = 1;
+        return { x: 2 }; // overrides 'this'
+    }
+}
+
+const w = new Weird();
+console.log(w.x); // 2, not 1
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <!-- Super in derived classes (brief) -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                <code>super()</code> in subclass constructors (preview)
+                            </span>
+                            <span class="summary-tag">inheritance</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                In subclasses (using <code>extends</code>), you must call <code>super(...)</code> before
+                                accessing <code>this</code> in the constructor. This wires up the prototype chain and
+                                initializes the base class.
+                            </p>
+
+                            <pre><code>
+class Person {
+    constructor(name) {
+        this.name = name;
+    }
+}
+
+class Employee extends Person {
+    constructor(name, role) {
+        super(name); // must call super first
+        this.role = role;
+    }
+}
+
+const e = new Employee("Irfan", "Developer");
+console.log(e.name, e.role);
+                            </code></pre>
+
+                            <p class="hint">
+                                This module focuses on single classes; inheritance and <code>super</code> are developed more
+                                fully in later modules. Here we just want the constructor semantics.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 12.1.3 – Instance methods & properties -->
+                <section id="sec-instance" class="mb-4">
+                    <div class="section-label">12.1.3</div>
+                    <div class="section-title">Instance methods and properties</div>
+                    <div class="section-subtitle">
+                        Behaviour and state per object instance.
+                    </div>
+
+                    <!-- Overview -->
+                    <details open>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Instance side: what each object owns
+                            </span>
+                            <span class="summary-tag">instance</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                <strong>Instance properties</strong> live on each object created with
+                                <code>new ClassName(...)</code>. They usually represent state (data fields).
+                            </p>
+                            <p>
+                                <strong>Instance methods</strong> are functions shared via the prototype that operate on
+                                instance state. When you define a method in the class body (without <code>static</code>), it is
+                                stored on <code>ClassName.prototype</code>.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Basic example -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Example: Defining and using instance members
+                            </span>
+                            <span class="summary-tag">example</span>
+                        </summary>
+                        <div class="inner">
+                            <pre><code>
+class BankAccount {
+    constructor(owner, balance = 0) {
+        this.owner = owner;  // instance property
+        this.balance = balance; // instance property
+    }
+
+    deposit(amount) {        // instance method
+        if (amount &lt;= 0) {
+            throw new Error("Amount must be positive");
+        }
+        this.balance += amount;
+        return this.balance;
+    }
+
+    withdraw(amount) {
+        if (amount &gt; this.balance) {
+            throw new Error("Insufficient funds");
+        }
+        this.balance -= amount;
+        return this.balance;
+    }
+
+    describe() {
+        return this.owner + " has balance " + this.balance;
+    }
+}
+
+const acc1 = new BankAccount("Irfan", 1000);
+const acc2 = new BankAccount("Kittu", 500);
+
+acc1.deposit(200);
+acc2.withdraw(100);
+
+console.log(acc1.describe());
+console.log(acc2.describe());
+                            </code></pre>
+
+                            <p>
+                                All instances share the same <code>deposit</code>, <code>withdraw</code>,
+                                <code>describe</code> function objects (on the prototype), but each maintains its own
+                                <code>owner</code> and <code>balance</code>.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Instance fields (ES2022+) -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Instance field declarations (public fields)
+                            </span>
+                            <span class="summary-tag">fields</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                Modern JavaScript also supports <strong>public instance field declarations</strong> directly
+                                in the class body, which are initialized for each instance:
+                            </p>
+
+                            <pre><code>
+class Counter {
+    // public instance field (per instance)
+    value = 0;
+
+    increment() {
+        this.value++;
+    }
+}
+
+const c = new Counter();
+c.increment();
+console.log(c.value); // 1
+                            </code></pre>
+
+                            <p>
+                                This is equivalent to assigning <code>this.value = 0;</code> in the constructor, but gives a
+                                more declarative style. Also supports default values that are evaluated once per instance.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Getters and setters -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Getters &amp; setters as computed properties
+                            </span>
+                            <span class="summary-tag">accessors</span>
+                        </summary>
+                        <div class="inner">
+                            <pre><code>
+class Temperature {
+    constructor(celsius) {
+        this.celsius = celsius;
+    }
+
+    get fahrenheit() {
+        return this.celsius * 9 / 5 + 32;
+    }
+
+    set fahrenheit(value) {
+        this.celsius = (value - 32) * 5 / 9;
+    }
+}
+
+const t = new Temperature(0);
+console.log(t.fahrenheit); // 32
+
+t.fahrenheit = 212;
+console.log(t.celsius); // 100
+                            </code></pre>
+
+                            <p class="hint">
+                                Getters and setters provide a &ldquo;property-like&rdquo; API while still allowing logic,
+                                validation, or caching.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 12.1.4 – Static methods & properties -->
+                <section id="sec-static" class="mb-4">
+                    <div class="section-label">12.1.4</div>
+                    <div class="section-title">Static methods and properties</div>
+                    <div class="section-subtitle">
+                        Functionality attached to the class itself, not instances.
+                    </div>
+
+                    <!-- Overview -->
+                    <details open>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Why static members?
+                            </span>
+                            <span class="summary-tag">concept</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                <strong>Static methods</strong> and <strong>static properties</strong> belong to the class
+                                constructor function itself, not to instances. They are useful for:
+                            </p>
+                            <ul>
+                                <li>Factory methods.</li>
+                                <li>Utility or helper functions.</li>
+                                <li>Configuration and constants.</li>
+                                <li>Tracking global counts (e.g. number of instances).</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <!-- Static methods -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Syntax and usage of static methods
+                            </span>
+                            <span class="summary-tag">syntax</span>
+                        </summary>
+                        <div class="inner">
+                            <pre><code>
+class MathUtils {
+    static clamp(value, min, max) {
+        if (value &lt; min) return min;
+        if (value &gt; max) return max;
+        return value;
+    }
+
+    static degToRad(degrees) {
+        return degrees * Math.PI / 180;
+    }
+}
+
+console.log(MathUtils.clamp(15, 0, 10)); // 10
+console.log(MathUtils.degToRad(180));    // 3.14159...
+                            </code></pre>
+
+                            <p>
+                                Note: you call static methods on the class itself, not on instances:
+                            </p>
+
+                            <pre><code>
+const m = new MathUtils();
+console.log(typeof m.clamp); // "undefined"
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <!-- Static properties -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Static fields and instance counting
+                            </span>
+                            <span class="summary-tag">static fields</span>
+                        </summary>
+                        <div class="inner">
+                            <pre><code>
+class Connection {
+    static count = 0; // static field
+
+    constructor() {
+        Connection.count++;
+    }
+
+    static getActiveCount() {
+        return Connection.count;
+    }
+}
+
+const c1 = new Connection();
+const c2 = new Connection();
+console.log(Connection.getActiveCount()); // 2
+                            </code></pre>
+
+                            <p>
+                                Static fields are evaluated once when the class is defined. Instances share the same static
+                                value, accessible via <code>ClassName.field</code>.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Combined pattern: factories -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Pattern: static factory + private constructor (conceptual)
+                            </span>
+                            <span class="summary-tag">pattern</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                While JavaScript does not have private constructors in the same way as some other languages,
+                                you can simulate controlled construction by combining static methods with naming conventions or
+                                <code>#private</code> fields.
+                            </p>
+
+                            <pre><code>
+class Color {
+    constructor(r, g, b) {
+        this.r = r;
+        this.g = g;
+        this.b = b;
+    }
+
+    static fromHex(hex) {
+        const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        if (!m) {
+            throw new Error("Invalid hex color");
+        }
+        return new Color(
+            parseInt(m[1], 16),
+            parseInt(m[2], 16),
+            parseInt(m[3], 16)
+        );
+    }
+
+    toString() {
+        return "rgb(" + this.r + ", " + this.g + ", " + this.b + ")";
+    }
+}
+
+const c = Color.fromHex("#ffcc00");
+console.log(c.toString());
+                            </code></pre>
+
+                            <p class="hint">
+                                Pattern: use static methods for named constructors (e.g., <code>fromHex</code>,
+                                <code>fromJson</code>, <code>empty</code>, <code>of</code>, etc.).
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 12.1.5 – Class expressions -->
+                <section id="sec-class-expr" class="mb-4">
+                    <div class="section-label">12.1.5</div>
+                    <div class="section-title">Class expressions</div>
+                    <div class="section-subtitle">
+                        Classes as values that can be passed around.
+                    </div>
+
+                    <!-- Overview -->
+                    <details open>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                What are class expressions?
+                            </span>
+                            <span class="summary-tag">concept</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                A <strong>class expression</strong> is a class defined as part of an expression, often assigned
+                                to a variable or passed as an argument. Just like function expressions vs function
+                                declarations, class expressions provide more flexibility:
+                            </p>
+                            <ul>
+                                <li>Define classes inside functions.</li>
+                                <li>Return classes from factories.</li>
+                                <li>Create anonymous or locally-scoped classes.</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <!-- Basic syntax -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Syntax: named &amp; anonymous class expressions
+                            </span>
+                            <span class="summary-tag">syntax</span>
+                        </summary>
+                        <div class="inner">
+                            <pre><code>
+// Anonymous class expression assigned to a const
+const Animal = class {
+    constructor(name) {
+        this.name = name;
+    }
+    speak() {
+        console.log(this.name + " makes a noise.");
+    }
+};
+
+const a = new Animal("Generic");
+a.speak();
+
+// Named class expression (name is local to the class body)
+const Dog = class DogClass {
+    constructor(name) {
+        this.name = name;
+    }
+    speak() {
+        console.log(this.name + " barks.");
+    }
+};
+
+const d = new Dog("Pluto");
+d.speak();
+// DogClass is not in scope here; only Dog is
+                            </code></pre>
+
+                            <p>
+                                The internal name (<code>DogClass</code>) can be useful for debugging stack traces, but is not
+                                accessible outside the class body.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Returning classes from functions -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Pattern: function that returns a customized class
+                            </span>
+                            <span class="summary-tag">advanced pattern</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                You can create factories that return classes, parameterized by configuration. This appears in
+                                some advanced frameworks and libraries.
+                            </p>
+
+                            <pre><code>
+function createTaggedClass(tag) {
+    return class Tagged {
+        constructor(value) {
+            this.tag = tag;
+            this.value = value;
+        }
+
+        toString() {
+            return "[" + this.tag + "] " + String(this.value);
+        }
+    };
+}
+
+const ErrorMessage = createTaggedClass("ERROR");
+const InfoMessage = createTaggedClass("INFO");
+
+const e = new ErrorMessage("Something failed");
+const i = new InfoMessage("All good");
+
+console.log(e.toString()); // [ERROR] Something failed
+console.log(i.toString()); // [INFO] All good
+                            </code></pre>
+
+                            <p class="hint">
+                                This pattern combines higher-order functions with OO &mdash; extremely powerful for building
+                                domain-specific abstractions.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Summary -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Module summary &amp; exam checklist
+                            </span>
+                            <span class="summary-tag">summary</span>
+                        </summary>
+                        <div class="inner">
+                            <ul>
+                                <li>Class declarations provide a clean syntax for defining constructor + instance + static members.</li>
+                                <li>Constructors initialize instance state; they are invoked with <code>new</code> and have strict rules about <code>this</code> and <code>super</code>.</li>
+                                <li>Instance methods live on the prototype and share behaviour across objects.</li>
+                                <li>Static methods and properties belong to the class itself, used for utilities and factories.</li>
+                                <li>Class expressions treat classes as values, enabling dynamic and functional patterns.</li>
+                            </ul>
+                            <p>
+                                If you can draw the mapping between class syntax and prototypes, explain how static vs instance
+                                members are stored, and write small patterns using class expressions, you have mastered
+                                <span class="pill-inline">Module 12.1 – ES6 Classes</span>.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // Smooth scrolling + active TOC highlight + search + details expand/collapse + simple syntax highlighting
+        document.addEventListener("DOMContentLoaded", function () {
+            const tocLinks = Array.from(document.querySelectorAll(".toc-link"));
+            const sections = tocLinks.map(link => {
+                const hash = link.getAttribute("href");
+                const target = document.querySelector(hash);
+                return { link, target };
+            });
+
+            // Smooth scrolling
+            tocLinks.forEach(link => {
+                link.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute("href");
+                    const target = document.querySelector(targetId);
+                    if (target) {
+                        target.scrollIntoView({ behavior: "smooth", block: "start" });
+                        history.replaceState(null, "", targetId);
+                    }
+                });
+            });
+
+            // Active TOC highlighting on scroll
+            const contentPanel = document.querySelector(".content-panel");
+            function updateActiveToc() {
+                const scrollY = contentPanel.scrollTop;
+                let current = null;
+                sections.forEach(({ link, target }) => {
+                    if (!target) return;
+                    const offsetTop = target.offsetTop;
+                    if (offsetTop - 80 <= scrollY) current = link;
+                });
+                tocLinks.forEach(l => l.classList.remove("active"));
+                if (current) current.classList.add("active");
+            }
+
+            contentPanel.addEventListener("scroll", updateActiveToc);
+            updateActiveToc();
+
+            // TOC search filter
+            const tocSearch = document.getElementById("tocSearch");
+            const tocListItems = Array.from(document.querySelectorAll("#tocList li"));
+
+            tocSearch.addEventListener("input", function () {
+                const q = this.value.toLowerCase();
+                tocListItems.forEach(li => {
+                    const label = (li.getAttribute("data-label") || "").toLowerCase();
+                    const text = li.textContent.toLowerCase();
+                    const match = label.includes(q) || text.includes(q);
+                    li.style.display = match ? "" : "none";
+                });
+            });
+
+            // Expand / collapse all details
+            const btnExpandAll = document.getElementById("btnExpandAll");
+            const btnCollapseAll = document.getElementById("btnCollapseAll");
+
+            btnExpandAll.addEventListener("click", function () {
+                document.querySelectorAll("details").forEach(d => d.open = true);
+            });
+
+            btnCollapseAll.addEventListener("click", function () {
+                document.querySelectorAll("details").forEach(d => d.open = false);
+            });
+
+            // Simple syntax highlighting for JS in <code> blocks
+            function escapeHtml(str) {
+                return str
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;");
+            }
+
+            const jsKeywords = [
+                "function", "return", "const", "let", "var", "if", "else",
+                "while", "for", "async", "await", "new", "throw", "try", "catch",
+                "class", "extends", "static", "constructor"
+            ];
+            const builtins = [
+                "setTimeout", "setInterval", "clearTimeout", "clearInterval",
+                "Promise", "console", "fetch", "require", "Math", "Date"
+            ];
+
+            const codeBlocks = Array.from(document.querySelectorAll("pre code"));
+
+            codeBlocks.forEach(codeEl => {
+                const raw = codeEl.textContent;
+                let html = escapeHtml(raw);
+
+                // Comments
+                html = html.replace(/(\/\/.*?$)/gm, '<span class="token-comment">$1</span>');
+
+                // Strings
+                html = html.replace(/(".*?"|'.*?'|`.*?`)/g, '<span class="token-string">$1</span>');
+
+                // Numbers
+                html = html.replace(/\b(\d+(_\d+)*)\b/g, '<span class="token-number">$1</span>');
+
+                // Builtins
+                builtins.forEach(name => {
+                    const re = new RegExp("\\b" + name + "\\b", "g");
+                    html = html.replace(re, '<span class="token-builtins">' + name + "</span>");
+                });
+
+                // Keywords
+                jsKeywords.forEach(kw => {
+                    const re = new RegExp("\\b" + kw + "\\b", "g");
+                    html = html.replace(re, '<span class="token-keyword">' + kw + "</span>");
+                });
+
+                // Common function / method names
+                html = html.replace(/([a-zA-Z_$][\w$]*)\s*(?=\()/g, '<span class="token-function">$1</span>');
+
+                codeEl.innerHTML = html;
+            });
+        });
+    </script>
+</body>
+
+</html>

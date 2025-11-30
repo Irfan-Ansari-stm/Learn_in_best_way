@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>20.3 Runtime Performance — V8, JIT, Pitfalls, Optimizations, Benchmarking</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
+  <style>
+    :root{--bg:#0d1117;--surface:#0f1724;--muted:#9ca3af;--cyan:#06b6d4;--amber:#f59e0b;--panel-width:360px;--radius:12px;--mono:ui-monospace,SFMono-Regular,Menlo,Monaco,'Roboto Mono','Courier New',monospace}
+    html,body{height:100%;background:var(--bg);color:#e6eef6;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial;margin:0}
+    .app{display:flex;height:100vh;gap:20px;padding:20px;box-sizing:border-box}
+    .left{width:var(--panel-width);min-width:260px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);border-radius:var(--radius);padding:18px;box-shadow:0 6px 18px rgba(2,6,23,0.7);position:sticky;top:20px;height:calc(100vh - 40px);overflow:auto}
+    .right{flex:1;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);border-radius:var(--radius);padding:28px;box-shadow:0 6px 18px rgba(2,6,23,0.7);height:calc(100vh - 40px);overflow:auto}
+    h1,h2,h3{color:#fff}
+    .muted{color:var(--muted)}
+    .toc-search{display:flex;gap:8px;margin-bottom:12px}
+    .toc-list{list-style:none;padding:0;margin:0}
+    .toc-item{padding:8px 10px;border-radius:8px;cursor:pointer}
+    .toc-item:hover{background:rgba(255,255,255,0.02)}
+    pre{background:rgba(255,255,255,0.02);padding:14px;border-radius:10px;overflow:auto;font-family:var(--mono);font-size:13px}
+    code{font-family:var(--mono);font-size:13px}
+    details{background:rgba(255,255,255,0.01);margin:10px 0;padding:10px;border-radius:8px}
+    details[open]{box-shadow:0 8px 24px rgba(2,6,23,0.7)}
+    summary{cursor:pointer;outline:none;padding:6px 8px;border-radius:6px}
+    summary::-webkit-details-marker{display:none}
+    .summary-title{display:flex;align-items:center;gap:10px}
+    .pill{padding:2px 8px;border-radius:999px;background:rgba(245,158,11,0.12);color:var(--amber);font-size:12px}
+    .section{padding-top:8px;margin-top:8px;border-top:1px dashed rgba(255,255,255,0.03)}
+    .highlight{background:linear-gradient(90deg, rgba(6,182,212,0.06), transparent);}
+    .controls{display:flex;gap:8px;margin-bottom:12px}
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+    .note{background:rgba(6,182,212,0.04);padding:8px;border-radius:8px;color:var(--cyan)}
+    @media (max-width:900px){.app{flex-direction:column;padding:12px}.left{width:100%;position:relative;height:auto}.right{height:auto}}
+  </style>
+</head>
+<body>
+  <div class="app container-fluid">
+    <aside class="left">
+      <div class="d-flex align-items-start mb-3">
+        <div>
+          <h4 class="mb-0">20.3 Runtime Performance</h4>
+          <div class="muted">V8 optimizations, JIT, pitfalls, micro/macro optimizations, benchmarking — JavaScript</div>
+          <div class="mt-2"><small class="muted">Author: Advanced JS Tutor • Updated: Nov 28, 2025</small></div>
+        </div>
+      </div>
+
+      <div class="toc-search">
+        <input id="tocSearch" class="form-control form-control-sm" placeholder="Search TOC..." aria-label="Search table of contents"/>
+        <button id="tocClear" class="btn btn-sm btn-outline-secondary">Clear</button>
+      </div>
+
+      <div class="controls">
+        <button id="expandAll" class="btn btn-sm btn-primary">Expand all</button>
+        <button id="collapseAll" class="btn btn-sm btn-ghost">Collapse all</button>
+        <button id="tocCollapse" class="btn btn-sm btn-ghost">Collapse TOC</button>
+      </div>
+
+      <nav>
+        <ul id="tocList" class="toc-list">
+          <li class="toc-item" data-target="intro">Introduction &amp; Exec Summary</li>
+          <li class="toc-item" data-target="v8">V8 Engine &amp; Optimizations</li>
+          <li class="toc-item" data-target="jit">JIT Compilation (Ignition &amp; TurboFan)</li>
+          <li class="toc-item" data-target="pitfalls">Common Performance Pitfalls</li>
+          <li class="toc-item" data-target="micro">Micro vs Macro Optimizations</li>
+          <li class="toc-item" data-target="bench">Benchmarking Techniques &amp; Tools</li>
+          <li class="toc-item" data-target="workflow">Optimization Workflow</li>
+          <li class="toc-item" data-target="examples">Examples &amp; Cheatsheet</li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="right" id="content">
+      <section id="intro" class="section">
+        <h2>Introduction &amp; Executive Summary <span class="pill">Quick</span></h2>
+        <details open>
+          <summary><div class="summary-title"><strong>Executive summary</strong><span class="muted">(short)</span></div></summary>
+          <div class="mt-2 muted">Runtime performance depends on engine internals (V8 optimizations and JIT), your code shape, data structures, and how you measure. This note explains V8's pipeline, JIT tiers, typical pitfalls that deoptimize hot code, when to apply micro-optimizations, and how to benchmark reliably.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>How to use this note</strong></div></summary>
+          <div class="mt-2">Measure first, focus on hot paths, prefer algorithmic improvements (macro) over micro tweaks, and verify with benchmarks after changes.</div>
+        </details>
+      </section>
+
+      <section id="v8" class="section">
+        <h3>V8 Engine &amp; Optimizations</h3>
+        <details>
+          <summary><div class="summary-title"><strong>V8 architecture (high level)</strong></div></summary>
+          <div class="mt-2">V8 contains a bytecode interpreter (Ignition), optimizing compiler (TurboFan), and garbage collector. Code starts interpreted; hot functions are profiled and then optimized into machine code. Understanding what patterns are optimized helps write faster JS.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Optimized vs unoptimized code</strong></div></summary>
+          <div class="mt-2">V8 optimizes code that has stable shapes (consistent object layouts), monomorphic call sites, and predictable types. Polymorphism, dynamic property shapes, and usage of certain features can prevent optimization.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Object shapes &amp; inline caches</strong></div></summary>
+          <div class="mt-2">V8 uses hidden classes (maps) to represent object shapes. Accessing properties on objects with the same hidden class is fast. Changing shape (adding/removing properties) causes transitions and can slow property access. Inline caches speed up property access at call sites.</div>
+        </details>
+      </section>
+
+      <section id="jit" class="section">
+        <h3>JIT Compilation (Ignition &amp; TurboFan)</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Two-tier pipeline</strong></div></summary>
+          <div class="mt-2">Ignition interprets bytecode fast for startup. TurboFan compiles hot functions using profile-guided optimizations. If assumptions are violated, TurboFan can deoptimize back to the interpreter (deopt)</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Causes of deoptimization</strong></div></summary>
+          <div class="mt-2">
+            <ul>
+              <li>Changing object shapes (adding properties late).</li>
+              <li>Varying types at call sites (polymorphic or megamorphic).</li>
+              <li>Using with, eval, or arguments in ways that prevent static analysis.</li>
+              <li>Accessing nonexistent properties frequently.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>How to observe optimization</strong></div></summary>
+          <div class="mt-2">Run Node with <code>--trace-opt --trace-deopt --trace-turbo</code> to see when functions are optimized/deoptimized. Use Chrome DevTools Performance profiler to inspect optimized code and hot functions.</div>
+        </details>
+      </section>
+
+      <section id="pitfalls" class="section">
+        <h3>Common Performance Pitfalls (that deoptimize or slow)</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Polymorphic code</strong></div></summary>
+          <div class="mt-2">Avoid functions that handle many unrelated types in hot paths. Prefer separate functions or normalization to stable types before the hot loop.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Changing object shape</strong></div></summary>
+          <div class="mt-2">Create objects with all expected properties up-front (constructor) to keep hidden classes stable. Avoid adding properties lazily in hot loops.</div>
+          <pre><code>// bad: shape changes
+function make(){ return {}; }
+const o = make(); o.a = 1; // adding property later
+
+// good: initialize
+function make2(){ return { a: undefined }; }
+</code></pre>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Array holes and mixed types</strong></div></summary>
+          <div class="mt-2">Avoid arrays with holes (sparse) and mixing numeric and object types; use typed arrays or keep arrays dense for optimized element access.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Excessive boxing/unboxing</strong></div></summary>
+          <div class="mt-2">Avoid frequent conversions between primitives and objects (e.g., String/Number wrappers) in hot loops.</div>
+        </details>
+      </section>
+
+      <section id="micro" class="section">
+        <h3>Micro vs Macro Optimizations</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Macro (algorithmic)</strong></div></summary>
+          <div class="mt-2">Big wins come from algorithmic improvements: better data structures (maps vs arrays), reducing complexity (O(n^2) → O(n log n)), minimizing I/O, batching network calls, and caching.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Micro (code-level)</strong></div></summary>
+          <div class="mt-2">Micro-optimizations include inlining small functions in hot loops, avoiding unnecessary allocations, using local variables for repeated property access. Apply only when profiling shows the hot path.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Rule of thumb</strong></div></summary>
+          <div class="mt-2">Always prioritize macro optimizations. Micro-optimizations are useful when a clear hotspot exists; they can complicate code if overused.</div>
+        </details>
+      </section>
+
+      <section id="bench" class="section">
+        <h3>Benchmarking Techniques &amp; Tools</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Reliable benchmarking</strong></div></summary>
+          <div class="mt-2">Warm up the VM (JIT) before measuring; run many iterations and use statistical summaries (median/percentiles). Avoid microbenchmarks that don't reflect real-world loads.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Tools</strong></div></summary>
+          <div class="mt-2">
+            <ul>
+              <li><code>benchmark.js</code> — robust microbenchmark harness with statistical analysis.</li>
+              <li>Node's <code>--prof</code> and <code>clinic</code> for CPU profiles.</li>
+              <li>Chrome DevTools Performance profiler for browser behavior and flame charts.</li>
+              <li>WebPageTest / Lighthouse for end-to-end metrics.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Example: benchmark.js</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>const Benchmark = require('benchmark');
+const suite = new Benchmark.Suite();
+
+suite.add('concat', function(){ ['a','b','c'].join(','); })
+     .add('reduce', function(){ ['a','b','c'].reduce((s,x)=> s + ',' + x); })
+     .on('complete', function(){ console.log(this.map(r =&gt; `${r.name}: ${r.hz.toFixed(2)} ops/sec`)); })
+     .run({ 'async': false });
+</code></pre>
+          </div>
+        </details>
+      </section>
+
+      <section id="workflow" class="section">
+        <h3>Optimization Workflow</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Step-by-step</strong></div></summary>
+          <div class="mt-2">
+            <ol>
+              <li>Measure: capture profiles and metrics (RUM, lab).</li>
+              <li>Find hot functions and slow operations (flame charts, allocation profiles).</li>
+              <li>Identify root cause: algorithm, data shape, allocations, or GC pressure.</li>
+              <li>Implement targeted fixes (prefer macro changes).</li>
+              <li>Re-benchmark and verify performance and correctness.
+              </li>
+            </ol>
+          </div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Documenting changes</strong></div></summary>
+          <div class="mt-2">Record before/after metrics, test on representative devices, and add regression checks in CI when appropriate (benchmark thresholds).</div>
+        </details>
+      </section>
+
+      <section id="examples" class="section">
+        <h3>Examples &amp; Cheatsheet</h3>
+
+        <details>
+          <summary><div class="summary-title"><strong>Example: avoid polymorphism in hot loop</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>// bad: different shapes
+function process(node){ return node.value + (node.extra || 0); }
+// if node sometimes has extra, call site becomes polymorphic
+
+// good: normalize
+function normalize(node){ return { value: node.value, extra: node.extra || 0 }; }
+function process(node){ const n = normalize(node); return n.value + n.extra; }
+</code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Example: using local var for repeated access</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>// micro-opt: cache property lookup
+// slower
+for(let i=0;i<arr.length;i++){ sum += obj.prop * i; }
+
+// faster
+const p = obj.prop; for(let i=0;i<arr.length;i++){ sum += p * i; }
+</code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Cheat sheet</strong></div></summary>
+          <div class="mt-2">
+            <ul>
+              <li>Profile before changing; focus on hot code.</li>
+              <li>Prefer algorithmic fixes (data structures, caching).</li>
+              <li>Keep object shapes stable; initialize properties in constructor.
+</li>
+              <li>Avoid sparse arrays and mixed-type arrays in hot paths.</li>
+              <li>Warm up JIT before measuring; use benchmark.js for microbenchmarks.</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
+      <footer class="mt-4 muted"><small>Designed for students from college to PhD. Want runnable benchmark repo, Node/Browser trace examples, or an annotated guide to V8 flags — say which and I'll add it. — Advanced JS Tutor</small></footer>
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+  <script>
+    // TOC interactions, search, expand/collapse, smooth scroll
+    document.querySelectorAll('.toc-item').forEach(item =&gt; {
+      item.addEventListener('click', () =&gt; {
+        const target = document.getElementById(item.dataset.target);
+        if(target){
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          document.querySelectorAll('.section').forEach(s =&gt; s.classList.remove('highlight'));
+          target.classList.add('highlight');
+          setTimeout(() =&gt; target.classList.remove('highlight'), 1400);
+        }
+      });
+    });
+
+    const tocSearch = document.getElementById('tocSearch');
+    const tocList = document.getElementById('tocList');
+    tocSearch.addEventListener('input', (e) =&gt; {
+      const q = e.target.value.trim().toLowerCase();
+      Array.from(tocList.children).forEach(li =&gt; {
+        const text = li.textContent.trim().toLowerCase();
+        li.style.display = text.includes(q) ? '' : 'none';
+      });
+    });
+    document.getElementById('tocClear').addEventListener('click', () =&gt; { tocSearch.value=''; tocSearch.dispatchEvent(new Event('input')); });
+
+    function setAll(open){ document.querySelectorAll('main details').forEach(d =&gt; { d.open = open; }); }
+    document.getElementById('expandAll').addEventListener('click', () =&gt; setAll(true));
+    document.getElementById('collapseAll').addEventListener('click', () =&gt; setAll(false));
+
+    document.getElementById('tocCollapse').addEventListener('click', () =&gt; {
+      const left = document.querySelector('.left');
+      if(left.style.width === '64px'){ left.style.width = getComputedStyle(document.documentElement).getPropertyValue('--panel-width'); }
+      else { left.style.width = '64px'; }
+    });
+
+    document.addEventListener('DOMContentLoaded', (ev) =&gt; {
+      if(window.hljs) hljs.highlightAll();
+    });
+  </script>
+</body>
+</html>

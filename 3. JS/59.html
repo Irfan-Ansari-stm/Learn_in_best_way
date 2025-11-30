@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>17.4 Performance & Best Practices — Advanced Event Handling (JavaScript)</title>
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <style>
+    :root{
+      --bg:#0d1117; /* near-black */
+      --surface:#111827; /* dark surface */
+      --muted:#9ca3af;
+      --cyan:#06b6d4;
+      --amber:#f59e0b;
+      --panel-width:340px;
+      --radius:12px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
+    }
+    html,body{height:100%;background:var(--bg);color:#e6eef6;font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;}
+    .app{display:flex;height:100vh;gap:20px;padding:20px;box-sizing:border-box;}
+    .left{width:var(--panel-width);min-width:260px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);border-radius:var(--radius);padding:18px;box-shadow:0 6px 18px rgba(2,6,23,0.7);position:sticky;top:20px;height:calc(100vh - 40px);overflow:auto}
+    .right{flex:1;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);border-radius:var(--radius);padding:28px;box-shadow:0 6px 18px rgba(2,6,23,0.7);height:calc(100vh - 40px);overflow:auto}
+    h1,h2,h3{color:#fff}
+    .muted{color:var(--muted)}
+    .toc-search{display:flex;gap:8px;margin-bottom:12px}
+    .toc-list{list-style:none;padding:0;margin:0}
+    .toc-item{padding:8px 10px;border-radius:8px;cursor:pointer}
+    .toc-item:hover{background:rgba(255,255,255,0.02)}
+    .tag{display:inline-block;padding:4px 8px;border-radius:999px;background:rgba(6,182,212,0.12);color:var(--cyan);font-size:12px;margin-right:6px}
+    pre{background:rgba(255,255,255,0.02);padding:14px;border-radius:10px;overflow:auto;font-family:var(--mono);font-size:13px}
+    code{font-family:var(--mono);font-size:13px}
+    .kbd{background:#0b1220;border:1px solid rgba(255,255,255,0.03);padding:6px 8px;border-radius:6px}
+    .controls{display:flex;gap:8px;margin-bottom:12px}
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+    /* details styling */
+    details{background:rgba(255,255,255,0.01);margin:10px 0;padding:10px;border-radius:8px}
+    details[open]{box-shadow:0 8px 24px rgba(2,6,23,0.7)}
+    summary{cursor:pointer;outline:none;padding:6px 8px;border-radius:6px}
+    summary::-webkit-details-marker{display:none}
+    .summary-title{display:flex;align-items:center;gap:10px}
+    .pill{padding:2px 8px;border-radius:999px;background:rgba(245,158,11,0.12);color:var(--amber);font-size:12px}
+    /* scroll behavior for right panel navigation highlights */
+    .section{padding-top:8px;margin-top:8px;border-top:1px dashed rgba(255,255,255,0.03)}
+    .highlight{background:linear-gradient(90deg, rgba(6,182,212,0.06), transparent);}
+    /* responsive */
+    @media (max-width:900px){
+      .app{flex-direction:column;padding:12px}
+      .left{width:100%;position:relative;height:auto}
+      .right{height:auto}
+    }
+  </style>
+</head>
+<body>
+  <div class="app container-fluid">
+    <aside class="left">
+      <div class="d-flex align-items-start mb-3">
+        <div>
+          <h4 class="mb-0">17.4 Performance &amp; Best Practices</h4>
+          <div class="muted">Advanced Event Handling — JavaScript</div>
+          <div class="mt-2"><small class="muted">Author: Advanced JS Tutor • Updated: Nov 27, 2025</small></div>
+        </div>
+      </div>
+
+      <div class="toc-search">
+        <input id="tocSearch" class="form-control form-control-sm" placeholder="Search TOC..." aria-label="Search table of contents"/>
+        <button id="tocClear" class="btn btn-sm btn-outline-secondary">Clear</button>
+      </div>
+
+      <div class="controls">
+        <button id="expandAll" class="btn btn-sm btn-primary">Expand all</button>
+        <button id="collapseAll" class="btn btn-sm btn-ghost">Collapse all</button>
+        <button id="tocCollapse" class="btn btn-sm btn-ghost">Collapse TOC</button>
+      </div>
+
+      <nav>
+        <ul id="tocList" class="toc-list">
+          <li class="toc-item" data-target="intro">Introduction &amp; Executive Summary</li>
+          <li class="toc-item" data-target="cleanup">Event Listener Cleanup</li>
+          <li class="toc-item" data-target="passive">Passive Event Listeners</li>
+          <li class="toc-item" data-target="debounce">Debouncing &amp; Throttling</li>
+          <li class="toc-item" data-target="memory">Memory Leak Prevention</li>
+          <li class="toc-item" data-target="optimize">Event Handler Optimization</li>
+          <li class="toc-item" data-target="examples">Practical Examples &amp; Patterns</li>
+          <li class="toc-item" data-target="checklist">Checklist &amp; Best Practices</li>
+        </ul>
+      </nav>
+
+    </aside>
+
+    <main class="right" id="content">
+      <section id="intro" class="section">
+        <h2>Introduction &amp; Executive Summary <span class="pill">Quick</span></h2>
+        <details open>
+          <summary><div class="summary-title"><strong>Executive summary</strong><span class="muted">(short)</span></div></summary>
+          <div class="mt-2 muted">This module covers performance-focused event-handling techniques in JavaScript. We'll examine how to attach and remove listeners safely, when to use passive listeners, how to debounce &amp; throttle high-frequency events, patterns that prevent memory leaks, and ways to optimize event handlers for fast responsive apps. Examples use plain JavaScript, with clear, copy-paste friendly snippets.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Why this matters</strong><span class="muted">(motivation)</span></div></summary>
+          <div class="mt-2">Modern web apps attach dozens or hundreds of event listeners. Naive usage can lead to jank (frame drops), high memory usage, and subtle bugs. Optimizing event handling improves user-perceived performance and reduces resource consumption, particularly on mobile devices.</div>
+        </details>
+      </section>
+
+      <section id="cleanup" class="section">
+        <h3>Event Listener Cleanup</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Concept</strong><span class="muted">(what &amp; why)</span></div></summary>
+          <div class="mt-2">Always remove listeners when they are no longer needed — for example when an element is removed, a component unmounts, or when a one-time action completes. Failing to remove listeners leads to memory leaks and unexpected behavior because the callback retains references to its closure scope.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Pattern: named functions</strong></div></summary>
+          <div class="mt-2">Use named functions or keep a reference to the handler so you can remove it later with <code>removeEventListener</code>. Anonymous functions cannot be removed because they create a different reference.</div>
+          <pre><code>&lt;!-- correct: keep a reference --&gt;
+const onResize = (e) =&gt; {
+  console.log('resized', e); // do light-weight work only
+};
+
+window.addEventListener('resize', onResize);
+
+// later when cleaning up:
+window.removeEventListener('resize', onResize);
+
+&lt;!-- incorrect: anonymous can't be removed --&gt;
+window.addEventListener('resize', function(e) { console.log('resize'); });
+// cannot call removeEventListener with the same anonymous fn reference
+</code></pre>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Pattern: lifecycle hooks</strong></div></summary>
+          <div class="mt-2">In frameworks (React, Vue, Svelte) attach listeners in mount hooks and remove them in unmount hooks. For vanilla apps use a small registry: an array of cleanup functions that's executed when the module/page unloads.</div>
+          <pre><code>// simple cleanup registry
+const _cleanups = [];
+function registerCleanup(fn){ _cleanups.push(fn); }
+function runCleanups(){ while(_cleanups.length) { const f=_cleanups.pop(); try{f()}catch(e){console.error(e)} }}
+
+// usage:
+const onScroll = () =&gt; {/*...*/};
+window.addEventListener('scroll', onScroll);
+registerCleanup(() =&gt; window.removeEventListener('scroll', onScroll));
+
+// call runCleanups() when appropriate (page change / teardown)
+</code></pre>
+        </details>
+      </section>
+
+      <section id="passive" class="section">
+        <h3>Passive Event Listeners</h3>
+        <details>
+          <summary><div class="summary-title"><strong>What are passive listeners?</strong><span class="muted">(short)</span></div></summary>
+          <div class="mt-2">A passive event listener signals to the browser that it will never call <code>event.preventDefault()</code>. This lets the browser optimize scrolling performance by not waiting for the handler to finish before performing the default scroll action.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>How to use</strong></div></summary>
+          <div class="mt-2">Add <code>{passive: true}</code> as the third argument or in the options object. Prefer passive for <code>touchstart</code>, <code>touchmove</code>, and <code>wheel</code> handlers unless you need to call <code>preventDefault()</code>.</div>
+          <pre><code>// syntax with options object
+el.addEventListener('touchmove', onTouchMove, { passive: true });
+
+// fallback for older browsers can be done via try/catch detection
+</code></pre>
+
+          <details>
+            <summary><strong>Best practice</strong></summary>
+            <div class="mt-2">Only make listeners non-passive if you truly need to call <code>preventDefault()</code>. Also, avoid expensive synchronous work inside touch/wheel handlers because they run on the main thread and affect scroll/touch responsiveness.</div>
+          </details>
+        </details>
+      </section>
+
+      <section id="debounce" class="section">
+        <h3>Debouncing &amp; Throttling</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Definitions</strong></div></summary>
+          <div class="mt-2">Debounce: wait until a burst of events finishes before running the handler once. Throttle: run the handler at most once per specified interval. Use debounce for search input and resize; throttle for scroll and mousemove when you need periodic updates.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Debounce implementation</strong></div></summary>
+          <div class="mt-2">Simple and robust debounce using closures. Note the use of <code>requestAnimationFrame</code> for frame-aligned updates when targeting paint-related changes.</div>
+          <pre><code>&lt;!-- debounce.js --&gt;
+function debounce(fn, wait = 200){
+  let t = null;
+  return function(...args){
+    clearTimeout(t);
+    t = setTimeout(() =&gt; fn.apply(this, args), wait);
+  };
+}
+
+// usage:
+const onSearch = debounce((e) =&gt; {
+  // execute search, network call, or heavy work
+  console.log('search for', e.target.value);
+}, 300);
+
+inputEl.addEventListener('input', onSearch);
+</code></pre>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Throttle implementation</strong></div></summary>
+          <div class="mt-2">A basic timestamp throttle that ensures a function is called at most every <code>limit</code>ms.</div>
+          <pre><code>function throttle(fn, limit = 100){
+  let last = 0;
+  return function(...args){
+    const now = Date.now();
+    if(now - last >= limit){
+      last = now;
+      fn.apply(this, args);
+    }
+  };
+}
+
+// usage:
+const onScroll = throttle(() =&gt; {
+  // light DOM updates or analytics pings
+}, 100);
+window.addEventListener('scroll', onScroll, { passive: true });
+</code></pre>
+
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>When to use rAF</strong></div></summary>
+          <div class="mt-2">For visual updates, prefer <code>requestAnimationFrame</code> to batch DOM changes into the next paint. Combine throttle with rAF for sawtooth protection on fast events like <code>mousemove</code>.</div>
+          <pre><code>const onMouseMove = (e) =&gt; { /* lightweight capture */ };
+let scheduled = false;
+function handleMove(e){
+  if(!scheduled){
+    scheduled = true;
+    requestAnimationFrame(() =&gt; { onMouseMove(e); scheduled = false; });
+  }
+}
+document.addEventListener('mousemove', handleMove);
+</code></pre>
+        </details>
+      </section>
+
+      <section id="memory" class="section">
+        <h3>Memory Leak Prevention</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Common causes</strong></div></summary>
+          <div class="mt-2">Listeners attached to DOM nodes that are removed without removing listeners; closures holding on to large objects; global registries that never release references.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Patterns to avoid leaks</strong></div></summary>
+          <div class="mt-2">
+            <ul>
+              <li>Always remove listeners in teardown/unmount.</li>
+              <li>Avoid storing DOM nodes in long-lived global objects unless necessary.</li>
+              <li>Use WeakRef/WeakMap to store metadata for DOM nodes when available and appropriate.</li>
+              <li>Prefer event delegation to attach fewer listeners.</li>
+            </ul>
+          </div>
+          <pre><code>// event delegation example (prevents many handlers on many child nodes)
+const list = document.querySelector('#list');
+list.addEventListener('click', function(e){
+  const item = e.target.closest('.item');
+  if(!item) return;
+  // handle click
+});
+</code></pre>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>WeakMap for element metadata</strong></div></summary>
+          <div class="mt-2">WeakMap keys do not prevent GC of the DOM element. This is great for attaching metadata or small caches to elements without risking leaks.</div>
+          <pre><code>const meta = new WeakMap();
+function bindWidget(el){
+  const info = { boundAt: Date.now() };
+  meta.set(el, info);
+  el.addEventListener('click', () =&gt; console.log(meta.get(el)));
+}
+</code></pre>
+        </details>
+      </section>
+
+      <section id="optimize" class="section">
+        <h3>Event Handler Optimization</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Keep handlers cheap</strong></div></summary>
+          <div class="mt-2">Handlers should do minimal synchronous work: read event data, schedule heavier work (network, DOM writes) using <code>setTimeout</code>, <code>requestIdleCallback</code>, or <code>requestAnimationFrame</code> depending on the task priority.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Prefer delegation</strong></div></summary>
+          <div class="mt-2">Attach one handler to a container and compute the target using <code>e.target.closest()</code>. This reduces the number of listeners and simplifies cleanup.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Avoid layout thrashing</strong></div></summary>
+          <div class="mt-2">Batch reads and writes: do all reads (getBoundingClientRect, offsetHeight) first, then perform writes (style changes) to avoid forced reflows. Use <code>read</code>/ <code>write</code> queues if complexity grows.</div>
+          <pre><code>// naive: causes layout thrash
+el.style.width = (el.offsetWidth + 10) + 'px';
+// better: capture then update
+const w = el.offsetWidth;
+el.style.width = (w + 10) + 'px';
+</code></pre>
+        </details>
+
+      </section>
+
+      <section id="examples" class="section">
+        <h3>Practical Examples &amp; Patterns</h3>
+
+        <details>
+          <summary><div class="summary-title"><strong>Example: scroll-driven sticky header (throttle + passive)</strong></div></summary>
+          <div class="mt-2">Use a passive listener for scroll and throttle DOM updates for the header state.</div>
+          <pre><code>const header = document.querySelector('.site-header');
+let lastY = 0;
+const onScroll = throttle(() =&gt; {
+  const y = window.scrollY;
+  header.classList.toggle('hidden', y &gt; lastY);
+  lastY = y;
+}, 100);
+
+window.addEventListener('scroll', onScroll, { passive: true });
+</code></pre>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Example: input autosave (debounce)</strong></div></summary>
+          <div class="mt-2">Debounce saves to avoid sending too many requests.</div>
+          <pre><code>const input = document.querySelector('#note');
+const save = debounce((text) =&gt; {
+  fetch('/save', { method: 'POST', body: JSON.stringify({ text }) });
+}, 800);
+
+input.addEventListener('input', (e) =&gt; save(e.target.value));
+</code></pre>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Example: cleanup on element removal (MutationObserver)</strong></div></summary>
+          <div class="mt-2">Detect when nodes are removed and run cleanup. Useful in apps not using a framework.</div>
+          <pre><code>const observer = new MutationObserver((mutations) =&gt; {
+  for(const m of mutations){
+    for(const node of m.removedNodes){
+      // if node matches something you bound, run cleanup
+    }
+  }
+});
+observer.observe(document.body, { childList: true, subtree: true });
+</code></pre>
+        </details>
+
+      </section>
+
+      <section id="checklist" class="section">
+        <h3>Checklist &amp; Best Practices</h3>
+        <ul>
+          <li>Use named handlers and remove them on teardown.</li>
+          <li>Prefer passive listeners for touch/wheel when you don't call <code>preventDefault()</code>.</li>
+          <li>Debounce input-heavy work; throttle scroll/mousemove with rAF when needed.</li>
+          <li>Use delegation to limit listener count.</li>
+          <li>Avoid layout thrash by batching reads/writes.</li>
+          <li>Use WeakMap / WeakRef for ephemeral element metadata.</li>
+          <li>Monitor memory (Chrome DevTools) for detached nodes and retained listeners.</li>
+        </ul>
+      </section>
+
+      <footer class="mt-4 muted"><small>Designed for students from college to PhD. For edits or another module, tell me which topic to expand. — Advanced JS Tutor</small></footer>
+    </main>
+  </div>
+
+  <!-- Inline JS utilities: search, toc click, expand/collapse, smooth scroll, simple syntax highlight -->
+  <script>
+    // Smooth scrolling for TOC items
+    document.querySelectorAll('.toc-item').forEach(item =&gt; {
+      item.addEventListener('click', () =&gt; {
+        const target = document.getElementById(item.dataset.target);
+        if(target){
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          // highlight
+          document.querySelectorAll('.section').forEach(s =&gt; s.classList.remove('highlight'));
+          target.classList.add('highlight');
+          setTimeout(() =&gt; target.classList.remove('highlight'), 1400);
+        }
+      });
+    });
+
+    // TOC search
+    const tocSearch = document.getElementById('tocSearch');
+    const tocList = document.getElementById('tocList');
+    tocSearch.addEventListener('input', (e) =&gt; {
+      const q = e.target.value.trim().toLowerCase();
+      Array.from(tocList.children).forEach(li =&gt; {
+        const text = li.textContent.trim().toLowerCase();
+        li.style.display = text.includes(q) ? '' : 'none';
+      });
+    });
+    document.getElementById('tocClear').addEventListener('click', () =&gt; { tocSearch.value=''; tocSearch.dispatchEvent(new Event('input')); });
+
+    // Expand / Collapse all
+    function setAll(open){
+      document.querySelectorAll('main details').forEach(d =&gt; { d.open = open; });
+    }
+    document.getElementById('expandAll').addEventListener('click', () =&gt; setAll(true));
+    document.getElementById('collapseAll').addEventListener('click', () =&gt; setAll(false));
+
+    // Toc Collapse: toggles visibility
+    document.getElementById('tocCollapse').addEventListener('click', () =&gt; {
+      const left = document.querySelector('.left');
+      if(left.style.width === '64px'){
+        left.style.width = getComputedStyle(document.documentElement).getPropertyValue('--panel-width');
+      } else {
+        left.style.width = '64px';
+      }
+    });
+
+    // Simple syntax highlighting (very small): highlight &lt;tag&gt; and keywords
+    (function tinyHighlight(){
+      const codeBlocks = document.querySelectorAll('pre code');
+      const tagRE = /(&lt;[a-zA-Z\-\/!]+&gt;)/g;
+      const kwRE = /\b(function|const|let|var|return|if|else|for|while|new|class|try|catch|await|async|import|export)\b/g;
+      codeBlocks.forEach(cb =&gt; {
+        let html = cb.innerHTML;
+        // escape already escaped entities remain
+        html = html.replace(tagRE, '<span style="color:var(--cyan);font-weight:600">$1</span>');
+        html = html.replace(kwRE, '<span style="color:var(--amber)">$1</span>');
+        cb.innerHTML = html;
+      });
+    })();
+
+    // small debounce & throttle implemented inline for demo clarity (already in content)
+    function debounce(fn, wait = 200){ let t = null; return function(...args){ clearTimeout(t); t = setTimeout(() =&gt; fn.apply(this,args), wait); }; }
+    function throttle(fn, limit = 100){ let last = 0; return function(...args){ const now = Date.now(); if(now - last >= limit){ last = now; fn.apply(this,args); } }; }
+
+    // expose to window for playground
+    window.__perf = { debounce, throttle };
+
+  </script>
+</body>
+</html>

@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>18.3 Media & Device APIs — Geolocation, Camera, File, Clipboard, Battery</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <!-- highlight.js styles -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
+  <style>
+    :root{--bg:#0d1117;--surface:#0f1724;--muted:#9ca3af;--cyan:#06b6d4;--amber:#f59e0b;--panel-width:360px;--radius:12px;--mono:ui-monospace,SFMono-Regular,Menlo,Monaco,'Roboto Mono','Courier New',monospace}
+    html,body{height:100%;background:var(--bg);color:#e6eef6;font-family:Inter, system-ui, -apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial;margin:0}
+    .app{display:flex;height:100vh;gap:20px;padding:20px;box-sizing:border-box}
+    .left{width:var(--panel-width);min-width:260px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);border-radius:var(--radius);padding:18px;box-shadow:0 6px 18px rgba(2,6,23,0.7);position:sticky;top:20px;height:calc(100vh - 40px);overflow:auto}
+    .right{flex:1;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);border-radius:var(--radius);padding:28px;box-shadow:0 6px 18px rgba(2,6,23,0.7);height:calc(100vh - 40px);overflow:auto}
+    h1,h2,h3{color:#fff}
+    .muted{color:var(--muted)}
+    .toc-search{display:flex;gap:8px;margin-bottom:12px}
+    .toc-list{list-style:none;padding:0;margin:0}
+    .toc-item{padding:8px 10px;border-radius:8px;cursor:pointer}
+    .toc-item:hover{background:rgba(255,255,255,0.02)}
+    pre{background:rgba(255,255,255,0.02);padding:14px;border-radius:10px;overflow:auto;font-family:var(--mono);font-size:13px}
+    code{font-family:var(--mono);font-size:13px}
+    details{background:rgba(255,255,255,0.01);margin:10px 0;padding:10px;border-radius:8px}
+    details[open]{box-shadow:0 8px 24px rgba(2,6,23,0.7)}
+    summary{cursor:pointer;outline:none;padding:6px 8px;border-radius:6px}
+    summary::-webkit-details-marker{display:none}
+    .summary-title{display:flex;align-items:center;gap:10px}
+    .pill{padding:2px 8px;border-radius:999px;background:rgba(245,158,11,0.12);color:var(--amber);font-size:12px}
+    .section{padding-top:8px;margin-top:8px;border-top:1px dashed rgba(255,255,255,0.03)}
+    .highlight{background:linear-gradient(90deg, rgba(6,182,212,0.06), transparent);}
+    .controls{display:flex;gap:8px;margin-bottom:12px}
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+    .media-preview{border-radius:8px;overflow:hidden;border:1px solid rgba(255,255,255,0.03)}
+    @media (max-width:900px){.app{flex-direction:column;padding:12px}.left{width:100%;position:relative;height:auto}.right{height:auto}}
+  </style>
+</head>
+<body>
+  <div class="app container-fluid">
+    <aside class="left">
+      <div class="d-flex align-items-start mb-3">
+        <div>
+          <h4 class="mb-0">18.3 Media &amp; Device APIs</h4>
+          <div class="muted">Geolocation, MediaDevices, File, Clipboard, Battery — JavaScript</div>
+          <div class="mt-2"><small class="muted">Author: Advanced JS Tutor • Updated: Nov 28, 2025</small></div>
+        </div>
+      </div>
+
+      <div class="toc-search">
+        <input id="tocSearch" class="form-control form-control-sm" placeholder="Search TOC..." aria-label="Search table of contents"/>
+        <button id="tocClear" class="btn btn-sm btn-outline-secondary">Clear</button>
+      </div>
+
+      <div class="controls">
+        <button id="expandAll" class="btn btn-sm btn-primary">Expand all</button>
+        <button id="collapseAll" class="btn btn-sm btn-ghost">Collapse all</button>
+        <button id="tocCollapse" class="btn btn-sm btn-ghost">Collapse TOC</button>
+      </div>
+
+      <nav>
+        <ul id="tocList" class="toc-list">
+          <li class="toc-item" data-target="intro">Introduction &amp; Exec Summary</li>
+          <li class="toc-item" data-target="geo">Geolocation API</li>
+          <li class="toc-item" data-target="media">Camera &amp; MediaDevices API</li>
+          <li class="toc-item" data-target="fileapi">File API &amp; File Handling</li>
+          <li class="toc-item" data-target="clipboard">Clipboard API</li>
+          <li class="toc-item" data-target="battery">Battery Status API</li>
+          <li class="toc-item" data-target="patterns">Patterns, Permissions &amp; Security</li>
+          <li class="toc-item" data-target="examples">Examples &amp; Cheatsheet</li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="right" id="content">
+      <section id="intro" class="section">
+        <h2>Introduction &amp; Executive Summary <span class="pill">Quick</span></h2>
+        <details open>
+          <summary><div class="summary-title"><strong>Executive summary</strong><span class="muted">(short)</span></div></summary>
+          <div class="mt-2 muted">This module covers browser APIs that access device capabilities: <strong>Geolocation</strong> for location, <strong>MediaDevices</strong> (camera/mic), the <strong>File API</strong> for reading files, the <strong>Clipboard API</strong>, and the <strong>Battery Status API</strong>. We'll discuss permissions, best practices, privacy, and accessible examples with clear code.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Why this matters</strong></div></summary>
+          <div class="mt-2">Device APIs enable richer web experiences — maps, camera uploads, clipboard integration, and power-aware features. They also carry privacy and security responsibilities: always request minimal permissions, explain to users why, and respect privacy by default.</div>
+        </details>
+      </section>
+
+      <section id="geo" class="section">
+        <h3>Geolocation API</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Overview</strong></div></summary>
+          <div class="mt-2">The Geolocation API provides coordinates via <code>navigator.geolocation.getCurrentPosition</code> and continuous updates with <code>watchPosition</code>. It's gated behind user permission and may be unavailable on insecure origins (HTTP).</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Basic usage &amp; options</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>// get current position (with options)
+navigator.geolocation.getCurrentPosition(
+  pos =&gt; console.log('coords', pos.coords),
+  err =&gt; console.error('geo error', err),
+  { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
+);
+
+// watch position (returns id to clear)
+const id = navigator.geolocation.watchPosition(cb, err, { enableHighAccuracy: true });
+// later: navigator.geolocation.clearWatch(id);
+</code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Privacy &amp; accuracy</strong></div></summary>
+          <div class="mt-2">Use high accuracy only when needed (GPS); otherwise prefer coarse location. Tell users why you need location. Respect privacy: do not store exact locations longer than necessary and allow opt-out.</div>
+        </details>
+      </section>
+
+      <section id="media" class="section">
+        <h3>Camera &amp; MediaDevices API</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Overview</strong></div></summary>
+          <div class="mt-2"><code>navigator.mediaDevices.getUserMedia()</code> requests access to camera and/or microphone and returns a MediaStream. Use constraints to request resolution, frameRate, facingMode, etc. Always handle permissions and device enumeration gracefully.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Simple camera capture</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>// camera-demo.js (simplified)
+const video = document.querySelector('#preview');
+async function startCamera(){
+  const stream = await navigator.mediaDevices.getUserMedia({ video: { width: 1280, height: 720 }, audio: false });
+  video.srcObject = stream;
+  await video.play();
+}
+
+async function takePhoto(){
+  const canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  const dataUrl = canvas.toDataURL('image/png');
+  return dataUrl; // can be uploaded or shown
+}
+</code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Device selection &amp; constraints</strong></div></summary>
+          <div class="mt-2">Enumerate devices with <code>navigator.mediaDevices.enumerateDevices()</code>, allow users to pick camera/mic, and apply constraint fallbacks for older devices.</div>
+          <pre><code>// list devices
+const devices = await navigator.mediaDevices.enumerateDevices();
+const cams = devices.filter(d =&gt; d.kind === 'videoinput');
+</code></pre>
+        </details>
+      </section>
+
+      <section id="fileapi" class="section">
+        <h3>File API &amp; File Handling</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Overview</strong></div></summary>
+          <div class="mt-2">The File API exposes <code>File</code> and <code>Blob</code> objects from <input type="file"> elements or drag-and-drop. Use FileReader or streams for reading; use object URLs (<code>URL.createObjectURL</code>) for efficient previews.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Read file example</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>// file-read.js
+const input = document.querySelector('#file');
+input.addEventListener('change', async (e) =&gt; {
+  const file = e.target.files[0];
+  if(!file) return;
+  // small text file
+  const text = await file.text();
+  console.log('content', text);
+
+  // binary: create object URL for preview
+  const url = URL.createObjectURL(file);
+  document.querySelector('#previewImg').src = url;
+});
+</code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Large files &amp; streaming</strong></div></summary>
+          <div class="mt-2">For large files prefer streaming APIs (File.stream()) and upload in chunks. Use backpressure-aware solutions and show progress bars to the user.</div>
+        </details>
+      </section>
+
+      <section id="clipboard" class="section">
+        <h3>Clipboard API</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Overview</strong></div></summary>
+          <div class="mt-2">The asynchronous Clipboard API (<code>navigator.clipboard</code>) allows reading and writing text and (in some browsers) images to the clipboard. Writes require user gesture permission; reads are more restricted due to privacy.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Examples</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>// write to clipboard
+await navigator.clipboard.writeText('Hello from the app');
+
+// read from clipboard (permission may be required)
+const text = await navigator.clipboard.readText();
+console.log('clipboard text', text);
+</code></pre>
+          </div>
+        </details>
+      </section>
+
+      <section id="battery" class="section">
+        <h3>Battery Status API</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Overview</strong></div></summary>
+          <div class="mt-2">The Battery Status API (<code>navigator.getBattery()</code>) provides battery level and charging status. It's useful for adapting behavior (e.g., defer heavy work on low battery) but has limited browser support and privacy considerations.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Example</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>(async function(){
+  if(!navigator.getBattery) return;
+  const battery = await navigator.getBattery();
+  console.log('level', battery.level, 'charging', battery.charging);
+  battery.addEventListener('levelchange', () =&gt; console.log('level changed', battery.level));
+})();
+</code></pre>
+          </div>
+        </details>
+      </section>
+
+      <section id="patterns" class="section">
+        <h3>Patterns, Permissions &amp; Security</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Permissions best practices</strong></div></summary>
+          <div class="mt-2">Request permissions only when necessary, and explain why in the UI. Use feature-detection (<code>if('mediaDevices' in navigator)</code>) and fallback gracefully. Revoke or stop streams when done (<code>track.stop()</code>).</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Privacy &amp; retention</strong></div></summary>
+          <div class="mt-2">Avoid long-term storage of sensitive media or location data without consent. Prefer client-side ephemeral use (upload then delete local copy) and inform users what is stored and for how long.</div>
+        </details>
+      </section>
+
+      <section id="examples" class="section">
+        <h3>Examples &amp; Cheatsheet</h3>
+
+        <details>
+          <summary><div class="summary-title"><strong>Example: camera upload flow (capture &amp; upload)</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>// capture then upload (pseudo)
+const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+const track = stream.getVideoTracks()[0];
+const imageCapture = new ImageCapture(track);
+const blob = await imageCapture.takePhoto();
+await fetch('/upload', { method: 'POST', body: blob });
+track.stop();
+</code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Quick checklist</strong></div></summary>
+          <div class="mt-2">
+            <ul>
+              <li>Feature-detect APIs before using (<code>'geolocation' in navigator</code>).</li>
+              <li>Request minimal permissions and explain why to users.</li>
+              <li>Stop media tracks and revoke object URLs to free memory.</li>
+              <li>Use streams for large files and show progress.</li>
+              <li>Don't store sensitive data in cleartext on client storage.</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
+      <footer class="mt-4 muted"><small>Designed for students from college to PhD. Want runnable demos (camera sandbox, geolocation map), or server support examples, say which and I’ll add them. — Advanced JS Tutor</small></footer>
+    </main>
+  </div>
+
+  <!-- highlight.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+  <script>
+    // TOC interactions, search, expand/collapse, smooth scroll
+    document.querySelectorAll('.toc-item').forEach(item =&gt; {
+      item.addEventListener('click', () =&gt; {
+        const target = document.getElementById(item.dataset.target);
+        if(target){
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          document.querySelectorAll('.section').forEach(s =&gt; s.classList.remove('highlight'));
+          target.classList.add('highlight');
+          setTimeout(() =&gt; target.classList.remove('highlight'), 1400);
+        }
+      });
+    });
+
+    const tocSearch = document.getElementById('tocSearch');
+    const tocList = document.getElementById('tocList');
+    tocSearch.addEventListener('input', (e) =&gt; {
+      const q = e.target.value.trim().toLowerCase();
+      Array.from(tocList.children).forEach(li =&gt; {
+        const text = li.textContent.trim().toLowerCase();
+        li.style.display = text.includes(q) ? '' : 'none';
+      });
+    });
+    document.getElementById('tocClear').addEventListener('click', () =&gt; { tocSearch.value=''; tocSearch.dispatchEvent(new Event('input')); });
+
+    function setAll(open){ document.querySelectorAll('main details').forEach(d =&gt; { d.open = open; }); }
+    document.getElementById('expandAll').addEventListener('click', () =&gt; setAll(true));
+    document.getElementById('collapseAll').addEventListener('click', () =&gt; setAll(false));
+
+    document.getElementById('tocCollapse').addEventListener('click', () =&gt; {
+      const left = document.querySelector('.left');
+      if(left.style.width === '64px'){ left.style.width = getComputedStyle(document.documentElement).getPropertyValue('--panel-width'); }
+      else { left.style.width = '64px'; }
+    });
+
+    // initialize highlight.js
+    document.addEventListener('DOMContentLoaded', (ev) =&gt; {
+      if(window.hljs) hljs.highlightAll();
+    });
+  </script>
+</body>
+</html>

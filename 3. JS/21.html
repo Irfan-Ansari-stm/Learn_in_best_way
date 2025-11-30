@@ -1,0 +1,1553 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8.3 Array Methods - Non-mutating</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00f5ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --accent: #00f5ff;
+            --card-bg: #112240;
+            --border-color: #007a99;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            position: fixed;
+            width: 300px;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            box-shadow: 2px 0 10px rgba(0, 245, 255, 0.1);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--amber);
+        }
+
+        .toc-item {
+            margin: 8px 0;
+            padding-left: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .toc-item a {
+            color: var(--cyan);
+            text-decoration: none;
+            display: block;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .toc-item a:hover {
+            color: var(--amber);
+            padding-left: 20px;
+        }
+
+        .toc-subitem {
+            margin-left: 20px;
+            font-size: 0.9rem;
+            color: #b0c4de;
+        }
+
+        details {
+            margin: 15px 0;
+            border-left: 3px solid var(--amber);
+            padding-left: 15px;
+            background-color: rgba(17, 34, 64, 0.5);
+            border-radius: 0 5px 5px 0;
+        }
+
+        summary {
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--amber);
+            list-style: none;
+            padding: 10px;
+            background-color: rgba(0, 245, 255, 0.08);
+            border-radius: 5px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        summary::before {
+            content: "▶";
+            margin-right: 10px;
+            font-size: 0.8rem;
+            transition: transform 0.3s;
+        }
+
+        details[open] summary::before {
+            transform: rotate(90deg);
+        }
+
+        pre code {
+            display: block;
+            padding: 15px;
+            background-color: #0d1b2a;
+            color: var(--cyan);
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            border-left: 3px solid var(--amber);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.2);
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+
+        .formula {
+            background-color: rgba(0, 245, 255, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 3px solid var(--cyan);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.1rem;
+        }
+
+        .definition {
+            color: var(--amber);
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .detail {
+            margin: 12px 0;
+            line-height: 1.6;
+        }
+
+        .syntax {
+            margin: 15px 0;
+        }
+
+        .example {
+            margin: 15px 0;
+        }
+
+        .use-case {
+            color: var(--cyan);
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
+        .code-comment {
+            color: #7f8c8d;
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: #0a192f;
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-left: 8px;
+        }
+
+        .array-diagram {
+            background-color: rgba(0, 245, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px dashed var(--cyan);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            white-space: pre;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .comparison-table {
+            background-color: rgba(0, 245, 255, 0.05);
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+            border: 1px dashed var(--cyan);
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            text-align: left;
+        }
+
+        .comparison-table th {
+            background-color: rgba(0, 245, 255, 0.1);
+            color: var(--amber);
+            font-weight: bold;
+        }
+
+        .comparison-table tr:nth-child(even) {
+            background-color: rgba(17, 34, 64, 0.3);
+        }
+
+        .comparison-table .non-mutating {
+            color: var(--cyan);
+            font-weight: bold;
+        }
+
+        .comparison-table .mutating {
+            color: var(--amber);
+            font-weight: bold;
+        }
+
+        .method-box {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 5px;
+            border: 1px solid var(--cyan);
+            border-radius: 5px;
+            background-color: rgba(0, 245, 255, 0.1);
+        }
+
+        .result-box {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 5px;
+            border: 1px solid var(--amber);
+            border-radius: 5px;
+            background-color: rgba(255, 183, 77, 0.2);
+        }
+
+        @media (max-width: 991px) {
+            .left-panel {
+                position: relative;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .right-panel {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid p-0">
+    <div class="row g-0">
+        <!-- Left Panel -->
+        <div class="col-md-3 left-panel">
+            <h2>8.3 Array Methods - Non-mutating</h2>
+            <p class="text-muted small">Mastering Safe Array Operations Without Side Effects</p>
+            <p class="text-secondary small">Author: AI Tutor • Updated: 2024</p>
+
+            <div class="mb-3 d-flex gap-2">
+                <button id="expandAll" class="btn btn-control">Expand All</button>
+                <button id="collapseAll" class="btn btn-control">Collapse All</button>
+            </div>
+
+            <div class="search-box mb-4">
+                <input type="text" id="searchToc" class="form-control bg-dark border-cyan" placeholder="Search topics..." style="color: var(--cyan); background-color: #112240; border-color: var(--amber);">
+            </div>
+
+            <h5 class="text-uppercase text-muted fw-bold mb-3">Table of Contents</h5>
+            <ul class="list-unstyled">
+                <li class="toc-item">
+                    <a href="#concat-join">concat() and join()</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#concat-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#concat-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#concat-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#concat-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#concat-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#indexof-includes">indexOf() and includes()</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#indexof-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#indexof-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#indexof-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#indexof-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#indexof-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#from-of">Array.from() and Array.of()</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#from-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#from-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#from-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#from-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#from-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#tostring-tolocalestring">toString() and toLocaleString()</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#tostring-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#tostring-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#tostring-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#tostring-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#tostring-uses">Uses</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="col-md-9 right-panel">
+            <section id="concat-join">
+                <details>
+                    <summary>concat() and join()</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">concat()</span> merges two or more arrays and returns a new array without modifying the original arrays. <span class="highlight">join()</span> creates a string from all elements in an array, separated by a specified delimiter.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>Both methods are non-mutating, meaning they don't change the original arrays but return new values. This makes them ideal for functional programming patterns where you want to avoid side effects.</p>
+                    <ul>
+                        <li><code>concat()</code>: Combines arrays into one new array, preserving original arrays</li>
+                        <li><code>join()</code>: Converts array elements to strings and joins them with a separator</li>
+                    </ul>
+                    <p>The key benefit is predictability: you can always rely on these methods to leave your original data unchanged.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// concat()
+array.concat(value1, value2, ..., valueN)
+
+// join()
+array.join(separator)</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// EXAMPLE 1: concat() - Merging arrays safely
+const fruits = ['apple', 'banana'];
+const vegetables = ['carrot', 'broccoli'];
+
+// Create new array without modifying originals
+const groceries = fruits.concat(vegetables);
+console.log(groceries); // ["apple", "banana", "carrot", "broccoli"]
+console.log(fruits);    // ["apple", "banana"] - unchanged!
+console.log(vegetables); // ["carrot", "broccoli"] - unchanged!
+
+// Concatenate multiple arrays
+const colors = ['red', 'blue'];
+const shapes = ['circle', 'square'];
+const sizes = ['small', 'large'];
+
+const designElements = colors.concat(shapes, sizes);
+console.log(designElements); 
+// ["red", "blue", "circle", "square", "small", "large"]
+
+// Concatenate with individual elements
+const numbers = [1, 2, 3];
+const moreNumbers = numbers.concat(4, 5, [6, 7]);
+console.log(moreNumbers); // [1, 2, 3, 4, 5, 6, 7]
+
+// Concatenate with non-array values
+const mixed = ['a', 'b'].concat('c', 1, true, {key: 'value'});
+console.log(mixed); // ["a", "b", "c", 1, true, {key: "value"}]
+
+// EXAMPLE 2: concat() with nested arrays
+const matrix1 = [[1, 2], [3, 4]];
+const matrix2 = [[5, 6], [7, 8]];
+
+const combinedMatrix = matrix1.concat(matrix2);
+console.log(combinedMatrix);
+// [[1, 2], [3, 4], [5, 6], [7, 8]]
+
+// Note: Nested arrays are copied by reference
+combinedMatrix[0][0] = 99;
+console.log(matrix1[0][0]); // 99! (nested array shared by reference)
+
+// To create deep copy, use spread operator or map:
+const deepCombined = matrix1.map(row => [...row]).concat(matrix2.map(row => [...row]));
+deepCombined[0][0] = 88;
+console.log(matrix1[0][0]); // 1 (unchanged!)
+
+// EXAMPLE 3: join() - Creating strings from arrays
+const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'];
+
+// Join with default comma separator
+console.log(days.join()); // "Monday,Tuesday,Wednesday,Thursday,Friday"
+
+// Join with custom separator
+console.log(days.join(' | ')); // "Monday | Tuesday | Wednesday | Thursday | Friday"
+console.log(days.join(', ')); // "Monday, Tuesday, Wednesday, Thursday, Friday"
+console.log(days.join('')); // "MondayTuesdayWednesdayThursdayFriday"
+
+// Join with empty array
+const empty = [];
+console.log(empty.join()); // "" (empty string)
+console.log(empty.join('x')); // "" (still empty)
+
+// Join with mixed types
+const mixedArray = [1, true, null, undefined, 'hello', [1, 2, 3]];
+console.log(mixedArray.join(' - '));
+// "1 - true - null - undefined - hello - 1,2,3"
+
+// JavaScript converts each element to string using toString()
+console.log((1).toString()); // "1"
+console.log((true).toString()); // "true"
+console.log((null).toString()); // "null"
+console.log((undefined).toString()); // "undefined"
+console.log(([1,2,3]).toString()); // "1,2,3"
+
+// EXAMPLE 4: Practical examples
+class ShoppingCart {
+    constructor() {
+        this.items = [];
+        this.prices = [];
+    }
+    
+    addItem(item, price) {
+        this.items.push(item);
+        this.prices.push(price);
+    }
+    
+    // Get formatted receipt using join()
+    getReceipt() {
+        const itemLines = this.items.map((item, index) => 
+            `${item}: $${this.prices[index]}`
+        );
+        
+        return itemLines.join('\n');
+    }
+    
+    // Combine categories using concat()
+    getAllCategories() {
+        const food = ['apple', 'bread', 'milk'];
+        const electronics = ['phone', 'laptop'];
+        const clothing = ['shirt', 'pants'];
+        
+        return food.concat(electronics, clothing);
+    }
+}
+
+const cart = new ShoppingCart();
+cart.addItem('Apple', 1.50);
+cart.addItem('Bread', 2.00);
+cart.addItem('Milk', 3.50);
+
+console.log(cart.getReceipt());
+// Apple: $1.5
+// Bread: $2
+// Milk: $3.5
+
+console.log(cart.getAllCategories());
+// ["apple", "bread", "milk", "phone", "laptop", "shirt", "pants"]
+
+// EXAMPLE 5: Advanced join() with complex data
+const students = [
+    { name: 'Alice', grade: 85 },
+    { name: 'Bob', grade: 92 },
+    { name: 'Charlie', grade: 78 }
+];
+
+// Convert to readable format
+const studentList = students.map(student => 
+    `${student.name}: ${student.grade}%`
+).join('\n');
+
+console.log(studentList);
+// Alice: 85%
+// Bob: 92%
+// Charlie: 78%
+
+// Join with different separators based on context
+function formatData(data, formatType) {
+    switch(formatType) {
+        case 'csv':
+            return data.join(',');
+        case 'json-array':
+            return '[' + data.map(item => `"${item}"`).join(',') + ']';
+        case 'bullet-list':
+            return data.map(item => `• ${item}`).join('\n');
+        case 'table-row':
+            return '|' + data.join('|') + '|';
+        default:
+            return data.join(' | ');
+    }
+}
+
+const tags = ['javascript', 'react', 'nodejs', 'express'];
+console.log(formatData(tags, 'csv')); 
+// "javascript,react,nodejs,express"
+
+console.log(formatData(tags, 'bullet-list'));
+// • javascript
+// • react
+// • nodejs
+// • express
+
+console.log(formatData(tags, 'table-row'));
+// "|javascript|react|nodejs|express|"</code></pre>
+
+                    <div class="array-diagram">
+// CONCAT DEMONSTRATION:
+
+// Original arrays:
+// fruits: ["apple", "banana"]
+// vegetables: ["carrot", "broccoli"]
+
+// After concat():
+// groceries: ["apple", "banana", "carrot", "broccoli"]
+// fruits: ["apple", "banana"] (unchanged)
+// vegetables: ["carrot", "broccoli"] (unchanged)
+
+// JOIN DEMONSTRATION:
+
+// Array: ["a", "b", "c"]
+// join(','): "a,b,c"
+// join(' | '): "a | b | c"
+// join(''): "abc"</div>
+
+                    <div class="comparison-table">
+<table>
+    <thead>
+        <tr>
+            <th>Method</th>
+            <th>Mutates?</th>
+            <th>Returns</th>
+            <th>Use Case</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>concat()</code></td>
+            <td class="non-mutating">❌ No</td>
+            <td>New array with merged elements</td>
+            <td>Merging arrays safely without side effects</td>
+        </tr>
+        <tr>
+            <td><code>join()</code></td>
+            <td class="non-mutating">❌ No</td>
+            <td>String representation of array</td>
+            <td>Creating delimited strings from arrays</td>
+        </tr>
+        <tr>
+            <td><code>splice()</code></td>
+            <td class="mutating">✅ Yes</td>
+            <td>Array of removed elements</td>
+            <td>Modifying arrays in-place</td>
+        </tr>
+        <tr>
+            <td><code>slice()</code></td>
+            <td class="non-mutating">❌ No</td>
+            <td>New array with copied elements</td>
+            <td>Creating safe copies of array portions</td>
+        </tr>
+    </tbody>
+</table>
+                    </div>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li><code>concat()</code>: Merging arrays in functional programming</li>
+                        <li><code>concat()</code>: Building dynamic lists from multiple sources</li>
+                        <li><code>join()</code>: Creating CSV/TSV data exports</li>
+                        <li><code>join()</code>: Generating human-readable output from arrays</li>
+                        <li><code>join()</code>: Forming URLs, file paths, or SQL queries</li>
+                        <li><code>concat()</code>: Combining configuration objects as arrays</li>
+                    </ul>
+                    <p class="text-success mt-2">✅ Best Practice: Use <code>concat()</code> instead of <code>push()</code> when you need to preserve original arrays. Use <code>join()</code> instead of manual string concatenation for better performance and readability.</p>
+                </details>
+            </section>
+
+            <section id="indexof-includes">
+                <details>
+                    <summary>indexOf() and includes()</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">indexOf()</span> returns the first index at which a given element can be found in the array, or -1 if not present. <span class="highlight">includes()</span> determines whether an array contains a certain element and returns a boolean.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>Both methods search for elements in arrays but return different types of results:</p>
+                    <ul>
+                        <li><code>indexOf()</code>: Returns numeric index (position) or -1 if not found</li>
+                        <li><code>includes()</code>: Returns boolean (true/false) indicating presence</li>
+                    </ul>
+                    <p>Important notes:</p>
+                    <ul>
+                        <li>Both use strict equality (<code>===</code>) for comparison</li>
+                        <li>Both accept optional start index for where to begin searching</li>
+                        <li>Both work with any data type including objects, but object comparison is by reference</li>
+                        <li><code>includes()</code> handles <code>NaN</code> correctly, while <code>indexOf()</code> doesn't</li>
+                    </ul>
+                    <p>Choose <code>indexOf()</code> when you need the position, <code>includes()</code> when you only care about existence.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// indexOf()
+array.indexOf(searchElement, fromIndex)
+
+// includes()
+array.includes(searchElement, fromIndex)</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// EXAMPLE 1: indexOf() - Finding positions
+const numbers = [1, 2, 3, 2, 4, 2, 5];
+
+// Find first occurrence
+console.log(numbers.indexOf(2)); // 1 (first occurrence at index 1)
+
+// Find occurrence after index 2
+console.log(numbers.indexOf(2, 2)); // 3 (first occurrence after index 2)
+
+// Find non-existent element
+console.log(numbers.indexOf(6)); // -1 (not found)
+
+// Find last occurrence (using lastIndexOf)
+console.log(numbers.lastIndexOf(2)); // 5 (last occurrence at index 5)
+
+// Find with different data types
+const mixed = ['apple', 1, true, null, 'apple', false];
+
+console.log(mixed.indexOf('apple')); // 0
+console.log(mixed.indexOf(1)); // 1
+console.log(mixed.indexOf(true)); // 2
+console.log(mixed.indexOf(null)); // 3
+console.log(mixed.indexOf(false)); // 5
+console.log(mixed.indexOf('orange')); // -1
+
+// EXAMPLE 2: includes() - Checking existence
+const colors = ['red', 'green', 'blue', 'yellow'];
+
+console.log(colors.includes('red')); // true
+console.log(colors.includes('purple')); // false
+console.log(colors.includes('Blue')); // false (case-sensitive)
+
+// Check with fromIndex
+console.log(colors.includes('blue', 2)); // true (found at index 2)
+console.log(colors.includes('blue', 3)); // false (search starts after blue)
+
+// Check with NaN (important difference!)
+const arrayWithNaN = [1, 2, NaN, 4];
+console.log(arrayWithNaN.indexOf(NaN)); // -1 ❌ Doesn't work!
+console.log(arrayWithNaN.includes(NaN)); // true ✅ Works correctly!
+
+// Check with objects (reference comparison)
+const obj1 = {id: 1};
+const obj2 = {id: 1};
+const obj3 = obj1;
+
+const objects = [obj1, obj2, obj3];
+
+console.log(objects.includes(obj1)); // true
+console.log(objects.includes(obj2)); // false (different object)
+console.log(objects.includes(obj3)); // true (same reference)
+
+// EXAMPLE 3: Practical examples with indexOf()
+function findUserById(users, id) {
+    const index = users.findIndex(user => user.id === id);
+    if (index !== -1) {
+        return users[index];
+    }
+    return null;
+}
+
+// Using indexOf() for simple cases
+function isValidColor(color) {
+    const validColors = ['red', 'green', 'blue', 'yellow', 'orange', 'purple'];
+    return validColors.indexOf(color.toLowerCase()) !== -1;
+}
+
+console.log(isValidColor('Red')); // true
+console.log(isValidColor('pink')); // false
+
+// Find multiple occurrences
+function findAllOccurrences(arr, target) {
+    const indices = [];
+    let index = arr.indexOf(target);
+    while (index !== -1) {
+        indices.push(index);
+        index = arr.indexOf(target, index + 1);
+    }
+    return indices;
+}
+
+const numbers2 = [1, 2, 3, 2, 4, 2, 5];
+console.log(findAllOccurrences(numbers2, 2)); // [1, 3, 5]
+
+// EXAMPLE 4: Practical examples with includes()
+function checkPermissions(userRoles, requiredRole) {
+    const allowedRoles = ['admin', 'editor', 'viewer'];
+    return allowedRoles.includes(requiredRole) &amp;&amp; userRoles.includes(requiredRole);
+}
+
+const user = { roles: ['editor', 'viewer'] };
+console.log(checkPermissions(user.roles, 'editor')); // true
+console.log(checkPermissions(user.roles, 'admin')); // false
+
+// Validate form inputs
+function validateEmail(email) {
+    const validDomains = ['gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com'];
+    const domain = email.split('@')[1];
+    return domain ? validDomains.includes(domain) : false;
+}
+
+console.log(validateEmail('user@gmail.com')); // true
+console.log(validateEmail('user@company.com')); // false
+
+// Check for duplicates in array
+function hasDuplicates(arr) {
+    return arr.some((item, index) =&gt; arr.indexOf(item) !== index);
+}
+
+const duplicates = [1, 2, 3, 2, 4, 5, 3];
+console.log(hasDuplicates(duplicates)); // true
+
+const unique = [1, 2, 3, 4, 5];
+console.log(hasDuplicates(unique)); // false
+
+// EXAMPLE 5: Complex example - Search functionality
+class SearchEngine {
+    constructor() {
+        this.indexedItems = [];
+    }
+    
+    add(item) {
+        this.indexedItems.push(item);
+    }
+    
+    // Find items containing search term
+    search(term) {
+        return this.indexedItems.filter(item => 
+            item.toLowerCase().includes(term.toLowerCase())
+        );
+    }
+    
+    // Find exact matches
+    findExact(term) {
+        return this.indexedItems.indexOf(term) !== -1;
+    }
+    
+    // Find all matching indices
+    findAllIndices(term) {
+        const indices = [];
+        let index = this.indexedItems.indexOf(term);
+        while (index !== -1) {
+            indices.push(index);
+            index = this.indexedItems.indexOf(term, index + 1);
+        }
+        return indices;
+    }
+    
+    // Check if any item matches condition
+    hasAny(itemsToCheck) {
+        return itemsToCheck.some(item => this.indexedItems.includes(item));
+    }
+}
+
+const engine = new SearchEngine();
+engine.add('JavaScript');
+engine.add('Python');
+engine.add('Java');
+engine.add('JavaScript'); // Duplicate
+
+console.log(engine.search('java')); // ["Java", "JavaScript"]
+console.log(engine.findExact('JavaScript')); // true
+console.log(engine.findAllIndices('JavaScript')); // [0, 3]
+console.log(engine.hasAny(['C++', 'Ruby'])); // false
+console.log(engine.hasAny(['Python', 'Ruby'])); // true
+
+// EXAMPLE 6: indexOf() vs includes() with edge cases
+const array = [1, 2, 3, 4, 5];
+
+// Empty string search
+console.log(array.indexOf('')); // -1
+console.log(array.includes('')); // false
+
+// Undefined search
+console.log(array.indexOf(undefined)); // -1
+console.log(array.includes(undefined)); // false
+
+// Null search
+console.log(array.indexOf(null)); // -1
+console.log(array.includes(null)); // false
+
+// Zero search
+console.log(array.indexOf(0)); // -1
+console.log(array.includes(0)); // false
+
+// Large numbers
+const bigNumbers = [1000000, 2000000, 3000000];
+console.log(bigNumbers.indexOf(2000000)); // 1
+console.log(bigNumbers.includes(2000000)); // true
+
+// Objects with same structure but different references
+const person1 = {name: 'Alice'};
+const person2 = {name: 'Alice'};
+const people = [person1];
+
+console.log(people.indexOf(person2)); // -1 (different object)
+console.log(people.includes(person2)); // false (different object)
+console.log(people.indexOf(person1)); // 0
+console.log(people.includes(person1)); // true</code></pre>
+
+                    <div class="comparison-table">
+<table>
+    <thead>
+        <tr>
+            <th>Feature</th>
+            <th>indexOf()</th>
+            <th>includes()</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Return Type</td>
+            <td>Number (index or -1)</td>
+            <td>Boolean (true/false)</td>
+        </tr>
+        <tr>
+            <td>NaN Handling</td>
+            <td class="false">❌ Returns -1</td>
+            <td class="true">✅ Returns true</td>
+        </tr>
+        <tr>
+            <td>Performance</td>
+            <td>Slightly slower due to index calculation</td>
+            <td>Faster for existence checks</td>
+        </tr>
+        <tr>
+            <td>Use When</td>
+            <td>You need the position of the element</td>
+            <td>You only need to know if it exists</td>
+        </tr>
+        <tr>
+            <td>Default Start</td>
+            <td>0</td>
+            <td>0</td>
+        </tr>
+        <tr>
+            <td>Strict Equality</td>
+            <td>✅ Uses ===</td>
+            <td>✅ Uses ===</td>
+        </tr>
+        <tr>
+            <td>Works with sparse arrays</td>
+            <td>✅ Ignores holes</td>
+            <td>✅ Ignores holes</td>
+        </tr>
+    </tbody>
+</table>
+                    </div>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li><code>indexOf()</code>: Finding positions of elements in arrays</li>
+                        <li><code>indexOf()</code>: Implementing search algorithms</li>
+                        <li><code>indexOf()</code>: Data validation and filtering</li>
+                        <li><code>includes()</code>: Checking membership in sets/lists</li>
+                        <li><code>includes()</code>: Permission and role checking</li>
+                        <li><code>includes()</code>: Input validation and form handling</li>
+                        <li><code>includes()</code>: Feature toggles and configuration flags</li>
+                    </ul>
+                    <p class="text-warning mt-2"><strong>⚠️ Critical Warning:</strong> Don't use <code>indexOf()</code> to check for <code>NaN</code> values — use <code>includes()</code> instead!</p>
+                    <p class="text-info mt-2">💡 Pro Tip: Use <code>includes()</code> for boolean checks and <code>indexOf()</code> when you need the actual position. Both are faster than manual loops for large arrays.</p>
+                </details>
+            </section>
+
+            <section id="from-of">
+                <details>
+                    <summary>Array.from() and Array.of()</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">Array.from()</span> creates a new, shallow-copied Array instance from an array-like or iterable object. <span class="highlight">Array.of()</span> creates a new Array instance with a variable number of arguments, regardless of the number or type of the arguments.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>These two methods solve specific problems that other array creation methods have:</p>
+                    <ul>
+                        <li><code>Array.from()</code>: Converts array-like objects (NodeList, arguments, strings) and iterables into real arrays</li>
+                        <li><code>Array.of()</code>: Creates arrays with variable arguments without the confusion of <code>new Array(number)</code></li>
+                    </ul>
+                    <p>Both are static methods and non-mutating (they create new arrays).</p>
+                    <p>Key insight: <code>Array.of()</code> solves the problem of <code>new Array(n)</code> creating sparse arrays, while <code>Array.from()</code> solves the problem of working with array-like objects.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// Array.from()
+Array.from(arrayLike[, mapFunction])
+
+// Array.of()
+Array.of(element1, element2, ...elementN)</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// EXAMPLE 1: Array.from() - Converting array-like objects
+// Convert NodeList to array
+const divs = document.querySelectorAll('div');
+const divArray = Array.from(divs);
+console.log(Array.isArray(divArray)); // true
+console.log(divArray.length); // Number of divs found
+
+// Convert string to array of characters
+const str = 'hello';
+const charArray = Array.from(str);
+console.log(charArray); // ["h", "e", "l", "l", "o"]
+
+// Convert Set to array
+const uniqueNumbers = new Set([1, 2, 3, 2, 1]);
+const uniqueArray = Array.from(uniqueNumbers);
+console.log(uniqueArray); // [1, 2, 3]
+
+// Convert Map to array of [key, value] pairs
+const map = new Map([['a', 1], ['b', 2], ['c', 3]]);
+const entries = Array.from(map);
+console.log(entries); // [["a", 1], ["b", 2], ["c", 3]]
+
+// Convert arguments object to array
+function getArguments() {
+    const args = Array.from(arguments);
+    return args;
+}
+console.log(getArguments(1, 2, 3, 4)); // [1, 2, 3, 4]
+
+// Convert array-like object with length property
+const arrayLike = {
+    0: 'first',
+    1: 'second',
+    2: 'third',
+    length: 3
+};
+const realArray = Array.from(arrayLike);
+console.log(realArray); // ["first", "second", "third"]
+
+// EXAMPLE 2: Array.from() with mapping function
+// Convert numbers to their squares
+const numbers = [1, 2, 3, 4, 5];
+const squares = Array.from(numbers, x =&gt; x * x);
+console.log(squares); // [1, 4, 9, 16, 25]
+
+// Convert string to array of character lengths
+const words = 'hello world';
+const lengths = Array.from(words, char =&gt; char.length);
+console.log(lengths); // [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1] (each char has length 1)
+
+// Convert array of strings to array of uppercase versions
+const names = ['alice', 'bob', 'charlie'];
+const upperNames = Array.from(names, name =&gt; name.toUpperCase());
+console.log(upperNames); // ["ALICE", "BOB", "CHARLIE"]
+
+// Convert array-like to array with transformation
+const prices = {
+    0: 10,
+    1: 20,
+    2: 30,
+    length: 3
+};
+const discounted = Array.from(prices, price =&gt; price * 0.9);
+console.log(discounted); // [9, 18, 27]
+
+// EXAMPLE 3: Array.of() - Solving the single number problem
+// Problem with new Array(number)
+console.log(new Array(5)); // [empty × 5] - sparse array!
+console.log(new Array('5')); // ["5"] - string array
+
+// Solution with Array.of()
+console.log(Array.of(5)); // [5] - array with one number element
+console.log(Array.of('5')); // ["5"] - array with one string element
+console.log(Array.of(1, 2, 3)); // [1, 2, 3] - array with three elements
+console.log(Array.of()); // [] - empty array
+
+// Compare behaviors:
+console.log(new Array(1, 2, 3)); // [1, 2, 3] - works fine
+console.log(Array.of(1, 2, 3)); // [1, 2, 3] - same result
+
+console.log(new Array(3)); // [empty × 3] - unexpected!
+console.log(Array.of(3)); // [3] - predictable!
+
+// Real-world example: Creating consistent arrays
+function createArray(...items) {
+    // Always returns array with exactly the items passed
+    return Array.of(...items);
+}
+
+console.log(createArray(1)); // [1]
+console.log(createArray(1, 2, 3)); // [1, 2, 3]
+console.log(createArray()); // []
+
+// EXAMPLE 4: Practical examples combining both
+class Database {
+    constructor() {
+        this.records = [];
+    }
+    
+    // Add records from various sources
+    addRecords(source) {
+        // Handle different input types
+        if (Array.isArray(source)) {
+            this.records = this.records.concat(source);
+        } else if (source instanceof NodeList) {
+            // Convert NodeList to array
+            this.records = this.records.concat(Array.from(source));
+        } else if (typeof source === 'string') {
+            // Convert string to array of characters
+            this.records = this.records.concat(Array.from(source));
+        } else if (source instanceof Set) {
+            // Convert Set to array
+            this.records = this.records.concat(Array.from(source));
+        } else {
+            // Single value - use Array.of to ensure array format
+            this.records = this.records.concat(Array.of(source));
+        }
+    }
+    
+    // Get all records as array
+    getAllRecords() {
+        return Array.from(this.records); // Ensure we return a proper array
+    }
+}
+
+const db = new Database();
+db.addRecords(['record1', 'record2']);
+db.addRecords(new Set(['record3', 'record4']));
+db.addRecords('ABCD'); // String becomes array of chars
+db.addRecords(42); // Single number becomes [42]
+
+console.log(db.getAllRecords());
+// ["record1", "record2", "record3", "record4", "A", "B", "C", "D", 42]
+
+// EXAMPLE 5: Array.from() with custom iterator
+const range = {
+    *[Symbol.iterator]() {
+        for (let i = 0; i &lt; 5; i++) {
+            yield i * 2;
+        }
+    }
+};
+
+const evenNumbers = Array.from(range);
+console.log(evenNumbers); // [0, 2, 4, 6, 8]
+
+// Array.from() with mapping and context
+const numbers2 = [1, 2, 3, 4, 5];
+const mapped = Array.from(numbers2, function(x) {
+    return this.multiplier * x;
+}, { multiplier: 10 });
+
+console.log(mapped); // [10, 20, 30, 40, 50]
+
+// EXAMPLE 6: Modern alternatives and comparisons
+// Old way: converting arguments to array
+function oldWay() {
+    return Array.prototype.slice.call(arguments);
+}
+
+// Modern way: Array.from()
+function modernWay() {
+    return Array.from(arguments);
+}
+
+// Old way: creating array with single number
+function createArrayOld(n) {
+    return new Array(n);
+}
+
+// Modern way: Array.of()
+function createArrayModern(n) {
+    return Array.of(n);
+}
+
+// Performance comparison
+const testArray = Array.from({length: 10000}, (_, i) => i);
+
+// Convert to array of squares
+const squares1 = testArray.map(x => x * x);
+const squares2 = Array.from(testArray, x => x * x);
+
+console.log(squares1.slice(0, 5)); // [0, 1, 4, 9, 16]
+console.log(squares2.slice(0, 5)); // [0, 1, 4, 9, 16]</code></pre>
+
+                    <div class="array-diagram">
+// ARRAY.FROM() DEMONSTRATION:
+
+// Array-like object:
+// {0: "a", 1: "b", 2: "c", length: 3}
+// ↓ Array.from()
+// ["a", "b", "c"]
+
+// String:
+// "hello"
+// ↓ Array.from()
+// ["h", "e", "l", "l", "o"]
+
+// Set:
+// Set{1, 2, 3}
+// ↓ Array.from()
+// [1, 2, 3]
+
+// ARRAY.OF() DEMONSTRATION:
+
+// Array.of(5)
+// → [5] (one element: number 5)
+
+// Array.of("5")
+// → ["5"] (one element: string "5")
+
+// Array.of(1, 2, 3)
+// → [1, 2, 3] (three elements)
+
+// new Array(5)
+// → [empty × 5] (five holes!) ← DANGER!</div>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li><code>Array.from()</code>: Converting DOM collections to arrays</li>
+                        <li><code>Array.from()</code>: Converting strings to character arrays</li>
+                        <li><code>Array.from()</code>: Converting Sets and Maps to arrays</li>
+                        <li><code>Array.from()</code>: Converting arguments objects to arrays</li>
+                        <li><code>Array.from()</code>: Transforming data during conversion with mapping function</li>
+                        <li><code>Array.of()</code>: Creating arrays with single numeric elements</li>
+                        <li><code>Array.of()</code>: Creating arrays with variable arguments reliably</li>
+                        <li><code>Array.from()</code>: Creating arrays from iterators and generators</li>
+                    </ul>
+                    <p class="text-success mt-2">✅ Best Practice: Use <code>Array.from()</code> instead of <code>Array.prototype.slice.call()</code> for cleaner code. Use <code>Array.of()</code> instead of <code>new Array()</code> when you want predictable behavior with single arguments.</p>
+                    <p class="text-info mt-2">💡 Pro Tip: <code>Array.from()</code> with mapping function is equivalent to <code>Array.from(iterable).map(fn)</code> but more efficient since it does both operations in one pass.</p>
+                </details>
+            </section>
+
+            <section id="tostring-tolocalestring">
+                <details>
+                    <summary>toString() and toLocaleString()</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">toString()</span> returns a string representing the array and its elements. <span class="highlight">toLocaleString()</span> returns a localized string representation of the array and its elements.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>Both methods convert arrays to strings, but they handle localization differently:</p>
+                    <ul>
+                        <li><code>toString()</code>: Uses the default string representation of each element</li>
+                        <li><code>toLocaleString()</code>: Uses locale-specific formatting for each element</li>
+                    </ul>
+                    <p>Internally, both methods call the corresponding method on each array element and join them with commas. The key difference is how individual elements are converted to strings.</p>
+                    <p>This is particularly important for dates, numbers, and other locale-sensitive data types.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// toString()
+array.toString()
+
+// toLocaleString()
+array.toLocaleString([locales [, options]])</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// EXAMPLE 1: toString() - Basic string conversion
+const numbers = [1, 2, 3, 4, 5];
+console.log(numbers.toString()); // "1,2,3,4,5"
+
+const mixed = ['apple', 1, true, null, undefined, [1, 2, 3]];
+console.log(mixed.toString()); // "apple,1,true,,,"
+
+// Note: null and undefined become empty strings
+const withNull = [null, undefined, 'hello'];
+console.log(withNull.toString()); // ",,hello"
+
+// Arrays within arrays are flattened recursively
+const nested = [1, [2, 3], [4, [5, 6]]];
+console.log(nested.toString()); // "1,2,3,4,5,6"
+
+// Objects are converted using their toString() method
+const objects = [{name: 'Alice'}, {name: 'Bob'}];
+console.log(objects.toString()); // "[object Object],[object Object]"
+
+// EXAMPLE 2: toLocaleString() - Locale-aware conversion
+const numbers2 = [1000, 2000, 3000];
+console.log(numbers2.toLocaleString()); // "1,000,2,000,3,000" (with commas)
+
+const currencies = [1234.56, 789.12, 456.78];
+console.log(currencies.toLocaleString('en-US', { style: 'currency', currency: 'USD' }));
+// "$1,234.56,$789.12,$456.78"
+
+// Different locales
+const date = new Date('2023-12-25');
+const dates = [date, new Date('2023-12-26'), new Date('2023-12-27')];
+
+console.log(dates.toLocaleString('en-US')); 
+// "12/25/2023,12/26/2023,12/27/2023"
+
+console.log(dates.toLocaleString('de-DE')); 
+// "25.12.2023,26.12.2023,27.12.2023"
+
+console.log(dates.toLocaleString('ja-JP')); 
+// "2023/12/25,2023/12/26,2023/12/27"
+
+// Numbers with different formatting
+const prices = [1234.567, 890.123, 456.789];
+console.log(prices.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+// "1,234.57,890.12,456.79"
+
+console.log(prices.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
+// "1.234,57,890,12,456,79"
+
+// EXAMPLE 3: Comparison between toString() and toLocaleString()
+const mixedData = [
+    1234.567,
+    new Date('2023-12-25'),
+    'hello',
+    {name: 'Alice'},
+    null,
+    undefined
+];
+
+console.log('toString():', mixedData.toString());
+// "1234.567,Mon Dec 25 2023 00:00:00 GMT-0500 (Eastern Standard Time),hello,[object Object],,"
+
+console.log('toLocaleString():', mixedData.toLocaleString('en-US'));
+// "1,234.567,12/25/2023,hello,[object Object],,"
+
+// EXAMPLE 4: Practical example - International reporting
+class FinancialReport {
+    constructor() {
+        this.transactions = [];
+    }
+    
+    addTransaction(amount, date, description) {
+        this.transactions.push({
+            amount: amount,
+            date: date,
+            description: description
+        });
+    }
+    
+    // Generate report in default format
+    generateReport() {
+        return this.transactions.map(t => 
+            `${t.description}: $${t.amount.toFixed(2)} (${t.date.toDateString()})`
+        ).join('\n');
+    }
+    
+    // Generate localized report
+    generateLocalizedReport(locale = 'en-US') {
+        return this.transactions.map(t => 
+            `${t.description}: ${t.amount.toLocaleString(locale, { style: 'currency', currency: 'USD' })} (${t.date.toLocaleString(locale)})`
+        ).join('\n');
+    }
+    
+    // Quick summary using toLocaleString()
+    getSummary(locale = 'en-US') {
+        const amounts = this.transactions.map(t => t.amount);
+        const dates = this.transactions.map(t => t.date);
+        
+        return `Transactions: ${amounts.length}\n` +
+               `Total: ${amounts.reduce((a, b) => a + b, 0).toLocaleString(locale, { style: 'currency', currency: 'USD' })}\n` +
+               `Dates: ${dates.toLocaleString(locale)}`;
+    }
+}
+
+const report = new FinancialReport();
+report.addTransaction(1234.56, new Date('2023-12-25'), 'Salary');
+report.addTransaction(89.99, new Date('2023-12-26'), 'Groceries');
+report.addTransaction(25.50, new Date('2023-12-27'), 'Coffee');
+
+console.log('Standard Report:');
+console.log(report.generateReport());
+
+console.log('\nLocalized Report (German):');
+console.log(report.generateLocalizedReport('de-DE'));
+
+console.log('\nSummary:');
+console.log(report.getSummary('en-US'));
+console.log('\nSummary (German):');
+console.log(report.getSummary('de-DE'));
+
+// EXAMPLE 5: toString() on multidimensional arrays
+const matrix = [
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9]
+];
+
+console.log(matrix.toString()); // "1,2,3,4,5,6,7,8,9"
+console.log(matrix.toLocaleString()); // "1,2,3,4,5,6,7,8,9"
+
+// Each row gets flattened
+const nested = [[1, 2], [3, 4], [5, 6]];
+console.log(nested.toString()); // "1,2,3,4,5,6"
+
+// EXAMPLE 6: Edge cases and special considerations
+const special = [
+    NaN,
+    Infinity,
+    -Infinity,
+    '',
+    '0',
+    'false',
+    'true'
+];
+
+console.log('toString():', special.toString());
+// "NaN,Infinity,-Infinity,,,false,true"
+
+console.log('toLocaleString():', special.toLocaleString());
+// "NaN,Infinity,-Infinity,,,false,true"
+
+// Empty array
+const empty = [];
+console.log(empty.toString()); // ""
+console.log(empty.toLocaleString()); // ""
+
+// Array with only null/undefined
+const onlyNull = [null, undefined, null];
+console.log(onlyNull.toString()); // ",,"
+console.log(onlyNull.toLocaleString()); // ",,"
+
+// Array with objects that have custom toString()
+const customObjects = [
+    {
+        toString() {
+            return 'Custom Object';
+        }
+    },
+    {
+        toString() {
+            return 'Another Custom';
+        }
+    }
+];
+
+console.log(customObjects.toString()); // "Custom Object,Another Custom"
+console.log(customObjects.toLocaleString()); // "Custom Object,Another Custom"
+
+// EXAMPLE 7: Real-world scenario - CSV export
+function exportToCSV(data) {
+    // Convert array of objects to CSV rows
+    const headers = Object.keys(data[0]);
+    const headerRow = headers.join(',');
+    
+    const rows = data.map(row => 
+        headers.map(header => {
+            const value = row[header];
+            
+            // Handle special cases for CSV
+            if (value === null || value === undefined) return '';
+            if (typeof value === 'string' &amp;&amp; (value.includes(',') || value.includes('"'))) {
+                return '"' + value.replace(/"/g, '""') + '"';
+            }
+            return value;
+        }).join(',')
+    );
+    
+    return [headerRow, ...rows].join('\n');
+}
+
+const employees = [
+    { name: 'Alice Smith', department: 'Engineering', salary: 75000 },
+    { name: 'Bob Johnson', department: 'Marketing', salary: 65000 },
+    { name: 'Carol Davis', department: 'Sales', salary: 55000 }
+];
+
+console.log(exportToCSV(employees));
+// name,department,salary
+// Alice Smith,Engineering,75000
+// Bob Johnson,Marketing,65000
+// Carol Davis,Sales,55000
+
+// Using toLocaleString() for localized currency
+function exportToCSVWithLocalization(data, locale = 'en-US') {
+    const headers = Object.keys(data[0]);
+    const headerRow = headers.join(',');
+    
+    const rows = data.map(row => 
+        headers.map(header => {
+            const value = row[header];
+            
+            if (header === 'salary' &amp;&amp; typeof value === 'number') {
+                return value.toLocaleString(locale, { style: 'currency', currency: 'USD' });
+            }
+            
+            if (value === null || value === undefined) return '';
+            if (typeof value === 'string' &amp;&amp; (value.includes(',') || value.includes('"'))) {
+                return '"' + value.replace(/"/g, '""') + '"';
+            }
+            return value;
+        }).join(',')
+    );
+    
+    return [headerRow, ...rows].join('\n');
+}
+
+console.log(exportToCSVWithLocalization(employees, 'de-DE'));
+// name,department,salary
+// Alice Smith,Engineering,75.000,00 $
+// Bob Johnson,Marketing,65.000,00 $
+// Carol Davis,Sales,55.000,00 $</code></pre>
+
+                    <div class="array-diagram">
+// TOLOCALESTRING() DEMONSTRATION:
+
+// Array: [1234.56, new Date('2023-12-25')]
+// toString(): "1234.56,Mon Dec 25 2023 00:00:00 GMT-0500 (Eastern Standard Time)"
+// toLocaleString('en-US'): "1,234.56,12/25/2023"
+// toLocaleString('de-DE'): "1.234,56,25.12.2023"
+
+// Localization differences:
+// en-US: 1,234.56 (comma thousand separator, dot decimal)
+// de-DE: 1.234,56 (dot thousand separator, comma decimal)</div>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li><code>toString()</code>: Quick debugging and logging of arrays</li>
+                        <li><code>toString()</code>: Simple serialization of array data</li>
+                        <li><code>toLocaleString()</code>: International applications with localized formatting</li>
+                        <li><code>toLocaleString()</code>: Financial and scientific applications requiring regional formatting</li>
+                        <li><code>toLocaleString()</code>: User-facing reports and dashboards</li>
+                        <li><code>toString()</code>: Creating quick string representations for testing</li>
+                    </ul>
+                    <p class="text-warning mt-2"><strong>⚠️ Important Notes:</strong></p>
+                    <ul>
+                        <li>Both methods flatten nested arrays recursively</li>
+                        <li>They call the respective method on each element, so custom objects should implement their own toString/toLocaleString</li>
+                        <li>For arrays with objects, you'll see "[object Object]" unless you override toString()</li>
+                        <li>Always prefer toLocaleString() for user-facing displays in international applications</li>
+                    </ul>
+                    <p class="text-info mt-2">💡 Pro Tip: For debugging, use <code>JSON.stringify(array)</code> instead of <code>toString()</code> to get more detailed information about array contents.</p>
+                </details>
+            </section>
+
+            <hr class="my-5">
+
+            <div class="alert alert-info">
+                <h5>Key Takeaways</h5>
+                <ul>
+                    <li><code>concat()</code> and <code>join()</code> are non-mutating methods for combining arrays and creating strings</li>
+                    <li><code>indexOf()</code> returns the position of an element; <code>includes()</code> returns true/false for existence</li>
+                    <li><code>Array.from()</code> converts array-like objects and iterables to real arrays</li>
+                    <li><code>Array.of()</code> creates arrays with variable arguments without the pitfalls of <code>new Array(number)</code></li>
+                    <li><code>toString()</code> provides basic string representation; <code>toLocaleString()</code> provides locale-aware formatting</li>
+                    <li>All these methods are non-mutating and preserve the original arrays</li>
+                </ul>
+            </div>
+
+            <div class="alert alert-warning">
+                <h5>Common Pitfalls</h5>
+                <ul>
+                    <li>Using <code>indexOf()</code> to check for <code>NaN</code> values</li>
+                    <li>Confusing <code>Array.of(n)</code> with <code>new Array(n)</code></li>
+                    <li>Assuming <code>toString()</code> provides meaningful output for objects</li>
+                    <li>Not understanding that <code>toLocaleString()</code> depends on system locale settings</li>
+                    <li>Using <code>concat()</code> for deep copying nested arrays</li>
+                    <li>Expecting <code>join()</code> to work with non-string elements without conversion</li>
+                </ul>
+            </div>
+
+            <div class="alert alert-success">
+                <h5>Interview Question Prep</h5>
+                <p><strong>Q: What's the difference between indexOf() and includes()?</strong></p>
+                <p><strong>A:</strong> <code>indexOf()</code> returns the index of the first occurrence or -1 if not found, while <code>includes()</code> returns a boolean indicating whether the element exists. <code>includes()</code> correctly handles <code>NaN</code>, while <code>indexOf()</code> doesn't.</p>
+                
+                <p><strong>Q: Why would you use Array.from() instead of the spread operator?</strong></p>
+                <p><strong>A:</strong> <code>Array.from()</code> can convert array-like objects and iterables to arrays, and it accepts a mapping function. The spread operator only works with iterables and doesn't provide transformation capability.</p>
+                
+                <p><strong>Q: How does toLocaleString() differ from toString()?</strong></p>
+                <p><strong>A:</strong> <code>toString()</code> uses the default string representation of each element, while <code>toLocaleString()</code> uses locale-specific formatting rules, which is crucial for numbers, dates, and currencies in international applications.</p>
+                
+                <p><strong>Q: What happens when you call toString() on a multidimensional array?</strong></p>
+                <p><strong>A:</strong> It flattens the array recursively, calling toString() on each element, resulting in a single string with all values joined by commas.</p>
+                
+                <p><strong>Q: How do you create an array with a single number 5 using Array.of()?</strong></p>
+                <p><strong>A:</strong> <code>Array.of(5)</code> returns <code>[5]</code>. This avoids the confusion of <code>new Array(5)</code> which creates an array with 5 holes.</p>
+            </div>
+
+            <div class="text-center mt-4">
+                <small class="text-muted">© 2024 AI Tutor — Mastering Programming Fundamentals One Concept at a Time</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript Utilities -->
+<script>
+    // Expand/Collapse All
+    document.getElementById('expandAll').addEventListener('click', () => {
+        document.querySelectorAll('details').forEach(detail => {
+            detail.open = true;
+        });
+    });
+
+    document.getElementById('collapseAll').addEventListener('click', () => {
+        document.querySelectorAll('details').forEach(detail => {
+            detail.open = false;
+        });
+    });
+
+    // Smooth scrolling for TOC links
+    document.querySelectorAll('.toc-item a, .toc-subitem a').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+            
+            if (targetElement) {
+                window.scrollTo({
+                    top: targetElement.offsetTop - 100,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+
+    // Search functionality for TOC
+    document.getElementById('searchToc').addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
+        
+        tocItems.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            if (query === '' || text.includes(query)) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+
+    // Syntax Highlighting (basic)
+    document.querySelectorAll('pre code').forEach(block => {
+        hljs.highlightBlock(block);
+    });
+
+    // Add highlight.js if not present (fallback)
+    if (typeof hljs === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js';
+        script.onload = () => {
+            document.querySelectorAll('pre code').forEach(block => {
+                hljs.highlightBlock(block);
+            });
+        };
+        document.head.appendChild(script);
+    }
+</script>
+
+<!-- Optional: Add highlight.js for better syntax highlighting -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+
+</body>
+</html>
+```

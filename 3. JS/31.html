@@ -1,0 +1,1468 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>11.1 – Understanding Asynchronous Programming in JavaScript</title>
+    <!-- Bootstrap CDN -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+    </script>
+
+    <style>
+        :root {
+            --bg-main: #050816;
+            --bg-sidebar: #050b14;
+            --bg-card: #06111f;
+            --accent-cyan: #22d3ee;
+            --accent-amber: #fbbf24;
+            --text-main: #e5e7eb;
+            --text-muted: #9ca3af;
+            --border-subtle: #1f2933;
+            --code-bg: #020617;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            overflow: hidden;
+        }
+
+        .app-wrapper {
+            height: 100vh;
+        }
+
+        /* Layout */
+        .sidebar {
+            background: radial-gradient(circle at top left, #0f172a, var(--bg-sidebar));
+            border-right: 1px solid var(--border-subtle);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 1.25rem 1rem;
+        }
+
+        .content-panel {
+            max-height: 100vh;
+            overflow-y: auto;
+            padding: 1.5rem 2rem;
+            background: radial-gradient(circle at top right, #0b1120, var(--bg-main));
+        }
+
+        /* Scrollbars */
+        .sidebar::-webkit-scrollbar,
+        .content-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .sidebar::-webkit-scrollbar-track,
+        .content-panel::-webkit-scrollbar-track {
+            background: #020617;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb,
+        .content-panel::-webkit-scrollbar-thumb {
+            background: #1f2937;
+            border-radius: 999px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover,
+        .content-panel::-webkit-scrollbar-thumb:hover {
+            background: #4b5563;
+        }
+
+        /* Sidebar content */
+        .course-tag {
+            font-size: 0.75rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--accent-amber);
+        }
+
+        .main-title {
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            margin-bottom: 0.25rem;
+        }
+
+        .subtitle {
+            font-size: 0.92rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .meta-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 0.15rem 0.55rem;
+            font-size: 0.7rem;
+            border: 1px solid rgba(148, 163, 184, 0.6);
+            color: var(--text-muted);
+            margin-right: 0.3rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .pill span.bullet {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            margin-right: 0.25rem;
+            background: var(--accent-cyan);
+        }
+
+        .toc-card {
+            margin-top: 1rem;
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 0.75rem;
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            padding: 0.9rem 0.85rem;
+        }
+
+        .toc-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.65rem;
+        }
+
+        .toc-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--accent-amber);
+        }
+
+        .toc-search {
+            font-size: 0.8rem;
+        }
+
+        .toc-search input {
+            background: #020617;
+            border: 1px solid #111827;
+            border-radius: 999px;
+            padding: 0.18rem 0.65rem;
+            color: var(--text-main);
+            width: 100%;
+            font-size: 0.78rem;
+        }
+
+        .toc-search input::placeholder {
+            color: #64748b;
+        }
+
+        .toc-list {
+            list-style: none;
+            padding-left: 0;
+            margin-bottom: 0;
+            margin-top: 0.4rem;
+        }
+
+        .toc-list li {
+            margin-bottom: 0.28rem;
+        }
+
+        .toc-link {
+            font-size: 0.8rem;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.4rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            text-decoration: none;
+            color: var(--text-muted);
+            transition: all 0.15s ease;
+        }
+
+        .toc-link-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.7);
+        }
+
+        .toc-link:hover {
+            background: rgba(15, 23, 42, 0.85);
+            color: var(--accent-cyan);
+        }
+
+        .toc-link.active {
+            background: rgba(8, 47, 73, 0.8);
+            color: var(--accent-cyan);
+        }
+
+        .toc-link.active .toc-link-dot {
+            background: var(--accent-cyan);
+        }
+
+        .toc-actions {
+            display: flex;
+            gap: 0.25rem;
+            margin-top: 0.5rem;
+        }
+
+        .toc-actions button {
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            background: rgba(15, 23, 42, 0.85);
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            padding: 0.12rem 0.6rem;
+        }
+
+        .toc-actions button:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        /* Content area */
+        .content-heading {
+            margin-bottom: 1rem;
+        }
+
+        .content-heading h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+        }
+
+        .content-heading p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .badge-level {
+            font-size: 0.75rem;
+            border-radius: 999px;
+            padding: 0.16rem 0.6rem;
+            border: 1px solid rgba(56, 189, 248, 0.6);
+            color: var(--accent-cyan);
+            margin-right: 0.35rem;
+        }
+
+        .badge-topic {
+            font-size: 0.75rem;
+            border-radius: 999px;
+            padding: 0.16rem 0.6rem;
+            border: 1px dashed rgba(251, 191, 36, 0.6);
+            color: var(--accent-amber);
+        }
+
+        .summary-strip {
+            background: radial-gradient(circle at left, rgba(56, 189, 248, 0.18), transparent);
+            border-radius: 0.9rem;
+            border: 1px solid rgba(148, 163, 184, 0.45);
+            padding: 0.9rem 1rem;
+            font-size: 0.85rem;
+            margin-bottom: 1.1rem;
+        }
+
+        .summary-strip strong {
+            color: var(--accent-amber);
+        }
+
+        details {
+            background: rgba(15, 23, 42, 0.85);
+            border-radius: 0.9rem;
+            border: 1px solid rgba(30, 64, 175, 0.8);
+            margin-bottom: 0.9rem;
+            padding: 0.25rem 0.9rem 0.7rem 0.9rem;
+        }
+
+        details summary {
+            cursor: pointer;
+            list-style: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 0.35rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #e5e7eb;
+        }
+
+        details summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .summary-label {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .summary-label .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 999px;
+            background: var(--accent-cyan);
+        }
+
+        .summary-tag {
+            font-size: 0.75rem;
+            color: var(--accent-amber);
+        }
+
+        details[open] {
+            border-color: rgba(56, 189, 248, 0.85);
+            box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.08);
+        }
+
+        details .inner {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .inner p {
+            margin-bottom: 0.45rem;
+        }
+
+        .inner ul {
+            padding-left: 1.2rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .inner li {
+            margin-bottom: 0.25rem;
+        }
+
+        /* Code blocks */
+        pre {
+            background: var(--code-bg);
+            border-radius: 0.7rem;
+            padding: 0.75rem 0.9rem;
+            overflow-x: auto;
+            border: 1px solid rgba(15, 118, 110, 0.65);
+            margin-bottom: 0.55rem;
+        }
+
+        code {
+            font-family: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.8rem;
+        }
+
+        .token-keyword {
+            color: #22c55e;
+            font-weight: 600;
+        }
+
+        .token-function {
+            color: #38bdf8;
+        }
+
+        .token-builtins {
+            color: #facc15;
+        }
+
+        .token-comment {
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        .token-string {
+            color: #f97316;
+        }
+
+        .token-number {
+            color: #a855f7;
+        }
+
+        .section-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: #9ca3af;
+            margin-bottom: 0.35rem;
+        }
+
+        .section-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--accent-amber);
+            margin-bottom: 0.2rem;
+        }
+
+        .section-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.55rem;
+        }
+
+        .hint {
+            border-left: 3px solid var(--accent-cyan);
+            padding-left: 0.6rem;
+            margin: 0.45rem 0;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .pill-inline {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.55);
+            padding: 0.05rem 0.4rem;
+            font-size: 0.7rem;
+            margin-left: 0.25rem;
+            color: #cbd5f5;
+        }
+
+        @media (max-width: 991.98px) {
+            body {
+                overflow: auto;
+            }
+
+            .app-wrapper {
+                height: auto;
+            }
+
+            .sidebar {
+                position: static;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border-subtle);
+            }
+
+            .content-panel {
+                max-height: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid app-wrapper">
+        <div class="row flex-nowrap">
+            <!-- LEFT SIDEBAR -->
+            <aside class="col-12 col-md-4 col-lg-3 sidebar">
+                <div class="mb-2">
+                    <div class="course-tag">Modern JavaScript Deep Dive</div>
+                    <div class="main-title">11.1 – Asynchronous Programming</div>
+                    <div class="subtitle">Event Loop, Task Queues &amp; Non-Blocking JS</div>
+                    <div class="meta-text mb-2">
+                        Prepared for: College → Master / PhD level understanding<br>
+                        Style: Deep, detailed, example-driven, research-friendly
+                    </div>
+                </div>
+
+                <div class="mb-2">
+                    <span class="pill">
+                        <span class="bullet"></span>
+                        Async Foundations
+                    </span>
+                    <span class="pill">
+                        <span class="bullet"></span>
+                        Event Loop
+                    </span>
+                    <span class="pill">
+                        <span class="bullet"></span>
+                        setTimeout &amp; setInterval
+                    </span>
+                    <span class="pill">
+                        <span class="bullet"></span>
+                        Non-Blocking IO
+                    </span>
+                </div>
+
+                <div class="toc-card">
+                    <div class="toc-header">
+                        <span class="toc-title">On this page</span>
+                    </div>
+
+                    <div class="toc-search mb-2">
+                        <input type="text" id="tocSearch" placeholder="Search sections…">
+                    </div>
+
+                    <ul class="toc-list" id="tocList">
+                        <li data-label="synchronous vs asynchronous code">
+                            <a href="#sec-sync-vs-async" class="toc-link">
+                                <span class="toc-link-dot"></span>
+                                <span>11.1.1 Synchronous vs Asynchronous Code</span>
+                            </a>
+                        </li>
+                        <li data-label="event loop and call stack">
+                            <a href="#sec-event-loop" class="toc-link">
+                                <span class="toc-link-dot"></span>
+                                <span>11.1.2 Event Loop &amp; Call Stack</span>
+                            </a>
+                        </li>
+                        <li data-label="task queue microtask queue">
+                            <a href="#sec-queues" class="toc-link">
+                                <span class="toc-link-dot"></span>
+                                <span>11.1.3 Task Queue &amp; Microtask Queue</span>
+                            </a>
+                        </li>
+                        <li data-label="settimeout setinterval timers">
+                            <a href="#sec-timers" class="toc-link">
+                                <span class="toc-link-dot"></span>
+                                <span>11.1.4 setTimeout() &amp; setInterval()</span>
+                            </a>
+                        </li>
+                        <li data-label="non blocking operations">
+                            <a href="#sec-non-blocking" class="toc-link">
+                                <span class="toc-link-dot"></span>
+                                <span>11.1.5 Understanding Non-Blocking Operations</span>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="toc-actions">
+                        <button id="btnExpandAll" type="button">Expand all</button>
+                        <button id="btnCollapseAll" type="button">Collapse all</button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- RIGHT CONTENT PANEL -->
+            <main class="col content-panel">
+                <section class="content-heading">
+                    <div class="d-flex flex-wrap align-items-center mb-2">
+                        <span class="badge-level">Level: Intermediate → Advanced</span>
+                        <span class="badge-topic">Topic: Asynchronous Programming in JavaScript</span>
+                    </div>
+                    <h1>11.1 – Understanding Asynchronous Programming in JavaScript</h1>
+                    <p>
+                        In this note, we go deep into how JavaScript handles time-based and IO-based work without blocking the
+                        main thread. You will see how the call stack, event loop, task queues, and timer APIs work together
+                        to give you a non-blocking runtime, even though the language itself is single-threaded.
+                    </p>
+                </section>
+
+                <section>
+                    <div class="summary-strip">
+                        <strong>Executive intuition:</strong>
+                        JavaScript itself is single-threaded and synchronous, but the <em>runtime environment</em> (browser
+                        or Node.js) provides asynchronous APIs. These APIs delegate work (like timers, network calls, file IO)
+                        to background systems. When that work completes, callbacks are queued and later executed by the
+                        <strong>event loop</strong> when the call stack is free. This is the core of async JS.
+                    </div>
+                </section>
+
+                <!-- 11.1.1 – Synchronous vs Asynchronous Code -->
+                <section id="sec-sync-vs-async" class="mb-4">
+                    <div class="section-label">11.1.1</div>
+                    <div class="section-title">Synchronous vs Asynchronous Code</div>
+                    <div class="section-subtitle">
+                        Understanding <em>when</em> your code runs is more important than understanding <em>what</em> it does.
+                    </div>
+
+                    <!-- Overview -->
+                    <details open>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Executive overview
+                            </span>
+                            <span class="summary-tag">high-level</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                In <strong>synchronous</strong> programming, statements run <em>one after another</em> in a
+                                fixed order; each statement must finish completely before the next one starts. The thread of
+                                execution is effectively blocked by long-running tasks (e.g., a heavy computation or a
+                                slow network call), which means nothing else can progress during that time.
+                            </p>
+                            <p>
+                                In <strong>asynchronous</strong> programming, slow tasks are <em>delegated</em> to the
+                                environment (browser, Node.js runtime, OS). The main thread continues executing other code,
+                                and when the delegated task completes, a callback or promise handler is executed later. This
+                                style keeps the UI responsive and the server efficient.
+                            </p>
+                            <p class="hint">
+                                Think of synchronous code as a single queue at a bank with one clerk who does everything
+                                sequentially, and asynchronous code as the clerk delegating long work to background staff
+                                and only returning to you when results are ready.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Deep explanation -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Deep explanation &amp; mental model
+                            </span>
+                            <span class="summary-tag">deep dive</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                JavaScript engines (like V8) execute code in a <strong>single thread</strong>. There is
+                                exactly one <em>call stack</em> where function execution frames are pushed and popped. In a
+                                purely synchronous world, any function that takes a long time (e.g., a loop running for 5
+                                seconds) blocks the entire thread: no UI updates, no clicks handled, no other JS running.
+                            </p>
+                            <p>
+                                But real applications need to perform tasks that are inherently slow and unpredictable:
+                                network requests, file IO, timers, database queries, etc. Making all of these synchronous
+                                would freeze the application. Instead, JavaScript uses an <strong>asynchronous
+                                model</strong>, powered by the surrounding environment:
+                            </p>
+                            <ul>
+                                <li>
+                                    The <strong>JS engine</strong> knows how to execute JS code (syntax, call stack,
+                                    heap).
+                                </li>
+                                <li>
+                                    The <strong>runtime environment</strong> (browser or Node) exposes APIs such as
+                                    <code>setTimeout</code>, <code>fetch</code>, DOM events, file system APIs, etc.
+                                </li>
+                                <li>
+                                    When you call these APIs, the <em>engine</em> hands over the work to the environment.
+                                    The work proceeds in parallel (implemented using threads, OS callbacks, or event
+                                    notifications).
+                                </li>
+                                <li>
+                                    When the work completes, the environment enqueues callbacks into appropriate
+                                    <strong>task queues</strong> that the event loop will eventually process.
+                                </li>
+                            </ul>
+                            <p>
+                                So asynchronous programming in JS is not magic multi-threaded execution of your code.
+                                Instead, it is a disciplined protocol for:
+                            </p>
+                            <ul>
+                                <li>Delegating slow work to the environment.</li>
+                                <li>Returning control to the main thread immediately.</li>
+                                <li>Re-entering your JS code later with callbacks or promise handlers.</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <!-- Syntax comparison -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Syntax patterns: sync vs async
+                            </span>
+                            <span class="summary-tag">syntax</span>
+                        </summary>
+                        <div class="inner">
+                            <p><strong>Synchronous style:</strong></p>
+                            <pre><code>
+// Synchronous: each step blocks the next one
+console.log("A");
+for (let i = 0; i &lt; 5_000_000_000; i++) {
+    // simulate heavy computation
+}
+console.log("B"); // printed only after the loop is fully done
+                            </code></pre>
+
+                            <p><strong>Callback-based asynchronous style:</strong></p>
+                            <pre><code>
+console.log("A");
+setTimeout(function () {
+    console.log("B (from timeout callback)");
+}, 0);
+console.log("C");
+
+// Order of logs: "A", "C", "B (from timeout callback)"
+                            </code></pre>
+
+                            <p><strong>Promise + async/await style:</strong></p>
+                            <pre><code>
+function wait(ms) {
+    return new Promise(function (resolve) {
+        setTimeout(resolve, ms);
+    });
+}
+
+async function main() {
+    console.log("Step 1");
+    await wait(1000); // non-blocking for the environment
+    console.log("Step 2 (after ~1s delay)");
+}
+
+main();
+console.log("Outside main() still continues");
+                            </code></pre>
+                            <p class="hint">
+                                <code>await</code> looks synchronous but under the hood it splits the function into parts
+                                and schedules the continuation as a microtask. The main thread is not blocked while waiting.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Real use cases -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Real-world use cases &amp; intuition
+                            </span>
+                            <span class="summary-tag">use cases</span>
+                        </summary>
+                        <div class="inner">
+                            <ul>
+                                <li>Updating UI while a network request is in flight (e.g., loading spinners).</li>
+                                <li>Handling multiple user interactions (clicks, scrolls) while background work continues.</li>
+                                <li>Server-side: handling thousands of concurrent connections with a single Node.js process.</li>
+                                <li>Scheduling periodic data refresh or analytics batching with timers.</li>
+                            </ul>
+                            <p>
+                                In all of these cases, the key is: <strong>do not block the main thread with long, synchronous
+                                    work</strong>. Prefer asynchronous APIs and break large tasks into asynchronous chunks.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 11.1.2 – Event Loop & Call Stack -->
+                <section id="sec-event-loop" class="mb-4">
+                    <div class="section-label">11.1.2</div>
+                    <div class="section-title">Event Loop and Call Stack</div>
+                    <div class="section-subtitle">
+                        The engine’s heartbeat: how JS decides what to run <em>next</em>.
+                    </div>
+
+                    <!-- Overview -->
+                    <details open>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Intuitive overview
+                            </span>
+                            <span class="summary-tag">concept</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                The <strong>call stack</strong> is a LIFO (last-in, first-out) stack of functions that are
+                                currently executing. When a function is called, a new frame is pushed onto the stack; when it
+                                returns, the frame is popped. If the call stack is busy with a long-running function, nothing
+                                else can run.
+                            </p>
+                            <p>
+                                The <strong>event loop</strong> is a mechanism that repeatedly checks:
+                            </p>
+                            <ol>
+                                <li>Is the call stack empty?</li>
+                                <li>If yes, is there any pending work in the queues (tasks, microtasks)?</li>
+                                <li>If yes, move the next callback from the appropriate queue into the call stack.</li>
+                            </ol>
+                            <p>
+                                This loop runs indefinitely. It is responsible for pulling asynchronous callbacks and
+                                promise handlers into execution at the right times.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Deep model -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Deep execution model
+                            </span>
+                            <span class="summary-tag">deep dive</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                When your JavaScript program starts, the engine creates a <strong>global execution
+                                    context</strong> and pushes it onto the call stack. As the code executes:
+                            </p>
+                            <ul>
+                                <li>Each function call creates a new execution context (local variables, <code>this</code>, scope chain).</li>
+                                <li>This context is pushed onto the call stack.</li>
+                                <li>When the function finishes, its context is popped.</li>
+                            </ul>
+                            <p>
+                                Asynchronous operations change <em>where</em> execution continues, but they never change that
+                                there is still just one call stack. For example:
+                            </p>
+
+                            <pre><code>
+console.log("Start");
+
+setTimeout(function onTimeout() {
+    console.log("Timer finished");
+}, 0);
+
+console.log("End");
+                            </code></pre>
+
+                            <ol>
+                                <li><code>console.log("Start")</code> runs (stack: <code>global → log</code> then back to <code>global</code>).</li>
+                                <li><code>setTimeout(onTimeout, 0)</code> runs:
+                                    <ul>
+                                        <li>The timer is scheduled in the browser/Node environment.</li>
+                                        <li>The callback <code>onTimeout</code> is <em>registered</em>, but not executed yet.</li>
+                                    </ul>
+                                </li>
+                                <li><code>console.log("End")</code> runs.</li>
+                                <li>Now the call stack is empty (only global context). The event loop looks at the
+                                    <strong>task queue</strong> and sees the timer’s callback, then moves it into the call stack.</li>
+                                <li><code>onTimeout</code> executes and logs <code>"Timer finished"</code>.</li>
+                            </ol>
+
+                            <p class="hint">
+                                The important point: the <strong>timer does not interrupt</strong> current JS execution.
+                                It patiently waits until the call stack is free and the event loop chooses its callback.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Pseudocode -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Pseudocode of the event loop
+                            </span>
+                            <span class="summary-tag">pseudocode</span>
+                        </summary>
+                        <div class="inner">
+                            <pre><code>
+// Highly simplified event loop pseudocode (conceptual)
+
+while (true) {
+    if (callStack.isEmpty()) {
+
+        // 1. First, process all microtasks (Promises, mutation observers, etc.)
+        while (!microtaskQueue.isEmpty()) {
+            const microtask = microtaskQueue.dequeue();
+            callStack.push(microtask.callback);
+            run(microtask.callback);
+            callStack.pop();
+        }
+
+        // 2. Then, take one task from the macrotask (task) queue
+        if (!taskQueue.isEmpty()) {
+            const task = taskQueue.dequeue();
+            callStack.push(task.callback);
+            run(task.callback);
+            callStack.pop();
+        }
+
+        // 3. Render / repaint UI if needed
+
+    }
+
+    // Repeat forever...
+}
+                            </code></pre>
+                            <p>
+                                Real implementations are more complex, but the key idea is that the event loop coordinates
+                                between the call stack and multiple queues to decide what JavaScript to run next.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Pitfalls -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Common pitfalls &amp; interview traps
+                            </span>
+                            <span class="summary-tag">pitfalls</span>
+                        </summary>
+                        <div class="inner">
+                            <ul>
+                                <li>Assuming <code>setTimeout(fn, 0)</code> runs <em>immediately</em>. It is only <em>eligible</em> to run after the current call stack is empty.</li>
+                                <li>Forgetting that long computations (e.g., huge loops) still block the event loop, even in an async system.</li>
+                                <li>Not differentiating between <strong>microtasks</strong> (Promises) and <strong>macrotasks</strong> (timers, IO callbacks).</li>
+                            </ul>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 11.1.3 – Task Queue & Microtask Queue -->
+                <section id="sec-queues" class="mb-4">
+                    <div class="section-label">11.1.3</div>
+                    <div class="section-title">Task Queue and Microtask Queue</div>
+                    <div class="section-subtitle">
+                        Why Promises sometimes run “before” <code>setTimeout(..., 0)</code>.
+                    </div>
+
+                    <!-- Overview -->
+                    <details open>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Conceptual overview
+                            </span>
+                            <span class="summary-tag">queues</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                JavaScript runtimes maintain at least two important queues:
+                            </p>
+                            <ul>
+                                <li>
+                                    <strong>Task queue</strong> (a.k.a. macrotask queue): for callbacks from timers
+                                    (<code>setTimeout</code>, <code>setInterval</code>), DOM events, network callbacks, etc.
+                                </li>
+                                <li>
+                                    <strong>Microtask queue</strong>: for promise <code>.then</code> / <code>.catch</code> /
+                                    <code>.finally</code> handlers and some other high-priority callbacks.
+                                </li>
+                            </ul>
+                            <p>
+                                After every task completes and the call stack is empty, the event loop will process
+                                <em>all</em> microtasks in the microtask queue <strong>before</strong> taking the next task
+                                from the main task queue. This is why promise callbacks often run earlier than timer callbacks,
+                                even if both were scheduled “at the same time”.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Deep dive with example -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Deep dive with example
+                            </span>
+                            <span class="summary-tag">deep + example</span>
+                        </summary>
+                        <div class="inner">
+                            <pre><code>
+console.log("A");
+
+setTimeout(function timeoutCb() {
+    console.log("Timeout callback");
+}, 0);
+
+Promise.resolve().then(function promiseCb() {
+    console.log("Promise microtask");
+});
+
+console.log("B");
+                            </code></pre>
+
+                            <p><strong>Execution order explanation:</strong></p>
+                            <ol>
+                                <li>Log <code>"A"</code> (synchronous).</li>
+                                <li>
+                                    <code>setTimeout(..., 0)</code> schedules <code>timeoutCb</code> → goes to
+                                    <strong>task queue</strong>.
+                                </li>
+                                <li>
+                                    <code>Promise.resolve().then(promiseCb)</code> schedules <code>promiseCb</code> →
+                                    goes to <strong>microtask queue</strong>.
+                                </li>
+                                <li>Log <code>"B"</code> (synchronous).</li>
+                                <li>Call stack becomes empty.</li>
+                                <li>
+                                    Event loop: process microtasks first → run <code>promiseCb</code> → logs
+                                    <code>"Promise microtask"</code>.
+                                </li>
+                                <li>
+                                    After microtask queue is empty, take next task from task queue →
+                                    run <code>timeoutCb</code> → logs <code>"Timeout callback"</code>.
+                                </li>
+                            </ol>
+                            <p><strong>Final log order:</strong></p>
+                            <pre><code>
+A
+B
+Promise microtask
+Timeout callback
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <!-- Best practices -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Best practices using task vs microtask
+                            </span>
+                            <span class="summary-tag">best practice</span>
+                        </summary>
+                        <div class="inner">
+                            <ul>
+                                <li>
+                                    Use <strong>Promises / async-await</strong> for most asynchronous workflows. They provide
+                                    predictable ordering via the microtask queue.
+                                </li>
+                                <li>
+                                    Use <code>setTimeout(fn, 0)</code> when you deliberately want to push work to a later
+                                    <em>task</em> cycle (e.g., after rendering).
+                                </li>
+                                <li>
+                                    Avoid creating unbounded microtask loops (e.g., recursively scheduling a promise inside
+                                    a <code>.then</code> handler) – this can starve the task queue and freeze the UI.
+                                </li>
+                            </ul>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 11.1.4 – setTimeout() and setInterval() -->
+                <section id="sec-timers" class="mb-4">
+                    <div class="section-label">11.1.4</div>
+                    <div class="section-title">setTimeout() and setInterval()</div>
+                    <div class="section-subtitle">
+                        Time-based scheduling on top of the event loop.
+                    </div>
+
+                    <!-- Overview -->
+                    <details open>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                API overview
+                            </span>
+                            <span class="summary-tag">timers</span>
+                        </summary>
+                        <div class="inner">
+                            <ul>
+                                <li>
+                                    <code>setTimeout(callback, delay)</code> — runs <code>callback</code> once
+                                    <em>after</em> at least <code>delay</code> milliseconds.
+                                </li>
+                                <li>
+                                    <code>setInterval(callback, delay)</code> — attempts to run
+                                    <code>callback</code> repeatedly every <code>delay</code> milliseconds.
+                                </li>
+                                <li>
+                                    Both return an ID that can be cancelled using
+                                    <code>clearTimeout(id)</code> or <code>clearInterval(id)</code>.
+                                </li>
+                            </ul>
+                            <p class="hint">
+                                The <code>delay</code> is a <strong>minimum</strong> time after which the callback becomes
+                                eligible to be added to the task queue; actual execution might be later depending on the event
+                                loop’s load.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Syntax -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Syntax and patterns
+                            </span>
+                            <span class="summary-tag">syntax</span>
+                        </summary>
+                        <div class="inner">
+                            <pre><code>
+// Run callback once after 1000ms
+const timeoutId = setTimeout(function () {
+    console.log("Executed after ~1 second");
+}, 1000);
+
+// Cancel it (if needed)
+clearTimeout(timeoutId);
+
+// Run callback every 500ms
+const intervalId = setInterval(function () {
+    console.log("Tick");
+}, 500);
+
+// Stop the interval after 5 seconds
+setTimeout(function () {
+    clearInterval(intervalId);
+    console.log("Stopped ticking");
+}, 5000);
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <!-- Deep behaviour -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                How timers interact with the event loop
+                            </span>
+                            <span class="summary-tag">deep behaviour</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                When you call <code>setTimeout</code> or <code>setInterval</code>, the JS engine passes the
+                                callback and delay to the environment (browser/Node):
+                            </p>
+                            <ol>
+                                <li>The environment starts a timer (using OS timers or an internal scheduler).</li>
+                                <li>Once the delay elapses, the callback is placed into the <strong>task queue</strong>.</li>
+                                <li>The callback waits there until the event loop sees that:
+                                    <ul>
+                                        <li>The call stack is empty.</li>
+                                        <li>The microtask queue is empty.</li>
+                                        <li>Then the callback moves to the stack and runs.</li>
+                                    </ul>
+                                </li>
+                            </ol>
+
+                            <pre><code>
+console.log("Start");
+
+setTimeout(function () {
+    console.log("Timeout finished");
+}, 0);
+
+for (let i = 0; i &lt; 5_000_000_000; i++) {
+    // heavy synchronous work (~several seconds)
+}
+
+console.log("End");
+                            </code></pre>
+
+                            <p>
+                                Even though the timer delay is <code>0</code>, the callback only runs <em>after</em> the heavy
+                                loop completes because the event loop cannot insert the callback into the call stack
+                                while the loop is running.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Real use cases -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Real-world use cases
+                            </span>
+                            <span class="summary-tag">use cases</span>
+                        </summary>
+                        <div class="inner">
+                            <ul>
+                                <li>Debouncing UI events: wait 300ms after user stops typing before making a network call.</li>
+                                <li>Periodic polling: use <code>setInterval</code> (or recursive <code>setTimeout</code>) to poll an API.</li>
+                                <li>Breaking large tasks: split heavy computation into chunks scheduled via <code>setTimeout</code> to keep UI responsive.</li>
+                            </ul>
+                            <pre><code>
+// Breaking a heavy task into chunks
+const bigArray = new Array(1_000_000).fill(0);
+
+function processChunk(startIndex) {
+    const chunkSize = 10_000;
+    const end = Math.min(startIndex + chunkSize, bigArray.length);
+
+    for (let i = startIndex; i &lt; end; i++) {
+        bigArray[i] = i * 2; // some computation
+    }
+
+    if (end &lt; bigArray.length) {
+        // Schedule the next chunk
+        setTimeout(function () {
+            processChunk(end);
+        }, 0);
+    } else {
+        console.log("All items processed");
+    }
+}
+
+processChunk(0);
+                            </code></pre>
+                            <p class="hint">
+                                Here, <code>setTimeout</code> is used as a cooperative scheduler to yield control back to the
+                                event loop between chunks, keeping the app responsive.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 11.1.5 – Understanding Non-Blocking Operations -->
+                <section id="sec-non-blocking" class="mb-4">
+                    <div class="section-label">11.1.5</div>
+                    <div class="section-title">Understanding Non-Blocking Operations</div>
+                    <div class="section-subtitle">
+                        How asynchronous APIs help one thread serve many tasks.
+                    </div>
+
+                    <!-- Overview -->
+                    <details open>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Big picture intuition
+                            </span>
+                            <span class="summary-tag">non-blocking</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                A <strong>blocking</strong> operation prevents the thread from doing anything else until it
+                                finishes. A <strong>non-blocking</strong> operation initiates work and returns immediately,
+                                letting the thread continue with other tasks; completion is signaled later via callbacks or
+                                promises.
+                            </p>
+                            <p>
+                                JavaScript’s power (especially in Node.js) comes from non-blocking IO. Network requests,
+                                file reads/writes, and timers are delegated to the environment, allowing a single thread to
+                                handle thousands of concurrent operations.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Example: blocking vs non-blocking IO -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Example: blocking vs non-blocking IO
+                            </span>
+                            <span class="summary-tag">example</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                In Node.js, you have both blocking and non-blocking APIs for file IO:
+                            </p>
+                            <pre><code>
+// Blocking version (simplified)
+const fs = require("fs");
+
+console.log("Before readFileSync");
+const data = fs.readFileSync("big-file.txt", "utf8"); // blocks event loop
+console.log("After readFileSync");
+console.log("File size:", data.length);
+                            </code></pre>
+
+                            <p>
+                                While <code>readFileSync</code> is running, the event loop cannot handle any other
+                                connections or timers.
+                            </p>
+
+                            <pre><code>
+// Non-blocking version
+const fs = require("fs");
+
+console.log("Before readFile");
+fs.readFile("big-file.txt", "utf8", function (err, data) {
+    if (err) {
+        console.error("Error reading file", err);
+        return;
+    }
+    console.log("File size:", data.length);
+});
+console.log("After readFile");
+                            </code></pre>
+
+                            <p>
+                                In the non-blocking version:
+                            </p>
+                            <ul>
+                                <li><code>readFile</code> delegates the file read to the OS or thread pool.</li>
+                                <li>The main thread immediately logs <code>"After readFile"</code> and continues serving other tasks.</li>
+                                <li>When the OS completes the read, Node queues the callback into the task queue.</li>
+                                <li>The event loop eventually executes the callback and logs the file size.</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <!-- Design tips -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Designing non-blocking code
+                            </span>
+                            <span class="summary-tag">design</span>
+                        </summary>
+                        <div class="inner">
+                            <ul>
+                                <li>Prefer asynchronous APIs (<code>fetch</code>, async DB clients, async FS) whenever available.</li>
+                                <li>Break CPU-heavy tasks into smaller chunks using timers or web workers (in browsers).</li>
+                                <li>Use <strong>backpressure</strong> strategies: do not start infinite async work without limits.</li>
+                                <li>Use <code>async</code>/<code>await</code> for readability, but remember that each <code>await</code> is a non-blocking yield.</li>
+                            </ul>
+                            <pre><code>
+async function fetchWithTimeout(url, timeoutMs) {
+    function wait(ms) {
+        return new Promise(function (resolve) {
+            setTimeout(resolve, ms);
+        });
+    }
+
+    const controller = new AbortController();
+
+    // Race: network fetch vs timeout
+    const result = await Promise.race([
+        fetch(url, { signal: controller.signal }),
+        wait(timeoutMs).then(function () {
+            controller.abort();
+            throw new Error("Timeout");
+        })
+    ]);
+
+    return result;
+}
+                            </code></pre>
+                            <p class="hint">
+                                Here we combine promises, timers, and non-blocking network IO in a single readable function.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Summary -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Section summary &amp; exam checklist
+                            </span>
+                            <span class="summary-tag">summary</span>
+                        </summary>
+                        <div class="inner">
+                            <ul>
+                                <li><strong>Synchronous</strong> JS: single call stack, each step blocks the next.</li>
+                                <li><strong>Asynchronous</strong> JS: slow work is delegated; callbacks/promise handlers run later.</li>
+                                <li>The <strong>event loop</strong> coordinates call stack and queues.</li>
+                                <li><strong>Task queue</strong> vs <strong>microtask queue</strong> ordering is essential for promises.</li>
+                                <li>
+                                    <code>setTimeout</code> / <code>setInterval</code> schedule macrotasks; delay is minimum,
+                                    not exact.
+                                </li>
+                                <li>Non-blocking IO is the core strength of Node.js and modern web apps.</li>
+                            </ul>
+                            <p>
+                                If you can clearly explain a few tricky order-of-execution examples (e.g., Promise vs
+                                <code>setTimeout(0)</code>) and draw a diagram of the event loop, you have mastered this module
+                                <span class="pill-inline">11.1</span>.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // Smooth scrolling + active TOC highlight + search + details expand/collapse + simple syntax highlighting
+        document.addEventListener("DOMContentLoaded", function () {
+            const tocLinks = Array.from(document.querySelectorAll(".toc-link"));
+            const sections = tocLinks.map(link => {
+                const hash = link.getAttribute("href");
+                const target = document.querySelector(hash);
+                return { link, target };
+            });
+
+            // Smooth scrolling
+            tocLinks.forEach(link => {
+                link.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute("href");
+                    const target = document.querySelector(targetId);
+                    if (target) {
+                        target.scrollIntoView({ behavior: "smooth", block: "start" });
+                        history.replaceState(null, "", targetId);
+                    }
+                });
+            });
+
+            // Active TOC highlighting on scroll
+            const contentPanel = document.querySelector(".content-panel");
+            function updateActiveToc() {
+                const scrollY = contentPanel.scrollTop;
+                let current = null;
+                sections.forEach(({ link, target }) => {
+                    if (!target) return;
+                    const offsetTop = target.offsetTop;
+                    if (offsetTop - 80 <= scrollY) current = link;
+                });
+                tocLinks.forEach(l => l.classList.remove("active"));
+                if (current) current.classList.add("active");
+            }
+
+            contentPanel.addEventListener("scroll", updateActiveToc);
+            updateActiveToc();
+
+            // TOC search filter
+            const tocSearch = document.getElementById("tocSearch");
+            const tocListItems = Array.from(document.querySelectorAll("#tocList li"));
+
+            tocSearch.addEventListener("input", function () {
+                const q = this.value.toLowerCase();
+                tocListItems.forEach(li => {
+                    const label = (li.getAttribute("data-label") || "").toLowerCase();
+                    const text = li.textContent.toLowerCase();
+                    const match = label.includes(q) || text.includes(q);
+                    li.style.display = match ? "" : "none";
+                });
+            });
+
+            // Expand / collapse all details
+            const btnExpandAll = document.getElementById("btnExpandAll");
+            const btnCollapseAll = document.getElementById("btnCollapseAll");
+
+            btnExpandAll.addEventListener("click", function () {
+                document.querySelectorAll("details").forEach(d => d.open = true);
+            });
+
+            btnCollapseAll.addEventListener("click", function () {
+                document.querySelectorAll("details").forEach(d => d.open = false);
+            });
+
+            // Simple syntax highlighting for JS in <code> blocks
+            function escapeHtml(str) {
+                return str
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;");
+            }
+
+            const jsKeywords = [
+                "function", "return", "const", "let", "var", "if", "else",
+                "while", "for", "async", "await", "new", "throw", "try", "catch"
+            ];
+            const builtins = [
+                "setTimeout", "setInterval", "clearTimeout", "clearInterval",
+                "Promise", "console", "fetch", "require"
+            ];
+
+            const codeBlocks = Array.from(document.querySelectorAll("pre code"));
+
+            codeBlocks.forEach(codeEl => {
+                const raw = codeEl.textContent;
+                let html = escapeHtml(raw);
+
+                // Comments
+                html = html.replace(/(\/\/.*?$)/gm, '<span class="token-comment">$1</span>');
+
+                // Strings
+                html = html.replace(/(".*?"|'.*?'|`.*?`)/g, '<span class="token-string">$1</span>');
+
+                // Numbers
+                html = html.replace(/\b(\d+(_\d+)*)\b/g, '<span class="token-number">$1</span>');
+
+                // Builtins
+                builtins.forEach(name => {
+                    const re = new RegExp("\\b" + name + "\\b", "g");
+                    html = html.replace(re, '<span class="token-builtins">' + name + "</span>");
+                });
+
+                // Keywords
+                jsKeywords.forEach(kw => {
+                    const re = new RegExp("\\b" + kw + "\\b", "g");
+                    html = html.replace(re, '<span class="token-keyword">' + kw + "</span>");
+                });
+
+                // Common function names
+                html = html.replace(/([a-zA-Z_$][\w$]*)\s*(?=\()/g, '<span class="token-function">$1</span>');
+
+                codeEl.innerHTML = html;
+            });
+        });
+    </script>
+</body>
+
+</html>

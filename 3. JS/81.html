@@ -1,0 +1,388 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>23.3 JavaScript–TypeScript Interop — Deep Learning Note</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
+
+  <style>
+    :root{--bg:#0b0f10;--surface:#111518;--cyan:#06b6d4;--amber:#f59e0b;--muted:#9aa6a6;--panel-width:340px;--radius:12px}
+    html,body{height:100%}
+    body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:#e6eef0}
+    .app{display:flex;gap:18px;height:100vh;padding:20px}
+    .left-panel{width:var(--panel-width);background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.04));padding:18px;border-radius:var(--radius);position:sticky;top:20px;height:calc(100vh - 40px);flex-shrink:0;border:1px solid rgba(255,255,255,0.03)}
+    .right-panel{flex:1;background:linear-gradient(180deg,rgba(255,255,255,0.01),rgba(255,255,255,0.00));padding:22px;border-radius:var(--radius);overflow:auto;box-shadow:0 6px 18px rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.02)}
+    .brand{display:flex;gap:12px;align-items:center}
+    .brand-mark{width:46px;height:46px;border-radius:10px;background:linear-gradient(90deg,var(--cyan),var(--amber));display:flex;align-items:center;justify-content:center;color:#071018;font-weight:700}
+    .title{font-weight:700}
+    .subtitle{font-size:0.82rem;color:var(--muted)}
+    .toc{margin-top:12px}
+    .search{margin-bottom:10px}
+    .controls{display:flex;gap:8px;margin-bottom:8px}
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);padding:6px 8px;border-radius:8px}
+    .toc-list{max-height:58vh;overflow:auto;padding-right:6px}
+    a.toc-item{display:block;padding:8px;border-radius:8px;margin-bottom:6px;color:inherit;text-decoration:none}
+    a.toc-item:hover{background:rgba(255,255,255,0.02);color:var(--cyan)}
+    details{background:rgba(255,255,255,0.015);padding:12px;border-radius:10px;margin-bottom:12px;border:1px solid rgba(255,255,255,0.02)}
+    summary{cursor:pointer;font-weight:600}
+    pre{background:rgba(0,0,0,0.35);padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,'Roboto Mono','Courier New',monospace}
+    h1,h2,h3{color:#dff7fb}
+    p{color:#cfe8ea}
+    .muted{color:var(--muted)}
+    @media (max-width:900px){.left-panel{display:none}}
+  </style>
+</head>
+<body>
+  <div class="app container-fluid">
+    <aside class="left-panel" aria-label="Table of contents">
+      <div class="brand">
+        <div class="brand-mark">23.3</div>
+        <div>
+          <div class="title">JavaScript–TypeScript Interop</div>
+          <div class="subtitle">Gradual adoption, typedefs, JSDoc, TS API, and build integration</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">
+        <div class="muted">Author: <strong>Irfan</strong></div>
+        <div style="background:linear-gradient(90deg,var(--cyan),rgba(0,0,0,0.12));padding:4px 8px;border-radius:999px;color:#021417;font-weight:700">Advanced</div>
+      </div>
+
+      <div class="toc">
+        <input id="tocSearch" class="form-control search" placeholder="Search TOC..." />
+        <div class="controls">
+          <button class="btn-ghost" id="expandAll">Expand all</button>
+          <button class="btn-ghost" id="collapseAll">Collapse all</button>
+          <button class="btn-ghost" id="tocReset">Reset</button>
+        </div>
+        <div class="toc-list" id="tocList">
+          <a class="toc-item" href="#gradual">Gradual adoption strategies</a>
+          <a class="toc-item" href="#typedefs">Type definitions for JS libraries (@types & manual)</a>
+          <a class="toc-item" href="#jsdoc">JSDoc type annotations</a>
+          <a class="toc-item" href="#compiler-api">TypeScript compiler API</a>
+          <a class="toc-item" href="#build">Build tool integration</a>
+          <a class="toc-item" href="#examples">Practical examples & checklist</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="right-panel" id="content" tabindex="0">
+      <article>
+        <h1 id="top">23.3 JavaScript–TypeScript Interop — Deep Learning Note</h1>
+        <p class="muted">This note explains practical strategies for mixing JavaScript and TypeScript, creating or consuming type definitions, using JSDoc, leveraging the TypeScript compiler API and integrating typing into your build tools. Examples are safe for browser rendering and use HTML entities where needed.</p>
+
+        <!-- GRADUAL -->
+        <section id="gradual" class="anchor-target">
+          <h2>Gradual adoption strategies</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>Migrate incrementally: enable TypeScript in the project with <code>allowJs</code>, run type-checks without emitting, convert high-value modules first, and progressively tighten compiler options. Keep the app working throughout the migration.</p>
+          </details>
+
+          <details>
+            <summary>Step-by-step plan</summary>
+            <pre><code class="language-text">1. Install TypeScript: npm install -D typescript
+2. Create tsconfig.json with allowJs: true and noEmit: true to run checks only
+3. Add // @ts-check to files to opt-in gradually
+4. Rename core modules to .ts/.tsx and add types for public interfaces
+5. Enable strict rules incrementally (noImplicitAny, strictNullChecks)
+6. Add tests & CI type-check job before changing more files
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Example tsconfig for gradual migration</summary>
+            <pre><code class="language-json">{
+  "compilerOptions": {
+    "allowJs": true,
+    "checkJs": false,
+    "noEmit": true,
+    "module": "ESNext",
+    "target": "ES2019",
+    "strict": false
+  },
+  "include": ["src/**/*"]
+}
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Migration tips</summary>
+            <ul>
+              <li>Prefer adding types at package boundaries first (public APIs).</li>
+              <li>Use <code>skipLibCheck</code> to avoid third-party type noise while migrating.</li>
+              <li>Document temporary uses of <code>any</code> and add TODOs to replace them.</li>
+            </ul>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- TYPEDEFS -->
+        <section id="typedefs" class="anchor-target">
+          <h2>Type definitions for JavaScript libraries</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>Type definitions let TypeScript understand JS libraries. Use @types packages when available, ship your own <code>index.d.ts</code> with the package, or create a declaration file in your project for untyped modules.</p>
+          </details>
+
+          <details>
+            <summary>Using @types from DefinitelyTyped</summary>
+            <pre><code class="language-bash"># install types
+npm install -D @types/lodash
+
+// TypeScript will pick up @types automatically
+</code></pre>
+            <p class="muted">Prefer official types shipped by the library (types field) but rely on @types for older libraries.</p>
+          </details>
+
+          <details>
+            <summary>Writing a manual declaration file</summary>
+            <pre><code class="language-typescript">// types/mylib/index.d.ts
+declare module 'mylib' {
+  export function doThing(x: string): number;
+  export interface Options { verbose?: boolean }
+}
+
+// tsconfig.json
+// add "typeRoots": ["./types", "./node_modules/@types"]
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Publishing types with your package</summary>
+            <pre><code class="language-json">{
+  "name": "my-lib",
+  "version": "1.0.0",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"]
+}
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Tools to generate or sync types</summary>
+            <ul>
+              <li><code>tsc --declaration</code> to emit .d.ts from TypeScript source</li>
+              <li><code>dts-gen</code> and <code>api-extractor</code> for library typings</li>
+            </ul>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- JSDOC -->
+        <section id="jsdoc" class="anchor-target">
+          <h2>JSDoc type annotations</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>JSDoc provides a way to add type annotations to JavaScript files so that TypeScript can check them (with <code>checkJs</code>) without renaming files. Use JSDoc for gradual typing and for libraries that prefer to stay in JS.</p>
+          </details>
+
+          <details>
+            <summary>Basic JSDoc examples</summary>
+            <pre><code class="language-javascript">/**
+ * Adds two numbers
+ * @param {number} a
+ * @param {number} b
+ * @returns {number}
+ */
+function add(a, b) { return a + b; }
+
+// Enable checking with // @ts-check at top of file
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Complex types in JSDoc (typedefs & generics)</summary>
+            <pre><code class="language-javascript">/**
+ * @template T
+ * @typedef {{ value: T }} Box
+ */
+
+/** @type {Box&lt;string&gt;} */
+const x = { value: 'hello' };
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Advantages & limitations</summary>
+            <ul>
+              <li>Good for incremental adoption without build changes.</li>
+              <li>Less expressive than full TypeScript types (no interfaces merging, limited advanced types).</li>
+            </ul>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- COMPILER API -->
+        <section id="compiler-api" class="anchor-target">
+          <h2>TypeScript compiler API</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>The TypeScript Compiler API exposes parsing, type-checking and program analysis capabilities. Use it to build custom tools: codemods, linters, documentation generators, or advanced build-time checks.</p>
+          </details>
+
+          <details>
+            <summary>Simple example: programmatic type check</summary>
+            <pre><code class="language-javascript">const ts = require('typescript');
+
+const program = ts.createProgram(['src/index.ts'], { noEmit: true });
+const diagnostics = ts.getPreEmitDiagnostics(program);
+console.log(diagnostics.map(d =&gt; d.messageText));
+</code></pre>
+          </details>
+
+          <details>
+            <summary>AST traversal & transformations</summary>
+            <pre><code class="language-javascript">// visiting nodes example
+const source = ts.createSourceFile('x.ts', 'const x = 1;', ts.ScriptTarget.Latest);
+function visit(node) {
+  // inspect node.kind
+  ts.forEachChild(node, visit);
+}
+visit(source);
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Use-cases</summary>
+            <ul>
+              <li>Automatic migration codemods (e.g., convert require to import)</li>
+              <li>Custom lint rules beyond ESLint</li>
+              <li>Type-aware documentation generation</li>
+            </ul>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- BUILD TOOL -->
+        <section id="build" class="anchor-target">
+          <h2>Build tool integration</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>Integrate typing into your build: use tsc for type-only checks, use babel/esbuild/ts-loader for transpilation, and emit declarations for libraries. Ensure CI runs type-checks separately from bundling to catch type errors early.</p>
+          </details>
+
+          <details>
+            <summary>Common setups</summary>
+            <pre><code class="language-text">1) App: Use esbuild/vite/webpack to bundle; run `tsc --noEmit` in CI for types.
+2) Library: Use tsc to emit .d.ts and transpile, or use rollup with typescript-plugin and emit declarations.
+3) Mixed JS/TS: enable allowJs and keep a separate step for declaration generation using --declaration
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Example: CI job for types & build</summary>
+            <pre><code class="language-yaml">jobs:
+  types:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v4
+        with: { node-version: 16 }
+      - run: npm ci
+      - run: npm run typecheck # script: tsc --noEmit
+
+  build:
+    runs-on: ubuntu-latest
+    needs: types
+    steps:
+      - uses: actions/checkout@v3
+      - run: npm ci
+      - run: npm run build
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Declaration generation for libraries</summary>
+            <pre><code class="language-json">// tsconfig.json for declaration emit
+{
+  "compilerOptions": {
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": "dist/types",
+    "composite": true
+  }
+}
+</code></pre>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- EXAMPLES -->
+        <section id="examples" class="anchor-target">
+          <h2>Practical examples & checklist</h2>
+
+          <details open>
+            <summary>Quick checklist for smooth interop</summary>
+            <ul>
+              <li>Commit a tsconfig for gradual migration and document the plan.</li>
+              <li>Prefer shipping types with packages (<code>types</code> field) or rely on @types.</li>
+              <li>Add <code>tsc --noEmit</code> to CI and fail merges on type errors.</li>
+              <li>Use JSDoc for libraries that must remain JS-first.</li>
+              <li>Keep declaration files next to compiled outputs and test them (dtslint/tsd).</li>
+            </ul>
+          </details>
+
+          <details>
+            <summary>Example: converting a small module</summary>
+            <pre><code class="language-javascript">// orig: src/math.js
+module.exports.sum = (a, b) =&gt; a + b;
+
+// migrate: src/math.ts
+export function sum(a: number, b: number): number { return a + b }
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Testing types (tsd example)</summary>
+            <pre><code class="language-bash">npm install -D tsd
+# test file: index.test-d.ts
+import { expectType } from 'tsd';
+import { sum } from './dist';
+expectType&lt;number&gt;(sum(1,2));
+</code></pre>
+          </details>
+        </section>
+
+        <footer style="margin-top:20px;padding-bottom:40px;">
+          <p class="muted">End of note. Use the left TOC to navigate and expand/collapse sections. If you want, I can add a step-by-step migration PR template, a sample declaration file for a real library, or a codemod using the TypeScript Compiler API — tell me which and I'll update the same file.</p>
+        </footer>
+      </article>
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/typescript.min.js"></script>
+  <script>
+    if(window.hljs){ hljs.highlightAll(); }
+
+    document.querySelectorAll('#tocList a').forEach(a=>{
+      a.addEventListener('click', function(e){ e.preventDefault(); const id=this.getAttribute('href').slice(1); const el=document.getElementById(id); if(el){ el.scrollIntoView({behavior:'smooth',block:'start'}); const d=el.querySelector('details'); if(d && !d.open) d.open=true; } });
+    });
+
+    document.getElementById('expandAll').addEventListener('click', ()=> document.querySelectorAll('details').forEach(d=> d.open=true));
+    document.getElementById('collapseAll').addEventListener('click', ()=> document.querySelectorAll('details').forEach(d=> d.open=false));
+    document.getElementById('tocReset').addEventListener('click', ()=> document.getElementById('content').scrollTo({top:0,behavior:'smooth'}));
+
+    document.getElementById('tocSearch').addEventListener('input', ()=>{ const q=document.getElementById('tocSearch').value.trim().toLowerCase(); document.querySelectorAll('#tocList a').forEach(a=>{ a.style.display = a.textContent.toLowerCase().includes(q) ? 'block' : 'none'; }); });
+
+    document.addEventListener('keydown',(e)=>{ if(e.key==='E' || e.key==='e') document.querySelectorAll('details').forEach(d=> d.open=true); if(e.key==='C' || e.key==='c') document.querySelectorAll('details').forEach(d=> d.open=false); });
+  </script>
+</body>
+</html>

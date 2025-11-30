@@ -1,0 +1,1517 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>JavaScript DOM Deep Notes – 16.2 Element Selection & Navigation</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <style>
+        :root {
+            --bg-main: #020617;
+            --bg-panel: #020617;
+            --bg-sidebar: #020617;
+            --bg-card: #020617;
+            --border-color: #1e293b;
+            --accent-cyan: #22d3ee;
+            --accent-amber: #fbbf24;
+            --text-main: #e5e7eb;
+            --text-muted: #9ca3af;
+            --code-bg: #020617;
+            --code-border: #1e293b;
+            --tag-bg: #020617;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: radial-gradient(circle at top, #0f172a 0, #020617 45%, #000 100%);
+            color: var(--text-main);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        .app-wrapper {
+            display: flex;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* LEFT SIDEBAR */
+        #sidebar {
+            width: 320px;
+            max-width: 100%;
+            background: linear-gradient(180deg, #020617 0, #020617 50%, #020617 100%);
+            border-right: 1px solid var(--border-color);
+            padding: 1rem 1rem 1.5rem;
+            position: sticky;
+            top: 0;
+            align-self: flex-start;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        #sidebar h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            color: var(--accent-cyan);
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .badge-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.15rem 0.5rem;
+            border-radius: 999px;
+            border: 1px solid var(--border-color);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            background: var(--tag-bg);
+            margin-right: 0.25rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .badge-tag span {
+            opacity: 0.7;
+        }
+
+        .toc-title {
+            font-size: 0.85rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-top: 1.2rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .search-input {
+            background-color: #020617;
+            border-radius: 999px;
+            border: 1px solid var(--border-color);
+            font-size: 0.8rem;
+            padding: 0.35rem 0.75rem;
+            color: var(--text-main);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.25);
+        }
+
+        .toc-list {
+            list-style: none;
+            padding-left: 0;
+            margin: 0.5rem 0 0;
+            font-size: 0.85rem;
+        }
+
+        .toc-list li {
+            margin-bottom: 0.15rem;
+        }
+
+        .toc-link {
+            display: block;
+            padding: 0.25rem 0.35rem;
+            border-radius: 0.375rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: background 0.15s, color 0.15s, transform 0.1s;
+        }
+
+        .toc-link:hover {
+            background: #020617;
+            color: var(--accent-cyan);
+            transform: translateX(2px);
+        }
+
+        .toc-link.active {
+            background: rgba(34, 211, 238, 0.12);
+            color: var(--accent-cyan);
+        }
+
+        .sidebar-actions {
+            margin-top: 0.8rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+
+        .btn-ghost {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.65rem;
+            border-radius: 999px;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            background: rgba(15, 23, 42, 0.75);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn-ghost:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            transform: translateY(-1px);
+        }
+
+        /* RIGHT CONTENT */
+        #content {
+            flex: 1;
+            max-height: 100vh;
+            overflow-y: auto;
+            padding: 1.25rem 1.5rem 3rem;
+        }
+
+        .content-inner {
+            max-width: 980px;
+            margin: 0 auto;
+        }
+
+        h2.section-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-top: 1.75rem;
+            margin-bottom: 0.75rem;
+            color: var(--accent-cyan);
+        }
+
+        h3.section-subtitle {
+            font-size: 1.05rem;
+            margin-top: 1.25rem;
+            margin-bottom: 0.35rem;
+            color: var(--accent-amber);
+        }
+
+        p {
+            font-size: 0.92rem;
+            line-height: 1.7;
+            color: var(--text-main);
+        }
+
+        .lead {
+            font-size: 0.98rem;
+            color: #e5e7eb;
+        }
+
+        details {
+            margin: 0.35rem 0;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+            background: rgba(15, 23, 42, 0.75);
+        }
+
+        summary {
+            padding: 0.4rem 0.7rem;
+            cursor: pointer;
+            font-size: 0.86rem;
+            color: var(--accent-cyan);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .summary-icon {
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+
+        details[open] summary {
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(15, 23, 42, 0.9);
+        }
+
+        details .details-body {
+            padding: 0.55rem 0.75rem 0.6rem;
+            font-size: 0.88rem;
+            color: var(--text-main);
+        }
+
+        /* CODE BLOCKS */
+        pre {
+            background: var(--code-bg);
+            border-radius: 0.5rem;
+            border: 1px solid var(--code-border);
+            padding: 0.7rem 0.8rem;
+            font-size: 0.8rem;
+            overflow-x: auto;
+            margin-top: 0.5rem;
+            margin-bottom: 0.7rem;
+        }
+
+        code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            color: #e5e7eb;
+        }
+
+        .code-keyword {
+            font-weight: 600;
+        }
+
+        .code-string {
+            opacity: 0.9;
+        }
+
+        .code-comment {
+            opacity: 0.6;
+            font-style: italic;
+        }
+
+        .code-property {
+            opacity: 0.9;
+        }
+
+        .inline-code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.82rem;
+            padding: 0.1rem 0.3rem;
+            border-radius: 0.25rem;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(30, 64, 175, 0.7);
+            color: var(--accent-amber);
+        }
+
+        .callout {
+            border-radius: 0.75rem;
+            border: 1px dashed var(--border-color);
+            padding: 0.7rem 0.85rem;
+            font-size: 0.86rem;
+            background: rgba(15, 23, 42, 0.65);
+            margin: 0.7rem 0;
+        }
+
+        .callout-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--accent-cyan);
+            margin-bottom: 0.25rem;
+        }
+
+        @media (max-width: 992px) {
+            #sidebar {
+                position: fixed;
+                z-index: 10;
+                height: auto;
+                max-height: 55vh;
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                background: radial-gradient(circle at top, #020617 0, #020617 60%, #020617 100%);
+            }
+
+            #content {
+                margin-top: 55vh;
+                padding: 1rem 1rem 3rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            #sidebar {
+                padding: 0.75rem 0.9rem 1rem;
+            }
+
+            #content {
+                padding: 0.75rem 0.9rem 3rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="app-wrapper">
+    <!-- SIDEBAR -->
+    <aside id="sidebar">
+        <header>
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <h1>16.2 Element Selection &amp; Navigation</h1>
+            </div>
+            <div class="subtitle">
+                Deep-dive notes on selecting &amp; navigating DOM elements (college → MSc/PhD-level clarity).
+            </div>
+            <div class="mt-2 mb-2" style="font-size:0.8rem;">
+                <span class="text-muted">Author:</span>
+                <span class="text-light">Your AI Tutor</span>
+            </div>
+            <div class="mb-2">
+                <span class="badge-tag"><span>Topic:</span>&nbsp;DOM Selection &amp; Traversal</span>
+                <span class="badge-tag"><span>Level:</span>&nbsp;Intermediate–Advanced</span>
+                <span class="badge-tag"><span>Focus:</span>&nbsp;Selectors, NodeLists, Live vs Static</span>
+            </div>
+        </header>
+
+        <!-- TOC CONTROLS -->
+        <div class="mt-3">
+            <div class="toc-title">Quick navigation</div>
+            <input id="tocSearch" type="text" class="form-control form-control-sm search-input"
+                   placeholder="Search sections (querySelector, NodeList…)"
+                   oninput="filterTOC()" />
+            <div class="sidebar-actions">
+                <button class="btn-ghost" onclick="expandAllDetails()">Expand all</button>
+                <button class="btn-ghost" onclick="collapseAllDetails()">Collapse all</button>
+                <button class="btn-ghost" onclick="scrollToTop()">Scroll top</button>
+            </div>
+
+            <!-- TOC -->
+            <nav class="mt-2">
+                <ul id="tocList" class="toc-list">
+                    <li><a class="toc-link" href="#overview">1. Overview: Why element selection matters</a></li>
+                    <li><a class="toc-link" href="#get-by-id-class">2. getElementById &amp; getElementsByClassName</a></li>
+                    <li><a class="toc-link" href="#query-selector">3. querySelector &amp; querySelectorAll</a></li>
+                    <li><a class="toc-link" href="#navigation">4. Parent, child &amp; sibling navigation</a></li>
+                    <li><a class="toc-link" href="#nodelist-htmlcollection">5. NodeList vs HTMLCollection</a></li>
+                    <li><a class="toc-link" href="#live-static">6. Live vs static collections</a></li>
+                    <li><a class="toc-link" href="#patterns">7. Patterns, best practices &amp; performance tips</a></li>
+                    <li><a class="toc-link" href="#summary-practice">8. Summary &amp; practice tasks</a></li>
+                </ul>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main id="content">
+        <div class="content-inner">
+
+            <!-- 1. OVERVIEW -->
+            <section id="overview">
+                <h2 class="section-title">1. Overview: Why element selection &amp; navigation matters</h2>
+                <p class="lead">
+                    Any non-trivial JavaScript application has two core jobs: <strong>find elements</strong> and
+                    <strong>react to changes</strong>. Element selection &amp; navigation is the foundation of everything:
+                    toggling menus, validating forms, building widgets, virtual DOM diffing – it all starts with
+                    “which node(s) do I want to touch in the DOM tree?”.
+                </p>
+
+                <details open>
+                    <summary><span class="summary-icon">➤</span><span>Executive summary (mental model first)</span></summary>
+                    <div class="details-body">
+                        <p>
+                            At runtime, you never modify the HTML file directly; you manipulate the
+                            <span class="inline-code">document</span>’s DOM tree. To do that you must:
+                        </p>
+                        <ul>
+                            <li><strong>Select</strong> one or more nodes (via id, class, tag, CSS selector).</li>
+                            <li><strong>Navigate</strong> around them (parent, children, siblings).</li>
+                            <li><strong>Update</strong> structure, attributes, styles, and event listeners.</li>
+                        </ul>
+                        <p>
+                            In this module you will learn:
+                        </p>
+                        <ul>
+                            <li>Classic APIs: <span class="inline-code">getElementById()</span>, <span class="inline-code">getElementsByClassName()</span></li>
+                            <li>Modern APIs: <span class="inline-code">querySelector()</span>, <span class="inline-code">querySelectorAll()</span></li>
+                            <li>Tree navigation: parent &lt;=&gt; child &lt;=&gt; sibling</li>
+                            <li>Data structures behind the scenes: <span class="inline-code">NodeList</span> vs <span class="inline-code">HTMLCollection</span></li>
+                            <li>Dynamic behavior: <strong>live</strong> vs <strong>static</strong> collections</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary><span class="summary-icon">🔍</span><span>Minimal motivational example</span></summary>
+                    <div class="details-body">
+                        <pre><code>&lt;ul id="topics"&gt;
+  &lt;li class="topic"&gt;DOM basics&lt;/li&gt;
+  &lt;li class="topic active"&gt;Selection &amp; navigation&lt;/li&gt;
+  &lt;li class="topic"&gt;Events&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;script&gt;
+  // 1) Select container by id
+  const list = document.getElementById("topics");
+
+  // 2) Select all items by class
+  const items = document.getElementsByClassName("topic");
+
+  // 3) Select only the active item via CSS selector
+  const activeItem = document.querySelector("#topics .topic.active");
+
+  // 4) Navigate: find previous sibling of the active item
+  const previous = activeItem.previousElementSibling;
+
+  console.log(list, items.length, activeItem.textContent, previous.textContent);
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            This tiny example already uses <strong>three selection techniques</strong> plus
+                            <strong>navigation</strong>. The rest of the chapter is about mastering these squarely and deeply.
+                        </p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- 2. getElementById & getElementsByClassName -->
+            <section id="get-by-id-class">
+                <h2 class="section-title">2. getElementById() &amp; getElementsByClassName()</h2>
+                <p>
+                    These are older, but still extremely important, DOM APIs. They are very fast and widely used in
+                    legacy as well as modern code (especially for performance-sensitive core paths).
+                </p>
+
+                <h3 class="section-subtitle">2.1 document.getElementById()</h3>
+
+                <details open>
+                    <summary><span class="summary-icon">🧭</span><span>Concept &amp; syntax</span></summary>
+                    <div class="details-body">
+                        <p>
+                            <span class="inline-code">document.getElementById(id)</span> returns the <strong>first element</strong>
+                            in the document whose <span class="inline-code">id</span> attribute matches the given string,
+                            or <span class="inline-code">null</span> if none exists.
+                        </p>
+                        <pre><code>// Syntax
+const element = document.getElementById("someId");
+                        </code></pre>
+                        <p>
+                            Important notes:
+                        </p>
+                        <ul>
+                            <li>Selection is by <strong>id attribute</strong>, not by tag name or class.</li>
+                            <li>Id must be unique in a valid HTML document (though browsers don’t enforce this strictly).</li>
+                            <li>Return type is a <strong>single Element</strong> or <span class="inline-code">null</span>, never a list.</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary><span class="summary-icon">🧪</span><span>Example: target a specific element by id</span></summary>
+                    <div class="details-body">
+                        <pre><code>&lt;h1 id="pageTitle"&gt;Welcome&lt;/h1&gt;
+&lt;button id="changeTitle"&gt;Change title&lt;/button&gt;
+
+&lt;script&gt;
+  const title = document.getElementById("pageTitle");
+  const button = document.getElementById("changeTitle");
+
+  button.addEventListener("click", () =&gt; {
+    title.textContent = "DOM Selection – getElementById() in action";
+  });
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            This pattern is seen in almost every beginner project: you hook a button and update some
+                            specific element by id.
+                        </p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary><span class="summary-icon">⚠</span><span>Common pitfalls &amp; best practices</span></summary>
+                    <div class="details-body">
+                        <ul>
+                            <li>Don’t overload an id: keep it unique and semantic.</li>
+                            <li>Avoid magic strings all over your code; centralize important ids in constants.</li>
+                            <li>Check for <span class="inline-code">null</span> when selecting elements in reusable modules.</li>
+                        </ul>
+                        <pre><code>&lt;script&gt;
+  const IDS = {
+    title: "pageTitle",
+    button: "changeTitle"
+  };
+
+  const title = document.getElementById(IDS.title);
+  const button = document.getElementById(IDS.button);
+
+  if (title &amp;&amp; button) {
+    button.addEventListener("click", () =&gt; {
+      title.textContent = "Updated safely";
+    });
+  }
+&lt;/script&gt;
+                        </code></pre>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">2.2 document.getElementsByClassName()</h3>
+
+                <details open>
+                    <summary><span class="summary-icon">📚</span><span>Concept, syntax &amp; return type</span></summary>
+                    <div class="details-body">
+                        <p>
+                            <span class="inline-code">document.getElementsByClassName(className)</span>
+                            returns a <strong>live</strong> <span class="inline-code">HTMLCollection</span>
+                            of all elements that have the given CSS class.
+                        </p>
+                        <pre><code>// Syntax
+const elements = document.getElementsByClassName("someClass");
+// elements is an HTMLCollection (array-like, but not an Array)
+                        </code></pre>
+                        <p>
+                            Key characteristics:
+                        </p>
+                        <ul>
+                            <li>Return type: <span class="inline-code">HTMLCollection</span> (not Array, not NodeList).</li>
+                            <li>“Live”: if DOM changes and more elements gain/lose that class, the collection updates automatically.</li>
+                            <li>Better performance than many complex selectors; good for simple class-based selection.</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary><span class="summary-icon">🧪</span><span>Example: apply style to all elements with a class</span></summary>
+                    <div class="details-body">
+                        <pre><code>&lt;ul&gt;
+  &lt;li class="chapter"&gt;Introduction&lt;/li&gt;
+  &lt;li class="chapter highlight"&gt;Element Selection&lt;/li&gt;
+  &lt;li class="chapter"&gt;Events&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;script&gt;
+  const chapters = document.getElementsByClassName("chapter");
+
+  // HTMLCollection is array-like; convert to real Array for modern methods
+  Array.from(chapters).forEach((item, index) =&gt; {
+    item.textContent = (index + 1) + ". " + item.textContent;
+  });
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            Here we use <span class="inline-code">Array.from()</span> to convert the
+                            <span class="inline-code">HTMLCollection</span> into a true Array for
+                            <span class="inline-code">forEach()</span>.
+                        </p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary><span class="summary-icon">💡</span><span>Scoping getElementsByClassName to a subtree</span></summary>
+                    <div class="details-body">
+                        <p>
+                            You can call <span class="inline-code">getElementsByClassName()</span> on any element, not only
+                            on <span class="inline-code">document</span>. This restricts the search to a subtree.
+                        </p>
+                        <pre><code>&lt;div id="panel1"&gt;
+  &lt;button class="action"&gt;Panel 1 - A&lt;/button&gt;
+  &lt;button class="action"&gt;Panel 1 - B&lt;/button&gt;
+&lt;/div&gt;
+
+&lt;div id="panel2"&gt;
+  &lt;button class="action"&gt;Panel 2 - A&lt;/button&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+  const panel1 = document.getElementById("panel1");
+  const panel2 = document.getElementById("panel2");
+
+  const actionsPanel1 = panel1.getElementsByClassName("action");
+  const actionsPanel2 = panel2.getElementsByClassName("action");
+
+  console.log(actionsPanel1.length); // 2
+  console.log(actionsPanel2.length); // 1
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            Scoped selection reduces ambiguity and is very useful when building reusable components.
+                        </p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- 3. querySelector & querySelectorAll -->
+            <section id="query-selector">
+                <h2 class="section-title">3. querySelector() &amp; querySelectorAll()</h2>
+                <p>
+                    Modern JavaScript heavily relies on <strong>CSS selector based</strong> APIs:
+                    <span class="inline-code">querySelector()</span> and <span class="inline-code">querySelectorAll()</span>.
+                    They are extremely flexible and expressive.
+                </p>
+
+                <h3 class="section-subtitle">3.1 querySelector()</h3>
+
+                <details open>
+                    <summary><span class="summary-icon">🎯</span><span>Concept &amp; syntax</span></summary>
+                    <div class="details-body">
+                        <p>
+                            <span class="inline-code">querySelector(selector)</span> returns the
+                            <strong>first element</strong> within the document (or a given element’s subtree)
+                            that matches the specified CSS selector. If no matches are found, it returns <span class="inline-code">null</span>.
+                        </p>
+                        <pre><code>// Syntax
+const element = document.querySelector("CSS selector");
+
+// Examples
+document.querySelector("#loginForm");
+document.querySelector(".menu-item.active");
+document.querySelector("nav &gt; ul &gt; li:first-child a");
+                        </code></pre>
+                        <p>
+                            It’s like applying <strong>document.querySelector()</strong> in the browser devtools console:
+                            whatever would be matched in CSS, you can select in JavaScript.
+                        </p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary><span class="summary-icon">🧪</span><span>Example: selecting with complex selectors</span></summary>
+                    <div class="details-body">
+                        <pre><code>&lt;form id="loginForm"&gt;
+  &lt;input type="email" name="email" class="field"&gt;
+  &lt;input type="password" name="password" class="field"&gt;
+  &lt;button type="submit" class="btn primary"&gt;Login&lt;/button&gt;
+&lt;/form&gt;
+
+&lt;script&gt;
+  const form = document.querySelector("#loginForm");
+  const emailField = form.querySelector("input[type='email']");
+  const passwordField = form.querySelector("input[type='password']");
+  const submitButton = form.querySelector("button.btn.primary");
+
+  submitButton.addEventListener("click", (event) =&gt; {
+    if (!emailField.value || !passwordField.value) {
+      event.preventDefault();
+      alert("Please fill all fields.");
+    }
+  });
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            Here we use selectors identical to CSS rules. That uniformity reduces cognitive load:
+                            same language for styling and selection.
+                        </p>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">3.2 querySelectorAll()</h3>
+
+                <details open>
+                    <summary><span class="summary-icon">📚</span><span>Concept, return type &amp; iteration</span></summary>
+                    <div class="details-body">
+                        <p>
+                            <span class="inline-code">querySelectorAll(selector)</span> returns a
+                            <strong>static NodeList</strong> of all elements matching the selector.
+                        </p>
+                        <pre><code>// Syntax
+const nodeList = document.querySelectorAll("CSS selector");
+
+// Example
+const items = document.querySelectorAll(".todo-item.completed");
+                        </code></pre>
+                        <p>
+                            Important differences from <span class="inline-code">getElementsByClassName()</span>:
+                        </p>
+                        <ul>
+                            <li>Return type: <span class="inline-code">NodeList</span> (not HTMLCollection).</li>
+                            <li><strong>Static</strong>: it does not automatically update if DOM changes (more on this later).</li>
+                            <li>Iterable: modern browsers let you do <span class="inline-code">forEach()</span> directly on NodeList.</li>
+                        </ul>
+                        <pre><code>&lt;ul id="tasks"&gt;
+  &lt;li class="task completed"&gt;Learn DOM&lt;/li&gt;
+  &lt;li class="task"&gt;Learn events&lt;/li&gt;
+  &lt;li class="task completed"&gt;Learn selectors&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;script&gt;
+  const completedTasks = document.querySelectorAll("#tasks .task.completed");
+
+  completedTasks.forEach((item, index) =&gt; {
+    item.textContent = "✔ " + item.textContent + " (index " + index + ")";
+  });
+&lt;/script&gt;
+                        </code></pre>
+                    </div>
+                </details>
+
+                <details>
+                    <summary><span class="summary-icon">🧩</span><span>Scoped usage on any element</span></summary>
+                    <div class="details-body">
+                        <p>
+                            Like <span class="inline-code">getElementsByClassName()</span>, you can call
+                            <span class="inline-code">querySelector()</span> or
+                            <span class="inline-code">querySelectorAll()</span> on any element to restrict search to its subtree.
+                        </p>
+                        <pre><code>&lt;section id="leftPanel"&gt;
+  &lt;button class="filter"&gt;Filter A&lt;/button&gt;
+  &lt;button class="filter"&gt;Filter B&lt;/button&gt;
+&lt;/section&gt;
+
+&lt;section id="rightPanel"&gt;
+  &lt;button class="filter"&gt;Filter C&lt;/button&gt;
+&lt;/section&gt;
+
+&lt;script&gt;
+  const leftPanel = document.getElementById("leftPanel");
+  const rightPanel = document.getElementById("rightPanel");
+
+  const leftFilters = leftPanel.querySelectorAll("button.filter");
+  const rightFilters = rightPanel.querySelectorAll("button.filter");
+
+  console.log(leftFilters.length);  // 2
+  console.log(rightFilters.length); // 1
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            This pattern is the core of component-based architecture in plain JavaScript:
+                            each component selects and manages only within its own root element.
+                        </p>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">3.3 Comparing classic vs modern APIs</h3>
+
+                <details>
+                    <summary><span class="summary-icon">⚖</span><span>getElementById / getElementsByClassName vs querySelector*</span></summary>
+                    <div class="details-body">
+                        <ul>
+                            <li>
+                                <strong>Performance</strong>:
+                                <span class="inline-code">getElementById()</span> is typically the fastest way
+                                to select a single element by id.
+                            </li>
+                            <li>
+                                <strong>Flexibility</strong>:
+                                <span class="inline-code">querySelector*</span> wins, because of full CSS selector support.
+                            </li>
+                            <li>
+                                <strong>Code clarity</strong>:
+                                using CSS selector string many times can be more expressive and consistent.
+                            </li>
+                        </ul>
+                        <pre><code>// Single known element by id (recommended)
+const form = document.getElementById("loginForm");
+
+// All items with class
+const items1 = document.getElementsByClassName("menu-item");       // live HTMLCollection
+const items2 = document.querySelectorAll(".menu-item");            // static NodeList
+
+// Complex selector (attribute + state)
+const activeItem = document.querySelector(".menu-item[data-state='active']");
+                        </code></pre>
+                    </div>
+                </details>
+            </section>
+
+            <!-- 4. Parent, child, sibling navigation -->
+            <section id="navigation">
+                <h2 class="section-title">4. Parent, child &amp; sibling navigation</h2>
+                <p>
+                    After selecting an element, you often want to move relative to it: to its parent, its children, or
+                    its siblings. This is called <strong>DOM traversal</strong> or navigation.
+                </p>
+
+                <h3 class="section-subtitle">4.1 Core navigation properties</h3>
+
+                <details open>
+                    <summary><span class="summary-icon">🧬</span><span>Element vs Node variants</span></summary>
+                    <div class="details-body">
+                        <p>
+                            Two sets of properties are common: ones that consider all nodes (including text and comments),
+                            and ones that consider only elements.
+                        </p>
+                        <ul>
+                            <li><span class="inline-code">parentNode</span>, <span class="inline-code">firstChild</span>,
+                                <span class="inline-code">lastChild</span>, <span class="inline-code">nextSibling</span>,
+                                <span class="inline-code">previousSibling</span></li>
+                            <li><span class="inline-code">parentElement</span>, <span class="inline-code">firstElementChild</span>,
+                                <span class="inline-code">lastElementChild</span>, <span class="inline-code">nextElementSibling</span>,
+                                <span class="inline-code">previousElementSibling</span></li>
+                        </ul>
+                        <pre><code>&lt;ul id="menu"&gt;
+  &lt;li&gt;Home&lt;/li&gt;
+  &lt;li class="active"&gt;Docs&lt;/li&gt;
+  &lt;li&gt;About&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;script&gt;
+  const active = document.querySelector("#menu li.active");
+
+  console.log(active.parentElement.id);           // "menu"
+  console.log(active.previousElementSibling.textContent); // "Home"
+  console.log(active.nextElementSibling.textContent);     // "About"
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            For layout and UI work, prefer <span class="inline-code">*Element*</span> properties
+                            to avoid text nodes.
+                        </p>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">4.2 Navigating to parents</h3>
+
+                <details>
+                    <summary><span class="summary-icon">⬆</span><span>parentNode vs parentElement</span></summary>
+                    <div class="details-body">
+                        <p>
+                            <span class="inline-code">parentNode</span> returns the parent node (can be an element,
+                            document, or document fragment), whereas <span class="inline-code">parentElement</span> returns
+                            the parent <strong>element</strong> or <span class="inline-code">null</span> if none.
+                        </p>
+                        <pre><code>&lt;div id="wrapper"&gt;
+  &lt;p id="text"&gt;Hello&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+  const text = document.getElementById("text");
+
+  console.log(text.parentNode === text.parentElement); // true (both &lt;div id="wrapper"&gt;)
+  console.log(text.parentElement.id);                  // "wrapper"
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            In most UI code, <span class="inline-code">parentElement</span> is what you want, because you
+                            usually care about elements, not document fragments.
+                        </p>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">4.3 Navigating to children</h3>
+
+                <details>
+                    <summary><span class="summary-icon">⬇</span><span>children vs childNodes</span></summary>
+                    <div class="details-body">
+                        <p>
+                            <span class="inline-code">element.children</span> returns an <strong>HTMLCollection of element children</strong>,
+                            while <span class="inline-code">element.childNodes</span> includes text and comment nodes.
+                        </p>
+                        <pre><code>&lt;ul id="list"&gt;
+  &lt;li&gt;A&lt;/li&gt;
+  &lt;li&gt;B&lt;/li&gt;
+  &lt;li&gt;C&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;script&gt;
+  const list = document.getElementById("list");
+
+  console.log(list.children.length);    // 3, only li elements
+  console.log(list.childNodes.length);  // could be &gt; 3, includes text nodes
+
+  const first = list.firstElementChild;
+  const last = list.lastElementChild;
+  console.log(first.textContent, last.textContent); // "A", "C"
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            Use <span class="inline-code">children</span> and <span class="inline-code">firstElementChild</span>
+                            almost always for layout traversal.
+                        </p>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">4.4 Navigating to siblings</h3>
+
+                <details>
+                    <summary><span class="summary-icon">↔</span><span>nextElementSibling &amp; previousElementSibling</span></summary>
+                    <div class="details-body">
+                        <pre><code>&lt;ul id="tabs"&gt;
+  &lt;li class="tab active"&gt;Overview&lt;/li&gt;
+  &lt;li class="tab"&gt;Details&lt;/li&gt;
+  &lt;li class="tab"&gt;Reviews&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;script&gt;
+  const activeTab = document.querySelector("#tabs .tab.active");
+
+  const nextTab = activeTab.nextElementSibling;
+  if (nextTab) {
+    activeTab.classList.remove("active");
+    nextTab.classList.add("active");
+  }
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            This is the basic approach to implement keyboard navigation or next/previous UI components.
+                        </p>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">4.5 Higher-level traversal patterns</h3>
+
+                <details>
+                    <summary><span class="summary-icon">🧠</span><span>Walking up until a specific ancestor (closest)</span></summary>
+                    <div class="details-body">
+                        <p>
+                            Instead of manually writing loops to climb parents, you can use
+                            <span class="inline-code">Element.closest()</span>:
+                        </p>
+                        <pre><code>&lt;div class="card"&gt;
+  &lt;button class="btn remove"&gt;Remove&lt;/button&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+  document.addEventListener("click", (event) =&gt; {
+    const removeBtn = event.target.closest(".btn.remove");
+    if (!removeBtn) return;
+
+    const card = removeBtn.closest(".card");
+    if (card) card.remove();
+  });
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            Here we used both <strong>event delegation</strong> and <strong>closest()</strong> to build a
+                            flexible pattern: no matter where the user clicks inside the button’s content (icon, text, span),
+                            we reach the correct card to remove.
+                        </p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- 5. NodeList vs HTMLCollection -->
+            <section id="nodelist-htmlcollection">
+                <h2 class="section-title">5. NodeList vs HTMLCollection</h2>
+                <p>
+                    When you select multiple elements, you typically get a <strong>collection</strong> object.
+                    In the DOM you will encounter two main collection types:
+                    <span class="inline-code">NodeList</span> and <span class="inline-code">HTMLCollection</span>.
+                    Understanding their differences is essential for writing correct &amp; performant code.
+                </p>
+
+                <h3 class="section-subtitle">5.1 NodeList</h3>
+
+                <details open>
+                    <summary><span class="summary-icon">📦</span><span>Characteristics &amp; where it appears</span></summary>
+                    <div class="details-body">
+                        <p>
+                            A <span class="inline-code">NodeList</span> is an ordered collection of nodes.
+                            It often appears as the result of
+                            <span class="inline-code">querySelectorAll()</span> or as properties like
+                            <span class="inline-code">childNodes</span>.
+                        </p>
+                        <ul>
+                            <li>Can contain any node type: elements, text, comments, etc.</li>
+                            <li>Can be <strong>static</strong> or <strong>live</strong> depending on how it is created.</li>
+                            <li>Usually supports <span class="inline-code">forEach()</span> directly in modern browsers.</li>
+                        </ul>
+                        <pre><code>&lt;ul id="list"&gt;
+  &lt;li&gt;A&lt;/li&gt;
+  &lt;li&gt;B&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;script&gt;
+  const items = document.querySelectorAll("#list li"); // NodeList (static)
+
+  items.forEach((li, index) =&gt; {
+    li.textContent = li.textContent + " (index " + index + ")";
+  });
+&lt;/script&gt;
+                        </code></pre>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">5.2 HTMLCollection</h3>
+
+                <details open>
+                    <summary><span class="summary-icon">📚</span><span>Characteristics &amp; where it appears</span></summary>
+                    <div class="details-body">
+                        <p>
+                            An <span class="inline-code">HTMLCollection</span> is a collection of <strong>Element</strong> objects,
+                            typically returned by:
+                        </p>
+                        <ul>
+                            <li><span class="inline-code">document.getElementsByClassName()</span></li>
+                            <li><span class="inline-code">element.children</span></li>
+                            <li><span class="inline-code">document.getElementsByTagName()</span></li>
+                        </ul>
+                        <p>
+                            Key characteristics:
+                        </p>
+                        <ul>
+                            <li>Contains only elements (no text nodes, no comments).</li>
+                            <li>Often <strong>live</strong> – changes in the DOM can be reflected automatically.</li>
+                            <li>Not a true Array; no guarantee of <span class="inline-code">forEach()</span>, but index access and
+                                <span class="inline-code">length</span> exist.</li>
+                        </ul>
+                        <pre><code>&lt;div id="container"&gt;
+  &lt;span&gt;One&lt;/span&gt;
+  &lt;span&gt;Two&lt;/span&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+  const container = document.getElementById("container");
+  const spans = container.getElementsByTagName("span"); // HTMLCollection
+
+  for (let i = 0; i &lt; spans.length; i++) {
+    spans[i].textContent = "Item " + (i + 1);
+  }
+&lt;/script&gt;
+                        </code></pre>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">5.3 Side-by-side comparison</h3>
+
+                <details>
+                    <summary><span class="summary-icon">⚖</span><span>Conceptual &amp; practical differences</span></summary>
+                    <div class="details-body">
+                        <pre><code>// NodeList (from querySelectorAll)
+const nodeList = document.querySelectorAll(".item"); // static NodeList
+
+// HTMLCollection (from getElementsByClassName)
+const htmlCollection = document.getElementsByClassName("item"); // live HTMLCollection
+                        </code></pre>
+                        <ul>
+                            <li><strong>Type of nodes:</strong> NodeList may have any node; HTMLCollection only elements.</li>
+                            <li><strong>Liveness:</strong> NodeList from <span class="inline-code">querySelectorAll</span> is static;
+                                many HTMLCollections are live (updated automatically).</li>
+                            <li><strong>Iteration:</strong> NodeList usually has <span class="inline-code">forEach()</span>;
+                                HTMLCollection might not (use normal for loops or <span class="inline-code">Array.from()</span>).</li>
+                        </ul>
+                        <pre><code>&lt;ul id="items"&gt;&lt;/ul&gt;
+
+&lt;script&gt;
+  const list = document.getElementById("items");
+
+  // Live collection:
+  const liveCollection = list.getElementsByTagName("li");
+
+  // Static collection:
+  const staticNodeList = list.querySelectorAll("li");
+
+  console.log(liveCollection.length, staticNodeList.length); // 0, 0
+
+  // Add one li
+  const li = document.createElement("li");
+  li.textContent = "Hello";
+  list.appendChild(li);
+
+  console.log(liveCollection.length, staticNodeList.length); // 1, 0
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            This example clearly demonstrates live vs static behavior. We will explore this further in
+                            the next section.
+                        </p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- 6. Live vs static collections -->
+            <section id="live-static">
+                <h2 class="section-title">6. Live vs static collections</h2>
+                <p>
+                    Some DOM collections automatically reflect DOM changes (live), while others capture a snapshot
+                    (static). This has major consequences for loops, performance, and bugs.
+                </p>
+
+                <h3 class="section-subtitle">6.1 Live collections</h3>
+
+                <details open>
+                    <summary><span class="summary-icon">🔥</span><span>What are live collections?</span></summary>
+                    <div class="details-body">
+                        <p>
+                            A <strong>live collection</strong> updates itself whenever the underlying DOM changes.
+                            It is like a “view” into the DOM.
+                        </p>
+                        <p>
+                            Common live collections:
+                        </p>
+                        <ul>
+                            <li><span class="inline-code">document.getElementsByClassName()</span></li>
+                            <li><span class="inline-code">document.getElementsByTagName()</span></li>
+                            <li><span class="inline-code">element.getElementsByClassName()</span></li>
+                            <li><span class="inline-code">element.children</span> (HTMLCollection)</li>
+                        </ul>
+                        <pre><code>&lt;ul id="list"&gt;&lt;/ul&gt;
+
+&lt;script&gt;
+  const list = document.getElementById("list");
+  const liveItems = list.getElementsByTagName("li"); // live HTMLCollection
+
+  console.log(liveItems.length); // 0
+
+  const li1 = document.createElement("li");
+  li1.textContent = "First";
+  list.appendChild(li1);
+
+  console.log(liveItems.length); // 1 (updated automatically)
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            This behavior can be helpful, but it can also surprise you in loops if you mutate the DOM
+                            while iterating.
+                        </p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary><span class="summary-icon">⚠</span><span>Bug pattern: modifying live collection while iterating</span></summary>
+                    <div class="details-body">
+                        <pre><code>&lt;ul id="numbers"&gt;
+  &lt;li&gt;1&lt;/li&gt;
+  &lt;li&gt;2&lt;/li&gt;
+  &lt;li&gt;3&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;script&gt;
+  const numbers = document.getElementById("numbers");
+  const items = numbers.getElementsByTagName("li"); // live
+
+  // ❌ This can skip elements or behave unexpectedly
+  for (let i = 0; i &lt; items.length; i++) {
+    numbers.removeChild(items[i]);
+  }
+
+  // Safer approach: copy to array first
+  // const arr = Array.from(items);
+  // arr.forEach(li =&gt; numbers.removeChild(li));
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            Because <span class="inline-code">items.length</span> and indices change as you remove elements,
+                            the loop may skip nodes. Converting to an Array “freezes” the list and prevents this issue.
+                        </p>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">6.2 Static collections</h3>
+
+                <details open>
+                    <summary><span class="summary-icon">📷</span><span>What are static collections?</span></summary>
+                    <div class="details-body">
+                        <p>
+                            A <strong>static collection</strong> is like a snapshot of the DOM at the time it was created.
+                            It does not automatically update when the DOM changes.
+                        </p>
+                        <p>
+                            Typical source:
+                        </p>
+                        <ul>
+                            <li><span class="inline-code">document.querySelectorAll()</span> – static NodeList</li>
+                        </ul>
+                        <pre><code>&lt;ul id="list2"&gt;&lt;/ul&gt;
+
+&lt;script&gt;
+  const list2 = document.getElementById("list2");
+
+  const snapshot = list2.querySelectorAll("li"); // static NodeList, currently empty
+
+  const li = document.createElement("li");
+  li.textContent = "Hello";
+  list2.appendChild(li);
+
+  console.log(snapshot.length); // still 0 (not updated)
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            Static collections are often easier to reason about and safer in loops, because they do not
+                            change unexpectedly while you iterate.
+                        </p>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">6.3 When to prefer which?</h3>
+
+                <details>
+                    <summary><span class="summary-icon">🧠</span><span>Guidelines &amp; real-world advice</span></summary>
+                    <div class="details-body">
+                        <ul>
+                            <li>
+                                If you just need a “one-time snapshot” of elements to iterate over,
+                                prefer <span class="inline-code">querySelectorAll()</span> (static NodeList).
+                            </li>
+                            <li>
+                                If you need a collection that automatically reflects DOM changes
+                                (for example, a list of form fields that may be added dynamically),
+                                you can use live collections – but be careful in loops.
+                            </li>
+                            <li>
+                                For modern, clean code, many teams standardize on
+                                <span class="inline-code">querySelector*</span> + explicit requerying when needed.
+                            </li>
+                        </ul>
+                        <pre><code>// Modern, robust pattern
+function getTodoItems() {
+  return document.querySelectorAll(".todo-item");
+}
+
+function markAllDone() {
+  const items = getTodoItems(); // fresh static snapshot
+  items.forEach(item =&gt; item.classList.add("done"));
+}
+                        </code></pre>
+                    </div>
+                </details>
+            </section>
+
+            <!-- 7. Patterns, best practices & performance tips -->
+            <section id="patterns">
+                <h2 class="section-title">7. Patterns, best practices &amp; performance tips</h2>
+
+                <h3 class="section-subtitle">7.1 Centralized selectors</h3>
+
+                <details open>
+                    <summary><span class="summary-icon">🎯</span><span>Avoid magic CSS selectors scattered everywhere</span></summary>
+                    <div class="details-body">
+                        <p>
+                            In larger codebases, hard-coding CSS selectors in many places creates maintenance hell.
+                            One change in HTML structure might break dozens of scripts.
+                        </p>
+                        <pre><code>&lt;script&gt;
+  const SELECTORS = {
+    sidebar: "#sidebar",
+    content: "#content",
+    activeTab: "#tabs .tab.active",
+    todoItems: ".todo-item",
+  };
+
+  const sidebar = document.querySelector(SELECTORS.sidebar);
+  const content = document.querySelector(SELECTORS.content);
+  const activeTab = document.querySelector(SELECTORS.activeTab);
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            Centralizing selectors gives you a single “contract layer” between HTML and JS logic.
+                        </p>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">7.2 Minimizing DOM lookups</h3>
+
+                <details>
+                    <summary><span class="summary-icon">🚀</span><span>Cache references to frequently used elements</span></summary>
+                    <div class="details-body">
+                        <p>
+                            Repeatedly calling <span class="inline-code">document.querySelector()</span> inside tight loops
+                            or animations can hurt performance. Cache results when structure is stable.
+                        </p>
+                        <pre><code>&lt;div id="counter"&gt;0&lt;/div&gt;
+&lt;button id="increment"&gt;+&lt;/button&gt;
+
+&lt;script&gt;
+  // Good: select once, reuse many times
+  const counterEl = document.getElementById("counter");
+  const btn = document.getElementById("increment");
+
+  let value = 0;
+
+  btn.addEventListener("click", () =&gt; {
+    value++;
+    counterEl.textContent = value;
+  });
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            For dynamic sections (e.g., inside frameworks) you may re-query when necessary, but do it
+                            consciously rather than accidentally.
+                        </p>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">7.3 Composing selection + navigation</h3>
+
+                <details>
+                    <summary><span class="summary-icon">🧩</span><span>Designing small utility functions</span></summary>
+                    <div class="details-body">
+                        <p>
+                            You can encapsulate typical tasks into helper functions that combine selection and navigation.
+                        </p>
+                        <pre><code>&lt;ul id="todoList"&gt;
+  &lt;li class="todo-item"&gt;
+    &lt;span class="label"&gt;Learn DOM&lt;/span&gt;
+    &lt;button class="remove"&gt;×&lt;/button&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;script&gt;
+  const todoList = document.getElementById("todoList");
+
+  function getTodoItems() {
+    return todoList.querySelectorAll(".todo-item");
+  }
+
+  function getLabel(item) {
+    return item.querySelector(".label");
+  }
+
+  todoList.addEventListener("click", (event) =&gt; {
+    const removeBtn = event.target.closest(".remove");
+    if (!removeBtn) return;
+
+    const item = removeBtn.closest(".todo-item");
+    if (item) item.remove();
+  });
+
+  // Example: mark all as done
+  getTodoItems().forEach(item =&gt; {
+    getLabel(item).textContent += " (done)";
+  });
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            This is already close to what mini-frameworks do internally: unify selection, navigation,
+                            and action into clean abstractions.
+                        </p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- 8. Summary & practice -->
+            <section id="summary-practice">
+                <h2 class="section-title">8. Summary &amp; practice tasks</h2>
+
+                <details open>
+                    <summary><span class="summary-icon">📌</span><span>Key points to remember</span></summary>
+                    <div class="details-body">
+                        <ul>
+                            <li><strong>Selection APIs:</strong>
+                                <span class="inline-code">getElementById</span> (single),
+                                <span class="inline-code">getElementsByClassName</span> (live HTMLCollection),
+                                <span class="inline-code">querySelector</span> (first match),
+                                <span class="inline-code">querySelectorAll</span> (static NodeList).</li>
+                            <li><strong>Navigation:</strong>
+                                use <span class="inline-code">parentElement</span>,
+                                <span class="inline-code">children</span>,
+                                <span class="inline-code">firstElementChild</span>,
+                                <span class="inline-code">nextElementSibling</span> for element-based tree moves.</li>
+                            <li><strong>Collections:</strong>
+                                know the difference between <span class="inline-code">NodeList</span> and
+                                <span class="inline-code">HTMLCollection</span>.</li>
+                            <li><strong>Live vs static:</strong>
+                                live collections auto-update (careful in loops),
+                                static collections are snapshot-style (safer for iteration).</li>
+                            <li><strong>Best practices:</strong>
+                                cache frequent selectors, centralize selector strings, and use scoped selection within components.</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary><span class="summary-icon">🧪</span><span>Practice tasks (do them in your editor)</span></summary>
+                    <div class="details-body">
+                        <ol>
+                            <li>
+                                Build a “tab system” where clicking each tab shows a different panel.
+                                Use <span class="inline-code">querySelectorAll</span> + sibling navigation.
+                            </li>
+                            <li>
+                                Implement a dynamic list where new items can be added.
+                                Compare the behavior when you use a live collection vs static NodeList to update
+                                the items’ index numbers.
+                            </li>
+                            <li>
+                                Create a utility function <span class="inline-code">$$</span> that wraps
+                                <span class="inline-code">querySelectorAll</span> and always returns an Array instead of NodeList.
+                            </li>
+                            <li>
+                                Write a function that, given any element, logs its ancestors up to
+                                <span class="inline-code">&lt;body&gt;</span> using <span class="inline-code">parentElement</span>.
+                            </li>
+                        </ol>
+                    </div>
+                </details>
+
+                <div class="callout mt-3">
+                    <div class="callout-title">Next ideal topic</div>
+                    <div>
+                        After mastering element selection and navigation, the natural progression is to study
+                        <strong>DOM events</strong> (capturing vs bubbling, event delegation, and custom events),
+                        because events are how users interact with the elements you have selected.
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Smooth-scrolling + active link highlight
+    (function () {
+        const tocLinks = document.querySelectorAll(".toc-link");
+        const sections = Array.from(document.querySelectorAll("main section"));
+
+        // Click scroll
+        tocLinks.forEach(link => {
+            link.addEventListener("click", function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute("href").slice(1);
+                const target = document.getElementById(targetId);
+                if (target) {
+                    target.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+            });
+        });
+
+        // Highlight active section based on scroll
+        const content = document.getElementById("content");
+        content.addEventListener("scroll", function () {
+            const scrollPos = this.scrollTop;
+            const offset = 120;
+            let currentId = null;
+
+            for (const sec of sections) {
+                if (sec.offsetTop - offset <= scrollPos) {
+                    currentId = sec.id;
+                }
+            }
+
+            tocLinks.forEach(link => {
+                link.classList.toggle("active", link.getAttribute("href").slice(1) === currentId);
+            });
+        });
+    })();
+
+    // TOC search filter
+    function filterTOC() {
+        const input = document.getElementById("tocSearch");
+        const filter = input.value.toLowerCase();
+        const list = document.getElementById("tocList");
+        const items = list.getElementsByTagName("li");
+
+        Array.from(items).forEach(li => {
+            const link = li.querySelector("a");
+            const txt = link.textContent.toLowerCase();
+            li.style.display = txt.indexOf(filter) > -1 ? "" : "none";
+        });
+    }
+
+    // Expand / collapse all & scroll top
+    function expandAllDetails() {
+        document.querySelectorAll("details").forEach(d => d.open = true);
+    }
+
+    function collapseAllDetails() {
+        document.querySelectorAll("details").forEach(d => d.open = false);
+    }
+
+    function scrollToTop() {
+        document.getElementById("content").scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    // Very simple syntax highlighting for code blocks
+    (function simpleHighlight() {
+        const keywords = [
+            "const", "let", "var", "function", "return", "if", "else",
+            "for", "while", "class", "new", "this", "true", "false",
+            "null", "undefined", "break", "continue"
+        ];
+
+        const patternKeywords = new RegExp("\\b(" + keywords.join("|") + ")\\b", "g");
+        const patternString = /("[^"]*"|'[^']*')/g;
+        const patternComment = /(\/\/.*$)/gm;
+        const patternProps = /\.(\w+)/g;
+
+        document.querySelectorAll("pre code").forEach(block => {
+            let html = block.textContent;
+
+            html = html.replace(patternComment, '<span class="code-comment">$1</span>');
+            html = html.replace(patternString, '<span class="code-string">$1</span>');
+            html = html.replace(patternKeywords, '<span class="code-keyword">$1</span>');
+            html = html.replace(patternProps, '.<span class="code-property">$1</span>');
+
+            block.innerHTML = html;
+        });
+    })();
+</script>
+</body>
+</html>

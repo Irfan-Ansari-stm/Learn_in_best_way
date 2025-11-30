@@ -1,0 +1,1466 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8.1 Array Fundamentals</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00f5ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --accent: #00f5ff;
+            --card-bg: #112240;
+            --border-color: #007a99;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            position: fixed;
+            width: 300px;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            box-shadow: 2px 0 10px rgba(0, 245, 255, 0.1);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--amber);
+        }
+
+        .toc-item {
+            margin: 8px 0;
+            padding-left: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .toc-item a {
+            color: var(--cyan);
+            text-decoration: none;
+            display: block;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .toc-item a:hover {
+            color: var(--amber);
+            padding-left: 20px;
+        }
+
+        .toc-subitem {
+            margin-left: 20px;
+            font-size: 0.9rem;
+            color: #b0c4de;
+        }
+
+        details {
+            margin: 15px 0;
+            border-left: 3px solid var(--amber);
+            padding-left: 15px;
+            background-color: rgba(17, 34, 64, 0.5);
+            border-radius: 0 5px 5px 0;
+        }
+
+        summary {
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--amber);
+            list-style: none;
+            padding: 10px;
+            background-color: rgba(0, 245, 255, 0.08);
+            border-radius: 5px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        summary::before {
+            content: "▶";
+            margin-right: 10px;
+            font-size: 0.8rem;
+            transition: transform 0.3s;
+        }
+
+        details[open] summary::before {
+            transform: rotate(90deg);
+        }
+
+        pre code {
+            display: block;
+            padding: 15px;
+            background-color: #0d1b2a;
+            color: var(--cyan);
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            border-left: 3px solid var(--amber);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.2);
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+
+        .formula {
+            background-color: rgba(0, 245, 255, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 3px solid var(--cyan);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.1rem;
+        }
+
+        .definition {
+            color: var(--amber);
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .detail {
+            margin: 12px 0;
+            line-height: 1.6;
+        }
+
+        .syntax {
+            margin: 15px 0;
+        }
+
+        .example {
+            margin: 15px 0;
+        }
+
+        .use-case {
+            color: var(--cyan);
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
+        .code-comment {
+            color: #7f8c8d;
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: #0a192f;
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-left: 8px;
+        }
+
+        .array-diagram {
+            background-color: rgba(0, 245, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px dashed var(--cyan);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            white-space: pre;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .hole-diagram {
+            background-color: rgba(17, 34, 64, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid var(--amber);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .array-box {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 5px;
+            border: 1px solid var(--cyan);
+            border-radius: 5px;
+            background-color: rgba(0, 245, 255, 0.1);
+        }
+
+        .hole-box {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 5px;
+            border: 1px solid var(--amber);
+            border-radius: 5px;
+            background-color: rgba(255, 183, 77, 0.2);
+        }
+
+        .array-index {
+            display: inline-block;
+            padding: 4px 8px;
+            margin: 2px;
+            background-color: rgba(0, 245, 255, 0.2);
+            border-radius: 3px;
+            font-size: 0.8rem;
+            color: var(--cyan);
+        }
+
+        .array-value {
+            display: inline-block;
+            padding: 4px 8px;
+            margin: 2px;
+            background-color: rgba(255, 183, 77, 0.2);
+            border-radius: 3px;
+            font-size: 0.8rem;
+            color: var(--amber);
+        }
+
+        .array-comparison-table {
+            background-color: rgba(0, 245, 255, 0.05);
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+            border: 1px dashed var(--cyan);
+        }
+
+        .array-comparison-table th,
+        .array-comparison-table td {
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            text-align: left;
+        }
+
+        .array-comparison-table th {
+            background-color: rgba(0, 245, 255, 0.1);
+            color: var(--amber);
+            font-weight: bold;
+        }
+
+        .array-comparison-table tr:nth-child(even) {
+            background-color: rgba(17, 34, 64, 0.3);
+        }
+
+        .array-comparison-table .true {
+            color: #00f5ff;
+            font-weight: bold;
+        }
+
+        .array-comparison-table .false {
+            color: #ffb74d;
+            font-weight: bold;
+        }
+
+        @media (max-width: 991px) {
+            .left-panel {
+                position: relative;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .right-panel {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid p-0">
+    <div class="row g-0">
+        <!-- Left Panel -->
+        <div class="col-md-3 left-panel">
+            <h2>8.1 Array Fundamentals</h2>
+            <p class="text-muted small">Mastering JavaScript Arrays - The Backbone of Data Structures</p>
+            <p class="text-secondary small">Author: AI Tutor • Updated: 2024</p>
+
+            <div class="mb-3 d-flex gap-2">
+                <button id="expandAll" class="btn btn-control">Expand All</button>
+                <button id="collapseAll" class="btn btn-control">Collapse All</button>
+            </div>
+
+            <div class="search-box mb-4">
+                <input type="text" id="searchToc" class="form-control bg-dark border-cyan" placeholder="Search topics..." style="color: var(--cyan); background-color: #112240; border-color: var(--amber);">
+            </div>
+
+            <h5 class="text-uppercase text-muted fw-bold mb-3">Table of Contents</h5>
+            <ul class="list-unstyled">
+                <li class="toc-item">
+                    <a href="#array-creation">Array Creation and Initialization</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#creation-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#creation-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#creation-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#creation-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#creation-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#array-indexing">Array Indexing and Length</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#indexing-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#indexing-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#indexing-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#indexing-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#indexing-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#sparse-arrays">Sparse Arrays and Holes</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#sparse-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#sparse-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#sparse-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#sparse-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#sparse-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#array-like-objects">Array-like Objects</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#like-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#like-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#like-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#like-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#like-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#multidimensional-arrays">Multidimensional Arrays</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#multi-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#multi-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#multi-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#multi-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#multi-uses">Uses</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="col-md-9 right-panel">
+            <section id="array-creation">
+                <details>
+                    <summary>Array Creation and Initialization</summary>
+                    <div class="definition">Definition:</div>
+                    <p>An <span class="highlight">array</span> is an ordered collection of values that can be accessed by their numerical index.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>JavaScript arrays are dynamic, resizable collections that can hold any data type including numbers, strings, objects, functions, and even other arrays. Unlike arrays in many other languages, JavaScript arrays are not typed and can contain mixed data types.</p>
+                    <p>There are three primary ways to create arrays in JavaScript, each with different behaviors and use cases.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// 1. Array literal syntax (most common)
+const arr1 = [value1, value2, value3];
+
+// 2. Array constructor with values
+const arr2 = new Array(value1, value2, value3);
+
+// 3. Array constructor with length
+const arr3 = new Array(length);
+
+// 4. Array.from() - create from iterable
+const arr4 = Array.from(iterable, mapFunction);
+
+// 5. Array.of() - create array with variable arguments
+const arr5 = Array.of(element1, element2, ...);</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// EXAMPLE 1: Array literal - recommended approach
+const fruits = ['apple', 'banana', 'orange'];
+const numbers = [1, 2, 3, 4, 5];
+const mixed = [1, 'hello', true, {name: 'Alice'}, [1, 2, 3]];
+
+console.log(fruits); // ["apple", "banana", "orange"]
+console.log(mixed.length); // 5
+
+// EXAMPLE 2: Array constructor with values
+const colors = new Array('red', 'green', 'blue');
+const mixedValues = new Array(1, 'two', true);
+
+console.log(colors); // ["red", "green", "blue"]
+console.log(mixedValues); // [1, "two", true]
+
+// EXAMPLE 3: Array constructor with length - creates empty slots!
+const emptyArray = new Array(5);
+console.log(emptyArray); // [empty × 5]
+console.log(emptyArray.length); // 5
+console.log(emptyArray[0]); // undefined
+console.log(0 in emptyArray); // false - no property at index 0!
+
+// EXAMPLE 4: Array.from() - create from iterables
+const stringToArray = Array.from('hello');
+console.log(stringToArray); // ["h", "e", "l", "l", "o"]
+
+const setToArray = Array.from(new Set([1, 2, 3, 2, 1]));
+console.log(setToArray); // [1, 2, 3]
+
+// With mapping function
+const squares = Array.from({length: 5}, (_, i) => i * i);
+console.log(squares); // [0, 1, 4, 9, 16]
+
+const numbersFromSet = Array.from(new Set([1, 2, 3]), x => x * 2);
+console.log(numbersFromSet); // [2, 4, 6]
+
+// EXAMPLE 5: Array.of() - reliable way to create arrays with single numeric argument
+const singleNumber = Array.of(5);
+console.log(singleNumber); // [5]
+
+const multipleItems = Array.of(1, 2, 3, 4);
+console.log(multipleItems); // [1, 2, 3, 4]
+
+// Compare with Array constructor:
+console.log(new Array(5)); // [empty × 5] - creates array of length 5
+console.log(Array.of(5));  // [5] - creates array with one element: 5
+
+// Creating arrays with complex initialization
+const matrix = Array.from({length: 3}, () => Array.from({length: 3}, () => 0));
+console.log(matrix);
+// [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+
+// Using fill() for simple initialization
+const filledArray = new Array(5).fill('empty');
+console.log(filledArray); // ["empty", "empty", "empty", "empty", "empty"]</code></pre>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Array literals: Default choice for most scenarios</li>
+                        <li>Array constructor with values: Legacy code or when you need to avoid confusion</li>
+                        <li>Array constructor with length: Creating empty arrays with specific size</li>
+                        <li>Array.from(): Converting iterables to arrays, creating arrays with transformations</li>
+                        <li>Array.of(): Reliable way to create arrays with single numeric elements</li>
+                    </ul>
+                    <p class="text-warning mt-2"><strong>⚠️ Critical Warning:</strong> Avoid <code>new Array(number)</code> unless you specifically want sparse arrays. Use <code>Array.of(number)</code> instead for predictable behavior!</p>
+                    <p class="text-info mt-2">💡 Best Practice: Always prefer array literals <code>[]</code> over <code>new Array()</code> for simplicity and clarity.</p>
+                </details>
+            </section>
+
+            <section id="array-indexing">
+                <details>
+                    <summary>Array Indexing and Length</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">Array indexing</span> refers to accessing elements in an array using their numerical position (index), while <span class="highlight">length</span> is the number of elements in the array.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>JavaScript arrays use zero-based indexing, meaning the first element is at index 0, the second at index 1, and so on. The <code>length</code> property is automatically maintained and represents the highest index plus one.</p>
+                    <p>Arrays in JavaScript are special objects where the indices are converted to string property names internally. This means you can technically access array elements using bracket notation with string indices, but it's not recommended.</p>
+                    <p>The length property is dynamic and can be modified directly, which affects the array size.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// Accessing elements
+array[index]
+
+// Setting elements
+array[index] = value
+
+// Getting length
+array.length
+
+// Setting length
+array.length = newLength</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// Basic indexing
+const colors = ['red', 'green', 'blue'];
+
+console.log(colors[0]); // "red"
+console.log(colors[1]); // "green"
+console.log(colors[2]); // "blue"
+console.log(colors[3]); // undefined (out of bounds)
+
+// Negative indices don't work as expected
+console.log(colors[-1]); // undefined (not the last element!)
+
+// Setting values
+colors[0] = 'yellow';
+colors[3] = 'purple'; // Creates new element at index 3
+colors[10] = 'pink';  // Creates sparse array with holes
+
+console.log(colors); 
+// ["yellow", "green", "blue", "purple", empty × 6, "pink"]
+console.log(colors.length); // 11
+
+// Length property manipulation
+const numbers = [1, 2, 3, 4, 5];
+console.log(numbers.length); // 5
+
+// Truncate array
+numbers.length = 3;
+console.log(numbers); // [1, 2, 3]
+console.log(numbers[3]); // undefined
+
+// Extend array
+numbers.length = 8;
+console.log(numbers); // [1, 2, 3, empty × 5]
+console.log(numbers.length); // 8
+
+// Clear array (common pattern)
+numbers.length = 0;
+console.log(numbers); // []
+console.log(numbers.length); // 0
+
+// Array properties vs Object properties
+const arr = ['a', 'b', 'c'];
+
+// These are equivalent:
+console.log(arr[0]);     // "a"
+console.log(arr['0']);   // "a"
+console.log(arr.hasOwnProperty('0')); // true
+
+// But these are different:
+console.log(arr.length); // 3
+console.log(arr['length']); // 3
+console.log(arr.hasOwnProperty('length')); // false (inherited)
+
+// Accessing non-existent properties
+console.log(arr[5]); // undefined
+console.log(arr['nonexistent']); // undefined
+
+// Demonstrating that arrays are objects
+arr.customProperty = 'test';
+console.log(arr.customProperty); // "test"
+console.log(Object.keys(arr)); // ["0", "1", "2", "customProperty"]
+console.log(arr.length); // 3 (length only counts numeric indices)
+
+// Practical example: Working with user input
+function processUserInput(inputString) {
+    // Convert string to array of characters
+    const chars = Array.from(inputString);
+    
+    // Get first and last character
+    const firstChar = chars[0];
+    const lastChar = chars[chars.length - 1];
+    
+    return {
+        original: inputString,
+        charCount: chars.length,
+        first: firstChar,
+        last: lastChar,
+        reversed: chars.reverse().join('')
+    };
+}
+
+const result = processUserInput("JavaScript");
+console.log(result);
+// {
+//   original: "JavaScript",
+//   charCount: 10,
+//   first: "J",
+//   last: "t",
+//   reversed: "tpitSavaJ"
+// }</code></pre>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Accessing and modifying array elements by position</li>
+                        <li>Getting the size of arrays</li>
+                        <li>Truncating or extending arrays</li>
+                        <li>Iterating through arrays with index-based loops</li>
+                        <li>Implementing stack and queue operations</li>
+                    </ul>
+                    <p class="text-success mt-2">✅ Pro Tip: Use <code>array[array.length - 1]</code> to get the last element of an array.</p>
+                    <p class="text-info mt-2">💡 Remember: Even though arrays have a length property, they're still objects under the hood, so you can add custom properties to them.</p>
+                </details>
+            </section>
+
+            <section id="sparse-arrays">
+                <details>
+                    <summary>Sparse Arrays and Holes</summary>
+                    <div class="definition">Definition:</div>
+                    <p>A <span class="highlight">sparse array</span> is an array with missing elements (holes) between defined elements, created when indices are skipped.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>Sparse arrays occur when you create arrays with gaps in their indices. This happens naturally when you assign a value to an index higher than the current length, or when you use the <code>new Array(length)</code> constructor.</p>
+                    <p>Holes are not <code>undefined</code> values — they are actual gaps in the array structure. This distinction matters because methods like <code>forEach()</code>, <code>map()</code>, and <code>filter()</code> skip holes, while others like <code>for...in</code> may behave unexpectedly.</p>
+                    <p>Sparse arrays can be useful for memory optimization in large datasets, but they often lead to bugs if developers assume all elements exist.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// Creating sparse arrays
+const sparse = new Array(5); // Creates 5 holes
+sparse[0] = 'first';
+sparse[4] = 'last';
+
+// Or by assigning to high index
+const anotherSparse = [];
+anotherSparse[100] = 'value'; // Creates 100 holes before this element
+
+// Checking for holes
+0 in array // true if index exists, false if hole</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// EXAMPLE 1: Creating sparse arrays
+const sparse1 = new Array(5);
+console.log(sparse1); // [empty × 5]
+console.log(sparse1.length); // 5
+console.log(sparse1[0]); // undefined
+console.log(0 in sparse1); // false - NO property at index 0!
+
+// Assign values to create some defined elements
+sparse1[0] = 'first';
+sparse1[4] = 'last';
+console.log(sparse1); // ["first", empty × 3, "last"]
+console.log(sparse1.length); // 5
+console.log(0 in sparse1); // true
+console.log(1 in sparse1); // false - still a hole!
+
+// EXAMPLE 2: Creating sparse arrays by assignment
+const sparse2 = [];
+sparse2[10] = 'ten';
+sparse2[100] = 'hundred';
+
+console.log(sparse2.length); // 101
+console.log(sparse2[10]); // "ten"
+console.log(sparse2[50]); // undefined
+console.log(50 in sparse2); // false - hole at index 50!
+
+// EXAMPLE 3: Different behavior with array methods
+const arr = [1, , 3]; // Literal syntax with hole
+const arr2 = new Array(3);
+arr2[0] = 1;
+arr2[2] = 3;
+
+console.log('=== Array Methods Behavior ===');
+
+// forEach skips holes
+let forEachCount = 0;
+arr.forEach(() => forEachCount++);
+console.log(`forEach count: ${forEachCount}`); // 2 (skips hole)
+
+// map preserves holes
+const mapped = arr.map(x => x * 2);
+console.log(mapped); // [2, empty, 6] - hole preserved
+
+// filter skips holes
+const filtered = arr.filter(x => x > 0);
+console.log(filtered); // [1, 3] - hole removed
+
+// for...in includes holes! (but doesn't guarantee order)
+let forInCount = 0;
+for (let key in arr) {
+    forInCount++;
+    console.log(`for...in: index ${key} = ${arr[key]}`);
+}
+// Output:
+// for...in: index 0 = 1
+// for...in: index 2 = 3
+// Count: 2
+
+// for...of skips holes
+let forOfCount = 0;
+for (let value of arr) {
+    forOfCount++;
+    console.log(`for...of: ${value}`);
+}
+// Output:
+// for...of: 1
+// for...of: 3
+// Count: 2
+
+// Object.keys() returns only defined indices
+console.log(Object.keys(arr)); // ["0", "2"]
+
+// Object.getOwnPropertyNames() returns only defined indices
+console.log(Object.getOwnPropertyNames(arr)); // ["0", "2", "length"]
+
+// EXAMPLE 4: Performance implications
+const denseArray = new Array(1000000).fill(0);
+const sparseArray = [];
+
+// Create sparse array with every 100th element
+for (let i = 0; i &lt; 1000000; i += 100) {
+    sparseArray[i] = i;
+}
+
+console.log(`Dense array length: ${denseArray.length}`); // 1000000
+console.log(`Sparse array length: ${sparseArray.length}`); // 1000000
+console.log(`Sparse array actual elements: ${Object.keys(sparseArray).length}`); // 10000
+
+// Memory usage: Sparse array uses much less memory!
+// But iteration is slower due to holes
+
+// EXAMPLE 5: Real-world example - sparse matrix representation
+class SparseMatrix {
+    constructor(rows, cols) {
+        this.rows = rows;
+        this.cols = cols;
+        this.data = {}; // Store as object for efficiency
+    }
+    
+    set(row, col, value) {
+        if (row &lt; 0 || row &gt;= this.rows || col &lt; 0 || col &gt;= this.cols) {
+            throw new Error('Index out of bounds');
+        }
+        
+        // Store as string key to avoid array holes
+        this.data[[row, col].toString()] = value;
+    }
+    
+    get(row, col) {
+        if (row &lt; 0 || row &gt;= this.rows || col &lt; 0 || col &gt;= this.cols) {
+            return undefined;
+        }
+        
+        return this.data[[row, col].toString()];
+    }
+    
+    // Convert to 2D array (dense)
+    toArray() {
+        const result = Array(this.rows);
+        for (let i = 0; i &lt; this.rows; i++) {
+            result[i] = Array(this.cols);
+            for (let j = 0; j &lt; this.cols; j++) {
+                result[i][j] = this.get(i, j);
+            }
+        }
+        return result;
+    }
+}
+
+const matrix = new SparseMatrix(1000, 1000);
+matrix.set(10, 20, 1);
+matrix.set(500, 600, 2);
+matrix.set(999, 999, 3);
+
+console.log(matrix.toArray()[10][20]); // 1
+console.log(matrix.toArray()[500][600]); // 2
+console.log(matrix.toArray()[0][0]); // undefined
+
+// EXAMPLE 6: Detecting holes
+function hasHole(array, index) {
+    return !array.hasOwnProperty(index);
+}
+
+function countHoles(array) {
+    let holes = 0;
+    for (let i = 0; i &lt; array.length; i++) {
+        if (!array.hasOwnProperty(i)) {
+            holes++;
+        }
+    }
+    return holes;
+}
+
+const testArray = [1, , 3, , , 6];
+console.log(countHoles(testArray)); // 3
+
+// Check individual elements
+console.log(hasHole(testArray, 1)); // true
+console.log(hasHole(testArray, 0)); // false</code></pre>
+
+                    <div class="hole-diagram">
+// SPARSE ARRAY DIAGRAM:
+
+// Dense Array:           Sparse Array:
+// ┌─────┬─────┬─────┐     ┌─────┬─────┬─────┬─────┬─────┐
+// │  1  │  2  │  3  │     │  1  │     │  3  │     │  5  │
+// └─────┴─────┴─────┘     └─────┴─────┴─────┴─────┴─────┘
+//   0     1     2           0     1     2     3     4
+// length: 3               length: 5
+// has 3 elements          has 3 elements + 2 holes
+
+// Key difference:
+// Dense: All indices have values
+// Sparse: Some indices are completely absent (holes)
+// For sparse: 1 in array → true, 2 in array → false, 3 in array → false, 4 in array → true</div>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Memory optimization for large datasets with few values</li>
+                        <li>Representing mathematical matrices with many zeros</li>
+                        <li>Working with indexed data where positions matter</li>
+                        <li>Creating placeholder structures for future data</li>
+                        <li>Understanding JavaScript's array implementation nuances</li>
+                    </ul>
+                    <p class="text-warning mt-2"><strong>⚠️ Warning:</strong> Sparse arrays can cause subtle bugs. Most modern JavaScript methods handle them correctly, but always test your assumptions about array contents.</p>
+                    <p class="text-info mt-2">💡 Pro Tip: When you need to check if an index exists, use <code>index in array</code> rather than <code>array[index] !== undefined</code>.</p>
+                </details>
+            </section>
+
+            <section id="array-like-objects">
+                <details>
+                    <summary>Array-like Objects</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">Array-like objects</span> are objects that have a length property and indexed elements, making them behave similarly to arrays, but they are not true arrays.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>Many built-in JavaScript objects are array-like, including the <code>arguments</code> object inside functions, DOM collections like <code>NodeList</code>, and strings. They appear similar to arrays but lack array methods like <code>push()</code>, <code>pop()</code>, <code>map()</code>, etc.</p>
+                    <p>To use array methods on array-like objects, you must convert them to real arrays using <code>Array.from()</code>, spread operator <code>[...obj]</code>, or <code>Array.prototype.method.call(obj)</code>.</p>
+                    <p>Key characteristics of array-like objects:</p>
+                    <ul>
+                        <li>Have a <code>length</code> property</li>
+                        <li>Have indexed properties (0, 1, 2, ...)</li>
+                        <li>Lack array prototype methods</li>
+                        <li>May have additional properties</li>
+                    </ul>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// Converting array-like to array
+Array.from(arrayLike)
+[...arrayLike]
+Array.prototype.slice.call(arrayLike)
+Array.prototype.map.call(arrayLike, callback)</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// EXAMPLE 1: Arguments object (inside functions)
+function getArguments() {
+    console.log(arguments); // Array-like object
+    console.log(arguments instanceof Array); // false
+    console.log(Array.isArray(arguments)); // false
+    console.log(arguments.length); // 3
+    console.log(arguments[0]); // "first"
+    console.log(arguments[1]); // "second"
+    console.log(arguments[2]); // "third"
+    
+    // Convert to real array
+    const argsArray = Array.from(arguments);
+    // or: const argsArray = [...arguments];
+    // or: const argsArray = Array.prototype.slice.call(arguments);
+    
+    console.log(argsArray instanceof Array); // true
+    console.log(argsArray.push('fourth')); // 4 - now we can use array methods!
+    console.log(argsArray); // ["first", "second", "third", "fourth"]
+    
+    return argsArray;
+}
+
+getArguments('first', 'second', 'third');
+
+// EXAMPLE 2: NodeList from querySelectorAll
+const divs = document.querySelectorAll('div');
+console.log(divs); // NodeList (array-like)
+console.log(divs instanceof Array); // false
+console.log(divs.length); // Number of divs found
+console.log(divs[0]); // First div element
+
+// Convert to array for array methods
+const divArray = Array.from(divs);
+const divArray2 = [...divs];
+
+// Now we can use array methods!
+const visibleDivs = divArray.filter(div => div.style.display !== 'none');
+const divIds = divArray.map(div => div.id);
+const firstDiv = divArray.find(div => div.classList.contains('active'));
+
+// EXAMPLE 3: Strings are array-like!
+const str = "Hello";
+console.log(str.length); // 5
+console.log(str[0]); // "H"
+console.log(str[1]); // "e"
+console.log(str[str.length - 1]); // "o"
+
+// But strings don't have array methods
+try {
+    str.push('!'); // ❌ TypeError: str.push is not a function
+} catch (e) {
+    console.log(e.message);
+}
+
+// Convert string to array of characters
+const chars = Array.from(str);
+const chars2 = [...str];
+const chars3 = str.split('');
+
+console.log(chars); // ["H", "e", "l", "l", "o"]
+console.log(chars.join('-')); // "H-e-l-l-o"
+
+// EXAMPLE 4: Arguments object with named parameters
+function analyzeArguments(a, b, c) {
+    console.log('Named parameters:', a, b, c);
+    console.log('Arguments object:', arguments);
+    
+    // You can modify arguments object
+    arguments[0] = 'modified';
+    console.log('Modified parameter:', a); // "modified" - changes reflect!
+    
+    // But you can't use array methods directly
+    // arguments.forEach(console.log); // ❌ TypeError
+    
+    // Convert to array to use methods
+    const args = Array.from(arguments);
+    args.forEach(arg => console.log('Arg:', arg));
+    
+    return args;
+}
+
+analyzeArguments(1, 2, 3);
+
+// EXAMPLE 5: Creating your own array-like object
+const myArrayLike = {
+    0: 'first',
+    1: 'second',
+    2: 'third',
+    length: 3,
+    extra: 'property'
+};
+
+console.log(myArrayLike.length); // 3
+console.log(myArrayLike[0]); // "first"
+console.log(myArrayLike.extra); // "property"
+
+// Can't use array methods directly
+try {
+    myArrayLike.map(x => x.toUpperCase()); // ❌ TypeError
+} catch (e) {
+    console.log(e.message);
+}
+
+// Convert to real array
+const realArray = Array.from(myArrayLike);
+console.log(realArray); // ["first", "second", "third"]
+console.log(realArray.map(x => x.toUpperCase())); // ["FIRST", "SECOND", "THIRD"]
+
+// Example with custom iterator
+const arrayLikeWithIterator = {
+    0: 'a',
+    1: 'b',
+    2: 'c',
+    length: 3,
+    [Symbol.iterator]: function* () {
+        for (let i = 0; i &lt; this.length; i++) {
+            yield this[i];
+        }
+    }
+};
+
+// Now it works with spread operator!
+const fromIterator = [...arrayLikeWithIterator];
+console.log(fromIterator); // ["a", "b", "c"]
+
+// EXAMPLE 6: Real-world scenario - working with HTML collections
+function processFormElements(formId) {
+    const form = document.getElementById(formId);
+    const inputs = form.querySelectorAll('input, select, textarea');
+    
+    // Array-like object - can't use map/filter directly
+    console.log('Inputs length:', inputs.length);
+    
+    // Convert to array for powerful operations
+    const inputArray = Array.from(inputs);
+    
+    // Filter required fields
+    const requiredFields = inputArray.filter(input => input.hasAttribute('required'));
+    
+    // Map to extract names
+    const fieldNames = inputArray.map(input => input.name);
+    
+    // Find first invalid field
+    const firstInvalid = inputArray.find(input => !input.validity.valid);
+    
+    // Sum up values of number inputs
+    const totalValue = inputArray
+        .filter(input => input.type === 'number')
+        .reduce((sum, input) => sum + parseFloat(input.value) || 0, 0);
+    
+    return {
+        totalInputs: inputArray.length,
+        requiredCount: requiredFields.length,
+        fieldNames: fieldNames,
+        firstInvalid: firstInvalid,
+        totalValue: totalValue
+    };
+}</code></pre>
+
+                    <div class="array-comparison-table">
+<table>
+    <thead>
+        <tr>
+            <th>Feature</th>
+            <th>Real Array</th>
+            <th>Array-like Object</th>
+            <th>String</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>Created with <code>[]</code></td>
+            <td class="true">✅ Yes</td>
+            <td class="false">❌ No</td>
+            <td class="false">❌ No</td>
+        </tr>
+        <tr>
+            <td>Has <code>length</code> property</td>
+            <td class="true">✅ Yes</td>
+            <td class="true">✅ Yes</td>
+            <td class="true">✅ Yes</td>
+        </tr>
+        <tr>
+            <td>Indexed elements (0, 1, 2...)</td>
+            <td class="true">✅ Yes</td>
+            <td class="true">✅ Yes</td>
+            <td class="true">✅ Yes</td>
+        </tr>
+        <tr>
+            <td>Has array methods (<code>push()</code>, <code>map()</code>)</td>
+            <td class="true">✅ Yes</td>
+            <td class="false">❌ No</td>
+            <td class="false">❌ No</td>
+        </tr>
+        <tr>
+            <td><code>Array.isArray()</code> returns true</td>
+            <td class="true">✅ Yes</td>
+            <td class="false">❌ No</td>
+            <td class="false">❌ No</td>
+        </tr>
+        <tr>
+            <td><code>instanceof Array</code> returns true</td>
+            <td class="true">✅ Yes</td>
+            <td class="false">❌ No</td>
+            <td class="false">❌ No</td>
+        </tr>
+        <tr>
+            <td>Can use spread operator <code>[...obj]</code></td>
+            <td class="true">✅ Yes</td>
+            <td class="true">✅ Yes</td>
+            <td class="true">✅ Yes</td>
+        </tr>
+        <tr>
+            <td>Can use <code>Array.from()</code></td>
+            <td class="true">✅ Yes</td>
+            <td class="true">✅ Yes</td>
+            <td class="true">✅ Yes</td>
+        </tr>
+    </tbody>
+</table>
+                    </div>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Working with DOM collections (NodeList, HTMLCollection)</li>
+                        <li>Processing function arguments</li>
+                        <li>Manipulating strings as character arrays</li>
+                        <li>Converting legacy code to modern JavaScript</li>
+                        <li>Creating custom data structures with array-like behavior</li>
+                    </ul>
+                    <p class="text-success mt-2">✅ Best Practice: Always convert array-like objects to real arrays before using array methods. Use <code>Array.from()</code> or the spread operator for clean, readable code.</p>
+                </details>
+            </section>
+
+            <section id="multidimensional-arrays">
+                <details>
+                    <summary>Multidimensional Arrays</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">Multidimensional arrays</span> are arrays whose elements are also arrays, allowing for grid-like data structures (matrices, tables).</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>JavaScript doesn't have true multidimensional arrays like C or Java. Instead, it uses arrays of arrays. This means each sub-array can have different lengths, creating "jagged" arrays.</p>
+                    <p>Accessing elements requires multiple index operations: <code>array[row][column]</code>. Be careful with shallow copying — modifying a nested array can affect multiple references.</p>
+                    <p>Multidimensional arrays are essential for representing grids, images, game boards, and tabular data.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// Declaration
+const matrix = [
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9]
+];
+
+// Access
+matrix[row][column]
+
+// Create dynamically
+const rows = 3;
+const cols = 4;
+const grid = Array(rows).fill(null).map(() => Array(cols).fill(0));</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// EXAMPLE 1: Basic 2D array
+const board = [
+    ['X', 'O', 'X'],
+    ['O', 'X', 'O'],
+    ['X', 'O', 'X']
+];
+
+console.log(board[0][0]); // "X"
+console.log(board[1][1]); // "X"
+console.log(board[2][2]); // "X"
+
+// Modify element
+board[1][1] = 'T';
+console.log(board[1][1]); // "T"
+
+// Iterate through 2D array
+for (let row = 0; row &lt; board.length; row++) {
+    for (let col = 0; col &lt; board[row].length; col++) {
+        console.log(`board[${row}][${col}] = ${board[row][col]}`);
+    }
+}
+
+// Using forEach for 2D arrays
+board.forEach((row, rowIndex) => {
+    row.forEach((cell, colIndex) => {
+        console.log(`Cell at [${rowIndex},${colIndex}]: ${cell}`);
+    });
+});
+
+// EXAMPLE 2: Jagged arrays (different row lengths)
+const jagged = [
+    [1, 2, 3, 4, 5],      // 5 elements
+    [6, 7],               // 2 elements
+    [8, 9, 10],           // 3 elements
+    []                    // 0 elements
+];
+
+console.log(jagged.length); // 4 rows
+console.log(jagged[0].length); // 5
+console.log(jagged[1].length); // 2
+console.log(jagged[3].length); // 0
+
+// Safe iteration
+jagged.forEach(row => {
+    if (row.length > 0) {
+        console.log('Row has elements:', row);
+    } else {
+        console.log('Empty row');
+    }
+});
+
+// EXAMPLE 3: Creating 2D arrays dynamically
+function createGrid(rows, cols, initialValue = 0) {
+    return Array(rows).fill(null).map(() => Array(cols).fill(initialValue));
+}
+
+const grid = createGrid(3, 4, '.');
+console.log(grid);
+// [
+//   ['.', '.', '.', '.'],
+//   ['.', '.', '.', '.'],
+//   ['.', '.', '.', '.']
+// ]
+
+// Create a chess board
+const chessBoard = createGrid(8, 8, null);
+chessBoard[0][0] = 'R'; // Rook
+chessBoard[0][1] = 'N'; // Knight
+chessBoard[0][4] = 'K'; // King
+chessBoard[7][0] = 'r'; // black rook
+chessBoard[7][7] = 'r'; // black rook
+
+console.log(chessBoard);
+
+// EXAMPLE 4: 3D arrays
+const cube = [
+    [
+        [1, 2],
+        [3, 4]
+    ],
+    [
+        [5, 6],
+        [7, 8]
+    ]
+];
+
+console.log(cube[0][0][0]); // 1
+console.log(cube[1][1][1]); // 8
+
+// EXAMPLE 5: Common pitfalls with shallow copying
+const original = [
+    [1, 2],
+    [3, 4]
+];
+
+// WRONG: Shallow copy - both arrays reference same inner arrays
+const badCopy = original.slice();
+badCopy[0][0] = 999;
+console.log(original[0][0]); // 999! Changed in original too!
+
+// CORRECT: Deep copy
+const deepCopy = original.map(row => [...row]);
+deepCopy[0][0] = 888;
+console.log(original[0][0]); // 1 (unchanged!)
+console.log(deepCopy[0][0]); // 888
+
+// Another correct way
+const anotherDeepCopy = JSON.parse(JSON.stringify(original));
+
+// EXAMPLE 6: Real-world example - pixel data processing
+class ImageProcessor {
+    constructor(width, height) {
+        this.width = width;
+        this.height = height;
+        this.pixels = Array(height).fill(null).map(() => 
+            Array(width).fill({r: 0, g: 0, b: 0})
+        );
+    }
+    
+    setPixel(x, y, color) {
+        if (x &gt;= 0 &amp;&amp; x &lt; this.width &amp;&amp; y &gt;= 0 &amp;&amp; y &lt; this.height) {
+            this.pixels[y][x] = color;
+        }
+    }
+    
+    getPixel(x, y) {
+        if (x &gt;= 0 &amp;&amp; x &lt; this.width &amp;&amp; y &gt;= 0 &amp;&amp; y &lt; this.height) {
+            return this.pixels[y][x];
+        }
+        return {r: 0, g: 0, b: 0};
+    }
+    
+    invertColors() {
+        for (let y = 0; y &lt; this.height; y++) {
+            for (let x = 0; x &lt; this.width; x++) {
+                const pixel = this.pixels[y][x];
+                pixel.r = 255 - pixel.r;
+                pixel.g = 255 - pixel.g;
+                pixel.b = 255 - pixel.b;
+            }
+        }
+    }
+    
+    grayscale() {
+        for (let y = 0; y &lt; this.height; y++) {
+            for (let x = 0; x &lt; this.width; x++) {
+                const pixel = this.pixels[y][x];
+                const gray = Math.round(0.299 * pixel.r + 0.587 * pixel.g + 0.114 * pixel.b);
+                pixel.r = gray;
+                pixel.g = gray;
+                pixel.b = gray;
+            }
+        }
+    }
+    
+    getPixels() {
+        return this.pixels.map(row => [...row]); // Return deep copy
+    }
+}
+
+const image = new ImageProcessor(3, 2);
+image.setPixel(0, 0, {r: 255, g: 0, b: 0}); // Red
+image.setPixel(1, 0, {r: 0, g: 255, b: 0}); // Green
+image.setPixel(2, 0, {r: 0, g: 0, b: 255}); // Blue
+image.setPixel(0, 1, {r: 255, g: 255, b: 0}); // Yellow
+image.setPixel(1, 1, {r: 255, g: 0, b: 255}); // Magenta
+image.setPixel(2, 1, {r: 0, g: 255, b: 255}); // Cyan
+
+console.log(image.getPixel(0, 0)); // {r: 255, g: 0, b: 0}
+image.invertColors();
+console.log(image.getPixel(0, 0)); // {r: 0, g: 255, b: 255} - inverted
+
+// EXAMPLE 7: Matrix operations
+const matrixA = [
+    [1, 2],
+    [3, 4]
+];
+
+const matrixB = [
+    [5, 6],
+    [7, 8]
+];
+
+function multiplyMatrices(a, b) {
+    const rowsA = a.length;
+    const colsA = a[0].length;
+    const colsB = b[0].length;
+    
+    const result = Array(rowsA).fill(null).map(() => Array(colsB).fill(0));
+    
+    for (let i = 0; i &lt; rowsA; i++) {
+        for (let j = 0; j &lt; colsB; j++) {
+            for (let k = 0; k &lt; colsA; k++) {
+                result[i][j] += a[i][k] * b[k][j];
+            }
+        }
+    }
+    
+    return result;
+}
+
+const product = multiplyMatrices(matrixA, matrixB);
+console.log(product); // [[19, 22], [43, 50]]</code></pre>
+
+                    <div class="array-diagram">
+// MULTIDIMENSIONAL ARRAY STRUCTURE:
+
+// 2D Array (grid):
+// [
+//   [element, element, element],  ← Row 0
+//   [element, element, element],  ← Row 1  
+//   [element, element, element]   ← Row 2
+// ]
+
+// Access pattern:
+// array[0][0] → top-left
+// array[0][1] → top-middle
+// array[1][0] → middle-left
+// array[2][2] → bottom-right
+
+// 3D Array (cube):
+// [
+//   [           ← Layer 0
+//     [1, 2],   ← Row 0, Col 0-1
+//     [3, 4]    ← Row 1, Col 0-1
+//   ],
+//   [           ← Layer 1
+//     [5, 6],   ← Row 0, Col 0-1
+//     [7, 8]    ← Row 1, Col 0-1
+//   ]
+// ]
+
+// Access: array[layer][row][column]</div>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Game development (chess boards, grids, maps)</li>
+                        <li>Image and video processing</li>
+                        <li>Scientific computing and simulations</li>
+                        <li>Data tables and spreadsheets</li>
+                        <li>Neural network weights and matrices</li>
+                        <li>Coordinate systems and geometry</li>
+                    </ul>
+                    <p class="text-warning mt-2"><strong>⚠️ Important Note:</strong> JavaScript's multidimensional arrays are actually arrays of arrays. Each sub-array can have different lengths, creating "jagged" structures. Always validate dimensions before assuming rectangular shapes.</p>
+                    <p class="text-success mt-2">✅ Best Practice: Use helper functions to create and manipulate multidimensional arrays safely, and always use deep copying when you need independent copies.</p>
+                </details>
+            </section>
+
+            <hr class="my-5">
+
+            <div class="alert alert-info">
+                <h5>Key Takeaways</h5>
+                <ul>
+                    <li>Use array literals <code>[]</code> for creating arrays — avoid <code>new Array()</code> with a single number</li>
+                    <li>Arrays are zero-indexed and dynamic in size</li>
+                    <li>Sparse arrays have holes (missing indices) — use <code>index in array</code> to check existence</li>
+                    <li>Array-like objects (arguments, NodeList, strings) have length and indexed properties but lack array methods</li>
+                    <li>Convert array-like objects to real arrays with <code>Array.from()</code> or spread operator <code>[...obj]</code></li>
+                    <li>Multidimensional arrays are arrays of arrays — be careful with shallow copying</li>
+                    <li>Always validate array dimensions and handle edge cases in nested structures</li>
+                </ul>
+            </div>
+
+            <div class="alert alert-warning">
+                <h5>Common Pitfalls</h5>
+                <ul>
+                    <li>Using <code>new Array(5)</code> expecting 5 elements when it creates 5 holes</li>
+                    <li>Assuming array-like objects have array methods</li>
+                    <li>Modifying nested arrays without deep copying</li>
+                    <li>Using <code>array[index] !== undefined</code> to check for holes</li>
+                    <li>Forgetting that strings are array-like but immutable</li>
+                    <li>Not handling empty or jagged sub-arrays in multidimensional structures</li>
+                </ul>
+            </div>
+
+            <div class="alert alert-success">
+                <h5>Interview Question Prep</h5>
+                <p><strong>Q: What's the difference between <code>new Array(3)</code> and <code>[null, null, null]</code>?</strong></p>
+                <p><strong>A:</strong> <code>new Array(3)</code> creates a sparse array with 3 holes (no actual properties), while <code>[null, null, null]</code> creates a dense array with 3 elements, each being the value <code>null</code>. The first has length 3 but no indexed properties, the second has length 3 with indexed properties containing <code>null</code> values.</p>
+                
+                <p><strong>Q: How do you convert a NodeList to a real array?</strong></p>
+                <p><strong>A:</strong> Use <code>Array.from(nodeList)</code> or the spread operator <code>[...nodeList]</code>. Both create a real array from the array-like NodeList object.</p>
+                
+                <p><strong>Q: Why does <code>typeof []</code> return "object"?</strong></p>
+                <p><strong>A:</strong> In JavaScript, arrays are a special type of object. To check if something is an array, use <code>Array.isArray()</code> instead of <code>typeof</code>.</p>
+                
+                <p><strong>Q: How would you create a 5x5 grid filled with zeros?</strong></p>
+                <p><strong>A:</strong> <code>Array(5).fill(null).map(() => Array(5).fill(0))</code> or <code>Array.from({length: 5}, () => Array(5).fill(0))</code></p>
+                
+                <p><strong>Q: What's the best way to check if an array index exists?</strong></p>
+                <p><strong>A:</strong> Use the <code>in</code> operator: <code>index in array</code>. This returns true if the index exists (even if its value is undefined), false if it's a hole.</p>
+            </div>
+
+            <div class="text-center mt-4">
+                <small class="text-muted">© 2024 AI Tutor — Mastering Programming Fundamentals One Concept at a Time</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript Utilities -->
+<script>
+    // Expand/Collapse All
+    document.getElementById('expandAll').addEventListener('click', () => {
+        document.querySelectorAll('details').forEach(detail => {
+            detail.open = true;
+        });
+    });
+
+    document.getElementById('collapseAll').addEventListener('click', () => {
+        document.querySelectorAll('details').forEach(detail => {
+            detail.open = false;
+        });
+    });
+
+    // Smooth scrolling for TOC links
+    document.querySelectorAll('.toc-item a, .toc-subitem a').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+            
+            if (targetElement) {
+                window.scrollTo({
+                    top: targetElement.offsetTop - 100,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+
+    // Search functionality for TOC
+    document.getElementById('searchToc').addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
+        
+        tocItems.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            if (query === '' || text.includes(query)) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+
+    // Syntax Highlighting (basic)
+    document.querySelectorAll('pre code').forEach(block => {
+        hljs.highlightBlock(block);
+    });
+
+    // Add highlight.js if not present (fallback)
+    if (typeof hljs === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js';
+        script.onload = () => {
+            document.querySelectorAll('pre code').forEach(block => {
+                hljs.highlightBlock(block);
+            });
+        };
+        document.head.appendChild(script);
+    }
+</script>
+
+<!-- Optional: Add highlight.js for better syntax highlighting -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+
+</body>
+</html>
+```

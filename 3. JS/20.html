@@ -1,0 +1,1319 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8.2 Array Methods - Mutating</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00f5ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --accent: #00f5ff;
+            --card-bg: #112240;
+            --border-color: #007a99;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            position: fixed;
+            width: 300px;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            box-shadow: 2px 0 10px rgba(0, 245, 255, 0.1);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--amber);
+        }
+
+        .toc-item {
+            margin: 8px 0;
+            padding-left: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .toc-item a {
+            color: var(--cyan);
+            text-decoration: none;
+            display: block;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .toc-item a:hover {
+            color: var(--amber);
+            padding-left: 20px;
+        }
+
+        .toc-subitem {
+            margin-left: 20px;
+            font-size: 0.9rem;
+            color: #b0c4de;
+        }
+
+        details {
+            margin: 15px 0;
+            border-left: 3px solid var(--amber);
+            padding-left: 15px;
+            background-color: rgba(17, 34, 64, 0.5);
+            border-radius: 0 5px 5px 0;
+        }
+
+        summary {
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--amber);
+            list-style: none;
+            padding: 10px;
+            background-color: rgba(0, 245, 255, 0.08);
+            border-radius: 5px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        summary::before {
+            content: "▶";
+            margin-right: 10px;
+            font-size: 0.8rem;
+            transition: transform 0.3s;
+        }
+
+        details[open] summary::before {
+            transform: rotate(90deg);
+        }
+
+        pre code {
+            display: block;
+            padding: 15px;
+            background-color: #0d1b2a;
+            color: var(--cyan);
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            border-left: 3px solid var(--amber);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.2);
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+
+        .formula {
+            background-color: rgba(0, 245, 255, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 3px solid var(--cyan);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.1rem;
+        }
+
+        .definition {
+            color: var(--amber);
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .detail {
+            margin: 12px 0;
+            line-height: 1.6;
+        }
+
+        .syntax {
+            margin: 15px 0;
+        }
+
+        .example {
+            margin: 15px 0;
+        }
+
+        .use-case {
+            color: var(--cyan);
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
+        .code-comment {
+            color: #7f8c8d;
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: #0a192f;
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-left: 8px;
+        }
+
+        .array-diagram {
+            background-color: rgba(0, 245, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px dashed var(--cyan);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            white-space: pre;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .mutation-diagram {
+            background-color: rgba(17, 34, 64, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid var(--amber);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .array-box {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 5px;
+            border: 1px solid var(--cyan);
+            border-radius: 5px;
+            background-color: rgba(0, 245, 255, 0.1);
+        }
+
+        .modified-box {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 5px;
+            border: 1px solid var(--amber);
+            border-radius: 5px;
+            background-color: rgba(255, 183, 77, 0.2);
+        }
+
+        .method-table {
+            background-color: rgba(0, 245, 255, 0.05);
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+            border: 1px dashed var(--cyan);
+        }
+
+        .method-table th,
+        .method-table td {
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            text-align: left;
+        }
+
+        .method-table th {
+            background-color: rgba(0, 245, 255, 0.1);
+            color: var(--amber);
+            font-weight: bold;
+        }
+
+        .method-table tr:nth-child(even) {
+            background-color: rgba(17, 34, 64, 0.3);
+        }
+
+        .method-table .mutating {
+            color: var(--amber);
+            font-weight: bold;
+        }
+
+        .method-table .non-mutating {
+            color: var(--cyan);
+            font-weight: bold;
+        }
+
+        @media (max-width: 991px) {
+            .left-panel {
+                position: relative;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .right-panel {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid p-0">
+    <div class="row g-0">
+        <!-- Left Panel -->
+        <div class="col-md-3 left-panel">
+            <h2>8.2 Array Methods - Mutating</h2>
+            <p class="text-muted small">Mastering Array Modification Methods</p>
+            <p class="text-secondary small">Author: AI Tutor • Updated: 2024</p>
+
+            <div class="mb-3 d-flex gap-2">
+                <button id="expandAll" class="btn btn-control">Expand All</button>
+                <button id="collapseAll" class="btn btn-control">Collapse All</button>
+            </div>
+
+            <div class="search-box mb-4">
+                <input type="text" id="searchToc" class="form-control bg-dark border-cyan" placeholder="Search topics..." style="color: var(--cyan); background-color: #112240; border-color: var(--amber);">
+            </div>
+
+            <h5 class="text-uppercase text-muted fw-bold mb-3">Table of Contents</h5>
+            <ul class="list-unstyled">
+                <li class="toc-item">
+                    <a href="#push-pop-shift-unshift">push(), pop(), shift(), unshift()</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#ppsu-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#ppsu-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#ppsu-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#ppsu-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#ppsu-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#splice-slice">splice() and slice()</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#splice-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#splice-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#splice-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#splice-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#splice-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#sort-reverse">sort() and reverse()</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#sort-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#sort-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#sort-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#sort-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#sort-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#fill-copywithin">fill() and copyWithin()</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#fill-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#fill-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#fill-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#fill-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#fill-uses">Uses</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="col-md-9 right-panel">
+            <section id="push-pop-shift-unshift">
+                <details>
+                    <summary>push(), pop(), shift(), unshift()</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">push()</span>, <span class="highlight">pop()</span>, <span class="highlight">shift()</span>, and <span class="highlight">unshift()</span> are mutating array methods that add or remove elements from the beginning or end of an array.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>These four methods modify the original array in-place and return different values:</p>
+                    <ul>
+                        <li><code>push()</code>: Adds one or more elements to the end and returns new length</li>
+                        <li><code>pop()</code>: Removes the last element and returns that element</li>
+                        <li><code>unshift()</code>: Adds one or more elements to the beginning and returns new length</li>
+                        <li><code>shift()</code>: Removes the first element and returns that element</li>
+                    </ul>
+                    <p>Think of arrays as queues or stacks: <code>push()</code>/<code>pop()</code> work like a stack (LIFO), while <code>unshift()</code>/<code>shift()</code> work like a queue (FIFO).</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// Stack operations (end of array)
+array.push(element1, element2, ...)
+const popped = array.pop()
+
+// Queue operations (beginning of array)
+array.unshift(element1, element2, ...)
+const shifted = array.shift()</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// EXAMPLE 1: push() and pop() - Stack behavior
+const stack = [];
+
+// Add elements to the end
+stack.push('first');
+stack.push('second');
+stack.push('third');
+console.log(stack); // ["first", "second", "third"]
+console.log(stack.length); // 3
+
+// Remove elements from the end
+const last = stack.pop();
+console.log(last); // "third"
+console.log(stack); // ["first", "second"]
+
+stack.push('fourth');
+console.log(stack); // ["first", "second", "fourth"]
+
+// EXAMPLE 2: unshift() and shift() - Queue behavior
+const queue = [];
+
+// Add elements to the beginning
+queue.unshift('first');
+queue.unshift('second');
+queue.unshift('third');
+console.log(queue); // ["third", "second", "first"]
+
+// Remove elements from the beginning
+const first = queue.shift();
+console.log(first); // "third"
+console.log(queue); // ["second", "first"]
+
+queue.unshift('zero');
+console.log(queue); // ["zero", "second", "first"]
+
+// EXAMPLE 3: Combining all four methods
+const deck = ['Ace', '2', '3', '4', '5'];
+
+// Add cards to the bottom (push)
+deck.push('6', '7', '8');
+console.log(deck); // ["Ace", "2", "3", "4", "5", "6", "7", "8"]
+
+// Deal from the top (shift)
+const dealtCard = deck.shift();
+console.log(dealtCard); // "Ace"
+console.log(deck); // ["2", "3", "4", "5", "6", "7", "8"]
+
+// Add a card to the top (unshift)
+deck.unshift('King');
+console.log(deck); // ["King", "2", "3", "4", "5", "6", "7", "8"]
+
+// Discard from bottom (pop)
+const discarded = deck.pop();
+console.log(discarded); // "8"
+console.log(deck); // ["King", "2", "3", "4", "5", "6", "7"]
+
+// EXAMPLE 4: Return values and performance
+const numbers = [1, 2, 3];
+
+// push() returns new length
+const newLength = numbers.push(4, 5);
+console.log(newLength); // 5
+console.log(numbers); // [1, 2, 3, 4, 5]
+
+// pop() returns removed element
+const lastNumber = numbers.pop();
+console.log(lastNumber); // 5
+console.log(numbers); // [1, 2, 3, 4]
+
+// unshift() returns new length
+const newLength2 = numbers.unshift(0, -1);
+console.log(newLength2); // 5
+console.log(numbers); // [-1, 0, 1, 2, 3, 4]
+
+// shift() returns removed element
+const firstNumber = numbers.shift();
+console.log(firstNumber); // -1
+console.log(numbers); // [0, 1, 2, 3, 4]
+
+// EXAMPLE 5: Practical example - Task manager
+class TaskManager {
+    constructor() {
+        this.tasks = [];
+    }
+    
+    // Add task to end (push)
+    addTask(task) {
+        this.tasks.push(task);
+        console.log(`Added: ${task}`);
+    }
+    
+    // Complete most recent task (pop)
+    completeTask() {
+        if (this.tasks.length === 0) return null;
+        const completed = this.tasks.pop();
+        console.log(`Completed: ${completed}`);
+        return completed;
+    }
+    
+    // Add urgent task to front (unshift)
+    addUrgentTask(task) {
+        this.tasks.unshift(task);
+        console.log(`URGENT: Added ${task} to front`);
+    }
+    
+    // Process next task (shift)
+    processNextTask() {
+        if (this.tasks.length === 0) return null;
+        const next = this.tasks.shift();
+        console.log(`Processing: ${next}`);
+        return next;
+    }
+    
+    getTaskCount() {
+        return this.tasks.length;
+    }
+}
+
+const tm = new TaskManager();
+tm.addTask('Email client');
+tm.addTask('Update documentation');
+tm.addUrgentTask('Fix critical bug');
+tm.processNextTask(); // "Fix critical bug"
+tm.completeTask(); // "Update documentation"
+tm.addTask('Review pull request');
+console.log(tm.tasks); // ["Email client", "Review pull request"]</code></pre>
+
+                    <div class="array-diagram">
+// STACK vs QUEUE DIAGRAM:
+
+// PUSH/POP (Stack - LIFO):
+// Initial: []
+// push('A'): ['A']
+// push('B'): ['A', 'B'] 
+// push('C'): ['A', 'B', 'C']
+// pop(): removes 'C' → ['A', 'B']
+
+// UNSHIFT/SHIFT (Queue - FIFO):
+// Initial: []
+// unshift('A'): ['A']
+// unshift('B'): ['B', 'A']
+// unshift('C'): ['C', 'B', 'A']
+// shift(): removes 'C' → ['B', 'A']</div>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li><code>push()/pop()</code>: Implementing stacks for undo/redo, function call management</li>
+                        <li><code>unshift()/shift()</code>: Implementing queues for task scheduling, message processing</li>
+                        <li>Managing lists where order matters</li>
+                        <li>Building data structures like stacks and queues</li>
+                        <li>Game development (turn-based systems)</li>
+                    </ul>
+                    <p class="text-warning mt-2"><strong>⚠️ Performance Note:</strong> <code>shift()</code> and <code>unshift()</code> are slower than <code>push()</code> and <code>pop()</code> because they require reindexing all elements. Use them sparingly on large arrays.</p>
+                </details>
+            </section>
+
+            <section id="splice-slice">
+                <details>
+                    <summary>splice() and slice()</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">splice()</span> is a mutating method that changes the contents of an array by removing or replacing existing elements and/or adding new elements. <span class="highlight">slice()</span> is a non-mutating method that returns a shallow copy of a portion of an array.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>These two methods are often confused because they both deal with array portions, but they have fundamentally different behaviors:</p>
+                    <ul>
+                        <li><code>splice()</code>: Modifies the original array and returns removed elements</li>
+                        <li><code>slicem()</code>: Does not modify the original array and returns a new array</li>
+                    </ul>
+                    <p><code>splice()</code> is incredibly powerful for complex array modifications, while <code>slice()</code> is perfect for creating copies without side effects.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// splice() - mutates the array
+array.splice(start, deleteCount, item1, item2, ...)
+
+// slice() - does not mutate
+array.slice(start, end)</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// EXAMPLE 1: splice() - The Swiss Army Knife of array modification
+const fruits = ['apple', 'banana', 'orange', 'grape'];
+
+// Remove 2 elements starting at index 1
+const removed = fruits.splice(1, 2);
+console.log(removed); // ["banana", "orange"]
+console.log(fruits); // ["apple", "grape"]
+
+// Add elements at index 1 without removing any
+const fruits2 = ['apple', 'grape'];
+fruits2.splice(1, 0, 'banana', 'orange');
+console.log(fruits2); // ["apple", "banana", "orange", "grape"]
+
+// Replace elements: remove 1, add 2
+const fruits3 = ['apple', 'banana', 'cherry'];
+fruits3.splice(1, 1, 'blueberry', 'strawberry');
+console.log(fruits3); // ["apple", "blueberry", "strawberry", "cherry"]
+
+// Remove all elements from index 2 onwards
+const numbers = [1, 2, 3, 4, 5, 6];
+numbers.splice(2);
+console.log(numbers); // [1, 2]
+
+// Remove last element
+const colors = ['red', 'green', 'blue'];
+colors.splice(-1, 1); // negative index from end
+console.log(colors); // ["red", "green"]
+
+// EXAMPLE 2: splice() with multiple use cases
+function manageInventory(inventory) {
+    // Add new product to start
+    inventory.splice(0, 0, 'new-product');
+    
+    // Remove sold-out items (last 2)
+    const soldOut = inventory.splice(-2, 2);
+    
+    // Replace out-of-stock item
+    const index = inventory.indexOf('out-of-stock');
+    if (index !== -1) {
+        inventory.splice(index, 1, 'in-stock');
+    }
+    
+    return { inventory, soldOut };
+}
+
+let stock = ['product-a', 'out-of-stock', 'product-b', 'product-c', 'product-d'];
+const result = manageInventory(stock);
+console.log(result.inventory); // ["new-product", "product-a", "in-stock", "product-b"]
+console.log(result.soldOut); // ["product-c", "product-d"]
+
+// EXAMPLE 3: slice() - Safe copying
+const originalArray = ['a', 'b', 'c', 'd', 'e'];
+
+// Copy entire array
+const copy1 = originalArray.slice();
+console.log(copy1); // ["a", "b", "c", "d", "e"]
+console.log(originalArray === copy1); // false (different arrays)
+
+// Copy from index 1 to 4 (exclusive)
+const copy2 = originalArray.slice(1, 4);
+console.log(copy2); // ["b", "c", "d"]
+
+// Copy from index 2 to end
+const copy3 = originalArray.slice(2);
+console.log(copy3); // ["c", "d", "e"]
+
+// Copy last 2 elements
+const copy4 = originalArray.slice(-2);
+console.log(copy4); // ["d", "e"]
+
+// Copy from index 1 to second-to-last
+const copy5 = originalArray.slice(1, -1);
+console.log(copy5); // ["b", "c", "d"]
+
+// EXAMPLE 4: Demonstrating mutation difference
+const arr1 = [1, 2, 3, 4, 5];
+const arr2 = [1, 2, 3, 4, 5];
+
+// splice() modifies original
+const removedElements = arr1.splice(1, 2, 'X', 'Y');
+console.log('splice result:', removedElements); // [2, 3]
+console.log('arr1 after splice:', arr1); // [1, "X", "Y", 4, 5]
+
+// slice() creates new array, original unchanged
+const slicedArray = arr2.slice(1, 4);
+console.log('slice result:', slicedArray); // [2, 3, 4]
+console.log('arr2 after slice:', arr2); // [1, 2, 3, 4, 5] - unchanged!
+
+// EXAMPLE 5: Real-world example - Shopping cart
+class ShoppingCart {
+    constructor() {
+        this.items = [];
+    }
+    
+    // Add item to cart (push)
+    addItem(item) {
+        this.items.push(item);
+    }
+    
+    // Add multiple items at specific position (splice)
+    insertItems(position, ...items) {
+        this.items.splice(position, 0, ...items);
+    }
+    
+    // Remove item by index (splice)
+    removeItem(index) {
+        if (index &gt;= 0 &amp;&amp; index &lt; this.items.length) {
+            return this.items.splice(index, 1)[0];
+        }
+        return null;
+    }
+    
+    // Remove range of items (splice)
+    removeRange(start, count) {
+        return this.items.splice(start, count);
+    }
+    
+    // Get a copy of items (slice)
+    getItems() {
+        return this.items.slice(); // Return copy, not reference
+    }
+    
+    // Get items in a specific range (slice)
+    getItemsInRange(start, end) {
+        return this.items.slice(start, end);
+    }
+    
+    // Clear cart
+    clear() {
+        this.items.splice(0, this.items.length);
+    }
+    
+    // Get cart size
+    size() {
+        return this.items.length;
+    }
+}
+
+const cart = new ShoppingCart();
+cart.addItem('apple');
+cart.addItem('banana');
+cart.addItem('orange');
+
+console.log(cart.getItems()); // ["apple", "banana", "orange"]
+
+// Insert item at position 1
+cart.insertItems(1, 'grape', 'kiwi');
+console.log(cart.getItems()); // ["apple", "grape", "kiwi", "banana", "orange"]
+
+// Remove item at index 2
+const removed = cart.removeItem(2);
+console.log(removed); // "kiwi"
+console.log(cart.getItems()); // ["apple", "grape", "banana", "orange"]
+
+// Get range of items
+const middleItems = cart.getItemsInRange(1, 3);
+console.log(middleItems); // ["grape", "banana"]
+
+// Clear cart
+cart.clear();
+console.log(cart.getItems()); // []</code></pre>
+
+                    <div class="method-table">
+<table>
+    <thead>
+        <tr>
+            <th>Method</th>
+            <th>Mutates Original?</th>
+            <th>Returns</th>
+            <th>Use Case</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>splice()</code></td>
+            <td class="mutating">✅ Yes</td>
+            <td>Array of removed elements</td>
+            <td>Adding/removing/replacing elements at specific positions</td>
+        </tr>
+        <tr>
+            <td><code>slice()</code></td>
+            <td class="non-mutating">❌ No</td>
+            <td>New array with copied elements</td>
+            <td>Creating safe copies of array portions</td>
+        </tr>
+        <tr>
+            <td><code>push()</code></td>
+            <td class="mutating">✅ Yes</td>
+            <td>New length</td>
+            <td>Add elements to end</td>
+        </tr>
+        <tr>
+            <td><code>pop()</code></td>
+            <td class="mutating">✅ Yes</td>
+            <td>Removed element</td>
+            <td>Remove element from end</td>
+        </tr>
+        <tr>
+            <td><code>unshift()</code></td>
+            <td class="mutating">✅ Yes</td>
+            <td>New length</td>
+            <td>Add elements to beginning</td>
+        </tr>
+        <tr>
+            <td><code>shift()</code></td>
+            <td class="mutating">✅ Yes</td>
+            <td>Removed element</td>
+            <td>Remove element from beginning</td>
+        </tr>
+    </tbody>
+</table>
+                    </div>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li><code>splice()</code>: Complex array modifications (insert, remove, replace)</li>
+                        <li><code>slice()</code>: Creating immutable copies for functional programming</li>
+                        <li><code>splice()</code>: Implementing undo/redo functionality</li>
+                        <li><code>slice()</code>: Pagination and data sampling</li>
+                        <li><code>splice()</code>: Managing dynamic lists with user interactions</li>
+                    </ul>
+                    <p class="text-success mt-2">✅ Best Practice: Use <code>slice()</code> when you need to preserve the original array. Use <code>splice()</code> when you specifically want to modify the array in-place.</p>
+                    <p class="text-info mt-2">💡 Pro Tip: <code>slice()</code> is your friend for avoiding side effects in functional programming!</p>
+                </details>
+            </section>
+
+            <section id="sort-reverse">
+                <details>
+                    <summary>sort() and reverse()</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">sort()</span> sorts the elements of an array in place and returns the sorted array. <span class="highlight">reverse()</span> reverses the order of the elements in an array in place and returns the reversed array.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>Both methods are mutating and modify the original array. However, <code>sort()</code> has important nuances that trip up many developers:</p>
+                    <ul>
+                        <li>By default, <code>sort()</code> converts elements to strings and sorts lexicographically</li>
+                        <li>For numeric sorting, you must provide a compare function</li>
+                        <li><code>reverse()</code> simply reverses the current order regardless of data type</li>
+                        <li>Both methods work with any data type but behave differently based on context</li>
+                    </ul>
+                    <p>The compare function should return a negative number (first element before second), zero (equal), or positive number (first element after second).</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// sort() with compare function
+array.sort([compareFunction])
+
+// compareFunction(a, b) {
+//   if (a &lt; b) return -1;
+//   if (a &gt; b) return 1;
+//   return 0;
+// }
+
+// Or simplified:
+// For ascending: (a, b) =&gt; a - b
+// For descending: (a, b) =&gt; b - a
+
+// reverse()
+array.reverse()</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// EXAMPLE 1: Default sort behavior (string conversion)
+const numbers = [10, 5, 40, 25, 1000, 1];
+console.log('Original:', numbers);
+
+// Default sort - converts to strings!
+numbers.sort();
+console.log('Default sort:', numbers); // [1, 10, 1000, 25, 40, 5]
+
+// Why? Because it's comparing strings: "1", "10", "1000", "25", "40", "5"
+// Lexicographically: "1" < "10" < "1000" < "25" < "40" < "5"
+
+// EXAMPLE 2: Numeric sort with compare function
+const correctNumbers = [10, 5, 40, 25, 1000, 1];
+
+// Ascending order
+correctNumbers.sort((a, b) =&gt; a - b);
+console.log('Ascending:', correctNumbers); // [1, 5, 10, 25, 40, 1000]
+
+// Descending order
+correctNumbers.sort((a, b) =&gt; b - a);
+console.log('Descending:', correctNumbers); // [1000, 40, 25, 10, 5, 1]
+
+// EXAMPLE 3: Sorting strings alphabetically
+const fruits = ['banana', 'apple', 'cherry', 'date'];
+fruits.sort();
+console.log('Alphabetical:', fruits); // ["apple", "banana", "cherry", "date"]
+
+// Reverse alphabetical
+fruits.sort((a, b) =&gt; b.localeCompare(a));
+console.log('Reverse alphabetical:', fruits); // ["date", "cherry", "banana", "apple"]
+
+// EXAMPLE 4: Sorting objects by property
+const students = [
+    { name: 'Alice', grade: 85 },
+    { name: 'Bob', grade: 92 },
+    { name: 'Charlie', grade: 78 },
+    { name: 'Diana', grade: 96 }
+];
+
+// Sort by grade ascending
+students.sort((a, b) =&gt; a.grade - b.grade);
+console.log('By grade (asc):', students);
+// [{name: "Charlie", grade: 78}, {name: "Alice", grade: 85}, {name: "Bob", grade: 92}, {name: "Diana", grade: 96}]
+
+// Sort by name alphabetically
+students.sort((a, b) =&gt; a.name.localeCompare(b.name));
+console.log('By name:', students);
+// [{name: "Alice", grade: 85}, {name: "Bob", grade: 92}, {name: "Charlie", grade: 78}, {name: "Diana", grade: 96}]
+
+// EXAMPLE 5: Complex sorting with multiple criteria
+const products = [
+    { name: 'Laptop', category: 'Electronics', price: 999 },
+    { name: 'Book', category: 'Education', price: 25 },
+    { name: 'Phone', category: 'Electronics', price: 699 },
+    { name: 'Pen', category: 'Office', price: 2 },
+    { name: 'Tablet', category: 'Electronics', price: 399 }
+];
+
+// Sort by category, then by price (ascending)
+products.sort((a, b) =&gt; {
+    if (a.category &lt; b.category) return -1;
+    if (a.category &gt; b.category) return 1;
+    return a.price - b.price;
+});
+
+console.log('Sorted by category, then price:');
+products.forEach(p =&gt; console.log(`${p.name}: $${p.price} (${p.category})`));
+
+// EXAMPLE 6: reverse() method
+const numbers2 = [1, 2, 3, 4, 5];
+console.log('Original:', numbers2);
+
+numbers2.reverse();
+console.log('After reverse():', numbers2); // [5, 4, 3, 2, 1]
+
+// reverse() works with any array
+const mixed = ['a', 1, true, {key: 'value'}, null];
+mixed.reverse();
+console.log('Reversed mixed:', mixed); // [null, {key: "value"}, true, 1, "a"]
+
+// EXAMPLE 7: Common pitfalls and solutions
+const mixedNumbers = ['10', '5', '40', '25', '1000', '1'];
+
+// Problem: String comparison
+mixedNumbers.sort();
+console.log('String sort:', mixedNumbers); // ["1", "10", "1000", "25", "40", "5"]
+
+// Solution 1: Convert to numbers
+mixedNumbers.sort((a, b) =&gt; Number(a) - Number(b));
+console.log('Numeric sort:', mixedNumbers); // ["1", "5", "10", "25", "40", "1000"]
+
+// Solution 2: Parse as integers
+mixedNumbers.sort((a, b) =&gt; parseInt(a) - parseInt(b));
+console.log('Parsed sort:', mixedNumbers); // ["1", "5", "10", "25", "40", "1000"]
+
+// EXAMPLE 8: Sorting dates
+const events = [
+    { name: 'Event A', date: new Date('2023-05-15') },
+    { name: 'Event B', date: new Date('2023-01-10') },
+    { name: 'Event C', date: new Date('2023-12-01') }
+];
+
+// Sort by date ascending
+events.sort((a, b) =&gt; a.date - b.date);
+console.log('Events by date:');
+events.forEach(event =&gt; console.log(`${event.name}: ${event.date.toDateString()}`));
+
+// EXAMPLE 9: Sorting with locale-aware string comparison
+const words = ['café', 'caramel', 'cabbage', 'café'];
+words.sort((a, b) =&gt; a.localeCompare(b, 'en', { sensitivity: 'base' }));
+console.log('Locale sorted:', words); // ["cabbage", "caramel", "café", "café"]
+
+// EXAMPLE 10: Reversing sorted arrays
+const scores = [85, 92, 78, 96, 88];
+
+// Sort ascending
+scores.sort((a, b) =&gt; a - b);
+console.log('Ascending:', scores); // [78, 85, 88, 92, 96]
+
+// Reverse to get descending
+scores.reverse();
+console.log('Descending:', scores); // [96, 92, 88, 85, 78]
+
+// Alternative: direct descending sort
+const scores2 = [85, 92, 78, 96, 88];
+scores2.sort((a, b) =&gt; b - a);
+console.log('Direct descending:', scores2); // [96, 92, 88, 85, 78]</code></pre>
+
+                    <div class="array-diagram">
+// SORTING DEMONSTRATION:
+
+// Before sort: [10, 5, 40, 25, 1000, 1]
+// Default sort (string): [1, 10, 1000, 25, 40, 5]
+// Numeric sort: [1, 5, 10, 25, 40, 1000]
+
+// REVERSE DEMONSTRATION:
+
+// Before reverse: [1, 2, 3, 4, 5]
+// After reverse: [5, 4, 3, 2, 1]
+
+// OBJECT SORTING:
+
+// [{name: "Bob", grade: 92}, {name: "Alice", grade: 85}]
+// Sort by name: [{name: "Alice", grade: 85}, {name: "Bob", grade: 92}]</div>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li><code>sort()</code>: Organizing lists of data (names, numbers, dates)</li>
+                        <li><code>sort()</code>: Ranking systems (leaderboards, search results)</li>
+                        <li><code>sort()</code>: Data preprocessing for visualization</li>
+                        <li><code>reverse()</code>: Displaying chronological data in reverse order</li>
+                        <li><code>reverse()</code>: Implementing undo/redo history</li>
+                        <li><code>sort()</code>: Processing survey responses and analytics</li>
+                    </ul>
+                    <p class="text-warning mt-2"><strong>⚠️ Critical Warning:</strong> Never use <code>sort()</code> without a compare function for numbers! It will convert them to strings and sort incorrectly.</p>
+                    <p class="text-success mt-2">✅ Best Practice: Always use a compare function with <code>sort()</code> for predictable results. Use <code>localeCompare()</code> for internationalized string sorting.</p>
+                </details>
+            </section>
+
+            <section id="fill-copywithin">
+                <details>
+                    <summary>fill() and copyWithin()</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">fill()</span> fills all the elements of an array from a start index to an end index with a static value. <span class="highlight">copyWithin()</span> copies a sequence of array elements within the array.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>Both methods are mutating and modify the original array in-place. They're useful for efficient array manipulation without creating new arrays.</p>
+                    <ul>
+                        <li><code>fill()</code>: Sets all elements in a range to a specific value</li>
+                        <li><code>copyWithin()</code>: Copies elements from one position to another within the same array</li>
+                    </ul>
+                    <p>Both methods accept optional start and end parameters (end is exclusive) and support negative indices.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// fill()
+array.fill(value, start, end)
+
+// copyWithin()
+array.copyWithin(target, start, end)</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// EXAMPLE 1: fill() - Setting all elements to a value
+const numbers = [1, 2, 3, 4, 5];
+
+// Fill entire array with 0
+numbers.fill(0);
+console.log(numbers); // [0, 0, 0, 0, 0]
+
+// Fill from index 1 to 4 (exclusive)
+const numbers2 = [1, 2, 3, 4, 5];
+numbers2.fill(99, 1, 4);
+console.log(numbers2); // [1, 99, 99, 99, 5]
+
+// Fill using negative indices
+const numbers3 = [1, 2, 3, 4, 5];
+numbers3.fill(-1, -2); // From second-to-last to end
+console.log(numbers3); // [1, 2, 3, -1, -1]
+
+// Fill with different types
+const mixed = [1, 2, 3, 4, 5];
+mixed.fill('hello');
+console.log(mixed); // ["hello", "hello", "hello", "hello", "hello"]
+
+mixed.fill(true, 0, 2);
+console.log(mixed); // [true, true, "hello", "hello", "hello"]
+
+// EXAMPLE 2: fill() practical examples
+function createMatrix(rows, cols, initialValue = 0) {
+    return Array(rows).fill(null).map(() =&gt; Array(cols).fill(initialValue));
+}
+
+const grid = createMatrix(3, 4, '.');
+console.log(grid);
+// [
+//   ['.', '.', '.', '.'],
+//   ['.', '.', '.', '.'],
+//   ['.', '.', '.', '.']
+// ]
+
+// Initialize game board
+const board = Array(8).fill(null).map(() =&gt; Array(8).fill(null));
+board.fill('X', 0, 1); // Set first row to X
+console.log(board[0]); // ["X", "X", "X", "X", "X", "X", "X", "X"]
+
+// EXAMPLE 3: copyWithin() - Copying within the same array
+const arr = [1, 2, 3, 4, 5];
+
+// Copy elements from index 0 to 2 to position 3
+arr.copyWithin(3, 0, 2);
+console.log(arr); // [1, 2, 3, 1, 2]
+
+// Explanation: target=3, start=0, end=2
+// Copy elements at indices 0,1 to positions 3,4
+// Original: [1, 2, 3, 4, 5]
+// After:    [1, 2, 3, 1, 2]
+
+// Copy from end to beginning
+const arr2 = [1, 2, 3, 4, 5];
+arr2.copyWithin(0, -2); // Copy last 2 elements to beginning
+console.log(arr2); // [4, 5, 3, 4, 5]
+
+// Copy with different ranges
+const arr3 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+arr3.copyWithin(2, 5, 8); // Copy elements 5,6,7 to positions 2,3,4
+console.log(arr3); // [1, 2, 6, 7, 8, 6, 7, 8, 9, 10]
+
+// EXAMPLE 4: copyWithin() with overlapping ranges
+const arr4 = [1, 2, 3, 4, 5];
+arr4.copyWithin(0, 2, 4); // Copy [3,4] to [0,1]
+console.log(arr4); // [3, 4, 3, 4, 5]
+
+// The copy operation happens in a way that preserves the source values during copying
+
+// EXAMPLE 5: Practical example - Sliding window
+function createSlidingWindow(data, windowSize) {
+    const result = new Array(data.length);
+    
+    // Fill with default values
+    result.fill(null);
+    
+    // Copy data into appropriate positions
+    for (let i = 0; i &lt; data.length; i++) {
+        if (i &lt; windowSize) {
+            // First few elements can't have full window
+            result[i] = data.slice(0, i + 1);
+        } else {
+            // Full windows
+            result[i] = data.slice(i - windowSize + 1, i + 1);
+        }
+    }
+    
+    return result;
+}
+
+// More efficient version using copyWithin
+function createSlidingWindowOptimized(data, windowSize) {
+    const result = new Array(data.length);
+    
+    // Fill with empty arrays
+    result.fill(null);
+    
+    // For each position, copy relevant elements
+    for (let i = 0; i &lt; data.length; i++) {
+        const window = [];
+        
+        // Determine start and end for current window
+        const start = Math.max(0, i - windowSize + 1);
+        const end = i + 1;
+        
+        // Create window array
+        for (let j = start; j &lt; end; j++) {
+            window.push(data[j]);
+        }
+        
+        result[i] = window;
+    }
+    
+    return result;
+}
+
+// EXAMPLE 6: Real-world scenario - Audio processing
+class AudioProcessor {
+    constructor(bufferSize = 1024) {
+        this.buffer = new Float32Array(bufferSize);
+        this.buffer.fill(0); // Initialize with silence
+    }
+    
+    // Add new samples, shift old ones
+    addSamples(newSamples) {
+        const sampleCount = newSamples.length;
+        
+        // Shift existing samples to the left
+        this.buffer.copyWithin(0, sampleCount, this.buffer.length);
+        
+        // Fill the end with new samples
+        for (let i = 0; i &lt; sampleCount; i++) {
+            this.buffer[this.buffer.length - sampleCount + i] = newSamples[i];
+        }
+    }
+    
+    // Get the last N samples
+    getLastSamples(count) {
+        return Array.from(this.buffer.slice(-count));
+    }
+    
+    // Reset buffer
+    reset() {
+        this.buffer.fill(0);
+    }
+}
+
+// EXAMPLE 7: Filling sparse arrays
+const sparse = new Array(10);
+sparse.fill('filled', 2, 7); // Indices 2,3,4,5,6
+console.log(sparse);
+// [empty × 2, "filled", "filled", "filled", "filled", "filled", empty × 3]
+
+// EXAMPLE 8: copyWithin() with typed arrays
+const intArray = new Int32Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+intArray.copyWithin(3, 0, 5); // Copy first 5 elements to position 3
+console.log(Array.from(intArray)); // [1, 2, 3, 1, 2, 3, 4, 5, 9, 10]
+
+// EXAMPLE 9: Combining fill() and copyWithin() for optimization
+function createAndFillArray(length, pattern) {
+    const arr = new Array(length);
+    
+    // Fill with initial pattern
+    arr.fill(pattern);
+    
+    // Copy specific sections
+    arr.copyWithin(0, Math.floor(length / 2), length);
+    
+    return arr;
+}
+
+const result = createAndFillArray(8, 'X');
+console.log(result); // ["X", "X", "X", "X", "X", "X", "X", "X"]</code></pre>
+
+                    <div class="mutation-diagram">
+// COPYWITHIN DEMONSTRATION:
+
+// Original: [1, 2, 3, 4, 5, 6, 7, 8]
+// copyWithin(3, 1, 5)
+// Target: index 3
+// Source: indices 1,2,3,4 (values: 2,3,4,5)
+// Result: [1, 2, 3, 2, 3, 6, 7, 8]
+
+// FILL DEMONSTRATION:
+
+// Original: [1, 2, 3, 4, 5]
+// fill('X', 1, 4)
+// Result: [1, "X", "X", "X", 5]
+
+// NOTE: Both methods modify the original array in-place
+// Neither creates a new array</div>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li><code>fill()</code>: Initializing arrays with default values</li>
+                        <li><code>fill()</code>: Resetting arrays to known state</li>
+                        <li><code>copyWithin()</code>: Efficiently moving data within arrays</li>
+                        <li><code>copyWithin()</code>: Implementing sliding windows and buffers</li>
+                        <li><code>fill()</code>: Creating matrices and grids with uniform values</li>
+                        <li><code>copyWithin()</code>: Audio/video processing applications</li>
+                    </ul>
+                    <p class="text-info mt-2">💡 Pro Tip: <code>fill()</code> and <code>copyWithin()</code> are highly optimized for performance since they operate directly on memory without creating intermediate arrays.</p>
+                    <p class="text-warning mt-2"><strong>⚠️ Warning:</strong> Be careful with <code>copyWithin()</code> when source and target ranges overlap — the behavior is designed to handle this correctly, but it can be confusing.</p>
+                </details>
+            </section>
+
+            <hr class="my-5">
+
+            <div class="alert alert-info">
+                <h5>Key Takeaways</h5>
+                <ul>
+                    <li><code>push()</code>, <code>pop()</code>, <code>shift()</code>, <code>unshift()</code> add/remove elements from array ends</li>
+                    <li><code>splice()</code> is powerful for inserting, removing, and replacing elements at any position</li>
+                    <li><code>slice()</code> creates safe copies without modifying the original array</li>
+                    <li><code>sort()</code> requires a compare function for proper numeric sorting</li>
+                    <li><code>reverse()</code> simply reverses the current order of elements</li>
+                    <li><code>fill()</code> sets all elements in a range to a specific value</li>
+                    <li><code>copyWithin()</code> efficiently copies elements within the same array</li>
+                    <li>All these methods are mutating — they change the original array</li>
+                </ul>
+            </div>
+
+            <div class="alert alert-warning">
+                <h5>Common Pitfalls</h5>
+                <ul>
+                    <li>Using <code>sort()</code> on numbers without a compare function</li>
+                    <li>Assuming <code>slice()</code> modifies the original array</li>
+                    <li>Using <code>splice()</code> when you just need to add/remove from ends</li>
+                    <li>Not understanding that <code>reverse()</code> and <code>sort()</code> mutate the original</li>
+                    <li>Confusing <code>copyWithin()</code> with <code>slice()</code> or <code>splice()</code></li>
+                    <li>Using <code>fill()</code> on nested arrays (it fills with references to the same object)</li>
+                </ul>
+            </div>
+
+            <div class="alert alert-success">
+                <h5>Interview Question Prep</h5>
+                <p><strong>Q: What's the difference between splice() and slice()?</strong></p>
+                <p><strong>A:</strong> <code>splice()</code> modifies the original array and returns removed elements. <code>slice()</code> creates a new array with copied elements and leaves the original unchanged.</p>
+                
+                <p><strong>Q: Why does [10, 5, 1] sort to [1, 10, 5]?</strong></p>
+                <p><strong>A:</strong> Because the default sort converts numbers to strings and sorts lexicographically: "1" < "10" < "5". Use a compare function like <code>(a, b) => a - b</code> for proper numeric sorting.</p>
+                
+                <p><strong>Q: How would you remove the first element of an array and get its value?</strong></p>
+                <p><strong>A:</strong> Use <code>shift()</code>: <code>const first = array.shift();</code> This removes and returns the first element.</p>
+                
+                <p><strong>Q: When would you use fill() instead of a loop?</strong></p>
+                <p><strong>A:</strong> When you need to set a range of elements to the same value efficiently. <code>fill()</code> is optimized and more readable than manual loops.</p>
+                
+                <p><strong>Q: Can you use copyWithin() to swap two sections of an array?</strong></p>
+                <p><strong>A:</strong> Yes, but you might need to use a temporary array or do it in stages. <code>copyWithin()</code> handles overlapping ranges correctly, so you can copy from one region to another even if they overlap.</p>
+            </div>
+
+            <div class="text-center mt-4">
+                <small class="text-muted">© 2024 AI Tutor — Mastering Programming Fundamentals One Concept at a Time</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript Utilities -->
+<script>
+    // Expand/Collapse All
+    document.getElementById('expandAll').addEventListener('click', () => {
+        document.querySelectorAll('details').forEach(detail => {
+            detail.open = true;
+        });
+    });
+
+    document.getElementById('collapseAll').addEventListener('click', () => {
+        document.querySelectorAll('details').forEach(detail => {
+            detail.open = false;
+        });
+    });
+
+    // Smooth scrolling for TOC links
+    document.querySelectorAll('.toc-item a, .toc-subitem a').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+            
+            if (targetElement) {
+                window.scrollTo({
+                    top: targetElement.offsetTop - 100,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+
+    // Search functionality for TOC
+    document.getElementById('searchToc').addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
+        
+        tocItems.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            if (query === '' || text.includes(query)) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+
+    // Syntax Highlighting (basic)
+    document.querySelectorAll('pre code').forEach(block => {
+        hljs.highlightBlock(block);
+    });
+
+    // Add highlight.js if not present (fallback)
+    if (typeof hljs === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js';
+        script.onload = () => {
+            document.querySelectorAll('pre code').forEach(block => {
+                hljs.highlightBlock(block);
+            });
+        };
+        document.head.appendChild(script);
+    }
+</script>
+
+<!-- Optional: Add highlight.js for better syntax highlighting -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+
+</body>
+</html>
+```

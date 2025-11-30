@@ -1,0 +1,711 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>21.3 Cryptography in JavaScript — Deep Learning Note</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- highlight.js -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+  <style>
+    :root{
+      --bg: #0b0f10;
+      --surface: #121416;
+      --muted: #9aa7ad;
+      --accent-cyan: #06b6d4;
+      --accent-amber: #f59e0b;
+      --card: #111316;
+      --radius: 12px;
+      --toc-width: 340px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
+    }
+ul{
+    color: white;
+}
+    html,body{
+      height:100%;
+      margin:0;
+      background: linear-gradient(180deg,var(--bg),#050606);
+      color: #e6eef2;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      -webkit-font-smoothing:antialiased;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: var(--toc-width) 1fr;
+      gap: 20px;
+      padding: 20px;
+      height: 100vh;
+      box-sizing: border-box;
+    }
+
+    /* Left panel */
+    .panel-left {
+      width: var(--toc-width);
+      background: linear-gradient(180deg,var(--card), rgba(10,12,13,0.7));
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: 0 6px 30px rgba(2,6,8,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+      position: sticky;
+      top: 20px;
+      height: calc(100vh - 40px);
+      overflow: auto;
+    }
+    .left-header h1{font-size:1.05rem;margin:0;color:var(--accent-cyan);}
+    .left-header p{margin:6px 0 10px;color:var(--muted);font-size:0.86rem}
+    .meta-badge {display:inline-block;padding:5px 8px;border-radius:999px;background:rgba(255,255,255,0.02);font-size:0.78rem;margin-right:6px;color:var(--muted)}
+
+    .controls {display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .btn-ghost {
+      background:transparent;border:1px solid rgba(255,255,255,0.04);padding:8px 10px;border-radius:8px;color:var(--muted);
+      cursor:pointer;
+    }
+    .btn-primary {
+      background:linear-gradient(90deg,var(--accent-cyan), #06b6d4); color:#031016;border: none;padding:8px 12px;border-radius:8px;
+      cursor:pointer;font-weight:600;
+    }
+
+    .toc-search {display:flex;gap:8px;margin-top:12px}
+    .toc-search input {
+      background: transparent;border:1px solid rgba(255,255,255,0.04);padding:8px;border-radius:8px;color:inherit;
+      width:100%;
+    }
+    .toc {margin-top:12px}
+    .toc ul {list-style:none;padding:0;margin:0}
+    .toc li{padding:8px 6px;border-radius:8px;cursor:pointer;color:var(--muted)}
+    .toc li:hover{background:linear-gradient(90deg, rgba(6,182,212,0.04), rgba(245,158,11,0.02)); color:#eaf7fb}
+    .toc-sub{font-size:0.85rem;color:var(--muted);padding-left:12px}
+
+    /* Right panel */
+    .panel-right {
+      border-radius: var(--radius);
+      padding: 18px;
+      height: calc(100vh - 40px);
+      overflow: auto;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 14px;
+      box-shadow: 0 6px 18px rgba(2,6,8,0.6);
+      border: 1px solid rgba(255,255,255,0.02);
+    }
+
+    h2,h3{color:#eaf7fb}
+    h2{font-size:1.12rem;display:flex;align-items:center;gap:10px}
+    .tag {font-size:0.75rem;padding:6px 8px;border-radius:8px;background:rgba(255,255,255,0.02);color:var(--muted);margin-left:auto}
+
+    details {
+      background: rgba(255,255,255,0.01);
+      border-radius:8px;
+      padding:10px;
+      margin:8px 0;
+      border:1px solid rgba(255,255,255,0.02);
+      color: white;
+    }
+    summary { cursor:pointer; font-weight:600; outline:none; }
+    details[open] summary { color: var(--accent-cyan) }
+
+    pre {
+      background: #0b0f10;
+      border-left: 4px solid rgba(6,182,212,0.14);
+      padding: 12px;
+      border-radius:8px;
+      overflow:auto;
+      font-family: var(--mono);
+      font-size:0.88rem;
+      line-height:1.4;
+      margin:10px 0;
+    }
+    code { font-family: var(--mono); font-size:0.88rem; color:#d7f0f4 }
+
+    .muted { color:var(--muted); font-size:0.92rem }
+    .accent-amber { color: var(--accent-amber); font-weight:700 }
+
+    @media (max-width: 900px){
+      .app { grid-template-columns: 1fr; padding:12px; gap:12px; }
+      .panel-left { position: relative; width:100%; height:auto; top:0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app container-fluid">
+    <!-- LEFT PANEL -->
+    <aside class="panel-left" aria-label="Table of contents">
+      <div class="left-header">
+        <h1>21.3 — Cryptography in JavaScript</h1>
+        <p class="muted">Web Crypto API • Hashing • Encryption • Signatures • RNG • Key management</p>
+        <div>
+          <span class="meta-badge">Author: Crypto Tutor</span>
+          <span class="meta-badge">Level: College → PhD</span>
+        </div>
+      </div>
+
+      <div class="controls">
+        <button id="expandAll" class="btn-ghost" title="Expand all sections">Expand all</button>
+        <button id="collapseAll" class="btn-ghost" title="Collapse all sections">Collapse all</button>
+        <button id="copySummary" class="btn-primary" title="Copy executive summary">Copy exec summary</button>
+      </div>
+
+      <div class="toc-search">
+        <input id="tocSearch" placeholder="Search TOC / headings..." aria-label="Search table of contents" />
+      </div>
+
+      <nav class="toc" id="tocArea" aria-label="contents">
+        <ul id="tocList">
+          <li data-target="section-webcrypto"><strong>Web Crypto API</strong><div class="toc-sub">generateKey, encrypt, decrypt, sign, verify</div></li>
+          <li data-target="section-hash"><strong>Hashing & Encryption basics</strong><div class="toc-sub">SHA, AES-GCM, RSA-OAEP</div></li>
+          <li data-target="section-sign"><strong>Digital signatures</strong><div class="toc-sub">ECDSA, RSA-PSS, signing flows</div></li>
+          <li data-target="section-rng"><strong>Secure RNG</strong><div class="toc-sub">crypto.getRandomValues()</div></li>
+          <li data-target="section-keys"><strong>Key management strategies</strong><div class="toc-sub">wrap/unwrap, export/import, storage</div></li>
+        </ul>
+      </nav>
+
+      <div style="margin-top:16px" class="muted">
+        <p><strong>Quick tips</strong></p>
+        <ol style="padding-left:16px">
+          <li>Prefer Web Crypto API — it's native and secure.</li>
+          <li>Use AES-GCM for symmetric encryption (with nonces/IVs).</li>
+          <li>Use RSA-OAEP or ECDH for key agreement / wrapping.</li>
+          <li>Never implement crypto primitives yourself. Use vetted APIs.</li>
+        </ol>
+      </div>
+    </aside>
+
+    <!-- RIGHT PANEL -->
+    <main class="panel-right" id="content" tabindex="0">
+      <div class="card">
+        <div style="display:flex;gap:8px;align-items:center;">
+          <div class="tag">Topic: Cryptography</div>
+          <div class="muted">Practical JS examples + deep explanations</div>
+        </div>
+
+        <h2 id="section-intro">Executive summary <span class="tag">Executive</span></h2>
+        <p class="muted">
+          This chapter teaches cryptography in modern web apps using the Web Crypto API. You will learn hashing (SHA-*), symmetric encryption (AES-GCM), asymmetric encryption (RSA-OAEP), digital signatures (ECDSA / RSA-PSS), generating secure random numbers, and practical key management patterns: wrapping keys, export/import, ephemeral vs persistent keys, and secure client-side storage patterns. All examples use browser-native APIs — production-ready patterns and common pitfalls are explained.
+        </p>
+
+        <details>
+          <summary>Learning outcomes</summary>
+          <ul>
+            <li>Use Web Crypto API to generate keys, encrypt/decrypt, sign/verify, and derive keys.</li>
+            <li>Understand algorithm choices, IV/nonce management, and authentication tags.</li>
+            <li>Design safe key storage and rotation strategies for client-side and hybrid patterns.</li>
+            <li>Avoid common crypto mistakes (reusing IVs, using insecure algorithms, poor RNG).</li>
+          </ul>
+        </details>
+      </div>
+
+      <!-- Web Crypto API -->
+      <section class="card" id="section-webcrypto">
+        <h2>Web Crypto API — overview</h2>
+
+        <details open>
+          <summary>Executive summary</summary>
+          <p class="muted">The Web Crypto API (window.crypto.subtle) is the standard, native cryptographic interface in browsers. It exposes primitives for hashing, encryption, signing, key generation, key derivation, and importing/exporting keys. Always prefer it over JS-based libraries for security and performance.</p>
+        </details>
+
+        <details>
+          <summary>Core surfaces</summary>
+          <ul>
+            <li><code>crypto.getRandomValues()</code> — secure random bytes</li>
+            <li><code>crypto.subtle.generateKey()</code> — generate keys</li>
+            <li><code>crypto.subtle.encrypt()/decrypt()</code> — symmetric/asymmetric encryption</li>
+            <li><code>crypto.subtle.sign()/verify()</code> — digital signatures</li>
+            <li><code>crypto.subtle.digest()</code> — hashing (SHA)</li>
+            <li><code>crypto.subtle.importKey()/exportKey()</code> — move keys in/out</li>
+          </ul>
+        </details>
+
+        <details>
+          <summary>Example — generate AES-GCM key &amp; encrypt/decrypt</summary>
+          <p class="muted">AES-GCM is widely used: authenticated encryption with associated data (AEAD). Use a unique IV per encryption.</p>
+
+<pre><code>&lt;script&gt;
+// Utility: encode/decode
+const enc = new TextEncoder();
+const dec = new TextDecoder();
+
+async function generateAesKey() {
+  // AES-GCM 256-bit key for encrypt/decrypt
+  return await crypto.subtle.generateKey(
+    { name: "AES-GCM", length: 256 },
+    true, // extractable: true if you need to export/wrap
+    ["encrypt", "decrypt"]
+  );
+}
+
+async function encryptAesGcm(key, plaintext, associatedData) {
+  const iv = crypto.getRandomValues(new Uint8Array(12)); // 96-bit nonce recommended
+  const ciphertext = await crypto.subtle.encrypt(
+    {
+      name: "AES-GCM",
+      iv,
+      additionalData: associatedData ? enc.encode(associatedData) : undefined,
+      tagLength: 128
+    },
+    key,
+    enc.encode(plaintext)
+  );
+  // return {iv, ciphertext} where ciphertext is ArrayBuffer
+  return { iv: Array.from(iv), ciphertext: new Uint8Array(ciphertext) };
+}
+
+async function decryptAesGcm(key, ivArray, ciphertextBuffer, associatedData) {
+  const iv = new Uint8Array(ivArray);
+  const plaintextBuffer = await crypto.subtle.decrypt(
+    {
+      name: "AES-GCM",
+      iv,
+      additionalData: associatedData ? enc.encode(associatedData) : undefined,
+      tagLength: 128
+    },
+    key,
+    ciphertextBuffer
+  );
+  return dec.decode(plaintextBuffer);
+}
+// Usage:
+// const key = await generateAesKey();
+// const {iv, ciphertext} = await encryptAesGcm(key, "hello world", "metadata");
+// const plain = await decryptAesGcm(key, iv, ciphertext, "metadata");
+&lt;/script&gt;
+</code></pre>
+        </details>
+
+        <details>
+          <summary>Example — RSA-OAEP for asymmetric encryption (wrap small secrets)</summary>
+<pre><code>&lt;script&gt;
+async function generateRsaOaepKeyPair() {
+  return await crypto.subtle.generateKey(
+    {
+      name: "RSA-OAEP",
+      modulusLength: 2048,
+      publicExponent: new Uint8Array([0x01, 0x00, 0x01]),
+      hash: "SHA-256"
+    },
+    true,
+    ["encrypt", "decrypt"]
+  );
+}
+
+// Encrypt with public key
+async function rsaEncrypt(publicKey, plaintext) {
+  const ciphertext = await crypto.subtle.encrypt(
+    { name: "RSA-OAEP" },
+    publicKey,
+    enc.encode(plaintext)
+  );
+  return new Uint8Array(ciphertext);
+}
+
+// Decrypt with private key
+async function rsaDecrypt(privateKey, ciphertextBuffer) {
+  const plainBuf = await crypto.subtle.decrypt(
+    { name: "RSA-OAEP" },
+    privateKey,
+    ciphertextBuffer
+  );
+  return dec.decode(plainBuf);
+}
+&lt;/script&gt;
+</code></pre>
+          <p class="muted">RSA-OAEP is suitable for encrypting small payloads (e.g., symmetric keys). For large data use hybrid encryption: generate symmetric key, encrypt data with AES-GCM, wrap key with RSA-OAEP.</p>
+        </details>
+      </section>
+
+      <!-- Hashing and encryption basics -->
+      <section class="card" id="section-hash">
+        <h2>Hashing and encryption basics</h2>
+
+        <details open>
+          <summary>Executive summary</summary>
+          <p class="muted">Hash functions (SHA-256, SHA-384, SHA-512) are one-way digests; encryption is reversible with a key. Use hashing for integrity and signatures; encryption for confidentiality. For password storage use slow KDFs (on server): PBKDF2, bcrypt, scrypt, Argon2 — not a simple hash.</p>
+        </details>
+
+        <details>
+          <summary>Hash example — SHA-256</summary>
+<pre><code>&lt;script&gt;
+async function sha256Hex(message) {
+  const data = enc.encode(message);
+  const hash = await crypto.subtle.digest("SHA-256", data);
+  // convert to hex
+  return Array.from(new Uint8Array(hash)).map(b =&gt; b.toString(16).padStart(2,'0')).join('');
+}
+// usage: const h = await sha256Hex("hello");
+&lt;/script&gt;
+</code></pre>
+        </details>
+
+        <details>
+          <summary>Symmetric vs Asymmetric — quick rules</summary>
+          <ul>
+            <li><b>Symmetric (AES-GCM):</b> fast, use for encrypting bulk data; requires secure key distribution.</li>
+            <li><b>Asymmetric (RSA / EC):</b> public-key cryptography; use for key exchange, signatures, and wrapping.</li>
+            <li><b>Hybrid:</b> use ECDH/RSA to agree or wrap a symmetric key, then use AES for data.</li>
+          </ul>
+        </details>
+
+        <details>
+          <summary>AEAD &amp; integrity</summary>
+          <p class="muted">Always use authenticated encryption (AEAD) like AES-GCM — it provides confidentiality + integrity. Do not use unauthenticated modes (like raw AES-CBC without HMAC).</p>
+        </details>
+
+        <details>
+          <summary>Nonce/IV management (critical)</summary>
+          <p class="muted">Never reuse IV/nonce with the same key for AES-GCM. Recommended IV size is 96-bit (12 bytes). Store/transport IV with ciphertext. If IV is accidentally reused, authenticity and confidentiality are lost.</p>
+        </details>
+      </section>
+
+      <!-- Digital Signatures -->
+      <section class="card" id="section-sign">
+        <h2>Digital signatures</h2>
+
+        <details open>
+          <summary>Executive summary</summary>
+          <p class="muted">Signatures provide non-repudiation and integrity. Use ECDSA (P-256/P-384) or RSA-PSS. ECDSA keys are smaller and faster. Verify signatures on the receiver side before trusting content.</p>
+        </details>
+
+        <details>
+          <summary>ECDSA example (sign &amp; verify)</summary>
+<pre><code>&lt;script&gt;
+async function generateEcdsaKeyPair() {
+  return await crypto.subtle.generateKey(
+    { name: "ECDSA", namedCurve: "P-256" },
+    true,
+    ["sign", "verify"]
+  );
+}
+
+async function signData(privateKey, message) {
+  const signature = await crypto.subtle.sign(
+    { name: "ECDSA", hash: { name: "SHA-256" } },
+    privateKey,
+    enc.encode(message)
+  );
+  return new Uint8Array(signature);
+}
+
+async function verifySignature(publicKey, message, signatureBuffer) {
+  return await crypto.subtle.verify(
+    { name: "ECDSA", hash: { name: "SHA-256" } },
+    publicKey,
+    signatureBuffer,
+    enc.encode(message)
+  );
+}
+&lt;/script&gt;
+</code></pre>
+        </details>
+
+        <details>
+          <summary>RSA-PSS example</summary>
+<pre><code>&lt;script&gt;
+// RSA-PSS signing
+async function generateRsaPssKeyPair() {
+  return await crypto.subtle.generateKey(
+    {
+      name: "RSA-PSS",
+      modulusLength: 2048,
+      publicExponent: new Uint8Array([0x01,0x00,0x01]),
+      hash: "SHA-256"
+    },
+    true,
+    ["sign", "verify"]
+  );
+}
+&lt;/script&gt;
+</code></pre>
+          <p class="muted">Use RSA-PSS instead of older PKCS#1 v1.5 signing.</p>
+        </details>
+
+        <details>
+          <summary>Best practices for signatures</summary>
+          <ul>
+            <li>Include timestamps / nonces when signing messages to prevent replay.</li>
+            <li>Use strong curves (P-256 or P-384) or Ed25519 (if available server-side).</li>
+            <li>Protect private keys with the environment — do not expose them client-side if avoidable.</li>
+          </ul>
+        </details>
+      </section>
+
+      <!-- Secure RNG -->
+      <section class="card" id="section-rng">
+        <h2>Secure random number generation</h2>
+
+        <details open>
+          <summary>Executive summary</summary>
+          <p class="muted">Never use Math.random() for security. Use crypto.getRandomValues() for cryptographic randomness (keys, nonces, salts).</p>
+        </details>
+
+        <details>
+          <summary>Example — generate secure random bytes and convert</summary>
+<pre><code>&lt;script&gt;
+function randomBytes(len) {
+  const arr = new Uint8Array(len);
+  crypto.getRandomValues(arr);
+  return arr;
+}
+
+function randomHex(len) {
+  const rb = randomBytes(len);
+  return Array.from(rb).map(b =&gt; b.toString(16).padStart(2,'0')).join('');
+}
+
+// example: 16-byte nonce
+const nonceHex = randomHex(16);
+&lt;/script&gt;
+</code></pre>
+        </details>
+
+        <details>
+          <summary>Use-cases</summary>
+          <ul>
+            <li>IV/nonce generation (unique per encryption).</li>
+            <li>Salt generation for password hashing (server-side).</li>
+            <li>Session identifiers / CSRF tokens.</li>
+          </ul>
+        </details>
+      </section>
+
+      <!-- Key management strategies -->
+      <section class="card" id="section-keys">
+        <h2>Key management strategies</h2>
+
+        <details open>
+          <summary>Executive summary</summary>
+          <p class="muted">Key management is as critical as algorithms. Consider key lifecycle (generate, use, rotate, revoke, backup). On clients, minimize long-term secrets — prefer server-held keys, ephemeral keys, or wrapped keys.</p>
+        </details>
+
+        <details>
+          <summary>Strategy: Ephemeral client keys + server-wrapped master</summary>
+          <p class="muted">Generate ephemeral symmetric keys in the client, use them for session encryption, then discard. If a persistent secret is required, wrap (encrypt) it with a server-held public key or KMS.</p>
+        </details>
+
+        <details>
+          <summary>Wrap / unwrap keys (AES wrapping with RSA-OAEP)</summary>
+<pre><code>&lt;script&gt;
+// Wrap (encrypt) a symmetric key with a public RSA key (export key then RSA encrypt)
+async function wrapKey(symKey, rsaPublicKey) {
+  // export symmetric key raw bytes
+  const raw = await crypto.subtle.exportKey("raw", symKey);
+  // encrypt exported key with RSA-OAEP
+  const wrapped = await crypto.subtle.encrypt({ name: "RSA-OAEP" }, rsaPublicKey, raw);
+  return new Uint8Array(wrapped);
+}
+
+// Unwrap: decrypt with RSA private key and import back as symmetric key
+async function unwrapKey(wrappedBytes, rsaPrivateKey) {
+  const raw = await crypto.subtle.decrypt({ name: "RSA-OAEP" }, rsaPrivateKey, wrappedBytes);
+  return await crypto.subtle.importKey("raw", raw, { name: "AES-GCM" }, true, ["encrypt","decrypt"]);
+}
+&lt;/script&gt;
+</code></pre>
+        </details>
+
+        <details>
+          <summary>Export / Import keys (JWK / raw)</summary>
+<pre><code>&lt;script&gt;
+// Export to JWK (JSON Web Key)
+const jwk = await crypto.subtle.exportKey("jwk", publicKey);
+
+// Import a JWK
+const imported = await crypto.subtle.importKey("jwk", jwk, {name:"RSA-OAEP", hash:"SHA-256"}, true, ["encrypt"]);
+&lt;/script&gt;
+</code></pre>
+          <p class="muted">When exporting keys, prefer non-extractable keys (generate with extractable: false) if you don't need to export them. Never export private keys unless necessary and only over secure channels.</p>
+        </details>
+
+        <details>
+          <summary>Persistent storage options (risks &amp; mitigations)</summary>
+          <ul>
+            <li><b>IndexedDB / localStorage:</b> can be read by JS — vulnerable to XSS. Encrypt contents with a key protected by user authentication where possible.</li>
+            <li><b>WebAuthn / platform authenticators:</b> for private-key-protected operations, use platform keys bound to device/user (no key material leaves the authenticator).</li>
+            <li><b>Server-side KMS:</b> prefer storing master keys on server KMS (AWS KMS, GCP KMS) and use wrapping for client needs.</li>
+          </ul>
+        </details>
+
+        <details>
+          <summary>Key rotation &amp; revocation patterns</summary>
+          <ol>
+            <li>Design keys with version identifiers.</li>
+            <li>Support re-wrapping of persisted data when rotating master keys.</li>
+            <li>Maintain key metadata (creationTime, algorithm, usage) and map data to keys.</li>
+          </ol>
+        </details>
+      </section>
+
+      <!-- Pitfalls & Lessons -->
+      <section class="card" id="section-pitfalls">
+        <h2>Common pitfalls &amp; recommendations</h2>
+        <details open>
+          <summary>Quick checklist</summary>
+          <ul>
+            <li>Never use Math.random() for security.</li>
+            <li>Do not reuse IVs/nonces with same key for AES-GCM.</li>
+            <li>Prefer AEAD (AES-GCM) over unauthenticated modes.</li>
+            <li>Keep private keys off client when possible.</li>
+            <li>Use server KMS for master secrets — wrap keys for client uses.</li>
+            <li>Use secure, native APIs (Web Crypto) — don't implement crypto primitives yourself.</li>
+          </ul>
+        </details>
+
+        <details>
+          <summary>Performance considerations</summary>
+          <p class="muted">Web Crypto is native and fast. However, heavy crypto operations on main thread may block UI. Use Web Workers for long-running operations (key derivation with PBKDF2, large encrypt/decrypt workloads).</p>
+        </details>
+
+        <details>
+          <summary>Example — doing heavy crypto in a Web Worker (skeleton)</summary>
+<pre><code>&lt;!-- main.js --&gt;
+const worker = new Worker('crypto-worker.js');
+worker.postMessage({type:'derive', password:'p@ssw0rd', salt: crypto.getRandomValues(new Uint8Array(16))});
+worker.onmessage = (e) =&gt; console.log('worker result', e.data);
+
+&lt;!-- crypto-worker.js --&gt;
+self.onmessage = async (e) =&gt; {
+  // perform PBKDF2 or heavy derivation here using SubtleCrypto
+  // then postMessage back
+};
+</code></pre>
+        </details>
+      </section>
+
+      <!-- Appendix: handy utilities -->
+      <section class="card" id="section-utils">
+        <h2>Appendix — Utilities &amp; helpers</h2>
+
+        <details>
+          <summary>ArrayBuffer &amp; base64 utilities</summary>
+<pre><code>&lt;script&gt;
+function arrayBufferToBase64(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  for (let i = 0; i &lt; bytes.byteLength; i++) binary += String.fromCharCode(bytes[i]);
+  return btoa(binary);
+}
+function base64ToArrayBuffer(base64) {
+  const binary = atob(base64);
+  const len = binary.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i &lt; len; i++) bytes[i] = binary.charCodeAt(i);
+  return bytes.buffer;
+}
+&lt;/script&gt;
+</code></pre>
+        </details>
+
+        <details>
+          <summary>Derive symmetric key from password (PBKDF2 → AES-GCM)</summary>
+<pre><code>&lt;script&gt;
+async function deriveKeyFromPassword(password, salt) {
+  const baseKey = await crypto.subtle.importKey(
+    "raw",
+    enc.encode(password),
+    { name: "PBKDF2" },
+    false,
+    ["deriveKey"]
+  );
+  return await crypto.subtle.deriveKey(
+    {
+      name: "PBKDF2",
+      salt,
+      iterations: 100_000,
+      hash: "SHA-256"
+    },
+    baseKey,
+    { name: "AES-GCM", length: 256 },
+    true,
+    ["encrypt", "decrypt"]
+  );
+}
+&lt;/script&gt;
+</code></pre>
+          <p class="muted">Increase iterations according to target device performance; use Web Worker for heavy derivation.</p>
+        </details>
+      </section>
+
+      <footer style="padding:14px 6px;color:var(--muted);font-size:0.9rem">
+        <div>© Crypto Tutor · Generated: <span id="generatedDate"></span></div>
+        <div style="margin-top:6px">If you want, I can produce server-side examples (Node.js with libs: node-webcrypto-ossl / crypto), or a full hybrid key management pattern with KMS integration.</div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- Inline JS -->
+  <script>
+    // UI utilities
+    (function(){
+      const tocList = document.getElementById('tocList');
+      tocList.addEventListener('click', (e) => {
+        const li = e.target.closest('li[data-target]');
+        if (!li) return;
+        const id = li.getAttribute('data-target');
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.scrollIntoView({behavior:'smooth', block:'start'});
+        document.querySelectorAll('#tocList li').forEach(n => n.classList.remove('toc-active'));
+        li.classList.add('toc-active');
+      });
+
+      // Expand/collapse all
+      document.getElementById('expandAll').addEventListener('click', () => {
+        document.querySelectorAll('details').forEach(d => d.open = true);
+      });
+      document.getElementById('collapseAll').addEventListener('click', () => {
+        document.querySelectorAll('details').forEach(d => d.open = false);
+      });
+
+      // Copy executive summary
+      document.getElementById('copySummary').addEventListener('click', async () => {
+        const el = document.querySelector('.panel-right .card p.muted');
+        if (!el) return;
+        try {
+          await navigator.clipboard.writeText(el.innerText.trim());
+          const btn = document.getElementById('copySummary');
+          const orig = btn.innerText;
+          btn.innerText = 'Copied!';
+          setTimeout(()=> btn.innerText = orig, 1200);
+        } catch(e) { alert('Clipboard copy failed'); }
+      });
+
+      // TOC search
+      document.getElementById('tocSearch').addEventListener('input', (e) => {
+        const q = e.target.value.trim().toLowerCase();
+        document.querySelectorAll('#tocList li').forEach(li => {
+          const txt = li.innerText.toLowerCase();
+          li.style.display = q ? (txt.includes(q) ? '' : 'none') : '';
+        });
+      });
+
+      // dynamic generated date
+      document.getElementById('generatedDate').textContent = (new Date()).toLocaleString();
+
+      // keyboard shortcuts
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'e') document.querySelectorAll('details').forEach(d => d.open = true);
+        if (e.key === 'c') document.querySelectorAll('details').forEach(d => d.open = false);
+      });
+
+      // focus main for screen readers
+      document.getElementById('content').focus();
+
+      // init highlight.js after DOM ready
+      document.addEventListener('DOMContentLoaded', () => {
+        try { hljs.highlightAll(); } catch (e) { console.warn('HLJS fail', e); }
+      });
+    })();
+  </script>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

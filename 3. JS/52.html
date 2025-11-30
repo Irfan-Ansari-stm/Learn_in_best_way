@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>JavaScript DOM Deep Notes – 16.3 DOM Modification</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <style>
+        :root {
+            --bg-main: #020617;
+            --bg-sidebar: #020617;
+            --border-color: #1e293b;
+            --accent-cyan: #22d3ee;
+            --accent-amber: #fbbf24;
+            --text-main: #e5e7eb;
+            --text-muted: #9ca3af;
+            --code-bg: #020617;
+            --code-border: #1f2937;
+            --tag-bg: #020617;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: radial-gradient(circle at top, #0f172a 0, #020617 45%, #000 100%);
+            color: var(--text-main);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        .app-wrapper {
+            display: flex;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* LEFT SIDEBAR */
+        #sidebar {
+            width: 320px;
+            max-width: 100%;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            padding: 1rem 1rem 1.5rem;
+            position: sticky;
+            top: 0;
+            align-self: flex-start;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        #sidebar h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            color: var(--accent-cyan);
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .badge-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.15rem 0.5rem;
+            border-radius: 999px;
+            border: 1px solid var(--border-color);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            background: var(--tag-bg);
+            margin-right: 0.25rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .badge-tag span {
+            opacity: 0.7;
+        }
+
+        .toc-title {
+            font-size: 0.85rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-top: 1.2rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .search-input {
+            background-color: #020617;
+            border-radius: 999px;
+            border: 1px solid var(--border-color);
+            font-size: 0.8rem;
+            padding: 0.35rem 0.75rem;
+            color: var(--text-main);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.25);
+        }
+
+        .toc-list {
+            list-style: none;
+            padding-left: 0;
+            margin: 0.5rem 0 0;
+            font-size: 0.85rem;
+        }
+
+        .toc-list li {
+            margin-bottom: 0.15rem;
+        }
+
+        .toc-link {
+            display: block;
+            padding: 0.25rem 0.35rem;
+            border-radius: 0.375rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: background 0.15s, color 0.15s, transform 0.1s;
+        }
+
+        .toc-link:hover {
+            background: #020617;
+            color: var(--accent-cyan);
+            transform: translateX(2px);
+        }
+
+        .toc-link.active {
+            background: rgba(34, 211, 238, 0.12);
+            color: var(--accent-cyan);
+        }
+
+        .sidebar-actions {
+            margin-top: 0.8rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+
+        .btn-ghost {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.65rem;
+            border-radius: 999px;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            background: rgba(15, 23, 42, 0.75);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn-ghost:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            transform: translateY(-1px);
+        }
+
+        /* RIGHT CONTENT */
+        #content {
+            flex: 1;
+            max-height: 100vh;
+            overflow-y: auto;
+            padding: 1.25rem 1.5rem 3rem;
+        }
+
+        .content-inner {
+            max-width: 980px;
+            margin: 0 auto;
+        }
+
+        h2.section-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-top: 1.75rem;
+            margin-bottom: 0.75rem;
+            color: var(--accent-cyan);
+        }
+
+        h3.section-subtitle {
+            font-size: 1.05rem;
+            margin-top: 1.25rem;
+            margin-bottom: 0.35rem;
+            color: var(--accent-amber);
+        }
+
+        p {
+            font-size: 0.92rem;
+            line-height: 1.7;
+            color: var(--text-main);
+        }
+
+        .lead {
+            font-size: 0.98rem;
+            color: #e5e7eb;
+        }
+
+        details {
+            margin: 0.35rem 0;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+            background: rgba(15, 23, 42, 0.75);
+        }
+
+        summary {
+            padding: 0.4rem 0.7rem;
+            cursor: pointer;
+            font-size: 0.86rem;
+            color: var(--accent-cyan);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .summary-icon {
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+
+        details[open] summary {
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(15, 23, 42, 0.9);
+        }
+
+        details .details-body {
+            padding: 0.55rem 0.75rem 0.6rem;
+            font-size: 0.88rem;
+            color: var(--text-main);
+        }
+
+        /* CODE BLOCKS */
+        pre {
+            background: var(--code-bg);
+            border-radius: 0.5rem;
+            border: 1px solid var(--code-border);
+            padding: 0.7rem 0.8rem;
+            font-size: 0.8rem;
+            overflow-x: auto;
+            margin-top: 0.5rem;
+            margin-bottom: 0.7rem;
+        }
+
+        code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            color: #e5e7eb;
+        }
+
+        .code-keyword {
+            font-weight: 600;
+        }
+
+        .code-string {
+            opacity: 0.9;
+        }
+
+        .code-comment {
+            opacity: 0.6;
+            font-style: italic;
+        }
+
+        .code-property {
+            opacity: 0.9;
+        }
+
+        .inline-code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.82rem;
+            padding: 0.1rem 0.3rem;
+            border-radius: 0.25rem;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(30, 64, 175, 0.7);
+            color: var(--accent-amber);
+        }
+
+        .callout {
+            border-radius: 0.75rem;
+            border: 1px dashed var(--border-color);
+            padding: 0.7rem 0.85rem;
+            font-size: 0.86rem;
+            background: rgba(15, 23, 42, 0.65);
+            margin: 0.7rem 0;
+        }
+
+        .callout-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--accent-cyan);
+            margin-bottom: 0.25rem;
+        }
+
+        @media (max-width: 992px) {
+            #sidebar {
+                position: fixed;
+                z-index: 10;
+                height: auto;
+                max-height: 55vh;
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                background: radial-gradient(circle at top, #020617 0, #020617 60%, #020617 100%);
+            }
+
+            #content {
+                margin-top: 55vh;
+                padding: 1rem 1rem 3rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            #sidebar {
+                padding: 0.75rem 0.9rem 1rem;
+            }
+
+            #content {
+                padding: 0.75rem 0.9rem 3rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="app-wrapper">
+    <!-- SIDEBAR -->
+    <aside id="sidebar">
+        <header>
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <h1>16.3 DOM Modification</h1>
+            </div>
+            <div class="subtitle">
+                Creating, updating, styling &amp; removing DOM elements with safe, deep patterns.
+            </div>
+            <div class="mt-2 mb-2" style="font-size:0.8rem;">
+                <span class="text-muted">Author:</span>
+                <span class="text-light">Your AI Tutor</span>
+            </div>
+            <div class="mb-2">
+                <span class="badge-tag"><span>Topic:</span>&nbsp;DOM Mutation APIs</span>
+                <span class="badge-tag"><span>Level:</span>&nbsp;Intermediate–Advanced</span>
+                <span class="badge-tag"><span>Focus:</span>&nbsp;Create/Insert, Content, Attributes, Styles, Removal</span>
+            </div>
+        </header>
+
+        <!-- TOC CONTROLS -->
+        <div class="mt-3">
+            <div class="toc-title">Quick navigation</div>
+            <input id="tocSearch" type="text" class="form-control form-control-sm search-input"
+                   placeholder="Search sections (create, style, remove…)"
+                   oninput="filterTOC()" />
+            <div class="sidebar-actions">
+                <button class="btn-ghost" onclick="expandAllDetails()">Expand all</button>
+                <button class="btn-ghost" onclick="collapseAllDetails()">Collapse all</button>
+                <button class="btn-ghost" onclick="scrollToTop()">Scroll top</button>
+            </div>
+
+            <!-- TOC -->
+            <nav class="mt-2">
+                <ul id="tocList" class="toc-list">
+                    <li><a class="toc-link" href="#overview">1. Overview: What is DOM modification?</a></li>
+                    <li><a class="toc-link" href="#create-insert">2. Creating &amp; inserting elements</a></li>
+                    <li><a class="toc-link" href="#modify-content">3. Modifying element content</a></li>
+                    <li><a class="toc-link" href="#attributes">4. Attribute manipulation</a></li>
+                    <li><a class="toc-link" href="#styles">5. Style property modification</a></li>
+                    <li><a class="toc-link" href="#removal">6. Removing elements &amp; cleanup</a></li>
+                    <li><a class="toc-link" href="#patterns">7. Patterns, safety &amp; performance</a></li>
+                    <li><a class="toc-link" href="#summary-practice">8. Summary &amp; practice</a></li>
+                </ul>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main id="content">
+        <div class="content-inner">
+
+            <!-- 1. OVERVIEW -->
+            <section id="overview">
+                <h2 class="section-title">1. Overview: What is DOM modification?</h2>
+                <p class="lead">
+                    DOM selection (16.2) answered the question: <em>“Which node(s) do I want?”</em>. DOM modification answers:
+                    <em>“What do I want to create, change, or delete in this tree?”</em>
+                    Almost every interactive UI is a cycle of <strong>read state → modify DOM → respond to events</strong>.
+                </p>
+
+                <details open>
+                    <summary><span class="summary-icon">➤</span><span>Executive summary (mental model)</span></summary>
+                    <div class="details-body">
+                        <p>
+                            DOM modification covers five big actions:
+                        </p>
+                        <ul>
+                            <li><strong>Create</strong> new nodes (elements, text, fragments).</li>
+                            <li><strong>Insert</strong> them at correct positions in the tree.</li>
+                            <li><strong>Update content</strong> (text vs HTML) safely.</li>
+                            <li><strong>Update metadata</strong> (attributes, classes, styles).</li>
+                            <li><strong>Remove &amp; clean up</strong> (delete nodes, avoid leaks).</li>
+                        </ul>
+                        <p>
+                            If you understand these clearly, you can mentally simulate what modern frameworks do
+                            under the hood (React, Vue, etc.): they compute <strong>what must change</strong> and then
+                            apply these low-level operations for you.
+                        </p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary><span class="summary-icon">🧪</span><span>Minimal example of full lifecycle (create → update → remove)</span></summary>
+                    <div class="details-body">
+                        <pre><code>&lt;div id="app"&gt;&lt;/div&gt;
+
+&lt;script&gt;
+  const app = document.getElementById("app");
+
+  // 1) Create element
+  const msg = document.createElement("p");
+  msg.textContent = "Hello DOM modification";
+
+  // 2) Insert it
+  app.appendChild(msg);
+
+  // 3) Modify content later
+  msg.textContent = "Content updated via JS";
+
+  // 4) Remove it
+  setTimeout(() =&gt; {
+    msg.remove(); // or app.removeChild(msg);
+  }, 2000);
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            Ye chhota sa example pure chapter ka compressed form hai: create, insert, update, remove.
+                        </p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- 2. CREATING & INSERTING ELEMENTS -->
+            <section id="create-insert">
+                <h2 class="section-title">2. Creating &amp; inserting elements</h2>
+                <p>
+                    “DOM modification” ka pehla logical step hai naya node create karna. Phir usko DOM tree mein
+                    correct jagah par insert karna. Yeh kaam mostly <span class="inline-code">document</span> ke
+                    methods se hota hai.
+                </p>
+
+                <h3 class="section-subtitle">2.1 createElement() &amp; createTextNode()</h3>
+
+                <details open>
+                    <summary><span class="summary-icon">🧱</span><span>Basic building blocks</span></summary>
+                    <div class="details-body">
+                        <p>
+                            Sabse basic APIs:
+                        </p>
+                        <ul>
+                            <li><span class="inline-code">document.createElement(tagName)</span> &rarr; naya element node.</li>
+                            <li><span class="inline-code">document.createTextNode(text)</span> &rarr; text node.</li>
+                        </ul>
+                        <pre><code>&lt;div id="root"&gt;&lt;/div&gt;
+
+&lt;script&gt;
+  const root = document.getElementById("root");
+
+  const title = document.createElement("h2");
+  title.textContent = "Dynamically created heading";
+
+  const text = document.createTextNode(" (with separate text node)");
+  title.appendChild(text);
+
+  root.appendChild(title);
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            Practically, aaj kal hum zyada tar <span class="inline-code">textContent</span> use karte hain,
+                            jo internally text node manage kar leti hai. But
+                            <span class="inline-code">createTextNode()</span> ka concept samajhna zaroori hai.
+                        </p>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">2.2 appendChild(), prepend(), before(), after()</h3>
+
+                <details>
+                    <summary><span class="summary-icon">📌</span><span>Where to place newly created nodes</span></summary>
+                    <div class="details-body">
+                        <p>
+                            Important insertion methods:
+                        </p>
+                        <ul>
+                            <li><span class="inline-code">parent.appendChild(node)</span> – end of children list.</li>
+                            <li><span class="inline-code">parent.prepend(node)</span> – beginning of children list.</li>
+                            <li><span class="inline-code">ref.before(node)</span> – as sibling <em>before</em> ref.</li>
+                            <li><span class="inline-code">ref.after(node)</span> – as sibling <em>after</em> ref.</li>
+                        </ul>
+                        <pre><code>&lt;ul id="list"&gt;
+  &lt;li&gt;B&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;script&gt;
+  const list = document.getElementById("list");
+
+  const itemA = document.createElement("li");
+  itemA.textContent = "A";
+
+  const itemC = document.createElement("li");
+  itemC.textContent = "C";
+
+  // Insert A at beginning
+  list.prepend(itemA);
+
+  // Insert C at end
+  list.appendChild(itemC);
+
+  // Result: A, B, C
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            <span class="inline-code">before()</span> / <span class="inline-code">after()</span> bhi kaafi useful hote hain
+                            jab aap kisi existing node ke aas-paas content insert karna chahte ho.
+                        </p>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">2.3 insertBefore() (classic, low-level)</h3>
+
+                <details>
+                    <summary><span class="summary-icon">⚙</span><span>insertBefore(parent, newNode, referenceNode)</span></summary>
+                    <div class="details-body">
+                        <p>
+                            Purana but powerful API:
+                            <span class="inline-code">parent.insertBefore(newNode, referenceNode)</span>
+                        </p>
+                        <pre><code>&lt;ul id="numbers"&gt;
+  &lt;li&gt;1&lt;/li&gt;
+  &lt;li&gt;3&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;script&gt;
+  const list = document.getElementById("numbers");
+  const item2 = document.createElement("li");
+  item2.textContent = "2";
+
+  const item3 = list.querySelector("li:nth-child(2)");
+  list.insertBefore(item2, item3);
+  // Result: 1, 2, 3
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            Yeh method aaj bhi bahut library code mein dikhai deta hai, specially polyfills
+                            aur older browser support wale code mein.
+                        </p>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">2.4 insertAdjacentHTML / insertAdjacentElement</h3>
+
+                <details>
+                    <summary><span class="summary-icon">🧩</span><span>Fast HTML-based insertion (with XSS caveats)</span></summary>
+                    <div class="details-body">
+                        <p>
+                            <span class="inline-code">insertAdjacentHTML(position, htmlString)</span> ek powerful shortcut hai
+                            jo relative position par parsed HTML insert karta hai:
+                        </p>
+                        <ul>
+                            <li><span class="inline-code">"beforebegin"</span></li>
+                            <li><span class="inline-code">"afterbegin"</span></li>
+                            <li><span class="inline-code">"beforeend"</span></li>
+                            <li><span class="inline-code">"afterend"</span></li>
+                        </ul>
+                        <pre><code>&lt;div id="card"&gt;
+  &lt;h3&gt;Title&lt;/h3&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+  const card = document.getElementById("card");
+
+  card.insertAdjacentHTML("beforebegin",
+    "&lt;p&gt;Inserted before the card&lt;/p&gt;");
+
+  card.insertAdjacentHTML("beforeend",
+    "&lt;p&gt;Inside card, after content&lt;/p&gt;");
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            <strong>Important security note:</strong> user-generated ya unsafe data ko kabhi bhi
+                            direct <span class="inline-code">insertAdjacentHTML</span> ya
+                            <span class="inline-code">innerHTML</span> ke through inject mat karo. XSS ka bada risk hota hai.
+                        </p>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">2.5 DocumentFragment for batching</h3>
+
+                <details>
+                    <summary><span class="summary-icon">🚀</span><span>Efficient bulk insertion</span></summary>
+                    <div class="details-body">
+                        <p>
+                            Agar aapko 1000 elements banakar ek saath DOM mein daalne hain, har element ko individually
+                            append karne se zyada reflows ho sakte hain. Iske liye
+                            <span class="inline-code">DocumentFragment</span> best practice hai:
+                        </p>
+                        <pre><code>&lt;ul id="bigList"&gt;&lt;/ul&gt;
+
+&lt;script&gt;
+  const list = document.getElementById("bigList");
+  const fragment = document.createDocumentFragment();
+
+  for (let i = 1; i &lt;= 1000; i++) {
+    const li = document.createElement("li");
+    li.textContent = "Item " + i;
+    fragment.appendChild(li);
+  }
+
+  // Single DOM insertion:
+  list.appendChild(fragment);
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            Fragment khud DOM tree ka part nahi hota; ek buffer ki tarah behave karta hai.
+                        </p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary><span class="summary-icon">🧪</span><span>Real use-case: dynamic TODO add function</span></summary>
+                    <div class="details-body">
+                        <pre><code>&lt;div id="todoApp"&gt;
+  &lt;input id="todoInput" placeholder="New task"&gt;
+  &lt;button id="addTodo"&gt;Add&lt;/button&gt;
+  &lt;ul id="todoList"&gt;&lt;/ul&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+  const input = document.getElementById("todoInput");
+  const addBtn = document.getElementById("addTodo");
+  const list = document.getElementById("todoList");
+
+  function createTodoItem(text) {
+    const li = document.createElement("li");
+    li.className = "todo-item";
+
+    const span = document.createElement("span");
+    span.textContent = text;
+
+    const removeBtn = document.createElement("button");
+    removeBtn.textContent = "×";
+
+    removeBtn.addEventListener("click", () =&gt; {
+      li.remove();
+    });
+
+    li.appendChild(span);
+    li.appendChild(removeBtn);
+    return li;
+  }
+
+  addBtn.addEventListener("click", () =&gt; {
+    const value = input.value.trim();
+    if (!value) return;
+
+    const item = createTodoItem(value);
+    list.appendChild(item);
+    input.value = "";
+  });
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            Yeh pattern real-world apps ka foundation hai: <strong>create function</strong> jo ek complete,
+                            interactive DOM subtree return karti hai.
+                        </p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- 3. MODIFYING ELEMENT CONTENT -->
+            <section id="modify-content">
+                <h2 class="section-title">3. Modifying element content</h2>
+                <p>
+                    DOM element ke "andar" kya dikhega? Yeh mostly teen properties se control hota hai:
+                    <span class="inline-code">textContent</span>, <span class="inline-code">innerHTML</span>,
+                    aur <span class="inline-code">innerText</span>. Inka difference samajhna bahut important hai.
+                </p>
+
+                <h3 class="section-subtitle">3.1 textContent (safe &amp; recommended)</h3>
+
+                <details open>
+                    <summary><span class="summary-icon">✔</span><span>Plain text, no HTML parsing</span></summary>
+                    <div class="details-body">
+                        <p>
+                            <span class="inline-code">element.textContent</span>:
+                        </p>
+                        <ul>
+                            <li>Set kare toh pura text replace kar deta hai.</li>
+                            <li>HTML tags ko <strong>as text</strong> treat karta hai (escape-jaisa behaviour).</li>
+                            <li>Fast &amp; safe &mdash; XSS risk bahut kam.</li>
+                        </ul>
+                        <pre><code>&lt;div id="box"&gt;&lt;/div&gt;
+
+&lt;script&gt;
+  const box = document.getElementById("box");
+
+  const userInput = "&lt;img src=x onerror=alert('XSS')&gt;";
+  box.textContent = userInput;
+
+  // Page par literally yeh dikhega:
+  // &lt;img src=x onerror=alert('XSS')&gt;
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            Isiliye jab bhi user-generated text show karna ho, priority
+                            <span class="inline-code">textContent</span> ko do.
+                        </p>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">3.2 innerHTML (powerful but dangerous)</h3>
+
+                <details>
+                    <summary><span class="summary-icon">⚠</span><span>HTML string → DOM subtree</span></summary>
+                    <div class="details-body">
+                        <p>
+                            <span class="inline-code">innerHTML</span> string ko parse kar ke naya DOM banata hai:
+                        </p>
+                        <pre><code>&lt;div id="container"&gt;&lt;/div&gt;
+
+&lt;script&gt;
+  const container = document.getElementById("container");
+
+  container.innerHTML = `
+    &lt;h3&gt;Generated via innerHTML&lt;/h3&gt;
+    &lt;p&gt;This includes &lt;strong&gt;HTML&lt;/strong&gt; formatting.&lt;/p&gt;
+  `;
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            Problems:
+                        </p>
+                        <ul>
+                            <li>Agar aap existing children ko replace karte ho, unke event listeners &amp; state lost ho jaate hain.</li>
+                            <li>Agar string unsafe data se bani hai, to XSS attack possible.</li>
+                        </ul>
+                        <pre><code>// ❌ Do not do this with untrusted input
+const comment = "&lt;img src=x onerror=alert('hacked')&gt;";
+container.innerHTML = "&lt;p&gt;" + comment + "&lt;/p&gt;";
+                        </code></pre>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">3.3 innerText (layout-aware, rarely needed)</h3>
+
+                <details>
+                    <summary><span class="summary-icon">🧠</span><span>Difference from textContent</span></summary>
+                    <div class="details-body">
+                        <p>
+                            <span class="inline-code">innerText</span> browser ke layout engine se interact karta hai:
+                        </p>
+                        <ul>
+                            <li>Jo text <strong>visible</strong> hai wahi return karta (CSS display/visibility consider karta).</li>
+                            <li>Read / write operations zyada heavy ho sakte hain (reflow trigger).</li>
+                        </ul>
+                        <pre><code>&lt;div id="demo"&gt;
+  &lt;span style="display:none"&gt;Hidden&lt;/span&gt;
+  &lt;span&gt;Visible&lt;/span&gt;
+&lt;/div&gt;
+
+&lt;script&gt;
+  const demo = document.getElementById("demo");
+
+  console.log(demo.textContent); // "\n  Hidden\n  Visible\n"
+  console.log(demo.innerText);   // "Hidden\nVisible" (browser dependent)
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            Most cases mein <span class="inline-code">textContent</span> enough hota hai; performance &amp; behaviour dono predictable.
+                        </p>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">3.4 Content update patterns</h3>
+
+                <details>
+                    <summary><span class="summary-icon">🧩</span><span>Safe rendering of user comments</span></summary>
+                    <div class="details-body">
+                        <pre><code>&lt;ul id="comments"&gt;&lt;/ul&gt;
+
+&lt;script&gt;
+  const commentsUl = document.getElementById("comments");
+
+  function renderComment(text) {
+    const li = document.createElement("li");
+    const strong = document.createElement("strong");
+
+    strong.textContent = "User: ";
+    li.appendChild(strong);
+
+    // User text safely rendered
+    const span = document.createElement("span");
+    span.textContent = text;
+    li.appendChild(span);
+
+    commentsUl.appendChild(li);
+  }
+
+  renderComment("&lt;script&gt;alert('XSS')&lt;/script&gt;");
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            Yahan even agar user script tag de, page pe as text dikhega, execute nahi hoga.
+                        </p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- 4. ATTRIBUTE MANIPULATION -->
+            <section id="attributes">
+                <h2 class="section-title">4. Attribute manipulation</h2>
+                <p>
+                    Attributes HTML level ki information hoti hain (id, class, href, src, data-* etc.) jo DOM properties
+                    ke through bhi expose hoti hain. Inko manipulate karna DOM modification ka core part hai.
+                </p>
+
+                <h3 class="section-subtitle">4.1 getAttribute(), setAttribute(), removeAttribute()</h3>
+
+                <details open>
+                    <summary><span class="summary-icon">⚙</span><span>Generic attribute APIs</span></summary>
+                    <div class="details-body">
+                        <pre><code>&lt;a id="link" href="https://example.com"&gt;Go&lt;/a&gt;
+
+&lt;script&gt;
+  const link = document.getElementById("link");
+
+  console.log(link.getAttribute("href")); // "https://example.com"
+
+  link.setAttribute("target", "_blank");
+  link.setAttribute("rel", "noopener noreferrer");
+
+  // Remove attribute
+  link.removeAttribute("rel");
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            Yeh methods kisi bhi attribute ke saath kaam karte hain, including
+                            <span class="inline-code">data-* </span> aur custom attributes.
+                        </p>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">4.2 Properties vs attributes</h3>
+
+                <details>
+                    <summary><span class="summary-icon">🧠</span><span>Value attribute vs value property</span></summary>
+                    <div class="details-body">
+                        <p>
+                            Bahut elements ke liye, attribute (HTML) aur property (DOM) different ho sakte hain:
+                        </p>
+                        <pre><code>&lt;input id="age" type="number" value="10"&gt;
+
+&lt;script&gt;
+  const age = document.getElementById("age");
+
+  console.log(age.getAttribute("value")); // "10" (original HTML attribute)
+  console.log(age.value);                 // current value (user edited ho sakta hai)
+
+  age.value = "20";
+  console.log(age.getAttribute("value")); // ab bhi "10" unless explicitly setAttribute
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            UI state ke liye property use karo (<span class="inline-code">value</span>,
+                            <span class="inline-code">checked</span>), configuration ke liye attribute.
+                        </p>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">4.3 data-* attributes &amp; dataset</h3>
+
+                <details>
+                    <summary><span class="summary-icon">📦</span><span>Storing custom metadata on elements</span></summary>
+                    <div class="details-body">
+                        <pre><code>&lt;button id="buyBtn"
+        data-product-id="42"
+        data-price="999"
+        data-currency="INR"&gt;
+  Buy
+&lt;/button&gt;
+
+&lt;script&gt;
+  const btn = document.getElementById("buyBtn");
+
+  console.log(btn.dataset.productId); // "42"
+  console.log(btn.dataset.price);     // "999"
+
+  // Update dataset
+  btn.dataset.price = "899";
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            <span class="inline-code">data-foo-bar</span> attribute
+                            <span class="inline-code">dataset.fooBar</span> ban jata hai. Yeh pattern JS components mein
+                            kaafi common hai.
+                        </p>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">4.4 Boolean attributes (disabled, checked, required…)</h3>
+
+                <details>
+                    <summary><span class="summary-icon">✔</span><span>Present = true, absent = false</span></summary>
+                    <div class="details-body">
+                        <pre><code>&lt;input id="agree" type="checkbox" checked&gt;
+&lt;button id="submitBtn" disabled&gt;Submit&lt;/button&gt;
+
+&lt;script&gt;
+  const agree = document.getElementById("agree");
+  const submitBtn = document.getElementById("submitBtn");
+
+  agree.addEventListener("change", () =&gt; {
+    submitBtn.disabled = !agree.checked; // property
+  });
+
+  // Or via attributes (less common in JS)
+  // submitBtn.setAttribute("disabled", "");
+  // submitBtn.removeAttribute("disabled");
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            Boolean attributes ka idiomatic JS tareeka hai property se kaam karna
+                            (<span class="inline-code">element.disabled = true/false</span>).
+                        </p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- 5. STYLE MODIFICATION -->
+            <section id="styles">
+                <h2 class="section-title">5. Style property modification</h2>
+                <p>
+                    Styling do level par ho sakta hai: CSS classes (preferred) aur inline styles
+                    (<span class="inline-code">element.style</span>). DOM modification mein dono ko sahi balance se use karna
+                    important hai.
+                </p>
+
+                <h3 class="section-subtitle">5.1 className &amp; classList</h3>
+
+                <details open>
+                    <summary><span class="summary-icon">🎨</span><span>Toggle visual state via CSS classes</span></summary>
+                    <div class="details-body">
+                        <pre><code>&lt;style&gt;
+  .btn {
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+    border: 1px solid #4b5563;
+    background: #111827;
+    color: #e5e7eb;
+  }
+  .btn.active {
+    border-color: #22d3ee;
+    background: #0f172a;
+  }
+&lt;/style&gt;
+
+&lt;button id="toggle" class="btn"&gt;Toggle active&lt;/button&gt;
+
+&lt;script&gt;
+  const toggle = document.getElementById("toggle");
+
+  toggle.addEventListener("click", () =&gt; {
+    toggle.classList.toggle("active");
+  });
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            <span class="inline-code">classList</span> ke common methods:
+                        </p>
+                        <ul>
+                            <li><span class="inline-code">add("class")</span></li>
+                            <li><span class="inline-code">remove("class")</span></li>
+                            <li><span class="inline-code">toggle("class")</span></li>
+                            <li><span class="inline-code">contains("class")</span></li>
+                        </ul>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">5.2 element.style &amp; inline CSS</h3>
+
+                <details>
+                    <summary><span class="summary-icon">⚙</span><span>Direct style manipulation</span></summary>
+                    <div class="details-body">
+                        <pre><code>&lt;div id="box2"&gt;Box&lt;/div&gt;
+
+&lt;script&gt;
+  const box = document.getElementById("box2");
+
+  box.style.width = "200px";
+  box.style.height = "80px";
+  box.style.border = "1px solid #4b5563";
+  box.style.backgroundColor = "#111827";
+  box.style.color = "#e5e7eb";
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            CSS property names mein hyphen hota hai, JS mein camelCase:
+                            <span class="inline-code">background-color</span> &rarr;
+                            <span class="inline-code">backgroundColor</span>.
+                        </p>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">5.3 style.setProperty() &amp; CSS variables</h3>
+
+                <details>
+                    <summary><span class="summary-icon">🧪</span><span>Theming with CSS custom properties</span></summary>
+                    <div class="details-body">
+                        <pre><code>&lt;style&gt;
+  :root {
+    --accent-color: #22d3ee;
+  }
+
+  .tag {
+    border-radius: 999px;
+    border: 1px solid var(--accent-color);
+    color: var(--accent-color);
+    padding: 0.2rem 0.6rem;
+  }
+&lt;/style&gt;
+
+&lt;span id="tag1" class="tag"&gt;Dynamic theme&lt;/span&gt;
+&lt;button id="switchTheme"&gt;Switch color&lt;/button&gt;
+
+&lt;script&gt;
+  const rootStyle = document.documentElement.style;
+  const btnTheme = document.getElementById("switchTheme");
+
+  btnTheme.addEventListener("click", () =&gt; {
+    const current = getComputedStyle(document.documentElement)
+                      .getPropertyValue("--accent-color").trim();
+    const next = current === "#22d3ee" ? "#fbbf24" : "#22d3ee";
+    rootStyle.setProperty("--accent-color", next);
+  });
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            Is pattern se aap full dark/light theme toggle kar sakte ho without touching individual elements.
+                        </p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- 6. REMOVAL & CLEANUP (START) -->
+            <section id="removal">
+                <h2 class="section-title">6. Removing elements &amp; cleanup</h2>
+                <p>
+                    DOM modification ka last step hai elements ko safely remove karna, especially jab aap dynamic lists,
+                    modals, tooltips, ya SPA-style UIs bana rahe ho.
+                </p>
+
+                <h3 class="section-subtitle">6.1 element.remove() &amp; parent.removeChild()</h3>
+
+                <details open>
+                    <summary><span class="summary-icon">🗑</span><span>Basic removal APIs</span></summary>
+                    <div class="details-body">
+                        <pre><code>&lt;ul id="remList"&gt;
+  &lt;li&gt;One&lt;/li&gt;
+  &lt;li&gt;Two&lt;/li&gt;
+  &lt;li&gt;Three&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;script&gt;
+  const list = document.getElementById("remList");
+  const second = list.children[1];
+
+  // Modern
+  second.remove();
+
+  // Classic
+  // list.removeChild(second);
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            <span class="inline-code">element.remove()</span> zyada ergonomic hai; internally woh parent se
+                            <span class="inline-code">removeChild</span> call kar deta hai.
+                        </p>
+                    </div>
+                </details>
+
+                <!-- Remaining removal details + patterns will continue in Part 2 -->
+            </section>
+
+            <!-- 7 & 8 sections will also continue / be completed in Part 2 -->
+
+        </div>
+    </main>
+</div>
+
+<!-- ===== PART 1 END — NOW PASTE PART 2 CODE DIRECTLY AFTER THIS ===== -->
+            <!-- 6.2 Cleanup considerations -->
+            <section>
+                <h3 class="section-subtitle">6.2 Cleanup considerations</h3>
+                <details open>
+                    <summary><span class="summary-icon">🧹</span><span>Event listeners, timers &amp; references</span></summary>
+                    <div class="details-body">
+                        <p>
+                            Jab aap DOM se element remove karte ho, JS ke event listeners automatically remove nahi hote.
+                            Agar aapne listener directly element par lagaya ho, woh garbage collection ke saath clean ho jaata hai,
+                            but agar aapke paas global references hain, memory leak ho sakta hai.
+                        </p>
+
+                        <pre><code>&lt;div id="boxA"&gt;Click&lt;/div&gt;
+
+&lt;script&gt;
+  const box = document.getElementById("boxA");
+
+  function handler() {
+    console.log("clicked!");
+  }
+
+  box.addEventListener("click", handler);
+
+// ❌ Removing element does NOT remove global reference
+  box.remove();
+
+// ✔ Best: Remove listener before removal (optional but clean)
+  // box.removeEventListener("click", handler);
+&lt;/script&gt;
+                        </code></pre>
+
+                        <p>
+                            Agar aap event delegation use karte ho (parent per event listener), to cleanup ka issue kam hota hai.
+                        </p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary><span class="summary-icon">🧩</span><span>Removing dynamically created components</span></summary>
+                    <div class="details-body">
+                        <pre><code>&lt;div id="modalContainer"&gt;&lt;/div&gt;
+
+&lt;script&gt;
+  function createModal() {
+    const modal = document.createElement("div");
+    modal.className = "modal";
+
+    const closeBtn = document.createElement("button");
+    closeBtn.textContent = "Close";
+
+    closeBtn.addEventListener("click", () =&gt; {
+      modal.remove();
+    });
+
+    modal.appendChild(closeBtn);
+    return modal;
+  }
+
+  const container = document.getElementById("modalContainer");
+  const modal = createModal();
+  container.appendChild(modal);
+&lt;/script&gt;
+                        </code></pre>
+                        <p>Yeh typical pattern hai dynamic dialogs banane ka.</p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- 7. PATTERNS & SAFETY -->
+            <section id="patterns">
+                <h2 class="section-title">7. Patterns, safety &amp; performance</h2>
+
+                <h3 class="section-subtitle">7.1 Avoid layout thrashing</h3>
+                <details open>
+                    <summary><span class="summary-icon">🚀</span><span>Batch DOM reads &amp; writes</span></summary>
+                    <div class="details-body">
+                        <pre><code>// ❌ Avoid mixing reads & writes repeatedly
+const h = element.offsetHeight; 
+element.style.height = h + 10 + "px";
+const w = element.offsetWidth;
+element.style.width = w + 10 + "px";
+
+// ✔ Better: batch reads then writes
+const rect = element.getBoundingClientRect();
+element.style.height = rect.height + 10 + "px";
+element.style.width = rect.width + 10 + "px";
+                        </code></pre>
+
+                        <p>
+                            Layout operations costly hote hain. Reads aur writes ko group karo for smooth UI.
+                        </p>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">7.2 Re-rendering patterns</h3>
+                <details>
+                    <summary><span class="summary-icon">🧠</span><span>innerHTML vs DOM building functions</span></summary>
+                    <div class="details-body">
+                        <p>
+                            Agar aap frequently content render karte ho (like chat messages), to recommended approach:
+                        </p>
+
+                        <ul>
+                            <li><strong>Small updates — use element.textContent or appendChild</strong></li>
+                            <li><strong>Large batch updates — use DocumentFragment</strong></li>
+                            <li><strong>Replacing entire UI — use innerHTML safely</strong></li>
+                        </ul>
+
+                        <pre><code>function renderMessages(messages) {
+  const frag = document.createDocumentFragment();
+
+  messages.forEach(msg =&gt; {
+    const div = document.createElement("div");
+    div.className = "msg";
+    div.textContent = msg;
+    frag.appendChild(div);
+  });
+
+  chatBox.innerHTML = "";  // clear
+  chatBox.appendChild(frag);
+}
+                        </code></pre>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">7.3 Event delegation (best practice)</h3>
+                <details>
+                    <summary><span class="summary-icon">🎯</span><span>Attach one listener, not many</span></summary>
+                    <div class="details-body">
+                        <pre><code>&lt;ul id="todoItems"&gt;
+  &lt;li&gt;A&lt;/li&gt;
+  &lt;li&gt;B&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;script&gt;
+  const list = document.getElementById("todoItems");
+
+  list.addEventListener("click", (event) =&gt; {
+    const li = event.target.closest("li");
+    if (li) {
+      li.classList.toggle("done");
+    }
+  });
+&lt;/script&gt;
+                        </code></pre>
+
+                        <p>
+                            Yeh pattern dynamic lists ke saath perfect kaam karta hai.
+                        </p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- 8. SUMMARY -->
+            <section id="summary-practice">
+                <h2 class="section-title">8. Summary &amp; practice</h2>
+
+                <details open>
+                    <summary><span class="summary-icon">📌</span><span>Summary of DOM modification</span></summary>
+                    <div class="details-body">
+                        <ul>
+                            <li><strong>Create:</strong> createElement, createTextNode, DocumentFragment</li>
+                            <li><strong>Insert:</strong> appendChild, prepend, before, after, insertBefore</li>
+                            <li><strong>Content update:</strong> textContent (safe), innerHTML (powerful)</li>
+                            <li><strong>Attributes:</strong> setAttribute, dataset, boolean attributes</li>
+                            <li><strong>Styles:</strong> classList, inline style, CSS variables</li>
+                            <li><strong>Remove:</strong> remove, removeChild, cleanup</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary><span class="summary-icon">🧪</span><span>Practice tasks</span></summary>
+                    <div class="details-body">
+                        <ol>
+                            <li>Create a mini “notes app” with add/remove/edit functionality.</li>
+                            <li>Build a modal component using createElement + appendChild.</li>
+                            <li>Implement theme switching using CSS variables + JS.</li>
+                            <li>Use DocumentFragment to generate 500 table rows efficiently.</li>
+                            <li>Use event delegation for a dynamic shopping cart.</li>
+                        </ol>
+                    </div>
+                </details>
+
+                <div class="callout mt-3">
+                    <div class="callout-title">Next module</div>
+                    <div>
+                        DOM Events (16.4): capturing, bubbling, event delegation, custom events —
+                        UI development ka core engine.
+                    </div>
+                </div>
+            </section>
+
+        </div> <!-- content-inner -->
+    </main>
+</div> <!-- app-wrapper -->
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+/* TOC Scroll + Highlight */
+(function () {
+    const tocLinks = document.querySelectorAll(".toc-link");
+    const sections = Array.from(document.querySelectorAll("main section"));
+
+    tocLinks.forEach(link => {
+        link.addEventListener("click", function (e) {
+            e.preventDefault();
+            const id = this.getAttribute("href").slice(1);
+            const target = document.getElementById(id);
+            if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+    });
+
+    const content = document.getElementById("content");
+    content.addEventListener("scroll", function () {
+        const scrollPos = this.scrollTop;
+        const offset = 120;
+        let currentId = null;
+
+        for (const sec of sections) {
+            if (sec.offsetTop - offset <= scrollPos) {
+                currentId = sec.id;
+            }
+        }
+
+        tocLinks.forEach(link => {
+            link.classList.toggle("active", link.getAttribute("href").slice(1) === currentId);
+        });
+    });
+})();
+
+/* TOC Filter */
+function filterTOC() {
+    const input = document.getElementById("tocSearch");
+    const filter = input.value.toLowerCase();
+    const items = document.querySelectorAll("#tocList li");
+
+    items.forEach(li => {
+        const text = li.textContent.toLowerCase();
+        li.style.display = text.includes(filter) ? "" : "none";
+    });
+}
+
+/* Expand / Collapse */
+function expandAllDetails() {
+    document.querySelectorAll("details").forEach(d => d.open = true);
+}
+function collapseAllDetails() {
+    document.querySelectorAll("details").forEach(d => d.open = false);
+}
+
+/* Scroll Top */
+function scrollToTop() {
+    document.getElementById("content").scrollTo({ top: 0, behavior: "smooth" });
+}
+
+/* Simple syntax highlighter */
+(function simpleHighlight() {
+    const keywords = [
+        "const","let","var","function","return","if","else",
+        "for","while","class","new","this","true","false",
+        "null","undefined","break","continue"
+    ];
+
+    const patternKeywords = new RegExp("\\b(" + keywords.join("|") + ")\\b", "g");
+    const patternString = /("[^"]*"|'[^']*')/g;
+    const patternComment = /(\/\/.*$)/gm;
+    const patternProps = /\.(\w+)/g;
+
+    document.querySelectorAll("pre code").forEach(block => {
+        let html = block.textContent;
+
+        html = html.replace(patternComment, '<span class="code-comment">$1</span>');
+        html = html.replace(patternString, '<span class="code-string">$1</span>');
+        html = html.replace(patternKeywords, '<span class="code-keyword">$1</span>');
+        html = html.replace(patternProps, '.<span class="code-property">$1</span>');
+
+        block.innerHTML = html;
+    });
+})();
+</script>
+
+</body>
+</html>

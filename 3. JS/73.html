@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>21.2 Secure Coding Practices — Deep Learning Note</title>
+
+<!-- Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- highlight.js -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+<style>
+:root {
+  --bg: #0b0f10;
+  --surface: #121416;
+  --muted: #9aa7ad;
+  --cyan: #06b6d4;
+  --amber: #f59e0b;
+  --card: #111316;
+  --radius: 12px;
+  --toc-width: 320px;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
+}
+body {
+  background: linear-gradient(180deg, var(--bg), #050606);
+  color: #e6eef2;
+  margin: 0;
+  font-family: Inter, system-ui;
+}
+.app {
+  display: grid;
+  grid-template-columns: var(--toc-width) 1fr;
+  gap: 20px;
+  height: 100vh;
+  padding: 20px;
+}
+.panel-left {
+  width: var(--toc-width);
+  background: var(--card);
+  padding: 16px;
+  border-radius: var(--radius);
+  box-shadow: 0 6px 30px rgba(0,0,0,0.6);
+  position: sticky;
+  top: 20px;
+  height: calc(100vh - 40px);
+  overflow-y: auto;
+}
+.panel-right {
+  overflow-y: auto;
+  height: calc(100vh - 40px);
+  padding-right: 8px;
+}
+.card {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-bottom: 16px;
+}
+details {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.05);
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin: 10px 0;
+  color: white;
+}
+summary {
+  cursor: pointer;
+  font-weight: 600;
+}
+pre {
+  background: #0b0f10;
+  border-left: 4px solid rgba(6,182,212,0.4);
+  padding: 14px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  overflow-x: auto;
+}
+code {
+  font-family: var(--mono);
+}
+.btn-ghost {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 6px 10px;
+  border-radius: 8px;
+  color: var(--muted);
+}
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr; }
+  .panel-left { position: relative; height: auto; }
+}
+h2{
+    color: #e6eef2;
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+<!-- LEFT PANEL -->
+<aside class="panel-left">
+  <h1 style="color:var(--cyan); font-size:1.15rem;">21.2 Secure Coding Practices</h1>
+  <p class="">Input Validation • Token Handling • Secure Storage • Obfuscation • Dependency Scanning</p>
+
+  <div class="d-flex gap-2 mt-2">
+    <button id="expandAll" class="btn-ghost">Expand All</button>
+    <button id="collapseAll" class="btn-ghost">Collapse All</button>
+  </div>
+
+  <input id="search" placeholder="Search…" class="form-control mt-3" />
+
+  <h5 class="mt-3">Contents</h5>
+  <ul id="tocList" style="list-style:none; padding-left:0; line-height:1.6;">
+    <li data-target="input-validation">Input Validation & Sanitization</li>
+    <li data-target="token-handling">Authentication Token Handling</li>
+    <li data-target="secure-storage">Secure Storage of Sensitive Data</li>
+    <li data-target="obfuscation">Code Obfuscation & Protection</li>
+    <li data-target="dependency-scanning">Dependency Security Scanning</li>
+  </ul>
+</aside>
+
+<!-- RIGHT PANEL -->
+<main class="panel-right">
+
+<!-- EXEC SUMMARY -->
+<div class="card">
+  <h2>Executive Summary</h2>
+  <p class="">
+    Secure coding is the foundation of safe web applications. This module teaches deep, research-level concepts:
+    strong input validation, safe token storage, encrypted client-side data handling, JS code protection,
+    and modern dependency security scanning — all with real JavaScript examples.
+  </p>
+</div>
+
+<!-- 1 INPUT VALIDATION -->
+<section class="card" id="input-validation">
+  <h2>Input Validation & Sanitization</h2>
+
+  <details open>
+    <summary>Why validation matters</summary>
+    <p class="">
+      Almost every client-side security failure starts with unvalidated input.  
+      Input validation prevents XSS, SQLi, SSRF, RCE, and logic corruption attacks.
+    </p>
+  </details>
+
+  <details>
+    <summary>Whitelist vs Blacklist</summary>
+    <ul>
+      <li><b>Whitelist:</b> Allow only known-safe patterns → <u>recommended</u>.</li>
+      <li><b>Blacklist:</b> Block known-bad patterns → always bypassable.</li>
+    </ul>
+  </details>
+
+  <details>
+    <summary>JS example — strict email validation</summary>
+<pre><code>function validateEmail(email) {
+  const pattern = /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/i;
+  return pattern.test(email);
+}
+</code></pre>
+  </details>
+
+  <details>
+    <summary>Sanitizing HTML to prevent DOM-XSS</summary>
+<pre><code>const clean = DOMPurify.sanitize(userInput);
+output.innerHTML = clean;
+</code></pre>
+  </details>
+
+  <details>
+    <summary>Escaping dangerous characters</summary>
+<pre><code>function escapeHTML(str) {
+  return str.replace(/&amp;/g, "&amp;amp;")
+            .replace(/&lt;/g, "&amp;lt;")
+            .replace(/&gt;/g, "&amp;gt;")
+            .replace(/"/g, "&amp;quot;")
+            .replace(/'/g, "&#039;");
+}
+</code></pre>
+  </details>
+</section>
+
+<!-- 2 TOKEN HANDLING -->
+<section class="card" id="token-handling">
+  <h2>Authentication Token Handling</h2>
+
+  <details open>
+    <summary>Where to store tokens?</summary>
+    <ul>
+      <li><b>HttpOnly Cookies → Best for security</b> (cannot be read by JS).</li>
+      <li><b>localStorage → vulnerable to XSS</b>.</li>
+      <li><b>sessionStorage → XSS-vulnerable but isolated per tab</b>.</li>
+    </ul>
+  </details>
+
+  <details>
+    <summary>Secure cookie example</summary>
+<pre><code>Set-Cookie: auth=abcd1234;
+  HttpOnly;
+  Secure;
+  SameSite=Lax;
+  Max-Age=3600;
+</code></pre>
+  </details>
+
+  <details>
+    <summary>Token rotation (high security)</summary>
+<pre><code>&lt;script&gt;
+async function refreshToken() {
+  const res = await fetch('/auth/rotate', { credentials: 'include' });
+  return res.ok;
+}
+// rotate every 10 minutes
+setInterval(refreshToken, 10 * 60 * 1000);
+&lt;/script&gt;
+</code></pre>
+  </details>
+
+  <details>
+    <summary>Never store JWTs in localStorage</summary>
+    <p class="">Because any XSS can steal it instantly.</p>
+  </details>
+</section>
+
+<!-- 3 SECURE STORAGE -->
+<section class="card" id="secure-storage">
+  <h2>Secure Storage of Sensitive Data</h2>
+
+  <details open>
+    <summary>What must never be stored in plain text?</summary>
+    <ul>
+      <li>Passwords</li>
+      <li>Tokens</li>
+      <li>Private keys</li>
+      <li>PII (emails, phone numbers, Aadhaar, SSN)</li>
+    </ul>
+  </details>
+
+  <details>
+    <summary>Encrypting data with Web Crypto API</summary>
+<pre><code>&lt;script&gt;
+async function encrypt(text, key) {
+  const enc = new TextEncoder().encode(text);
+  const cipher = await crypto.subtle.encrypt(
+    { name: "AES-GCM", iv: window.iv },
+    key,
+    enc
+  );
+  return cipher;
+}
+&lt;/script&gt;
+</code></pre>
+  </details>
+
+  <details>
+    <summary>Generate a secure key</summary>
+<pre><code>const key = await crypto.subtle.generateKey(
+  { name: "AES-GCM", length: 256 },
+  true,
+  ["encrypt", "decrypt"]
+);
+</code></pre>
+  </details>
+
+  <details>
+    <summary>Bad practice example</summary>
+<pre><code>// ❌ Never do this
+localStorage.setItem("password", userPassword);
+</code></pre>
+  </details>
+</section>
+
+<!-- 4 OBFUSCATION -->
+<section class="card" id="obfuscation">
+  <h2>Code Obfuscation & Protection</h2>
+
+  <details open>
+    <summary>Why obfuscate?</summary>
+    <p class="">
+      JS is downloaded to the client → attackers can view, reverse-engineer, or steal logic.  
+      Obfuscation makes the code harder to understand.
+    </p>
+  </details>
+
+  <details>
+    <summary>JS Obfuscator example</summary>
+<pre><code>// Original
+function secret() { return "API_KEY_123"; }
+
+// Obfuscated
+var _0x132f=["API_KEY_123"];function _0xabc(){return _0x132f[0];}
+</code></pre>
+  </details>
+
+  <details>
+    <summary>Limitations</summary>
+    <ul>
+      <li>Obfuscation ≠ encryption</li>
+      <li>Can slow down debugging</li>
+      <li>Attackers can still reverse it with enough time</li>
+    </ul>
+  </details>
+</section>
+
+<!-- 5 DEPENDENCY SCANNING -->
+<section class="card" id="dependency-scanning">
+  <h2>Dependency Security Scanning</h2>
+
+  <details open>
+    <summary>Why scan dependencies?</summary>
+    <p class="">
+      Most production systems use 80–95% third-party code.  
+      If dependencies have vulnerabilities, your app becomes vulnerable.
+    </p>
+  </details>
+
+  <details>
+    <summary>npm audit example</summary>
+<pre><code># scan for vulnerabilities
+npm audit
+
+# fix automatically
+npm audit fix
+</code></pre>
+  </details>
+
+  <details>
+    <summary>Dependabot / Snyk / GitHub Actions</summary>
+
+<pre><code>name: "Dependency Security Scan"
+
+on:
+  schedule: [cron: "0 0 * * *"]
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: snyk/actions/node@master
+        with:
+          command: test
+</code></pre>
+  </details>
+</section>
+
+<footer class=" mb-3">
+  Generated on <span id="date"></span>
+</footer>
+
+</main>
+</div>
+
+<script>
+// date
+document.getElementById("date").textContent = new Date().toLocaleString();
+
+// expand/collapse
+document.getElementById("expandAll").onclick = () => {
+  document.querySelectorAll("details").forEach(d => d.open = true);
+};
+document.getElementById("collapseAll").onclick = () => {
+  document.querySelectorAll("details").forEach(d => d.open = false);
+};
+
+// toc smooth scroll
+document.querySelectorAll("#tocList li").forEach(li => {
+  li.onclick = () => {
+    document.getElementById(li.dataset.target).scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  };
+});
+
+// toc search
+document.getElementById("search").addEventListener("input", e => {
+  const q = e.target.value.toLowerCase();
+  document.querySelectorAll("#tocList li").forEach(li => {
+    li.style.display = li.textContent.toLowerCase().includes(q)
+      ? "block"
+      : "none";
+  });
+});
+
+// highlight.js
+hljs.highlightAll();
+</script>
+
+</body>
+</html>

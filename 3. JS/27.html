@@ -1,0 +1,708 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10.1 Higher-Order Functions - Deep Learning Notes</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00f5ff;
+            --amber: #ffb347;
+            --text-light: #e6f1ff;
+            --accent: #00d4ff;
+        }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .left-panel {
+            background-color: #0c213d;
+            height: 100vh;
+            position: fixed;
+            width: 300px;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 5px 0 15px rgba(0, 245, 255, 0.1);
+        }
+        
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--amber);
+            padding-bottom: 8px;
+            margin-top: 30px;
+        }
+        
+        .toc-item {
+            margin: 8px 0;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .toc-item:hover {
+            background-color: rgba(0, 245, 255, 0.1);
+            color: var(--amber);
+        }
+        
+        .toc-subitem {
+            margin-left: 20px;
+            margin: 6px 0;
+            padding: 4px 8px;
+            border-left: 2px solid var(--amber);
+            border-radius: 0 4px 4px 0;
+            color: rgba(230, 241, 255, 0.8);
+        }
+        
+        .toc-subitem:hover {
+            background-color: rgba(255, 179, 71, 0.1);
+            color: var(--amber);
+        }
+        
+        .search-box {
+            background-color: rgba(0, 245, 255, 0.1);
+            border: 1px solid var(--cyan);
+            color: var(--text-light);
+            margin-bottom: 20px;
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+        
+        .btn-control {
+            background-color: rgba(0, 245, 255, 0.1);
+            border: 1px solid var(--cyan);
+            color: var(--cyan);
+            margin: 10px 0;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+        
+        .btn-control:hover {
+            background-color: rgba(0, 245, 255, 0.2);
+            color: var(--amber);
+        }
+        
+        pre {
+            background-color: #0f2b4d;
+            border-left: 4px solid var(--amber);
+            padding: 16px;
+            border-radius: 0 6px 6px 0;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        
+        code {
+            background-color: rgba(0, 245, 255, 0.1);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--amber);
+        }
+        
+        .details-summary {
+            cursor: pointer;
+            color: var(--cyan);
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            background-color: rgba(0, 245, 255, 0.08);
+            border-radius: 6px;
+            border: 1px solid rgba(0, 245, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .details-summary:hover {
+            background-color: rgba(0, 245, 255, 0.15);
+            color: var(--amber);
+        }
+        
+        .details-content {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: rgba(10, 25, 47, 0.5);
+            border-radius: 6px;
+            border-left: 3px solid var(--amber);
+        }
+        
+        .highlight {
+            color: var(--amber);
+            font-weight: 600;
+        }
+        
+        .formula {
+            background-color: rgba(10, 25, 47, 0.6);
+            padding: 12px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-size: 1.1rem;
+            text-align: center;
+            border: 1px dashed var(--cyan);
+        }
+        
+        .example-box {
+            background-color: rgba(10, 25, 47, 0.5);
+            border-left: 3px solid var(--cyan);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 6px 6px 0;
+        }
+        
+        .section-header {
+            color: var(--amber);
+            font-size: 1.5rem;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--amber);
+        }
+        
+        .author-info {
+            color: rgba(230, 241, 255, 0.7);
+            font-style: italic;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(0, 245, 255, 0.2);
+            padding-bottom: 10px;
+        }
+        
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        @media (max-width: 991px) {
+            .left-panel {
+                position: relative;
+                width: 100%;
+                height: auto;
+                padding-bottom: 20px;
+            }
+            
+            .right-panel {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+            <!-- Left Panel -->
+            <div class="col-md-3 left-panel">
+                <h3 class="text-center mb-4">10.1 Higher-Order Functions</h3>
+                <p class="author-info">Mastered by: AI Tutor | For Deep Learners</p>
+                
+                <input type="text" class="form-control search-box" id="searchToc" placeholder="Search topics...">
+                
+                <div class="d-grid gap-2 mb-3">
+                    <button class="btn btn-control" id="expandAll">Expand All</button>
+                    <button class="btn btn-control" id="collapseAll">Collapse All</button>
+                </div>
+                
+                <div class="toc">
+                    <div class="toc-item" data-target="functions-as-first-class">Functions as First-Class Citizens</div>
+                    <div class="toc-item" data-target="passing-functions">Passing Functions as Arguments</div>
+                    <div class="toc-item" data-target="returning-functions">Returning Functions from Functions</div>
+                    <div class="toc-item" data-target="function-composition">Function Composition</div>
+                    <div class="toc-item" data-target="currying-partial">Currying and Partial Application</div>
+                    
+                    <div class="toc-subitem" data-target="functions-as-first-class-definition">Definition</div>
+                    <div class="toc-subitem" data-target="functions-as-first-class-detail">Detail</div>
+                    <div class="toc-subitem" data-target="functions-as-first-class-syntax">Syntax</div>
+                    <div class="toc-subitem" data-target="functions-as-first-class-example">Example</div>
+                    <div class="toc-subitem" data-target="functions-as-first-class-uses">Uses</div>
+                    
+                    <div class="toc-subitem" data-target="passing-functions-definition">Definition</div>
+                    <div class="toc-subitem" data-target="passing-functions-detail">Detail</div>
+                    <div class="toc-subitem" data-target="passing-functions-syntax">Syntax</div>
+                    <div class="toc-subitem" data-target="passing-functions-example">Example</div>
+                    <div class="toc-subitem" data-target="passing-functions-uses">Uses</div>
+                    
+                    <div class="toc-subitem" data-target="returning-functions-definition">Definition</div>
+                    <div class="toc-subitem" data-target="returning-functions-detail">Detail</div>
+                    <div class="toc-subitem" data-target="returning-functions-syntax">Syntax</div>
+                    <div class="toc-subitem" data-target="returning-functions-example">Example</div>
+                    <div class="toc-subitem" data-target="returning-functions-uses">Uses</div>
+                    
+                    <div class="toc-subitem" data-target="function-composition-definition">Definition</div>
+                    <div class="toc-subitem" data-target="function-composition-detail">Detail</div>
+                    <div class="toc-subitem" data-target="function-composition-syntax">Syntax</div>
+                    <div class="toc-subitem" data-target="function-composition-example">Example</div>
+                    <div class="toc-subitem" data-target="function-composition-uses">Uses</div>
+                    
+                    <div class="toc-subitem" data-target="currying-partial-definition">Definition</div>
+                    <div class="toc-subitem" data-target="currying-partial-detail">Detail</div>
+                    <div class="toc-subitem" data-target="currying-partial-syntax">Syntax</div>
+                    <div class="toc-subitem" data-target="currying-partial-example">Example</div>
+                    <div class="toc-subitem" data-target="currying-partial-uses">Uses</div>
+                </div>
+            </div>
+            
+            <!-- Right Panel -->
+            <div class="col-md-9 right-panel">
+                <h1 class="section-header">Higher-Order Functions</h1>
+                <p class="lead">Unlock the power of functional programming by treating functions as dynamic, manipulable entities.</p>
+                
+                <!-- Functions as First-Class Citizens -->
+                <details id="functions-as-first-class">
+                    <summary class="details-summary">Functions as First-Class Citizens</summary>
+                    <div class="details-content">
+                        <h3>Definition</h3>
+                        <p>A function is a "first-class citizen" when it can be treated like any other variable in the language — assigned to variables, passed as arguments, returned from other functions, and created dynamically at runtime.</p>
+                        
+                        <h3>Detail</h3>
+                        <p>In languages that support first-class functions, functions are not special constructs — they're values. This means you can:</p>
+                        <ul>
+                            <li>Store a function in a variable</li>
+                            <li>Pass a function as an argument to another function</li>
+                            <li>Return a function from another function</li>
+                            <li>Create functions during runtime</li>
+                        </ul>
+                        <p>This transforms how we think about code: instead of just executing procedures, we compose behaviors as modular units.</p>
+                        
+                        <h3>Syntax</h3>
+                        <pre><code>// JavaScript example
+// Assign function to variable
+const greet = function(name) {
+    return "Hello, " + name + "!";
+};
+
+// Create function dynamically
+const makeGreeting = function(prefix) {
+    return function(name) {
+        return prefix + ", " + name + "!";
+    };
+};</code></pre>
+                        
+                        <h3>Example</h3>
+                        <div class="example-box">
+                            <p>In Python:</p>
+                            <pre><code># Assign function to variable
+def square(x):
+    return x * x
+
+my_func = square
+print(my_func(5))  # Output: 25
+
+# Store functions in list
+functions = [square, lambda x: x + 1, lambda x: x * 2]
+for f in functions:
+    print(f(4))  # Output: 16, 5, 8</code></pre>
+                        </div>
+                        
+                        <h3>Uses</h3>
+                        <ul>
+                            <li>Enables functional programming paradigms</li>
+                            <li>Creates reusable, composable logic blocks</li>
+                            <li>Essential for callbacks, event handlers, and async operations</li>
+                            <li>Foundation for higher-order functions</li>
+                            <li>Allows dynamic behavior modification at runtime</li>
+                        </ul>
+                    </div>
+                </details>
+                
+                <!-- Passing Functions as Arguments -->
+                <details id="passing-functions">
+                    <summary class="details-summary">Passing Functions as Arguments</summary>
+                    <div class="details-content">
+                        <h3>Definition</h3>
+                        <p>Higher-order functions accept other functions as parameters to customize their behavior without changing their core structure.</p>
+                        
+                        <h3>Detail</h3>
+                        <p>This pattern separates <em>what</em> needs to be done from <em>how</em> it should be done. The higher-order function provides the structure, while the passed function defines the specific operation.</p>
+                        <p>It's the foundation of abstraction — allowing you to write generic algorithms that work with different operations.</p>
+                        
+                        <h3>Syntax</h3>
+                        <pre><code>// Generic sorting function
+function sortArray(arr, comparator) {
+    return arr.sort(comparator);
+}
+
+// Pass different comparison functions
+sortArray([3, 1, 4], (a, b) =&gt; a - b); // ascending
+sortArray([3, 1, 4], (a, b) =&gt; b - a); // descending</code></pre>
+                        
+                        <h3>Example</h3>
+                        <div class="example-box">
+                            <p>Filtering data with custom conditions:</p>
+                            <pre><code>// JavaScript
+function filterArray(arr, predicate) {
+    const result = [];
+    for (let item of arr) {
+        if (predicate(item)) {
+            result.push(item);
+        }
+    }
+    return result;
+}
+
+// Define custom predicates
+const isEven = x =&gt; x % 2 === 0;
+const isPositive = x =&gt; x &gt; 0;
+
+const numbers = [-3, -1, 0, 2, 4, 5];
+
+console.log(filterArray(numbers, isEven));      // [0, 2, 4]
+console.log(filterArray(numbers, isPositive));  // [2, 4, 5]
+
+// Python equivalent
+def filter_array(arr, predicate):
+    return [x for x in arr if predicate(x)]
+
+numbers = [-3, -1, 0, 2, 4, 5]
+is_even = lambda x: x % 2 == 0
+is_positive = lambda x: x > 0
+
+print(filter_array(numbers, is_even))      # [0, 2, 4]
+print(filter_array(numbers, is_positive))  # [2, 4, 5]</code></pre>
+                        </div>
+                        
+                        <h3>Uses</h3>
+                        <ul>
+                            <li>Customizable data processing (filter, map, reduce)</li>
+                            <li>Event handling systems</li>
+                            <li>Algorithm customization (sorting strategies)</li>
+                            <li>Dependency injection in functional style</li>
+                            <li>Creating domain-specific languages (DSLs)</li>
+                        </ul>
+                    </div>
+                </details>
+                
+                <!-- Returning Functions from Functions -->
+                <details id="returning-functions">
+                    <summary class="details-summary">Returning Functions from Functions</summary>
+                    <div class="details-content">
+                        <h3>Definition</h3>
+                        <p>A function can return another function as its result, creating closures that preserve state or create specialized versions of functionality.</p>
+                        
+                        <h3>Detail</h3>
+                        <p>This enables <strong>closures</strong> — functions that remember the environment in which they were created. The returned function retains access to variables from its parent scope even after the parent has finished executing.</p>
+                        <p>This is powerful for creating factories, configurators, and stateful functions without using classes.</p>
+                        
+                        <h3>Syntax</h3>
+                        <pre><code>// Factory function returning a specialized function
+function createMultiplier(factor) {
+    return function(number) {
+        return number * factor;
+    };
+}
+
+const double = createMultiplier(2);
+const triple = createMultiplier(3);
+
+console.log(double(5)); // 10
+console.log(triple(5)); // 15</code></pre>
+                        
+                        <h3>Example</h3>
+                        <div class="example-box">
+                            <p>Creating logging functions with different levels:</p>
+                            <pre><code>// JavaScript
+function createLogger(level) {
+    return function(message) {
+        console.log(`[${level.toUpperCase()}] ${new Date().toISOString()}: ${message}`);
+    };
+}
+
+const errorLog = createLogger('error');
+const infoLog = createLogger('info');
+
+errorLog('Database connection failed'); 
+// [ERROR] 2023-10-15T10:30:00.000Z: Database connection failed
+
+infoLog('User logged in successfully');
+// [INFO] 2023-10-15T10:30:00.000Z: User logged in successfully
+
+// Python equivalent
+def create_logger(level):
+    def log(message):
+        print(f"[{level.upper()}] {datetime.now().isoformat()}: {message}")
+    return log
+
+error_log = create_logger('error')
+info_log = create_logger('info')
+
+error_log('Server started')  # [ERROR] 2023-10-15T10:30:00.000Z: Server started</code></pre>
+                        </div>
+                        
+                        <h3>Uses</h3>
+                        <ul>
+                            <li>Configuration factories</li>
+                            <li>Stateful utility functions</li>
+                            <li>Decorator patterns</li>
+                            <li>Partial application</li>
+                            <li>Creating private state via closures</li>
+                        </ul>
+                    </div>
+                </details>
+                
+                <!-- Function Composition -->
+                <details id="function-composition">
+                    <summary class="details-summary">Function Composition</summary>
+                    <div class="details-content">
+                        <h3>Definition</h3>
+                        <p>Function composition is the process of combining two or more functions to produce a new function, where the output of one function becomes the input of the next.</p>
+                        
+                        <h3>Detail</h3>
+                        <p>Mathematically: If you have functions f and g, then composition f∘g means f(g(x)). In programming, this creates pipelines where data flows through multiple transformations.</p>
+                        <p>Composition promotes modularity: small, single-purpose functions can be combined into complex workflows without creating monolithic functions.</p>
+                        
+                        <h3>Syntax</h3>
+                        <pre><code>// Manual composition
+const compose = (f, g) =&gt; (...args) =&gt; f(g(...args));
+
+// Or right-to-left composition
+const pipe = (f, g) =&gt; (...args) =&gt; g(f(...args));
+
+// Example usage
+const addOne = x =&gt; x + 1;
+const multiplyByTwo = x =&gt; x * 2;
+
+const addOneThenDouble = compose(multiplyByTwo, addOne);
+console.log(addOneThenDouble(5)); // (5+1)*2 = 12</code></pre>
+                        
+                        <h3>Example</h3>
+                        <div class="example-box">
+                            <p>Data transformation pipeline:</p>
+                            <pre><code>// Processing user data
+const users = [
+    {name: 'Alice', age: 25, city: 'NYC'},
+    {name: 'Bob', age: 17, city: 'LA'},
+    {name: 'Carol', age: 30, city: 'NYC'}
+];
+
+// Individual functions
+const adultsOnly = users =&gt; users.filter(u =&gt; u.age &gt;= 18);
+const getNames = users =&gt; users.map(u =&gt; u.name);
+const toUpperCase = str =&gt; str.toUpperCase();
+
+// Compose pipeline
+const getAdultNamesUpper = compose(toUpperCase, getNames, adultsOnly);
+
+console.log(getAdultNamesUpper(users));
+// ['ALICE', 'CAROL']
+
+// More readable with pipe (left-to-right)
+const pipe = (...fns) =&gt; (value) =&gt; fns.reduce((acc, fn) =&gt; fn(acc), value);
+
+const getAdultNamesUpperPipe = pipe(
+    adultsOnly,
+    getNames,
+    toUpperCase
+);
+
+console.log(getAdultNamesUpperPipe(users));
+// ['ALICE', 'CAROL']</code></pre>
+                        </div>
+                        
+                        <h3>Uses</h3>
+                        <ul>
+                            <li>Building data processing pipelines</li>
+                            <li>React component composition</li>
+                            <li>Functional reactive programming</li>
+                            <li>Middleware chains (Express.js, Koa)</li>
+                            <li>Creating reusable transformation sequences</li>
+                        </ul>
+                    </div>
+                </details>
+                
+                <!-- Currying and Partial Application -->
+                <details id="currying-partial">
+                    <summary class="details-summary">Currying and Partial Application</summary>
+                    <div class="details-content">
+                        <h3>Definition</h3>
+                        <p><strong>Currying</strong>: Transforming a function that takes multiple arguments into a sequence of functions, each taking a single argument.<br>
+                        <strong>Partial Application</strong>: Fixing some arguments of a function to create a new function with fewer parameters.</p>
+                        
+                        <h3>Detail</h3>
+                        <p><strong>Currying</strong> always returns a function until all arguments are provided. It's a mechanical transformation.</p>
+                        <p><strong>Partial Application</strong> fixes some arguments but doesn't necessarily require one-at-a-time calling. It's more flexible.</p>
+                        <p>Both techniques enable reusability and specialization of functions.</p>
+                        
+                        <h3>Syntax</h3>
+                        <pre><code>// Original function
+function add(a, b, c) {
+    return a + b + c;
+}
+
+// Curried version
+function curriedAdd(a) {
+    return function(b) {
+        return function(c) {
+            return a + b + c;
+        };
+    };
+}
+
+// Partial application
+function partialAdd(a, b) {
+    return function(c) {
+        return a + b + c;
+    };
+}</code></pre>
+                        
+                        <h3>Example</h3>
+                        <div class="example-box">
+                            <p>Practical examples:</p>
+                            <pre><code>// Currying example
+const multiply = a =&gt; b =&gt; c =&gt; a * b * c;
+
+const double = multiply(2);
+const doubleAndTriple = double(3); // Returns a function expecting c
+
+console.log(doubleAndTriple(4)); // 2 * 3 * 4 = 24
+
+// Partial application with bind()
+function greet(greeting, punctuation, name) {
+    return greeting + ', ' + name + punctuation;
+}
+
+const sayHello = greet.bind(null, 'Hello', '!');
+console.log(sayHello('Alice')); // Hello, Alice!
+
+// Modern approach with arrow functions
+const partialGreet = (greeting, punctuation) =&gt; (name) =&gt; 
+    greeting + ', ' + name + punctuation;
+
+const sayHi = partialGreet('Hi', '?');
+console.log(sayHi('Bob')); // Hi, Bob?
+
+// Real-world: Database query builder
+function queryBuilder(table, condition) {
+    return function(fields) {
+        return `SELECT ${fields.join(', ')} FROM ${table} WHERE ${condition}`;
+    };
+}
+
+const getUsersQuery = queryBuilder('users', 'active = true');
+const emails = getUsersQuery(['id', 'email', 'name']);
+console.log(emails);
+// SELECT id, email, name FROM users WHERE active = true</code></pre>
+                        </div>
+                        
+                        <h3>Uses</h3>
+                        <ul>
+                            <li>Creating specialized versions of general functions</li>
+                            <li>Configuring APIs with default parameters</li>
+                            <li>Building DSLs (Domain Specific Languages)</li>
+                            <li>Reducing boilerplate in repetitive operations</li>
+                            <li>Enabling functional composition patterns</li>
+                        </ul>
+                    </div>
+                </details>
+                
+                <!-- Summary Section -->
+                <details id="summary">
+                    <summary class="details-summary">Summary & Key Takeaways</summary>
+                    <div class="details-content">
+                        <h3>Core Principles</h3>
+                        <ol>
+                            <li><strong>First-class functions</strong> treat functions as values, enabling powerful abstractions.</li>
+                            <li><strong>Higher-order functions</strong> take or return functions, making code more reusable and declarative.</li>
+                            <li><strong>Function composition</strong> builds complex behavior from simple, testable pieces.</li>
+                            <li><strong>Currying/partial application</strong> allow you to specialize functions for specific use cases.</li>
+                        </ol>
+                        
+                        <h3>When to Use</h3>
+                        <ul>
+                            <li>Use HOFs when you need to abstract common patterns (filtering, mapping, reducing)</li>
+                            <li>Use composition when building data transformation pipelines</li>
+                            <li>Use currying when you want to reuse partially configured functions</li>
+                            <li>Always prefer composition over inheritance for behavior reuse</li>
+                        </ul>
+                        
+                        <h3>Real-World Analogy</h3>
+                        <p>Think of functions as LEGO bricks. First-class citizenship means you can store them in boxes. Passing them as arguments is like handing a brick to someone else to build something. Returning functions is like giving someone instructions to build a custom piece. Composition is snapping bricks together. Currying is pre-configuring a piece so you only need to add the final part.</p>
+                        
+                        <h3>Pro Tip</h3>
+                        <p>Start using HOFs with built-in array methods: <code>map()</code>, <code>filter()</code>, <code>reduce()</code>. These are your gateway drugs to functional programming!</p>
+                    </div>
+                </details>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Utilities -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Search functionality
+            const searchInput = document.getElementById('searchToc');
+            const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
+            
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                
+                tocItems.forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    if (text.includes(searchTerm)) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+            
+            // Expand/Collapse all
+            document.getElementById('expandAll').addEventListener('click', function() {
+                document.querySelectorAll('details').forEach(detail => {
+                    detail.setAttribute('open', '');
+                });
+            });
+            
+            document.getElementById('collapseAll').addEventListener('click', function() {
+                document.querySelectorAll('details').forEach(detail => {
+                    detail.removeAttribute('open');
+                });
+            });
+            
+            // Smooth scrolling for TOC links
+            document.querySelectorAll('.toc-item, .toc-subitem').forEach(item => {
+                item.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const targetElement = document.getElementById(targetId);
+                    
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 100,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+            
+            // Simple syntax highlighting for code blocks
+            document.querySelectorAll('pre code').forEach(block => {
+                // Highlight keywords
+                const codeContent = block.innerHTML;
+                const highlighted = codeContent
+                    .replace(/&lt;/g, '&lt;')
+                    .replace(/&gt;/g, '&gt;')
+                    .replace(/&amp;/g, '&amp;')
+                    .replace(/\b(function|return|const|let|var|if|else|for|while|break|continue|true|false|null|undefined)\b/g, '<span class="highlight">$1</span>')
+                    .replace(/\b(\w+)\s*=\s*function\b/g, '<span class="highlight">$1</span> = function')
+                    .replace(/\/\/.*$/gm, '<span style="color: #888;">$&amp;</span>')
+                    .replace(/\/\*[\s\S]*?\*\//g, '<span style="color: #888;">$&amp;</span>');
+                
+                block.innerHTML = highlighted;
+            });
+        });
+    </script>
+</body>
+</html>
+```

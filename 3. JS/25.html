@@ -1,0 +1,1117 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>9.3 Spread Operator - Deep Learning Notes</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00d1ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --text-muted: #b8cde0;
+        }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .left-panel {
+            background-color: rgba(10, 25, 47, 0.9);
+            border-right: 1px solid rgba(0, 209, 255, 0.2);
+            height: 100vh;
+            position: fixed;
+            width: 300px;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5);
+        }
+        
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+        
+        h1, h2, h3, h4 {
+            color: var(--cyan);
+            border-bottom: 1px solid rgba(0, 209, 255, 0.3);
+            padding-bottom: 8px;
+            margin-top: 30px;
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            color: var(--amber);
+        }
+        
+        h2 {
+            font-size: 1.8rem;
+            color: var(--cyan);
+        }
+        
+        h3 {
+            font-size: 1.4rem;
+            color: var(--amber);
+        }
+        
+        .subtitle {
+            color: var(--text-muted);
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+        
+        .author-info {
+            color: var(--amber);
+            font-weight: 500;
+            margin: 15px 0;
+            font-size: 0.9rem;
+        }
+        
+        .toc-item {
+            margin: 8px 0;
+            padding: 6px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .toc-item:hover {
+            background-color: rgba(0, 209, 255, 0.1);
+            transform: translateX(5px);
+        }
+        
+        .toc-subitem {
+            margin-left: 20px;
+            padding: 5px 8px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-left: 2px solid rgba(0, 209, 255, 0.2);
+        }
+        
+        .toc-subitem:hover {
+            background-color: rgba(0, 209, 255, 0.08);
+            color: var(--cyan);
+        }
+        
+        .search-box {
+            background-color: rgba(10, 25, 47, 0.7);
+            border: 1px solid rgba(0, 209, 255, 0.3);
+            color: var(--text-light);
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .btn-control {
+            background-color: rgba(0, 209, 255, 0.1);
+            border: 1px solid rgba(0, 209, 255, 0.3);
+            color: var(--cyan);
+            margin: 10px 0;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+        }
+        
+        .btn-control:hover {
+            background-color: rgba(0, 209, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        pre code {
+            display: block;
+            padding: 15px;
+            background-color: rgba(10, 25, 47, 0.8);
+            border-left: 4px solid var(--amber);
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--cyan);
+        }
+        
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.1);
+            padding: 2px 5px;
+            border-radius: 3px;
+            color: var(--amber);
+            font-weight: 500;
+        }
+        
+        .details-container {
+            margin-bottom: 30px;
+            border: 1px solid rgba(0, 209, 255, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .details-container summary {
+            padding: 15px;
+            background-color: rgba(0, 209, 255, 0.1);
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--cyan);
+            list-style: none;
+            font-size: 1.1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .details-container summary::-webkit-details-marker {
+            display: none;
+        }
+        
+        .details-container summary::after {
+            content: "▼";
+            color: var(--amber);
+            font-size: 0.8rem;
+        }
+        
+        .details-container[open] summary::after {
+            content: "▲";
+        }
+        
+        .details-container div {
+            padding: 15px;
+            border-top: 1px solid rgba(0, 209, 255, 0.1);
+            color: var(--text-light);
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+        
+        .code-block {
+            margin: 15px 0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .formula {
+            background-color: rgba(10, 25, 47, 0.6);
+            padding: 12px;
+            border-left: 3px solid var(--cyan);
+            margin: 15px 0;
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--amber);
+            font-size: 1.1rem;
+            text-align: center;
+            border-radius: 5px;
+        }
+        
+        .note {
+            background-color: rgba(255, 183, 77, 0.1);
+            border-left: 4px solid var(--amber);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+        }
+        
+        .badge {
+            background-color: var(--amber);
+            color: #000;
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-left: 8px;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 992px) {
+            .left-panel {
+                width: 250px;
+            }
+            .right-panel {
+                margin-left: 250px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .left-panel {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding: 15px;
+            }
+            .right-panel {
+                margin-left: 0;
+                padding: 15px;
+            }
+            h1 {
+                font-size: 1.8rem;
+            }
+            h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Left Panel -->
+    <div class="left-panel">
+        <h1>9.3 Spread Operator</h1>
+        <p class="subtitle">Mastering JavaScript's Powerful ... Operator for Data Manipulation</p>
+        <p class="author-info">By: Master Tutor • Advanced JavaScript Concepts</p>
+        
+        <input type="text" class="form-control search-box" id="searchTOC" placeholder="Search topics...">
+        
+        <button class="btn btn-sm btn-control w-100 mb-2" id="expandAll">Expand All</button>
+        <button class="btn btn-sm btn-control w-100 mb-3" id="collapseAll">Collapse All</button>
+        
+        <h4 class="mb-3">Table of Contents</h4>
+        <div id="tocContainer">
+            <div class="toc-item" data-target="#arraySpreading">Array spreading</div>
+            <div class="toc-item" data-target="#objectSpreading">Object spreading</div>
+            <div class="toc-item" data-target="#functionCallSpreading">Function call spreading</div>
+            <div class="toc-item" data-target="#copyingVsShallowCopying">Copying vs shallow copying</div>
+            <div class="toc-item" data-target="#combiningArraysObjects">Combining arrays and objects</div>
+        </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="right-panel">
+        <section id="arraySpreading">
+            <details class="details-container">
+                <summary>Definition & Array Spreading</summary>
+                <div>
+                    <p>The <strong>spread operator</strong> (<code>...</code>) allows an iterable (like an array or string) to be expanded in places where zero or more arguments/elements are expected.</p>
+                    
+                    <p>This is one of the most powerful features in modern JavaScript, enabling clean, readable code for array manipulation.</p>
+                    
+                    <div class="formula">[...iterable]</div>
+                    
+                    <h5>Basic Syntax:</h5>
+                    <pre><code>const originalArray = [1, 2, 3];
+const spreadArray = [...originalArray];
+
+console.log(spreadArray); // [1, 2, 3]</code></pre>
+                    
+                    <div class="note">
+                        <strong>Key Insight:</strong> The spread operator creates a <em>shallow copy</em> of the original array. It doesn't modify the original array.
+                    </div>
+                    
+                    <h5>Example: Creating a copy of an array</h5>
+                    <pre><code>// BEFORE: Traditional way (error-prone!)
+const numbers = [1, 2, 3];
+const numbersCopy = numbers; // This creates a reference, not a copy!
+
+numbersCopy.push(4);
+console.log(numbers);     // [1, 2, 3, 4] - Original changed!
+console.log(numbersCopy); // [1, 2, 3, 4]
+
+// AFTER: Using spread operator
+const colors = ['red', 'green', 'blue'];
+const colorsCopy = [...colors];
+
+colorsCopy.push('yellow');
+console.log(colors);      // ['red', 'green', 'blue'] - Original unchanged!
+console.log(colorsCopy);  // ['red', 'green', 'blue', 'yellow']</code></pre>
+                    
+                    <h5>Real-world use case: Adding items to an array</h5>
+                    <pre><code>// Adding new elements to an existing array
+const fruits = ['apple', 'banana'];
+const newFruits = [...fruits, 'orange', 'grape'];
+
+console.log(newFruits); // ['apple', 'banana', 'orange', 'grape']
+console.log(fruits);    // ['apple', 'banana'] (unchanged)</code></pre>
+                    
+                    <h5>Spreading multiple arrays together:</h5>
+                    <pre><code>const weekdays = ['Monday', 'Tuesday', 'Wednesday'];
+const weekend = ['Saturday', 'Sunday'];
+const allDays = [...weekdays, 'Thursday', 'Friday', ...weekend];
+
+console.log(allDays); 
+// ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']</code></pre>
+                    
+                    <h5>Converting strings to arrays:</h5>
+                    <pre><code>const word = 'hello';
+const letters = [...word];
+
+console.log(letters); // ['h', 'e', 'l', 'l', 'o']
+
+// Useful for checking if a string contains unique characters:
+const hasUniqueChars = new Set([...word]).size === word.length;
+console.log(hasUniqueChars); // false (because 'l' appears twice)</code></pre>
+                </div>
+            </details>
+        </section>
+
+        <section id="objectSpreading">
+            <details class="details-container">
+                <summary>Object Spreading</summary>
+                <div>
+                    <p>The spread operator works with objects too! It allows you to copy properties from one object to another.</p>
+                    
+                    <div class="formula">{...object}</div>
+                    
+                    <h5>Basic Syntax:</h5>
+                    <pre><code>const originalObj = { a: 1, b: 2 };
+const spreadObj = { ...originalObj };
+
+console.log(spreadObj); // { a: 1, b: 2 }</code></pre>
+                    
+                    <div class="note">
+                        <strong>Key Insight:</strong> Like array spreading, object spreading creates a <em>shallow copy</em>. Nested objects are still referenced, not copied deeply.
+                    </div>
+                    
+                    <h5>Example: Creating a copy of an object</h5>
+                    <pre><code>// BEFORE: Traditional way (problematic!)
+const user = { name: 'Alice', age: 28 };
+const userCopy = user; // Reference assignment!
+
+userCopy.age = 30;
+console.log(user.age);   // 30 - Original changed!
+console.log(userCopy.age); // 30
+
+// AFTER: Using spread operator
+const product = { name: 'Laptop', price: 999 };
+const productCopy = { ...product };
+
+productCopy.price = 899;
+console.log(product.price);   // 999 - Original unchanged!
+console.log(productCopy.price); // 899</code></pre>
+                    
+                    <h5>Adding/modifying properties during spreading:</h5>
+                    <pre><code>const user = {
+    name: 'Alice',
+    age: 28,
+    city: 'New York'
+};
+
+// Add new property and modify existing one
+const updatedUser = {
+    ...user,
+    age: 29,           // Override existing property
+    email: 'alice@email.com', // Add new property
+    country: 'USA'     // Add new property
+};
+
+console.log(updatedUser);
+// { name: 'Alice', age: 29, city: 'New York', email: 'alice@email.com', country: 'USA' }
+
+console.log(user);
+// { name: 'Alice', age: 28, city: 'New York' } (unchanged)</code></pre>
+                    
+                    <h5>Real-world use case: Updating state in React</h5>
+                    <pre><code>// In React, we never mutate state directly!
+const initialState = {
+    user: { name: 'Alice', role: 'admin' },
+    isLoading: false,
+    error: null
+};
+
+// Correct way to update state with spread operator
+const newState = {
+    ...initialState,
+    isLoading: true,
+    user: {
+        ...initialState.user,
+        name: 'Bob' // Only change name, keep other user properties
+    }
+};
+
+console.log(newState);
+// {
+//   user: { name: 'Bob', role: 'admin' },
+//   isLoading: true,
+//   error: null
+// }
+
+console.log(initialState);
+// Still unchanged!</code></pre>
+                    
+                    <h5>Overriding order matters:</h5>
+                    <pre><code>const defaults = {
+    theme: 'light',
+    fontSize: 16,
+    language: 'en'
+};
+
+const userPreferences = {
+    theme: 'dark',
+    notifications: true
+};
+
+// Properties from later objects override earlier ones
+const finalConfig = {
+    ...defaults,
+    ...userPreferences
+};
+
+console.log(finalConfig);
+// { theme: 'dark', fontSize: 16, language: 'en', notifications: true }
+
+// Reverse order - user preferences become defaults
+const config2 = {
+    ...userPreferences,
+    ...defaults
+};
+
+console.log(config2);
+// { theme: 'light', notifications: true, fontSize: 16, language: 'en' }</code></pre>
+                </div>
+            </details>
+        </section>
+
+        <section id="functionCallSpreading">
+            <details class="details-container">
+                <summary>Function Call Spreading</summary>
+                <div>
+                    <p>The spread operator can be used to pass elements of an array as individual arguments to a function.</p>
+                    
+                    <div class="formula">function(...array)</div>
+                    
+                    <h5>Basic Syntax:</h5>
+                    <pre><code>const numbers = [1, 2, 3];
+Math.max(...numbers); // Equivalent to Math.max(1, 2, 3)</code></pre>
+                    
+                    <div class="note">
+                        <strong>Key Insight:</strong> This transforms an array into individual arguments, which is perfect for functions that expect separate parameters rather than an array.
+                    </div>
+                    
+                    <h5>Example: Finding maximum value</h5>
+                    <pre><code>// BEFORE: Traditional way
+const scores = [85, 92, 78, 96, 88];
+let maxScore = scores[0];
+for (let i = 1; i &lt; scores.length; i++) {
+    if (scores[i] &gt; maxScore) {
+        maxScore = scores[i];
+    }
+}
+
+// AFTER: Using spread operator
+const scores = [85, 92, 78, 96, 88];
+const maxScore = Math.max(...scores);
+
+console.log(maxScore); // 96</code></pre>
+                    
+                    <h5>Working with built-in functions</h5>
+                    <pre><code>// Math.min() example
+const temperatures = [22, 18, 25, 15, 20];
+const minTemp = Math.min(...temperatures);
+console.log(minTemp); // 15
+
+// String methods
+const text = 'hello';
+const chars = [...text]; // Convert string to array of characters
+console.log(chars); // ['h', 'e', 'l', 'l', 'o']
+
+// Array methods that need individual arguments
+const arr1 = [1, 2, 3];
+const arr2 = [4, 5, 6];
+Array.prototype.push.apply(arr1, arr2); // Old way
+arr1.push(...arr2); // Modern way with spread!
+console.log(arr1); // [1, 2, 3, 4, 5, 6]</code></pre>
+                    
+                    <h5>Real-world use case: Combining arrays with push()</h5>
+                    <pre><code>const baseColors = ['red', 'blue'];
+const additionalColors = ['green', 'yellow', 'purple'];
+
+// Without spread (traditional way)
+baseColors.push(additionalColors[0]);
+baseColors.push(additionalColors[1]);
+baseColors.push(additionalColors[2]);
+
+// With spread - much cleaner!
+baseColors.push(...additionalColors);
+console.log(baseColors); 
+// ['red', 'blue', 'green', 'yellow', 'purple']</code></pre>
+                    
+                    <h5>Using with any function that takes multiple arguments</h5>
+                    <pre><code>function greet(greeting, name, punctuation = '!') {
+    return `${greeting}, ${name}${punctuation}`;
+}
+
+const args = ['Hello', 'Alice', '?'];
+console.log(greet(...args)); // "Hello, Alice?"
+
+// Even works with functions that have default parameters!
+const partialArgs = ['Hi', 'Bob']; // Missing punctuation
+console.log(greet(...partialArgs)); // "Hi, Bob!" (uses default)</code></pre>
+                    
+                    <h5>Combining with rest parameters</h5>
+                    <pre><code>// Function that accepts any number of arguments
+function sum(first, second, ...rest) {
+    let total = first + second;
+    for (let num of rest) {
+        total += num;
+    }
+    return total;
+}
+
+// Pass array elements as individual arguments
+const numbers = [10, 20, 30, 40, 50];
+console.log(sum(...numbers)); // 150
+
+// This is equivalent to:
+console.log(sum(10, 20, 30, 40, 50)); // 150</code></pre>
+                </div>
+            </details>
+        </section>
+
+        <section id="copyingVsShallowCopying">
+            <details class="details-container">
+                <summary>Copying vs Shallow Copying</summary>
+                <div>
+                    <p>Understanding the difference between shallow and deep copying is crucial when working with nested data structures.</p>
+                    
+                    <h5>What is a shallow copy?</h5>
+                    <p>A shallow copy duplicates the top-level structure but keeps references to nested objects/arrays. Changes to nested elements affect both original and copy.</p>
+                    
+                    <h5>What is a deep copy?</h5>
+                    <p>A deep copy creates completely independent copies of everything, including nested objects. Changes to nested elements don't affect the original.</p>
+                    
+                    <h5>Spread operator creates SHALLOW copies:</h5>
+                    <pre><code>const original = {
+    name: 'Alice',
+    address: {
+        street: '123 Main St',
+        city: 'New York'
+    },
+    hobbies: ['reading', 'swimming']
+};
+
+const shallowCopy = { ...original };
+
+// Modify top-level property
+shallowCopy.name = 'Bob';
+console.log(original.name); // 'Alice' - unchanged ✅
+
+// Modify nested property
+shallowCopy.address.city = 'Boston';
+console.log(original.address.city); // 'Boston' - CHANGED! ❌
+
+// Modify nested array
+shallowCopy.hobbies.push('coding');
+console.log(original.hobbies); // ['reading', 'swimming', 'coding'] - CHANGED! ❌</code></pre>
+                    
+                    <div class="note">
+                        <strong>Crucial Insight:</strong> The spread operator only copies the reference to nested objects and arrays, not their contents. Both the original and copy point to the same nested objects in memory!
+                    </div>
+                    
+                    <h5>Visual representation:</h5>
+                    <pre><code>// Memory layout after spread:
+Original Object ────┬──── name: 'Alice'
+                    ├─── address: ──────┐
+                    └─── hobbies: ──────┤
+                                      │
+Shallow Copy ───────┴──── name: 'Bob'  
+                    ├─── address: ──────┘
+                    └─── hobbies: ──────┘</code></pre>
+                    
+                    <h5>When shallow copy is sufficient:</h5>
+                    <pre><code>// Perfect for simple objects without nesting
+const config = { theme: 'light', language: 'en' };
+const userConfig = { ...config, theme: 'dark' }; // Safe!
+
+// Perfect for arrays of primitives
+const numbers = [1, 2, 3, 4];
+const moreNumbers = [...numbers, 5, 6]; // Safe!
+
+// Perfect for immutable updates in React/Vue
+const user = { name: 'Alice', role: 'user' };
+const adminUser = { ...user, role: 'admin' }; // Safe!</code></pre>
+                    
+                    <h5>When you need a deep copy:</h5>
+                    <pre><code>const complexData = {
+    user: {
+        profile: {
+            name: 'Alice',
+            settings: {
+                theme: 'dark',
+                notifications: true
+            }
+        }
+    },
+    items: [{ id: 1 }, { id: 2 }]
+};
+
+// Method 1: JSON.parse(JSON.stringify()) - Simple but limited
+const deepCopy1 = JSON.parse(JSON.stringify(complexData));
+deepCopy1.user.profile.settings.theme = 'light';
+
+console.log(complexData.user.profile.settings.theme); // 'dark' - unchanged ✅
+console.log(deepCopy1.user.profile.settings.theme);   // 'light' - modified
+
+// Method 2: Manual deep copy with spread (nested)
+const deepCopy2 = {
+    ...complexData,
+    user: {
+        ...complexData.user,
+        profile: {
+            ...complexData.user.profile,
+            settings: {
+                ...complexData.user.profile.settings
+            }
+        }
+    },
+    items: [...complexData.items]
+};
+
+deepCopy2.user.profile.settings.theme = 'light';
+console.log(complexData.user.profile.settings.theme); // 'dark' - unchanged ✅</code></pre>
+                    
+                    <h5>Limitations of JSON-based deep copy:</h5>
+                    <pre><code>const problematic = {
+    date: new Date(),
+    functionProp: () =&gt; console.log('hi'),
+    undefinedValue: undefined,
+    circularRef: null
+};
+
+problematic.circularRef = problematic; // Creates circular reference
+
+// This will fail!
+try {
+    const badCopy = JSON.parse(JSON.stringify(problematic));
+    console.log(badCopy);
+} catch (error) {
+    console.log('Error:', error.message); // "Converting circular structure to JSON"
+}
+
+// Also loses functions and dates (converted to strings)
+console.log(problematic.date instanceof Date); // true
+console.log(badCopy.date instanceof Date);     // false - now a string!</code></pre>
+                    
+                    <div class="note">
+                        <strong>Pro Tip:</strong> For most applications, shallow copying with spread is sufficient and preferred because it's fast and predictable. Use deep copying only when you specifically need complete independence from nested structures.
+                    </div>
+                </div>
+            </details>
+        </section>
+
+        <section id="combiningArraysObjects">
+            <details class="details-container">
+                <summary>Combining Arrays and Objects</summary>
+                <div>
+                    <p>The spread operator excels at combining multiple arrays and objects into new ones with minimal code.</p>
+                    
+                    <h5>Combining arrays:</h5>
+                    <pre><code>const evenNumbers = [2, 4, 6];
+const oddNumbers = [1, 3, 5];
+const allNumbers = [...evenNumbers, ...oddNumbers];
+
+console.log(allNumbers); // [2, 4, 6, 1, 3, 5]
+
+// Combine multiple arrays
+const fruits = ['apple', 'banana'];
+const vegetables = ['carrot', 'broccoli'];
+const grains = ['rice', 'wheat'];
+const food = [...fruits, ...vegetables, ...grains];
+
+console.log(food); 
+// ['apple', 'banana', 'carrot', 'broccoli', 'rice', 'wheat']</code></pre>
+                    
+                    <h5>Combining objects:</h5>
+                    <pre><code>const personalInfo = {
+    name: 'Alice',
+    age: 28
+};
+
+const professionalInfo = {
+    job: 'Developer',
+    company: 'TechCorp'
+};
+
+const userInfo = { ...personalInfo, ...professionalInfo };
+
+console.log(userInfo);
+// { name: 'Alice', age: 28, job: 'Developer', company: 'TechCorp' }</code></pre>
+                    
+                    <h5>Combining with overrides:</h5>
+                    <pre><code>const defaults = {
+    theme: 'light',
+    fontSize: 16,
+    language: 'en',
+    showNotifications: true
+};
+
+const userSettings = {
+    theme: 'dark',
+    fontSize: 18,
+    showNotifications: false,
+    timezone: 'UTC'
+};
+
+// Merge with user settings overriding defaults
+const finalSettings = { ...defaults, ...userSettings };
+
+console.log(finalSettings);
+// {
+//   theme: 'dark',          // overridden
+//   fontSize: 18,           // overridden
+//   language: 'en',         // kept from defaults
+//   showNotifications: false, // overridden
+//   timezone: 'UTC'         // added from userSettings
+// }</code></pre>
+                    
+                    <h5>Advanced: Combining arrays of objects</h5>
+                    <pre><code>const users1 = [
+    { id: 1, name: 'Alice', role: 'admin' },
+    { id: 2, name: 'Bob', role: 'user' }
+];
+
+const users2 = [
+    { id: 3, name: 'Carol', role: 'user' },
+    { id: 4, name: 'David', role: 'moderator' }
+];
+
+const allUsers = [...users1, ...users2];
+
+console.log(allUsers);
+// [
+//   { id: 1, name: 'Alice', role: 'admin' },
+//   { id: 2, name: 'Bob', role: 'user' },
+//   { id: 3, name: 'Carol', role: 'user' },
+//   { id: 4, name: 'David', role: 'moderator' }
+// ]
+
+// Combine with filtering and mapping
+const activeUsers = [...users1.filter(u =&gt; u.role !== 'admin'), ...users2];
+
+console.log(activeUsers);
+// [
+//   { id: 2, name: 'Bob', role: 'user' },
+//   { id: 3, name: 'Carol', role: 'user' },
+//   { id: 4, name: 'David', role: 'moderator' }
+// ]</code></pre>
+                    
+                    <h5>Real-world example: API response merging</h5>
+                    <pre><code>// Imagine getting data from two different API endpoints
+const baseUser = {
+    id: 123,
+    username: 'alice123',
+    avatar: '/avatars/alice.jpg'
+};
+
+const extendedProfile = {
+    firstName: 'Alice',
+    lastName: 'Smith',
+    bio: 'Software engineer',
+    location: 'New York',
+    followers: 1500
+};
+
+// Combine into a single user object
+const completeUser = {
+    ...baseUser,
+    ...extendedProfile,
+    joinedDate: new Date().toISOString()
+};
+
+console.log(completeUser);
+// {
+//   id: 123,
+//   username: 'alice123',
+//   avatar: '/avatars/alice.jpg',
+//   firstName: 'Alice',
+//   lastName: 'Smith',
+//   bio: 'Software engineer',
+//   location: 'New York',
+//   followers: 1500,
+//   joinedDate: '2023-12-01T10:30:00Z'
+// }</code></pre>
+                    
+                    <h5>Creating immutable updates with spread</h5>
+                    <pre><code>// Redux-style state management
+const initialState = {
+    todos: [
+        { id: 1, text: 'Learn JS', completed: false },
+        { id: 2, text: 'Build app', completed: false }
+    ],
+    filter: 'all'
+};
+
+// Add new todo
+const addTodo = (state, text) =&gt; ({
+    ...state,
+    todos: [...state.todos, { id: Date.now(), text, completed: false }]
+});
+
+// Toggle todo completion
+const toggleTodo = (state, id) =&gt; ({
+    ...state,
+    todos: state.todos.map(todo =&gt; 
+        todo.id === id 
+            ? { ...todo, completed: !todo.completed }
+            : todo
+    )
+});
+
+// Update filter
+const setFilter = (state, filter) =&gt; ({
+    ...state,
+    filter
+});
+
+// Usage
+let state = initialState;
+state = addTodo(state, 'Master spread operator');
+state = toggleTodo(state, 1);
+state = setFilter(state, 'completed');
+
+console.log(state);
+// {
+//   todos: [
+//     { id: 1, text: 'Learn JS', completed: true },
+//     { id: 2, text: 'Build app', completed: false },
+//     { id: 1701234567890, text: 'Master spread operator', completed: false }
+//   ],
+//   filter: 'completed'
+// }</code></pre>
+                    
+                    <h5>Combining spread with destructuring</h5>
+                    <pre><code>const person = {
+    name: 'Alice',
+    age: 28,
+    city: 'New York',
+    country: 'USA',
+    email: 'alice@email.com'
+};
+
+// Extract some properties, spread the rest
+const { name, age, ...otherDetails } = person;
+
+console.log(name);        // 'Alice'
+console.log(age);         // 28
+console.log(otherDetails); // { city: 'New York', country: 'USA', email: 'alice@email.com' }
+
+// Now combine with other data
+const updatedPerson = {
+    name,
+    age,
+    ...otherDetails,
+    lastUpdated: new Date().toISOString()
+};
+
+console.log(updatedPerson);
+// {
+//   name: 'Alice',
+//   age: 28,
+//   city: 'New York',
+//   country: 'USA',
+//   email: 'alice@email.com',
+//   lastUpdated: '2023-12-01T10:30:00Z'
+// }</code></pre>
+                </div>
+            </details>
+        </section>
+
+        <section id="summary">
+            <details class="details-container">
+                <summary>Summary & Best Practices</summary>
+                <div>
+                    <h4>✅ Key Takeaways</h4>
+                    <ul>
+                        <li><strong>Array spreading:</strong> <code>[...array]</code> creates a shallow copy or combines arrays</li>
+                        <li><strong>Object spreading:</strong> <code>{...object}</code> creates a shallow copy or merges objects</li>
+                        <li><strong>Function calling:</strong> <code>function(...array)</code> passes array elements as individual arguments</li>
+                        <li><strong>Shallow copy:</strong> Only copies top-level structure; nested objects remain referenced</li>
+                        <li><strong>Combining:</strong> Spread operator makes combining arrays/objects incredibly clean</li>
+                    </ul>
+                    
+                    <h4>🚫 Common Mistakes</h4>
+                    <ul>
+                        <li>Expecting spread to create deep copies of nested objects</li>
+                        <li>Using spread on non-iterable values (numbers, booleans, null, undefined)</li>
+                        <li>Forgetting that object property order matters for overrides</li>
+                        <li>Trying to spread primitive types like numbers or strings directly into objects</li>
+                        <li>Using spread incorrectly in destructuring assignments</li>
+                    </ul>
+                    
+                    <h4>💡 Pro Tips</h4>
+                    <ul>
+                        <li>Use spread operator for immutable updates in React, Redux, Vue, etc.</li>
+                        <li>Combine with destructuring for powerful data transformation patterns</li>
+                        <li>Perfect for creating configuration objects with defaults</li>
+                        <li>Great for adding/removing items from arrays without mutation</li>
+                        <li>Use with <code>Math.max()</code>, <code>Math.min()</code>, <code>Array.push()</code> for elegant solutions</li>
+                        <li>Always prefer spread over <code>concat()</code> or manual loops for combining arrays</li>
+                    </ul>
+                    
+                    <h4>🚀 Advanced Challenge</h4>
+                    <pre><code>// Can you solve this?
+// Given:
+const config = {
+    theme: 'light',
+    language: 'en',
+    features: ['notifications', 'dark-mode'],
+    limits: { maxItems: 10, maxFileSize: 1024 }
+};
+
+const userPrefs = {
+    theme: 'dark',
+    language: 'es',
+    features: ['video-calls'],
+    limits: { maxItems: 20 }
+};
+
+// Create a finalConfig where:
+// - Top-level properties from userPrefs override config
+// - Arrays are merged (unique values only)
+// - Nested objects are merged recursively
+
+// Solution using spread + custom logic:
+function mergeConfigs(defaults, overrides) {
+    const result = {};
+    
+    // Get all unique keys from both objects
+    const allKeys = [...new Set([...Object.keys(defaults), ...Object.keys(overrides)])];
+    
+    for (let key of allKeys) {
+        const defaultValue = defaults[key];
+        const overrideValue = overrides[key];
+        
+        if (Array.isArray(defaultValue) &amp;&amp; Array.isArray(overrideValue)) {
+            // Merge arrays with unique values
+            result[key] = [...new Set([...defaultValue, ...overrideValue])];
+        } else if (defaultValue &amp;&amp; typeof defaultValue === 'object' &amp;&amp; 
+                   overrideValue &amp;&amp; typeof overrideValue === 'object') {
+            // Recursively merge nested objects
+            result[key] = mergeConfigs(defaultValue, overrideValue);
+        } else {
+            // Use override if exists, otherwise use default
+            result[key] = overrideValue !== undefined ? overrideValue : defaultValue;
+        }
+    }
+    
+    return result;
+}
+
+const finalConfig = mergeConfigs(config, userPrefs);
+
+console.log(finalConfig);
+// {
+//   theme: 'dark',
+//   language: 'es',
+//   features: ['notifications', 'dark-mode', 'video-calls'],
+//   limits: { maxItems: 20, maxFileSize: 1024 }
+// }</code></pre>
+                    
+                    <h4>🧠 Memory Trick</h4>
+                    <p><strong>Think of spread as "unpacking"</strong></p>
+                    <ul>
+                        <li><strong>Array spread:</strong> Unpack boxes from a container and put them in a new container</li>
+                        <li><strong>Object spread:</strong> Unpack labeled drawers from a cabinet and put them in a new cabinet</li>
+                        <li><strong>Function spread:</strong> Empty a bag of marbles onto a table so you can pick them up individually</li>
+                    </ul>
+                    
+                    <p>Whenever you see <code>...</code>, think: "I'm taking everything inside and spreading it out!"</p>
+                </div>
+            </details>
+        </section>
+    </div>
+
+    <!-- JavaScript Utilities -->
+    <script>
+        // Expand/Collapse All Controls
+        document.getElementById('expandAll').addEventListener('click', () => {
+            document.querySelectorAll('.details-container').forEach(detail => {
+                detail.open = true;
+            });
+        });
+
+        document.getElementById('collapseAll').addEventListener('click', () => {
+            document.querySelectorAll('.details-container').forEach(detail => {
+                detail.open = false;
+            });
+        });
+
+        // Search TOC functionality
+        document.getElementById('searchTOC').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const tocItems = document.querySelectorAll('.toc-item');
+            
+            tocItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        // Smooth scrolling to TOC sections
+        document.querySelectorAll('.toc-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Highlight code blocks with syntax highlighting
+        document.querySelectorAll('pre code').forEach(block => {
+            hljs.highlightBlock(block);
+        });
+
+        // Add smooth scroll for internal links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Initialize TOC navigation
+        document.addEventListener('DOMContentLoaded', () => {
+            // Scroll spy - highlight active TOC item based on visible section
+            const sections = document.querySelectorAll('section');
+            const tocItems = document.querySelectorAll('.toc-item');
+            
+            window.addEventListener('scroll', () => {
+                let currentSection = '';
+                
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+                    if (pageYOffset >= sectionTop - 100) {
+                        currentSection = section.id;
+                    }
+                });
+                
+                tocItems.forEach(item => {
+                    item.classList.remove('active');
+                    if (item.getAttribute('data-target') === '#' + currentSection) {
+                        item.classList.add('active');
+                        item.style.backgroundColor = 'rgba(0, 209, 255, 0.2)';
+                        item.style.color = 'var(--cyan)';
+                    } else {
+                        item.style.backgroundColor = '';
+                        item.style.color = '';
+                    }
+                });
+            });
+        });
+    </script>
+
+    <!-- Include highlight.js for syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/darkula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+</html>

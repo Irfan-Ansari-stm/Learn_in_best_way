@@ -1,0 +1,1052 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>9.2 Object Destructuring - Deep Learning Notes</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00d1ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --text-muted: #b8cde0;
+        }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .left-panel {
+            background-color: rgba(10, 25, 47, 0.9);
+            border-right: 1px solid rgba(0, 209, 255, 0.2);
+            height: 100vh;
+            position: fixed;
+            width: 300px;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5);
+        }
+        
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+        
+        h1, h2, h3, h4 {
+            color: var(--cyan);
+            border-bottom: 1px solid rgba(0, 209, 255, 0.3);
+            padding-bottom: 8px;
+            margin-top: 30px;
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            color: var(--amber);
+        }
+        
+        h2 {
+            font-size: 1.8rem;
+            color: var(--cyan);
+        }
+        
+        h3 {
+            font-size: 1.4rem;
+            color: var(--amber);
+        }
+        
+        .subtitle {
+            color: var(--text-muted);
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+        
+        .author-info {
+            color: var(--amber);
+            font-weight: 500;
+            margin: 15px 0;
+            font-size: 0.9rem;
+        }
+        
+        .toc-item {
+            margin: 8px 0;
+            padding: 6px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .toc-item:hover {
+            background-color: rgba(0, 209, 255, 0.1);
+            transform: translateX(5px);
+        }
+        
+        .toc-subitem {
+            margin-left: 20px;
+            padding: 5px 8px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-left: 2px solid rgba(0, 209, 255, 0.2);
+        }
+        
+        .toc-subitem:hover {
+            background-color: rgba(0, 209, 255, 0.08);
+            color: var(--cyan);
+        }
+        
+        .search-box {
+            background-color: rgba(10, 25, 47, 0.7);
+            border: 1px solid rgba(0, 209, 255, 0.3);
+            color: var(--text-light);
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .btn-control {
+            background-color: rgba(0, 209, 255, 0.1);
+            border: 1px solid rgba(0, 209, 255, 0.3);
+            color: var(--cyan);
+            margin: 10px 0;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+        }
+        
+        .btn-control:hover {
+            background-color: rgba(0, 209, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        pre code {
+            display: block;
+            padding: 15px;
+            background-color: rgba(10, 25, 47, 0.8);
+            border-left: 4px solid var(--amber);
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--cyan);
+        }
+        
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.1);
+            padding: 2px 5px;
+            border-radius: 3px;
+            color: var(--amber);
+            font-weight: 500;
+        }
+        
+        .details-container {
+            margin-bottom: 30px;
+            border: 1px solid rgba(0, 209, 255, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .details-container summary {
+            padding: 15px;
+            background-color: rgba(0, 209, 255, 0.1);
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--cyan);
+            list-style: none;
+            font-size: 1.1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .details-container summary::-webkit-details-marker {
+            display: none;
+        }
+        
+        .details-container summary::after {
+            content: "▼";
+            color: var(--amber);
+            font-size: 0.8rem;
+        }
+        
+        .details-container[open] summary::after {
+            content: "▲";
+        }
+        
+        .details-container div {
+            padding: 15px;
+            border-top: 1px solid rgba(0, 209, 255, 0.1);
+            color: var(--text-light);
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+        
+        .code-block {
+            margin: 15px 0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .formula {
+            background-color: rgba(10, 25, 47, 0.6);
+            padding: 12px;
+            border-left: 3px solid var(--cyan);
+            margin: 15px 0;
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--amber);
+            font-size: 1.1rem;
+            text-align: center;
+            border-radius: 5px;
+        }
+        
+        .note {
+            background-color: rgba(255, 183, 77, 0.1);
+            border-left: 4px solid var(--amber);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+        }
+        
+        .badge {
+            background-color: var(--amber);
+            color: #000;
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-left: 8px;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 992px) {
+            .left-panel {
+                width: 250px;
+            }
+            .right-panel {
+                margin-left: 250px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .left-panel {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding: 15px;
+            }
+            .right-panel {
+                margin-left: 0;
+                padding: 15px;
+            }
+            h1 {
+                font-size: 1.8rem;
+            }
+            h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Left Panel -->
+    <div class="left-panel">
+        <h1>9.2 Object Destructuring</h1>
+        <p class="subtitle">Mastering JavaScript's Powerful Object Extraction Technique</p>
+        <p class="author-info">By: Master Tutor • Advanced JavaScript Concepts</p>
+        
+        <input type="text" class="form-control search-box" id="searchTOC" placeholder="Search topics...">
+        
+        <button class="btn btn-sm btn-control w-100 mb-2" id="expandAll">Expand All</button>
+        <button class="btn btn-sm btn-control w-100 mb-3" id="collapseAll">Collapse All</button>
+        
+        <h4 class="mb-3">Table of Contents</h4>
+        <div id="tocContainer">
+            <div class="toc-item" data-target="#basicObjectDestructuring">Basic object destructuring</div>
+            <div class="toc-item" data-target="#renamingVariables">Renaming variables</div>
+            <div class="toc-item" data-target="#defaultValues">Default values</div>
+            <div class="toc-item" data-target="#nestedDestructuring">Nested destructuring</div>
+            <div class="toc-item" data-target="#functionParameterDestructuring">Function parameter destructuring</div>
+        </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="right-panel">
+        <section id="basicObjectDestructuring">
+            <details class="details-container">
+                <summary>Definition & Basic Object Destructuring</summary>
+                <div>
+                    <p><strong>Object destructuring</strong> is a JavaScript expression that allows us to extract properties from objects and bind them to variables in a single, clean statement.</p>
+                    
+                    <p>This feature transforms how we work with complex data structures, making code more readable and reducing boilerplate significantly.</p>
+                    
+                    <div class="formula">{property1, property2, ...} = object</div>
+                    
+                    <h5>Basic Syntax:</h5>
+                    <pre><code>const user = {
+    name: 'Alice',
+    age: 28,
+    city: 'New York'
+};
+
+const { name, age, city } = user;
+
+console.log(name); // 'Alice'
+console.log(age);  // 28
+console.log(city); // 'New York'</code></pre>
+                    
+                    <div class="note">
+                        <strong>Key Insight:</strong> Unlike array destructuring (which uses position), object destructuring uses <em>property names</em>. The variable names must match the object property names exactly.
+                    </div>
+                    
+                    <h5>Why it's better than traditional assignment:</h5>
+                    <pre><code>// BEFORE: Traditional way
+const user = {
+    name: 'Alice',
+    age: 28,
+    city: 'New York'
+};
+const userName = user.name;
+const userAge = user.age;
+const userCity = user.city;
+
+// AFTER: Destructuring way
+const { name, age, city } = user;</code></pre>
+                    
+                    <p>Notice how we reduced 3 lines of code to just 1 while maintaining clarity!</p>
+                    
+                    <h5>Important Note:</h5>
+                    <pre><code>// This will NOT work!
+const { firstName } = user; // undefined - because property is 'name', not 'firstName'
+
+// You must use exact property names:
+const { name } = user; // ✅ Correct</code></pre>
+                </div>
+            </details>
+        </section>
+
+        <section id="renamingVariables">
+            <details class="details-container">
+                <summary>Renaming Variables During Destructuring</summary>
+                <div>
+                    <p>When you want to extract a property but store it in a variable with a different name, you can use the <strong>colon syntax</strong>:</p>
+                    
+                    <h5>Syntax:</h5>
+                    <pre><code>{ originalName: newName } = object;</code></pre>
+                    
+                    <h5>Example: API response transformation</h5>
+                    <pre><code>const apiResponse = {
+    first_name: 'John',
+    last_name: 'Doe',
+    email_address: 'john@email.com',
+    user_id: 12345
+};
+
+// Extract with renaming for cleaner variable names
+const { 
+    first_name: firstName, 
+    last_name: lastName, 
+    email_address: email,
+    user_id: id 
+} = apiResponse;
+
+console.log(firstName); // 'John'
+console.log(lastName);  // 'Doe'
+console.log(email);     // 'john@email.com'
+console.log(id);        // 12345</code></pre>
+                    
+                    <h5>Real-world use case: Database records</h5>
+                    <pre><code>const dbRecord = {
+    createdAt: '2023-01-15',
+    updatedAt: '2023-02-20',
+    recordId: 'rec_abc123',
+    status: 'active'
+};
+
+// Rename for consistency with your application's naming convention
+const { 
+    createdAt: created, 
+    updatedAt: updated, 
+    recordId: uuid,
+    status: isActive 
+} = dbRecord;
+
+console.log(created); // '2023-01-15'
+console.log(updated); // '2023-02-20'
+console.log(uuid);    // 'rec_abc123'
+console.log(isActive); // 'active'</code></pre>
+                    
+                    <div class="note">
+                        <strong>Pro Tip:</strong> Renaming is essential when working with third-party APIs or legacy systems that use inconsistent naming conventions.
+                    </div>
+                    
+                    <h5>Multiple renames in one line:</h5>
+                    <pre><code>const coordinates = {
+    x_coordinate: 100,
+    y_coordinate: 200,
+    z_coordinate: 300
+};
+
+const { 
+    x_coordinate: x, 
+    y_coordinate: y, 
+    z_coordinate: z 
+} = coordinates;
+
+console.log({x, y, z}); // {x: 100, y: 200, z: 300}</code></pre>
+                    
+                    <h5>What happens if you don't rename?</h5>
+                    <pre><code>const product = {
+    product_id: 123,
+    product_name: 'Laptop',
+    product_price: 999
+};
+
+// ❌ This creates variables with the wrong names!
+const { product_id, product_name, product_price } = product;
+console.log(product_id);   // 123
+console.log(product_name); // 'Laptop'
+console.log(product_price); // 999
+
+// But if you want cleaner names, rename them:
+const { 
+    product_id: id, 
+    product_name: name, 
+    product_price: price 
+} = product;
+console.log(id, name, price); // 123, 'Laptop', 999</code></pre>
+                </div>
+            </details>
+        </section>
+
+        <section id="defaultValues">
+            <details class="details-container">
+                <summary>Default Values in Object Destructuring</summary>
+                <div>
+                    <p>JavaScript allows you to assign default values to variables when the corresponding object property is missing or <code>undefined</code>.</p>
+                    
+                    <h5>Syntax:</h5>
+                    <pre><code>{ property = defaultValue } = object;</code></pre>
+                    
+                    <h5>Example: Configuration settings</h5>
+                    <pre><code>const config = {
+    host: 'localhost',
+    port: 3000
+    // debug property is missing!
+};
+
+const { 
+    host = '127.0.0.1', 
+    port = 8080, 
+    debug = false,
+    timeout = 5000 
+} = config;
+
+console.log(host);   // 'localhost' (actual value)
+console.log(port);   // 3000 (actual value)
+console.log(debug);  // false (default because property doesn't exist)
+console.log(timeout); // 5000 (default because property doesn't exist)</code></pre>
+                    
+                    <div class="note">
+                        <strong>Important Note:</strong> Default values are only used when the property is <code>undefined</code>. They are NOT used for <code>null</code>, <code>0</code>, <code>''</code> (empty string), or <code>false</code>.
+                    </div>
+                    
+                    <h5>More examples:</h5>
+                    <pre><code>const user = {
+    name: 'Bob',
+    age: undefined, // explicitly set to undefined
+    role: null      // explicitly set to null
+};
+
+const { 
+    name = 'Guest', 
+    age = 18, 
+    role = 'user', 
+    permissions = [] 
+} = user;
+
+console.log(name);     // 'Bob' (actual value)
+console.log(age);      // 18 (default because undefined)
+console.log(role);     // null (actual value - NOT default!)
+console.log(permissions); // [] (default because property doesn't exist)</code></pre>
+                    
+                    <h5>Practical application: React component props</h5>
+                    <pre><code>// In React, you might receive props like this:
+function UserProfile({ 
+    name, 
+    avatar = '/default-avatar.png', 
+    bio = 'No bio provided', 
+    followers = 0 
+}) {
+    return (
+        &lt;div&gt;
+            &lt;img src={avatar} alt={name} /&gt;
+            &lt;h2&gt;{name}&lt;/h2&gt;
+            &lt;p&gt;{bio}&lt;/p&gt;
+            &lt;p&gt;Followers: {followers}&lt;/p&gt;
+        &lt;/div&gt;
+    );
+}
+
+// Call with partial props
+&lt;UserProfile name="Alice" /&gt;
+// Uses defaults for avatar, bio, and followers</code></pre>
+                    
+                    <h5>Combining renaming with defaults:</h5>
+                    <pre><code>const data = {
+    userId: 123,
+    username: 'alice123'
+    // email property is missing
+};
+
+const { 
+    userId: id, 
+    username: name, 
+    email: userEmail = 'no-email@example.com' 
+} = data;
+
+console.log(id);       // 123
+console.log(name);     // 'alice123'
+console.log(userEmail); // 'no-email@example.com' (default)</code></pre>
+                </div>
+            </details>
+        </section>
+
+        <section id="nestedDestructuring">
+            <details class="details-container">
+                <summary>Nested Object Destructuring</summary>
+                <div>
+                    <p>You can destructure nested objects by matching their structure with the same syntax!</p>
+                    
+                    <h5>Syntax:</h5>
+                    <pre><code>{ outerProp: { innerProp } } = object;</code></pre>
+                    
+                    <h5>Example: User profile with address</h5>
+                    <pre><code>const user = {
+    name: 'Alice',
+    age: 28,
+    address: {
+        street: '123 Main St',
+        city: 'New York',
+        zipCode: '10001',
+        country: 'USA'
+    },
+    contact: {
+        email: 'alice@email.com',
+        phone: '+1-555-1234'
+    }
+};
+
+// Destructure nested objects
+const { 
+    name, 
+    age,
+    address: { street, city, zipCode, country },
+    contact: { email, phone }
+} = user;
+
+console.log(name);     // 'Alice'
+console.log(street);   // '123 Main St'
+console.log(city);     // 'New York'
+console.log(zipCode);  // '10001'
+console.log(country);  // 'USA'
+console.log(email);    // 'alice@email.com'
+console.log(phone);    // '+1-555-1234'</code></pre>
+                    
+                    <div class="note">
+                        <strong>Key Insight:</strong> When destructuring nested objects, you're creating variables for the inner properties directly, not for the intermediate objects.
+                    </div>
+                    
+                    <h5>Renaming nested properties:</h5>
+                    <pre><code>const product = {
+    id: 123,
+    details: {
+        name: 'iPhone 15',
+        specs: {
+            screen: '6.1 inches',
+            battery: '3279 mAh',
+            camera: '48 MP'
+        }
+    }
+};
+
+const { 
+    id,
+    details: { 
+        name: productName, 
+        specs: { 
+            screen: displaySize, 
+            camera: megapixels 
+        } 
+    } 
+} = product;
+
+console.log(id);          // 123
+console.log(productName); // 'iPhone 15'
+console.log(displaySize); // '6.1 inches'
+console.log(megapixels);  // '48 MP'</code></pre>
+                    
+                    <h5>Providing defaults for nested properties:</h5>
+                    <pre><code>const employee = {
+    name: 'Bob',
+    department: {
+        name: 'Engineering',
+        location: 'Building A'
+        // manager property is missing
+    }
+};
+
+const { 
+    name,
+    department: { 
+        name: deptName, 
+        location: loc, 
+        manager = 'Not assigned' 
+    } 
+} = employee;
+
+console.log(name);      // 'Bob'
+console.log(deptName);  // 'Engineering'
+console.log(loc);       // 'Building A'
+console.log(manager);   // 'Not assigned' (default!)</code></pre>
+                    
+                    <h5>Partial nested destructuring:</h5>
+                    <pre><code>const company = {
+    name: 'TechCorp',
+    employees: [
+        { name: 'Alice', role: 'Developer' },
+        { name: 'Bob', role: 'Designer' }
+    ],
+    departments: {
+        engineering: {
+            lead: 'Carol',
+            teamSize: 15,
+            budget: 500000
+        },
+        marketing: {
+            lead: 'David',
+            teamSize: 8,
+            budget: 200000
+        }
+    }
+};
+
+// Only extract what you need
+const { 
+    name: companyName,
+    departments: { 
+        engineering: { 
+            lead: engLead, 
+            teamSize: engTeamSize 
+        } 
+    } 
+} = company;
+
+console.log(companyName);   // 'TechCorp'
+console.log(engLead);       // 'Carol'
+console.log(engTeamSize);   // 15
+
+// Notice: We didn't extract marketing info at all!</code></pre>
+                    
+                    <h5>Advanced: Multiple levels of nesting</h5>
+                    <pre><code>const appState = {
+    user: {
+        profile: {
+            personal: {
+                name: 'Eve',
+                birthDate: '1990-05-15'
+            },
+            contact: {
+                email: 'eve@example.com',
+                preferences: {
+                    theme: 'dark',
+                    notifications: true
+                }
+            }
+        }
+    },
+    settings: {
+        language: 'en',
+        timezone: 'UTC'
+    }
+};
+
+const { 
+    user: { 
+        profile: { 
+            personal: { name, birthDate }, 
+            contact: { 
+                preferences: { theme, notifications } 
+            } 
+        } 
+    },
+    settings: { language } 
+} = appState;
+
+console.log(name);         // 'Eve'
+console.log(birthDate);    // '1990-05-15'
+console.log(theme);        // 'dark'
+console.log(notifications);// true
+console.log(language);     // 'en'</code></pre>
+                </div>
+            </details>
+        </section>
+
+        <section id="functionParameterDestructuring">
+            <details class="details-container">
+                <summary>Function Parameter Destructuring</summary>
+                <div>
+                    <p>You can destructure parameters directly in function definitions, making functions cleaner and more self-documenting.</p>
+                    
+                    <h5>Syntax:</h5>
+                    <pre><code>function functionName({ property1, property2 }) { ... }</code></pre>
+                    
+                    <h5>Example: Simple user function</h5>
+                    <pre><code>// Instead of accessing properties inside the function:
+function createUser(user) {
+    const name = user.name;
+    const age = user.age;
+    const email = user.email;
+    
+    return `User ${name}, age ${age}, email ${email}`;
+}
+
+// Use parameter destructuring:
+function createUser({ name, age, email }) {
+    return `User ${name}, age ${age}, email ${email}`;
+}
+
+// Usage
+createUser({
+    name: 'Alice',
+    age: 28,
+    email: 'alice@email.com'
+});</code></pre>
+                    
+                    <div class="note">
+                        <strong>Advantage:</strong> The function signature itself tells you exactly what properties are expected, improving code readability and documentation.
+                    </div>
+                    
+                    <h5>With default values:</h5>
+                    <pre><code>function configureServer({
+    host = 'localhost',
+    port = 3000,
+    ssl = false,
+    timeout = 5000
+} = {}) { // Note: = {} provides default for entire object parameter
+    console.log(`Server running at https://${host}:${port}`);
+    console.log(`SSL enabled: ${ssl}`);
+    console.log(`Timeout: ${timeout}ms`);
+}
+
+// All these work!
+configureServer(); // Uses all defaults
+configureServer({ port: 8080 }); // Only overrides port
+configureServer({ host: 'myserver.com', ssl: true }); // Overrides two properties</code></pre>
+                    
+                    <h5>With nested object destructuring:</h5>
+                    <pre><code>function renderProfile({
+    name,
+    avatar,
+    bio,
+    address: {
+        street,
+        city,
+        zipCode,
+        country = 'Unknown'
+    },
+    contact: {
+        email,
+        phone = 'Not provided'
+    }
+}) {
+    return `
+        &lt;div class="profile"&gt;
+            &lt;h2&gt;${name}&lt;/h2&gt;
+            &lt;img src="${avatar}" alt="${name}"&gt;
+            &lt;p&gt;${bio}&lt;/p&gt;
+            &lt;p&gt;${street}, ${city}, ${zipCode}, ${country}&lt;/p&gt;
+            &lt;p&gt;Email: ${email}&lt;/p&gt;
+            &lt;p&gt;Phone: ${phone}&lt;/p&gt;
+        &lt;/div&gt;
+    `;
+}
+
+renderProfile({
+    name: 'Alice',
+    avatar: '/alice.jpg',
+    bio: 'Software engineer',
+    address: {
+        street: '123 Main St',
+        city: 'New York',
+        zipCode: '10001'
+        // country omitted - uses default
+    },
+    contact: {
+        email: 'alice@email.com'
+        // phone omitted - uses default
+    }
+});</code></pre>
+                    
+                    <h5>Combining with rest operator:</h5>
+                    <pre><code>function processUser({
+    id,
+    name,
+    email,
+    ...restProperties
+}) {
+    console.log('Primary info:', { id, name, email });
+    console.log('Extra properties:', restProperties);
+    
+    return {
+        id,
+        name,
+        email,
+        processedAt: new Date().toISOString()
+    };
+}
+
+processUser({
+    id: 123,
+    name: 'Bob',
+    email: 'bob@email.com',
+    role: 'admin',
+    department: 'IT',
+    hireDate: '2023-01-15'
+});
+
+// Output:
+// Primary info: {id: 123, name: 'Bob', email: 'bob@email.com'}
+// Extra properties: {role: 'admin', department: 'IT', hireDate: '2023-01-15'}</code></pre>
+                    
+                    <h5>Real-world example: API request handler</h5>
+                    <pre><code>function makeApiRequest({
+    url,
+    method = 'GET',
+    headers = {},
+    body = null,
+    timeout = 5000,
+    retryAttempts = 3
+} = {}) {
+    // Implementation here
+    console.log('Making request to:', url);
+    console.log('Method:', method);
+    console.log('Headers:', headers);
+    console.log('Body:', body);
+    console.log('Timeout:', timeout);
+    console.log('Retry attempts:', retryAttempts);
+}
+
+// All these calls work beautifully:
+makeApiRequest({ url: 'https://api.example.com/users' });
+makeApiRequest({ 
+    url: 'https://api.example.com/posts', 
+    method: 'POST', 
+    body: { title: 'New Post' } 
+});
+makeApiRequest({ 
+    url: 'https://api.example.com/data', 
+    timeout: 10000, 
+    retryAttempts: 5 
+});</code></pre>
+                    
+                    <div class="note">
+                        <strong>Pro Tip:</strong> Always provide a default empty object <code>= {}</code> for the entire parameter when using destructuring to avoid errors when no argument is passed.
+                    </div>
+                </div>
+            </details>
+        </section>
+
+        <section id="summary">
+            <details class="details-container">
+                <summary>Summary & Best Practices</summary>
+                <div>
+                    <h4>✅ Key Takeaways</h4>
+                    <ul>
+                        <li><strong>Basic destructuring:</strong> <code>{prop1, prop2} = obj</code> extracts properties into variables</li>
+                        <li><strong>Renaming:</strong> Use <code>{original: newName}</code> to change variable names</li>
+                        <li><strong>Defaults:</strong> Use <code>prop = defaultValue</code> for missing/undefined properties</li>
+                        <li><strong>Nested:</strong> Match object hierarchy with nested braces <code>{outer: {inner}}</code></li>
+                        <li><strong>Function params:</strong> Destructure directly in function signatures for cleaner code</li>
+                    </ul>
+                    
+                    <h4>🚫 Common Mistakes</h4>
+                    <ul>
+                        <li>Forgetting that destructuring requires exact property names (case-sensitive!)</li>
+                        <li>Expecting defaults to work with <code>null</code>, <code>0</code>, or <code>''</code> (they don't!)</li>
+                        <li>Using destructuring on non-object values (causes TypeError)</li>
+                        <li>Missing the default empty object <code>= {}</code> in function parameters</li>
+                    </ul>
+                    
+                    <h4>💡 Pro Tips</h4>
+                    <ul>
+                        <li>Use destructuring with functions that return objects (like <code>useSelector()</code> in Redux, <code>useState()</code> returns array but similar concept)</li>
+                        <li>Combine with array destructuring for complex data extraction</li>
+                        <li>Great for React hooks, API responses, configuration handling, and functional programming patterns</li>
+                        <li>Always validate that the source is actually an object before destructuring</li>
+                        <li>Use destructuring to create immutable copies: <code>const { prop } = {...originalObj}</code></li>
+                    </ul>
+                    
+                    <h4>🚀 Advanced Challenge</h4>
+                    <pre><code>// Can you solve this?
+// Given: 
+const student = {
+    id: 123,
+    name: 'Alex',
+    grades: {
+        math: 95,
+        science: 87,
+        english: 92
+    },
+    metadata: {
+        enrolled: true,
+        year: 2023,
+        courses: ['Math', 'Science', 'English']
+    }
+};
+
+// Extract:
+// - student's name as fullName
+// - math grade as mathScore
+// - science grade as sciScore
+// - enrolled status as isActive
+// - all other metadata properties in a config object
+
+// Solution:
+const { 
+    name: fullName, 
+    grades: { math: mathScore, science: sciScore }, 
+    metadata: { enrolled: isActive, ...config } 
+} = student;
+
+console.log(fullName); // 'Alex'
+console.log(mathScore); // 95
+console.log(sciScore); // 87
+console.log(isActive); // true
+console.log(config);   // { year: 2023, courses: ['Math', 'Science', 'English'] }</code></pre>
+                    
+                    <h4>🧠 Memory Trick</h4>
+                    <p><strong>Remember: Objects use NAMES, Arrays use POSITIONS</strong></p>
+                    <ul>
+                        <li>Array: <code>[first, second] = arr</code> → based on order</li>
+                        <li>Object: <code>{name, age} = obj</code> → based on property names</li>
+                    </ul>
+                    
+                    <p>Think of it like this: With arrays, you're grabbing items from a row of boxes in order. With objects, you're opening labeled drawers and taking what's inside!</p>
+                </div>
+            </details>
+        </section>
+    </div>
+
+    <!-- JavaScript Utilities -->
+    <script>
+        // Expand/Collapse All Controls
+        document.getElementById('expandAll').addEventListener('click', () => {
+            document.querySelectorAll('.details-container').forEach(detail => {
+                detail.open = true;
+            });
+        });
+
+        document.getElementById('collapseAll').addEventListener('click', () => {
+            document.querySelectorAll('.details-container').forEach(detail => {
+                detail.open = false;
+            });
+        });
+
+        // Search TOC functionality
+        document.getElementById('searchTOC').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const tocItems = document.querySelectorAll('.toc-item');
+            
+            tocItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        // Smooth scrolling to TOC sections
+        document.querySelectorAll('.toc-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Highlight code blocks with syntax highlighting
+        document.querySelectorAll('pre code').forEach(block => {
+            hljs.highlightBlock(block);
+        });
+
+        // Add smooth scroll for internal links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Initialize TOC navigation
+        document.addEventListener('DOMContentLoaded', () => {
+            // Scroll spy - highlight active TOC item based on visible section
+            const sections = document.querySelectorAll('section');
+            const tocItems = document.querySelectorAll('.toc-item');
+            
+            window.addEventListener('scroll', () => {
+                let currentSection = '';
+                
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+                    if (pageYOffset >= sectionTop - 100) {
+                        currentSection = section.id;
+                    }
+                });
+                
+                tocItems.forEach(item => {
+                    item.classList.remove('active');
+                    if (item.getAttribute('data-target') === '#' + currentSection) {
+                        item.classList.add('active');
+                        item.style.backgroundColor = 'rgba(0, 209, 255, 0.2)';
+                        item.style.color = 'var(--cyan)';
+                    } else {
+                        item.style.backgroundColor = '';
+                        item.style.color = '';
+                    }
+                });
+            });
+        });
+    </script>
+
+    <!-- Include highlight.js for syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/darkula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+</html>
+```

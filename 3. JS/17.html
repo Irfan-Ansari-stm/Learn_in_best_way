@@ -1,0 +1,1400 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7.3 Object Property Descriptors</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00f5ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --accent: #00f5ff;
+            --card-bg: #112240;
+            --border-color: #007a99;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            position: fixed;
+            width: 300px;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            box-shadow: 2px 0 10px rgba(0, 245, 255, 0.1);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--amber);
+        }
+
+        .toc-item {
+            margin: 8px 0;
+            padding-left: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .toc-item a {
+            color: var(--cyan);
+            text-decoration: none;
+            display: block;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .toc-item a:hover {
+            color: var(--amber);
+            padding-left: 20px;
+        }
+
+        .toc-subitem {
+            margin-left: 20px;
+            font-size: 0.9rem;
+            color: #b0c4de;
+        }
+
+        details {
+            margin: 15px 0;
+            border-left: 3px solid var(--amber);
+            padding-left: 15px;
+            background-color: rgba(17, 34, 64, 0.5);
+            border-radius: 0 5px 5px 0;
+        }
+
+        summary {
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--amber);
+            list-style: none;
+            padding: 10px;
+            background-color: rgba(0, 245, 255, 0.08);
+            border-radius: 5px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        summary::before {
+            content: "▶";
+            margin-right: 10px;
+            font-size: 0.8rem;
+            transition: transform 0.3s;
+        }
+
+        details[open] summary::before {
+            transform: rotate(90deg);
+        }
+
+        pre code {
+            display: block;
+            padding: 15px;
+            background-color: #0d1b2a;
+            color: var(--cyan);
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            border-left: 3px solid var(--amber);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.2);
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+
+        .formula {
+            background-color: rgba(0, 245, 255, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 3px solid var(--cyan);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.1rem;
+        }
+
+        .definition {
+            color: var(--amber);
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .detail {
+            margin: 12px 0;
+            line-height: 1.6;
+        }
+
+        .syntax {
+            margin: 15px 0;
+        }
+
+        .example {
+            margin: 15px 0;
+        }
+
+        .use-case {
+            color: var(--cyan);
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
+        .code-comment {
+            color: #7f8c8d;
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: #0a192f;
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-left: 8px;
+        }
+
+        .descriptor-table {
+            background-color: rgba(0, 245, 255, 0.05);
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+            border: 1px dashed var(--cyan);
+        }
+
+        .descriptor-table th,
+        .descriptor-table td {
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            text-align: left;
+        }
+
+        .descriptor-table th {
+            background-color: rgba(0, 245, 255, 0.1);
+            color: var(--amber);
+            font-weight: bold;
+        }
+
+        .descriptor-table tr:nth-child(even) {
+            background-color: rgba(17, 34, 64, 0.3);
+        }
+
+        .descriptor-table .true {
+            color: #00f5ff;
+            font-weight: bold;
+        }
+
+        .descriptor-table .false {
+            color: #ffb74d;
+            font-weight: bold;
+        }
+
+        .property-diagram {
+            background-color: rgba(0, 245, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px dashed var(--cyan);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            white-space: pre;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .getter-setter-diagram {
+            background-color: rgba(17, 34, 64, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid var(--amber);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .accessor-box {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 5px;
+            border: 1px solid var(--cyan);
+            border-radius: 5px;
+            background-color: rgba(0, 245, 255, 0.1);
+        }
+
+        .data-box {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 5px;
+            border: 1px solid var(--amber);
+            border-radius: 5px;
+            background-color: rgba(255, 183, 77, 0.2);
+        }
+
+        @media (max-width: 991px) {
+            .left-panel {
+                position: relative;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .right-panel {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid p-0">
+    <div class="row g-0">
+        <!-- Left Panel -->
+        <div class="col-md-3 left-panel">
+            <h2>7.3 Object Property Descriptors</h2>
+            <p class="text-muted small">Controlling Property Behavior at the Meta Level</p>
+            <p class="text-secondary small">Author: AI Tutor • Updated: 2024</p>
+
+            <div class="mb-3 d-flex gap-2">
+                <button id="expandAll" class="btn btn-control">Expand All</button>
+                <button id="collapseAll" class="btn btn-control">Collapse All</button>
+            </div>
+
+            <div class="search-box mb-4">
+                <input type="text" id="searchToc" class="form-control bg-dark border-cyan" placeholder="Search topics..." style="color: var(--cyan); background-color: #112240; border-color: var(--amber);">
+            </div>
+
+            <h5 class="text-uppercase text-muted fw-bold mb-3">Table of Contents</h5>
+            <ul class="list-unstyled">
+                <li class="toc-item">
+                    <a href="#property-descriptors">Property Descriptors</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#descriptor-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#descriptor-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#descriptor-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#descriptor-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#descriptor-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#writable-enumerable-configurable">Writable, Enumerable, Configurable</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#wec-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#wec-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#wec-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#wec-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#wec-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#define-property">Object.defineProperty()</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#define-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#define-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#define-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#define-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#define-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#define-properties">Object.defineProperties()</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#defines-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#defines-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#defines-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#defines-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#defines-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#getters-setters">Property Getters and Setters</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#getter-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#getter-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#getter-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#getter-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#getter-uses">Uses</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="col-md-9 right-panel">
+            <section id="property-descriptors">
+                <details>
+                    <summary>Property Descriptors</summary>
+                    <div class="definition">Definition:</div>
+                    <p>A <span class="highlight">property descriptor</span> is an internal object that defines the characteristics and behavior of a property in JavaScript.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>Every property in JavaScript has an associated descriptor that controls how it behaves. These descriptors are not visible by default but can be inspected using <code>Object.getOwnPropertyDescriptor()</code>. Understanding descriptors is crucial for advanced JavaScript development because they determine whether a property can be changed, enumerated, or deleted.</p>
+                    <p>There are two types of property descriptors: data descriptors (with value and writable) and accessor descriptors (with get and set). A property can have either one type or the other, but not both simultaneously.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// Data descriptor (value + writable)
+{
+    value: any,
+    writable: boolean,
+    enumerable: boolean,
+    configurable: boolean
+}
+
+// Accessor descriptor (get + set)
+{
+    get: function(),
+    set: function(),
+    enumerable: boolean,
+    configurable: boolean
+}</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// Creating an object with properties
+const obj = {
+    name: "Alice",
+    age: 30
+};
+
+// Inspecting property descriptors
+console.log(Object.getOwnPropertyDescriptor(obj, 'name'));
+// Output:
+// {
+//   value: "Alice",
+//   writable: true,
+//   enumerable: true,
+//   configurable: true
+// }
+
+console.log(Object.getOwnPropertyDescriptor(obj, 'age'));
+// Output:
+// {
+//   value: 30,
+//   writable: true,
+//   enumerable: true,
+//   configurable: true
+// }
+
+// Adding a new property with explicit descriptor
+Object.defineProperty(obj, 'id', {
+    value: 123,
+    writable: false,
+    enumerable: false,
+    configurable: true
+});
+
+console.log(Object.getOwnPropertyDescriptor(obj, 'id'));
+// Output:
+// {
+//   value: 123,
+//   writable: false,
+//   enumerable: false,
+//   configurable: true
+// }</code></pre>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Understanding why some properties appear in loops and others don't</li>
+                        <li>Debugging property behavior issues</li>
+                        <li>Creating truly private or protected properties</li>
+                        <li>Implementing immutable objects</li>
+                        <li>Building frameworks that need fine-grained control over object structure</li>
+                    </ul>
+                    <p class="text-info mt-2">💡 Pro Tip: When you create properties with object literals (<code>{prop: value}</code>), JavaScript automatically sets them to <code>writable: true</code>, <code>enumerable: true</code>, and <code>configurable: true</code>.</p>
+                </details>
+            </section>
+
+            <section id="writable-enumerable-configurable">
+                <details>
+                    <summary>Writable, Enumerable, Configurable</summary>
+                    <div class="definition">Definition:</div>
+                    <p>The three key attributes that control property behavior are: <span class="highlight">writable</span>, <span class="highlight">enumerable</span>, and <span class="highlight">configurable</span>.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>These attributes form the foundation of JavaScript's property control system:</p>
+                    <ul>
+                        <li><strong>writable</strong>: Determines if the property's value can be changed</li>
+                        <li><strong>enumerable</strong>: Determines if the property appears in loops like <code>for...in</code> and methods like <code>Object.keys()</code></li>
+                        <li><strong>configurable</strong>: Determines if the property can be deleted or its descriptor changed</li>
+                    </ul>
+                    <p>These flags work together to create different levels of property protection — from fully mutable to completely locked down.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// Full descriptor syntax
+Object.defineProperty(obj, prop, {
+    value: any,           // Only for data descriptors
+    writable: boolean,    // Default: false
+    enumerable: boolean,  // Default: false
+    configurable: boolean,// Default: false
+    get: function(),      // Only for accessor descriptors
+    set: function()       // Only for accessor descriptors
+});</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// EXAMPLE 1: Writable flag
+const person = {};
+Object.defineProperty(person, 'name', {
+    value: "Alice",
+    writable: false,  // Cannot be changed
+    enumerable: true,
+    configurable: true
+});
+
+console.log(person.name); // "Alice"
+person.name = "Bob";     // No error in non-strict mode, but doesn't change
+console.log(person.name); // Still "Alice"!
+
+// In strict mode, this would throw TypeError
+'use strict';
+// person.name = "Bob"; // ❌ TypeError: Cannot assign to read only property
+
+// EXAMPLE 2: Enumerable flag
+const obj = {};
+Object.defineProperty(obj, 'hidden', {
+    value: 'secret',
+    enumerable: false, // Won't show in loops
+    writable: true,
+    configurable: true
+});
+
+obj.visible = 'public';
+
+// This will only show 'visible', not 'hidden'
+for (let key in obj) {
+    console.log(key); // Output: "visible"
+}
+
+console.log(Object.keys(obj)); // ["visible"]
+console.log(Object.getOwnPropertyNames(obj)); // ["hidden", "visible"] - includes non-enumerable
+
+// EXAMPLE 3: Configurable flag
+const configObj = {};
+Object.defineProperty(configObj, 'locked', {
+    value: 'cannot change',
+    writable: false,
+    enumerable: true,
+    configurable: false // Cannot be reconfigured!
+});
+
+// This works
+configObj.locked = 'new value'; // ❌ No effect (writable is false)
+
+// But these fail:
+// delete configObj.locked; // ❌ TypeError: Cannot delete property
+// Object.defineProperty(configObj, 'locked', { value: 'changed' }); // ❌ TypeError
+
+// This also fails:
+// Object.defineProperty(configObj, 'locked', { enumerable: false }); // ❌ TypeError
+
+// EXAMPLE 4: All combinations comparison
+const testObj = {};
+
+// Fully configurable property
+Object.defineProperty(testObj, 'free', {
+    value: 'can do anything',
+    writable: true,
+    enumerable: true,
+    configurable: true
+});
+
+// Read-only but deletable
+Object.defineProperty(testObj, 'readonly', {
+    value: 'cannot change',
+    writable: false,
+    enumerable: true,
+    configurable: true
+});
+
+// Non-enumerable but modifiable
+Object.defineProperty(testObj, 'hidden', {
+    value: 'invisible',
+    writable: true,
+    enumerable: false,
+    configurable: true
+});
+
+// Completely locked property
+Object.defineProperty(testObj, 'locked', {
+    value: 'completely locked',
+    writable: false,
+    enumerable: false,
+    configurable: false
+});
+
+// Table of behaviors
+console.table([
+    { Property: 'free', Writable: '✅ true', Enumerable: '✅ true', Configurable: '✅ true' },
+    { Property: 'readonly', Writable: '❌ false', Enumerable: '✅ true', Configurable: '✅ true' },
+    { Property: 'hidden', Writable: '✅ true', Enumerable: '❌ false', Configurable: '✅ true' },
+    { Property: 'locked', Writable: '❌ false', Enumerable: '❌ false', Configurable: '❌ false' }
+]);
+
+// Demonstrating the effects:
+console.log('=== Free property ===');
+testObj.free = 'modified';
+console.log(testObj.free); // "modified"
+
+console.log('=== Readonly property ===');
+testObj.readonly = 'attempted change';
+console.log(testObj.readonly); // "cannot change"
+
+console.log('=== Hidden property ===');
+console.log(Object.keys(testObj)); // ["free", "readonly"] - hidden not listed
+console.log(testObj.hidden); // "invisible" - still accessible
+
+console.log('=== Locked property ===');
+try {
+    delete testObj.locked;
+} catch (e) {
+    console.log('Cannot delete locked property:', e.message);
+}</code></pre>
+
+                    <div class="descriptor-table">
+<table>
+    <thead>
+        <tr>
+            <th>Attribute</th>
+            <th>Default Value</th>
+            <th>Effect when false</th>
+            <th>Can be changed later?</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><strong>writable</strong></td>
+            <td>true</td>
+            <td>Value cannot be modified</td>
+            <td>Only if configurable is true</td>
+        </tr>
+        <tr>
+            <td><strong>enumerable</strong></td>
+            <td>true</td>
+            <td>Not shown in for...in loops or Object.keys()</td>
+            <td>Only if configurable is true</td>
+        </tr>
+        <tr>
+            <td><strong>configurable</strong></td>
+            <td>true</td>
+            <td>Cannot be deleted or have descriptor changed</td>
+            <td>Never — once false, cannot be reverted</td>
+        </tr>
+    </tbody>
+</table>
+                    </div>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Creating read-only constants on objects</li>
+                        <li>Hiding implementation details from enumeration</li>
+                        <li>Preventing accidental deletion of critical properties</li>
+                        <li>Implementing immutable data structures</li>
+                        <li>Building framework components with protected properties</li>
+                    </ul>
+                    <p class="text-warning mt-2"><strong>⚠️ Critical Warning:</strong> Once a property is made <code>configurable: false</code>, you cannot make it configurable again. This is permanent!</p>
+                </details>
+            </section>
+
+            <section id="define-property">
+                <details>
+                    <summary>Object.defineProperty()</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">Object.defineProperty()</span> is a method that allows you to define or modify a single property on an object with precise control over its descriptor.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>This is the fundamental method for working with property descriptors. It gives you complete control over a property's behavior — something impossible with simple assignment. Unlike direct assignment which creates properties with default descriptors, <code>defineProperty()</code> lets you specify exactly how each attribute should behave.</p>
+                    <p>It's particularly useful for creating computed properties, read-only values, and implementing encapsulation patterns.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>Object.defineProperty(object, propertyName, descriptor)</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// EXAMPLE 1: Creating a read-only constant
+const mathConstants = {};
+Object.defineProperty(mathConstants, 'PI', {
+    value: Math.PI,
+    writable: false,
+    enumerable: true,
+    configurable: false
+});
+
+console.log(mathConstants.PI); // 3.141592653589793
+mathConstants.PI = 3; // No error in non-strict mode, but no effect
+console.log(mathConstants.PI); // Still 3.141592653589793
+
+// EXAMPLE 2: Computed property with getter
+const temperature = {
+    celsius: 25
+};
+
+Object.defineProperty(temperature, 'fahrenheit', {
+    get() {
+        return (this.celsius * 9/5) + 32;
+    },
+    set(fahrenheit) {
+        this.celsius = (fahrenheit - 32) * 5/9;
+    },
+    enumerable: true,
+    configurable: true
+});
+
+console.log(temperature.fahrenheit); // 77
+temperature.fahrenheit = 86;
+console.log(temperature.celsius); // 30
+
+// EXAMPLE 3: Hidden internal state
+const bankAccount = {
+    _balance: 1000, // Conventionally private (but still accessible)
+    accountNumber: "12345"
+};
+
+// Make balance inaccessible through direct access
+Object.defineProperty(bankAccount, 'balance', {
+    get() {
+        return '$' + this._balance.toFixed(2);
+    },
+    set(amount) {
+        if (typeof amount !== 'number' || amount &lt; 0) {
+            throw new Error('Invalid amount');
+        }
+        this._balance = amount;
+    },
+    enumerable: false, // Won't appear in Object.keys()
+    configurable: false
+});
+
+console.log(bankAccount.balance); // "$1000.00"
+bankAccount.balance = 1500;
+console.log(bankAccount.balance); // "$1500.00"
+
+// Try to access the underscore property directly
+console.log(bankAccount._balance); // 1500 (still accessible!)
+
+// Check what keys are enumerable
+console.log(Object.keys(bankAccount)); // ["accountNumber"] - balance is hidden!
+
+// EXAMPLE 4: Preventing property addition
+const frozenConfig = {};
+
+// Define a property that cannot be changed
+Object.defineProperty(frozenConfig, 'version', {
+    value: '1.0.0',
+    writable: false,
+    enumerable: true,
+    configurable: false
+});
+
+// This won't work
+Object.defineProperty(frozenConfig, 'version', { value: '2.0.0' }); // ❌ TypeError
+
+// This won't work either
+delete frozenConfig.version; // ❌ TypeError
+
+// But we can add other properties
+Object.defineProperty(frozenConfig, 'author', {
+    value: 'AI Tutor',
+    writable: false,
+    enumerable: true,
+    configurable: false
+});
+
+console.log(frozenConfig); // { version: "1.0.0", author: "AI Tutor" }
+
+// EXAMPLE 5: Creating a proxy-like property
+const counter = {
+    count: 0
+};
+
+Object.defineProperty(counter, 'increment', {
+    value: function() {
+        this.count++;
+        return this;
+    },
+    writable: false,
+    enumerable: false,
+    configurable: false
+});
+
+counter.increment().increment();
+console.log(counter.count); // 2
+
+// The increment method is not enumerable
+console.log(Object.keys(counter)); // ["count"] - increment hidden!
+console.log(counter.increment); // [Function]</code></pre>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Creating immutable configuration objects</li>
+                        <li>Implementing computed properties and getters/setters</li>
+                        <li>Creating hidden/internal properties</li>
+                        <li>Defining non-enumerable methods</li>
+                        <li>Building frameworks that require property control</li>
+                    </ul>
+                    <p class="text-success mt-2">✅ Best Practice: Use <code>Object.defineProperty()</code> when you need precise control over property behavior. Use simple assignment when you just need basic functionality.</p>
+                </details>
+            </section>
+
+            <section id="define-properties">
+                <details>
+                    <summary>Object.defineProperties()</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">Object.defineProperties()</span> allows you to define or modify multiple properties on an object simultaneously using a descriptor map.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>This method is essentially a batch version of <code>Object.defineProperty()</code>. Instead of calling <code>defineProperty()</code> multiple times, you pass an object containing multiple property descriptors. This is more efficient and cleaner when you need to define several properties with specific configurations at once.</p>
+                    <p>It's particularly useful for defining entire object interfaces with consistent property behaviors.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>Object.defineProperties(object, {
+    propertyName1: descriptor1,
+    propertyName2: descriptor2,
+    // ... more properties
+});</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// EXAMPLE 1: Defining multiple properties at once
+const user = {};
+
+Object.defineProperties(user, {
+    username: {
+        value: "alice123",
+        writable: false,
+        enumerable: true,
+        configurable: false
+    },
+    email: {
+        value: "alice@example.com",
+        writable: false,
+        enumerable: true,
+        configurable: false
+    },
+    createdAt: {
+        value: new Date().toISOString(),
+        writable: false,
+        enumerable: true,
+        configurable: false
+    },
+    isAdmin: {
+        value: false,
+        writable: false,
+        enumerable: true,
+        configurable: false
+    },
+    passwordHash: {
+        value: "hashed_value_123",
+        writable: false,
+        enumerable: false, // Hidden from enumeration
+        configurable: false
+    },
+    fullName: {
+        get() {
+            return `${user.username.charAt(0).toUpperCase()}${user.username.slice(1)}`;
+        },
+        enumerable: true,
+        configurable: true
+    }
+});
+
+console.log(user.username); // "alice123"
+console.log(user.fullName); // "Alice123"
+console.log(Object.keys(user)); // ["username", "email", "createdAt", "isAdmin", "fullName"] - passwordHash hidden!
+
+// EXAMPLE 2: Creating a mathematical vector
+const Vector2D = function(x, y) {
+    this.x = x || 0;
+    this.y = y || 0;
+};
+
+// Define additional properties on prototype
+Object.defineProperties(Vector2D.prototype, {
+    magnitude: {
+        get() {
+            return Math.sqrt(this.x * this.x + this.y * this.y);
+        },
+        enumerable: false, // Don't enumerate magnitude
+        configurable: true
+    },
+    
+    normalized: {
+        get() {
+            const mag = this.magnitude;
+            if (mag === 0) return new Vector2D(0, 0);
+            return new Vector2D(this.x / mag, this.y / mag);
+        },
+        enumerable: false,
+        configurable: true
+    },
+    
+    length: {
+        get() {
+            return this.magnitude;
+        },
+        enumerable: true, // Make length enumerable
+        configurable: true
+    },
+    
+    add: {
+        value: function(other) {
+            return new Vector2D(this.x + other.x, this.y + other.y);
+        },
+        writable: false,
+        enumerable: false,
+        configurable: true
+    },
+    
+    toString: {
+        value: function() {
+            return `Vector2D(${this.x}, ${this.y})`;
+        },
+        writable: false,
+        enumerable: false,
+        configurable: true
+    }
+});
+
+const v1 = new Vector2D(3, 4);
+console.log(v1.toString()); // "Vector2D(3, 4)"
+console.log(v1.length); // 5
+console.log(v1.magnitude); // 5
+console.log(v1.normalized); // Vector2D(0.6, 0.8)
+
+// Note: We can still use for...in on properties we defined as enumerable
+console.log(Object.keys(v1)); // ["x", "y", "length"]
+
+// EXAMPLE 3: Creating a factory function for immutable objects
+function createImmutablePoint(x, y) {
+    return Object.defineProperties({}, {
+        x: {
+            value: x,
+            writable: false,
+            enumerable: true,
+            configurable: false
+        },
+        y: {
+            value: y,
+            writable: false,
+            enumerable: true,
+            configurable: false
+        },
+        distanceFromOrigin: {
+            get() {
+                return Math.sqrt(this.x * this.x + this.y * this.y);
+            },
+            enumerable: true,
+            configurable: false
+        },
+        move: {
+            value: function(dx, dy) {
+                return createImmutablePoint(this.x + dx, this.y + dy);
+            },
+            writable: false,
+            enumerable: false,
+            configurable: false
+        }
+    });
+}
+
+const point = createImmutablePoint(10, 20);
+console.log(point.x); // 10
+console.log(point.distanceFromOrigin); // 22.36...
+
+// Can't modify properties
+point.x = 15; // No effect
+console.log(point.x); // Still 10
+
+// But can create new points
+const movedPoint = point.move(5, 5);
+console.log(movedPoint.x); // 15
+console.log(movedPoint.y); // 25
+
+// EXAMPLE 4: Defining properties on existing object
+const settings = {
+    theme: 'light',
+    language: 'en'
+};
+
+// Add computed properties and hide originals
+Object.defineProperties(settings, {
+    themeName: {
+        get() {
+            return this.theme === 'light' ? 'Light Mode' : 'Dark Mode';
+        },
+        enumerable: true,
+        configurable: true
+    },
+    
+    languageCode: {
+        get() {
+            return this.language.toUpperCase();
+        },
+        enumerable: true,
+        configurable: true
+    },
+    
+    originalTheme: {
+        value: this.theme,
+        writable: false,
+        enumerable: false,
+        configurable: false
+    },
+    
+    originalLanguage: {
+        value: this.language,
+        writable: false,
+        enumerable: false,
+        configurable: false
+    }
+});
+
+console.log(settings.themeName); // "Light Mode"
+console.log(settings.languageCode); // "EN"
+console.log(Object.keys(settings)); // ["theme", "language", "themeName", "languageCode"]</code></pre>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Defining multiple properties with complex descriptors efficiently</li>
+                        <li>Creating object prototypes with consistent property behaviors</li>
+                        <li>Building immutable data structures</li>
+                        <li>Implementing API interfaces with controlled property access</li>
+                        <li>Initializing complex objects with hidden/internal properties</li>
+                    </ul>
+                    <p class="text-info mt-2">💡 Pro Tip: <code>Object.defineProperties()</code> is perfect for defining classes and libraries where you want fine-grained control over every property's behavior.</p>
+                </details>
+            </section>
+
+            <section id="getters-setters">
+                <details>
+                    <summary>Property Getters and Setters</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">Getters</span> and <span class="highlight">setters</span> are special methods that control how a property is accessed and modified. They allow you to execute custom logic when getting or setting a property value.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>Getters and setters are accessor descriptors that don't store values directly but instead compute them dynamically. A getter runs when the property is read, and a setter runs when the property is assigned a value. This enables powerful patterns like computed properties, validation, logging, and data transformation.</p>
+                    <p>Unlike regular properties, accessor properties don't have a <code>value</code> or <code>writable</code> descriptor — they have <code>get</code> and <code>set</code> functions instead.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// Using Object.defineProperty()
+Object.defineProperty(obj, prop, {
+    get() { return value; },
+    set(value) { /* handle assignment */ }
+});
+
+// Using object literal syntax
+const obj = {
+    get propName() { return value; },
+    set propName(value) { /* handle assignment */ }
+};</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// EXAMPLE 1: Basic getter and setter
+const person = {
+    _firstName: 'John',
+    _lastName: 'Doe',
+    
+    get fullName() {
+        return this._firstName + ' ' + this._lastName;
+    },
+    
+    set fullName(name) {
+        const parts = name.split(' ');
+        this._firstName = parts[0] || '';
+        this._lastName = parts[1] || '';
+    }
+};
+
+console.log(person.fullName); // "John Doe"
+person.fullName = "Jane Smith";
+console.log(person._firstName); // "Jane"
+console.log(person._lastName); // "Smith"
+
+// EXAMPLE 2: Validation with setter
+const product = {
+    _price: 0,
+    
+    get price() {
+        return '$' + this._price.toFixed(2);
+    },
+    
+    set price(newPrice) {
+        if (typeof newPrice !== 'number' || newPrice &lt; 0) {
+            throw new Error('Price must be a non-negative number');
+        }
+        this._price = newPrice;
+    },
+    
+    get discountedPrice() {
+        return this._price > 100 ? '$' + (this._price * 0.9).toFixed(2) : this.price;
+    }
+};
+
+console.log(product.price); // "$0.00"
+product.price = 150;
+console.log(product.price); // "$150.00"
+console.log(product.discountedPrice); // "$135.00"
+
+// product.price = -10; // ❌ Throws error
+
+// EXAMPLE 3: Computed properties and caching
+const circle = {
+    _radius: 5,
+    
+    get radius() {
+        return this._radius;
+    },
+    
+    set radius(value) {
+        if (value &lt; 0) {
+            throw new Error('Radius cannot be negative');
+        }
+        this._radius = value;
+        // Invalidate cached values when radius changes
+        delete this.area;
+        delete this.circumference;
+    },
+    
+    get area() {
+        if (!this._area) {
+            this._area = Math.PI * this._radius * this._radius;
+        }
+        return this._area;
+    },
+    
+    get circumference() {
+        if (!this._circumference) {
+            this._circumference = 2 * Math.PI * this._radius;
+        }
+        return this._circumference;
+    }
+};
+
+console.log(circle.area); // 78.53981633974483
+console.log(circle.circumference); // 31.41592653589793
+
+circle.radius = 10;
+console.log(circle.area); // 314.1592653589793 (recalculated)
+console.log(circle.circumference); // 62.83185307179586 (recalculated)
+
+// EXAMPLE 4: Private state with getters/setters
+const Counter = function(initialValue = 0) {
+    let count = initialValue; // Truly private variable
+    
+    return {
+        get value() {
+            return count;
+        },
+        
+        increment() {
+            count++;
+        },
+        
+        decrement() {
+            count--;
+        },
+        
+        reset() {
+            count = 0;
+        },
+        
+        // Getter for current count
+        get count() {
+            return count;
+        },
+        
+        // Setter with validation
+        set count(value) {
+            if (typeof value !== 'number' || !Number.isInteger(value)) {
+                throw new Error('Count must be an integer');
+            }
+            count = value;
+        }
+    };
+};
+
+const counter = Counter(5);
+console.log(counter.value); // 5
+counter.increment();
+console.log(counter.value); // 6
+counter.count = 10;
+console.log(counter.value); // 10
+
+// Cannot access the actual private variable
+// console.log(counter.count); // 10
+// console.log(counter.count); // 10
+// console.log(counter.count); // 10
+
+// EXAMPLE 5: Advanced example - reactive property
+const reactiveObject = {
+    _data: {},
+    
+    set(key, value) {
+        this._data[key] = value;
+        // Trigger update mechanism
+        console.log(`Property '${key}' updated to:`, value);
+        this.updateView();
+    },
+    
+    get(key) {
+        return this._data[key];
+    },
+    
+    updateView() {
+        // Simulate updating UI
+        console.log('UI updated based on new data');
+    },
+    
+    // Create dynamic getters/setters for any property
+    defineReactive(key, initialValue) {
+        Object.defineProperty(this, key, {
+            get() {
+                return this._data[key];
+            },
+            set(value) {
+                this._data[key] = value;
+                console.log(`Property '${key}' updated to:`, value);
+                this.updateView();
+            },
+            enumerable: true,
+            configurable: true
+        });
+        
+        // Initialize
+        this._data[key] = initialValue;
+    }
+};
+
+reactiveObject.defineReactive('name', 'Alice');
+reactiveObject.defineReactive('score', 100);
+
+console.log(reactiveObject.name); // "Alice"
+reactiveObject.name = 'Bob'; // Output: "Property 'name' updated to: Bob" then "UI updated..."
+reactiveObject.score = 150; // Output: "Property 'score' updated to: 150" then "UI updated..."
+
+// EXAMPLE 6: Combining with Object.defineProperty for library creation
+const Model = function(data = {}) {
+    this._data = data;
+    
+    // Automatically create getters/setters for all data properties
+    Object.keys(data).forEach(key => {
+        Object.defineProperty(this, key, {
+            get() {
+                return this._data[key];
+            },
+            set(value) {
+                const oldValue = this._data[key];
+                this._data[key] = value;
+                this.onUpdate(key, oldValue, value);
+            },
+            enumerable: true,
+            configurable: true
+        });
+    });
+};
+
+Model.prototype.onUpdate = function(key, oldValue, newValue) {
+    console.log(`Updated ${key}: ${oldValue} → ${newValue}`);
+};
+
+const user = new Model({
+    name: 'Alice',
+    email: 'alice@example.com',
+    age: 30
+});
+
+console.log(user.name); // "Alice"
+user.name = 'Bob'; // Output: "Updated name: Alice → Bob"
+user.email = 'bob@example.com'; // Output: "Updated email: alice@example.com → bob@example.com"</code></pre>
+
+                    <div class="getter-setter-diagram">
+// GETTER-SETTER DIAGRAM:
+
+//          ┌───────────────┐
+//          │   Object    │
+//          └───────┬───────┘
+//                ▼
+//         ┌─────────────┐
+//         │  Property   │
+//         └─────┬───────┘
+//               ▼
+//     ┌─────────────────────┐
+//     │     Accessor Type   │
+//     ├─────────────────────┤
+//     │  get() function     │ ← Called when property is read
+//     │  set() function     │ ← Called when property is assigned
+//     └─────────────────────┘
+//
+//          Regular Property:          Accessor Property:
+//     obj.property = value;        obj.property = value;
+//     value stored directly         set() function called
+//                                   value stored internally
+//
+//     console.log(obj.property);   console.log(obj.property);
+//     value retrieved directly      get() function called
+//                                   value returned from function</div>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Computed properties (formatted output, derived values)</li>
+                        <li>Data validation and sanitization</li>
+                        <li>Automatic caching and memoization</li>
+                        <li>Reactivity systems (Vue.js, Angular)</li>
+                        <li>Creating APIs with transparent data transformation</li>
+                        <li>Implementing observable patterns</li>
+                        <li>Creating proxies without Proxy object</li>
+                    </ul>
+                    <p class="text-warning mt-2"><strong>⚠️ Important Notes:</strong></p>
+                    <ul>
+                        <li>Getters/setters can cause performance overhead due to function calls</li>
+                        <li>They're great for public APIs but can make debugging harder</li>
+                        <li>Always consider whether you really need the complexity</li>
+                        <li>Use them when you need side effects during property access</li>
+                    </ul>
+                    <p class="text-success mt-2">✅ Best Practice: Use getters/setters when you need to perform actions during property access — not just for simple data storage.</p>
+                </details>
+            </section>
+
+            <hr class="my-5">
+
+            <div class="alert alert-info">
+                <h5>Key Takeaways</h5>
+                <ul>
+                    <li>Property descriptors control how properties behave: writable, enumerable, configurable</li>
+                    <li>Object.defineProperty() controls single properties with full descriptor specification</li>
+                    <li>Object.defineProperties() defines multiple properties at once for efficiency</li>
+                    <li>Getters and setters enable computed properties and data validation</li>
+                    <li>Once configurable: false, property behavior cannot be changed — it's permanent</li>
+                    <li>Accessors (getters/setters) don't store values — they execute functions on access</li>
+                    <li>Property descriptors are the foundation of JavaScript's object model</li>
+                </ul>
+            </div>
+
+            <div class="alert alert-warning">
+                <h5>Common Pitfalls</h5>
+                <ul>
+                    <li>Forgetting that configurable: false is irreversible</li>
+                    <li>Using getters/setters when simple properties would suffice</li>
+                    <li>Not understanding the difference between data and accessor descriptors</li>
+                    <li>Trying to define both value and get/set in the same descriptor</li>
+                    <li>Expecting enumerable: false properties to be completely hidden</li>
+                    <li>Performance issues from excessive getter/setter usage</li>
+                </ul>
+            </div>
+
+            <div class="alert alert-success">
+                <h5>Interview Question Prep</h5>
+                <p><strong>Q: What is the difference between a data descriptor and an accessor descriptor?</strong></p>
+                <p><strong>A:</strong> A data descriptor has a value and/or writable attribute, while an accessor descriptor has get and/or set functions. A property can have either one type or the other, but not both simultaneously.</p>
+                
+                <p><strong>Q: Why would you use Object.defineProperty() instead of simple assignment?</strong></p>
+                <p><strong>A:</strong> To control property behavior beyond simple assignment — making properties read-only, non-enumerable, non-configurable, or adding getters/setters. Simple assignment always creates properties with default descriptors.</p>
+                
+                <p><strong>Q: What happens if you try to change a property after setting configurable: false?</strong></p>
+                <p><strong>A:</strong> You'll get a TypeError. Once configurable is false, you cannot change any attribute of the descriptor, nor can you delete the property. This restriction is permanent.</p>
+                
+                <p><strong>Q: How do getters and setters improve encapsulation?</strong></p>
+                <p><strong>A:</strong> They allow you to expose a property interface while controlling how values are retrieved and set. You can validate inputs, trigger side effects, compute derived values, and hide internal implementation details — all while maintaining a clean public API.</p>
+            </div>
+
+            <div class="text-center mt-4">
+                <small class="text-muted">© 2024 AI Tutor — Mastering Programming Fundamentals One Concept at a Time</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript Utilities -->
+<script>
+    // Expand/Collapse All
+    document.getElementById('expandAll').addEventListener('click', () => {
+        document.querySelectorAll('details').forEach(detail => {
+            detail.open = true;
+        });
+    });
+
+    document.getElementById('collapseAll').addEventListener('click', () => {
+        document.querySelectorAll('details').forEach(detail => {
+            detail.open = false;
+        });
+    });
+
+    // Smooth scrolling for TOC links
+    document.querySelectorAll('.toc-item a, .toc-subitem a').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+            
+            if (targetElement) {
+                window.scrollTo({
+                    top: targetElement.offsetTop - 100,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+
+    // Search functionality for TOC
+    document.getElementById('searchToc').addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
+        
+        tocItems.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            if (query === '' || text.includes(query)) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+
+    // Syntax Highlighting (basic)
+    document.querySelectorAll('pre code').forEach(block => {
+        hljs.highlightBlock(block);
+    });
+
+    // Add highlight.js if not present (fallback)
+    if (typeof hljs === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js';
+        script.onload = () => {
+            document.querySelectorAll('pre code').forEach(block => {
+                hljs.highlightBlock(block);
+            });
+        };
+        document.head.appendChild(script);
+    }
+</script>
+
+<!-- Optional: Add highlight.js for better syntax highlighting -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+
+</body>
+</html>
+```

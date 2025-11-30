@@ -1,0 +1,744 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>27.2 Backend Development — Deep Learning Note</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+
+  <!-- Highlight.js CSS (dark friendly) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+
+  <style>
+    :root{
+      --bg:#0b0f11;
+      --surface:#0f1416;
+      --muted:#94a3b8;
+      --accent-cyan:#06b6d4;
+      --accent-amber:#ffb020;
+      --text:#e6eef6;
+      --heading:#bfefff;
+      --panel-width:320px;
+      --radius:12px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
+    }
+
+    html,body{
+      height:100%;
+      background:var(--bg);
+      color:var(--text);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      margin:0;
+      padding:0;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    .app {
+      display:flex;
+      height:100vh;
+      gap:18px;
+      padding:18px;
+      box-sizing:border-box;
+    }
+
+    .left-panel {
+      width:var(--panel-width);
+      min-width:var(--panel-width);
+      max-width:var(--panel-width);
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.03));
+      border-radius:var(--radius);
+      padding:16px;
+      box-shadow:0 8px 30px rgba(2,6,23,0.6);
+      position:relative;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .brand {
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+
+    .logo {
+      height:44px;
+      width:44px;
+      border-radius:8px;
+      background:linear-gradient(135deg,var(--accent-cyan),var(--accent-amber));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:700;
+      color:#021014;
+      box-shadow:0 6px 18px rgba(4,6,8,0.6);
+    }
+
+    .title {
+      font-weight:700;
+      color:var(--heading);
+      font-size:0.95rem;
+    }
+
+    .subtitle{
+      font-size:0.78rem;
+      color:var(--muted);
+      margin-top:-4px;
+    }
+
+    .toc-search {
+      display:flex;
+      gap:8px;
+      align-items:center;
+      margin-top:4px;
+    }
+
+    .toc-search input{
+      flex:1;
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.04);
+      color:var(--text);
+      padding:8px 10px;
+      border-radius:8px;
+      outline:none;
+    }
+
+    .controls {
+      display:flex;
+      gap:8px;
+    }
+
+    .toc {
+      overflow:auto;
+      padding-right:6px;
+    }
+
+    .toc a {
+      display:block;
+      color:var(--muted);
+      text-decoration:none;
+      padding:6px 8px;
+      border-radius:6px;
+      font-size:0.92rem;
+    }
+
+    .toc a:hover, .toc a.active {
+      background:rgba(6,182,212,0.08);
+      color:var(--accent-cyan);
+    }
+
+    .right-panel {
+      flex:1;
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+      border-radius:var(--radius);
+      padding:24px;
+      overflow:auto;
+      scroll-behavior:smooth;
+      box-shadow:0 8px 40px rgba(2,6,23,0.6);
+    }
+
+    .content h1, .content h2, .content h3 {
+      color:var(--heading);
+    }
+
+    .meta {
+      display:flex;
+      gap:12px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-bottom:8px;
+    }
+
+    .badge-accent {
+      background: linear-gradient(90deg,var(--accent-cyan),var(--accent-amber));
+      color:#021014;
+      padding:6px 10px;
+      border-radius:999px;
+      font-weight:700;
+      font-size:0.82rem;
+    }
+
+    p.lead {
+      color:var(--muted);
+      margin-bottom:18px;
+      line-height:1.6;
+    }
+
+    details {
+      background: rgba(255,255,255,0.01);
+      border:1px solid rgba(255,255,255,0.03);
+      padding:12px 14px;
+      margin-bottom:12px;
+      border-radius:10px;
+    }
+
+    summary {
+      cursor:pointer;
+      font-weight:700;
+      color:var(--accent-cyan);
+      outline:none;
+      list-style:none;
+    }
+
+    summary::-webkit-details-marker { display:none; }
+
+    details[open] summary { color:var(--accent-amber); }
+
+    .subsection {
+      margin-top:10px;
+      color:var(--muted);
+    }
+
+    pre {
+      background: #071014;
+      border:1px solid rgba(255,255,255,0.03);
+      padding:14px;
+      border-radius:8px;
+      overflow:auto;
+      font-family: var(--mono);
+      font-size:0.95rem;
+      line-height:1.45;
+    }
+
+    code { font-family:var(--mono); font-size:0.92rem; }
+
+    .small-muted { color:var(--muted); font-size:0.9rem; }
+
+    @media (max-width:900px){
+      .app { flex-direction:column; padding:12px; }
+      .left-panel { width:100%; min-width:auto; max-width:100%; order:2; }
+      .right-panel { order:1; height:60vh; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app container-fluid">
+    <!-- LEFT PANEL -->
+    <aside class="left-panel" aria-label="Table of contents">
+      <div class="brand">
+        <div class="logo">B</div>
+        <div>
+          <div class="title">27.2 Backend Development</div>
+          <div class="subtitle small-muted">HTTP, REST, DB, Auth, Error Handling — Deep</div>
+        </div>
+      </div>
+
+      <div class="meta small-muted">
+        <div>Author: <strong>DeepTutor</strong></div>
+        <div>Level: <strong>College → PhD</strong></div>
+        <div class="badge-accent">Backend • Node.js • JS</div>
+      </div>
+
+      <div class="toc-search">
+        <input id="tocFilter" type="search" placeholder="Search TOC..." aria-label="Search table of contents" />
+        <div class="controls">
+          <button id="expandAllBtn" class="btn btn-sm btn-outline-light" title="Expand all sections">Expand</button>
+          <button id="collapseAllBtn" class="btn btn-sm btn-outline-light" title="Collapse all sections">Collapse</button>
+        </div>
+      </div>
+
+      <nav class="toc" id="tocList" tabindex="0" aria-label="Contents list">
+        <a href="#http-server" data-filter="http-server">HTTP server creation</a>
+        <a href="#rest-api" data-filter="rest-api">RESTful API design</a>
+        <a href="#db-patterns" data-filter="db-patterns">Database integration patterns</a>
+        <a href="#auth" data-filter="auth">Authentication &amp; authorization</a>
+        <a href="#error-handling" data-filter="error-handling">Error handling strategies</a>
+        <a href="#cheatsheet" data-filter="cheatsheet">Cheat-sheet</a>
+      </nav>
+
+      <div style="margin-top:auto; font-size:0.8rem; color:var(--muted);">
+        <div>Tips:</div>
+        <ul style="padding-left:16px; margin:6px 0;">
+          <li>Read examples, run locally (Node &gt;= 14 recommended).</li>
+          <li>Prefer async/await and centralized error middleware in production.</li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- RIGHT PANEL -->
+    <main class="right-panel" role="main">
+      <article class="content">
+        <h1>27.2 Backend Development</h1>
+        <p class="lead">This note dives deep into backend fundamentals using Node.js: creating HTTP servers, designing RESTful APIs, integrating databases (patterns & pooling), implementing authentication & authorization, and robust error-handling strategies. Every topic uses layered &lt;details&gt; sections: executive summary, deeper internals, syntax references, clear examples, and production notes.</p>
+
+        <hr style="border-color: rgba(255,255,255,0.03); margin-bottom:20px;">
+
+        <!-- HTTP server creation -->
+        <section id="http-server">
+          <h2>HTTP server creation</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <div class="subsection">
+              You can create an HTTP server using Node's built-in <code>http</code> module for minimal control, or use frameworks like Express for routing and middleware. Understand request/response lifecycle, headers, status codes, and streaming responses for big payloads.
+            </div>
+          </details>
+
+          <details>
+            <summary>Deep details (lifecycle & performance)</summary>
+            <div class="subsection">
+              <ol>
+                <li><strong>Request lifecycle:</strong> connection → headers → body streaming → route/middleware → handler → response streaming → connection close/keep-alive.</li>
+                <li><strong>Keep-Alive & connection pooling:</strong> HTTP/1.1 keep-alive reduces TCP handshake overhead; HTTP/2 multiplexing improves concurrency further.</li>
+                <li><strong>Backpressure:</strong> stream responses to avoid memory blowup for large data (use <code>res.write()</code>, <code>res.end()</code>, or piping streams).</li>
+                <li><strong>Node internals:</strong> the http module uses parsers in C++ bindings; heavy handlers should be offloaded to worker threads.</li>
+                <li><strong>Security:</strong> set safe headers (CSP, X-Content-Type-Options), limit body sizes, and validate input early.</li>
+              </ol>
+            </div>
+          </details>
+
+          <details>
+            <summary>Syntax & tiny reference</summary>
+            <div class="subsection">
+              <pre><code class="language-js">// Minimal http server (built-in)
+const http = require('http');
+
+const server = http.createServer((req, res) =&gt; {
+  if (req.url === '/' && req.method === 'GET') {
+    res.writeHead(200, { 'Content-Type': 'text/plain' });
+    res.end('Hello from native Node HTTP');
+    return;
+  }
+  res.writeHead(404, { 'Content-Type': 'text/plain' });
+  res.end('Not Found');
+});
+
+server.listen(3000, () =&gt; console.log('HTTP server listening on 3000'));</code></pre>
+            </div>
+          </details>
+
+          <details>
+            <summary>Example (Express, readable & annotated)</summary>
+            <div class="subsection">
+              <pre><code class="language-js">// Express example
+const express = require('express');
+const app = express();
+
+// built-in JSON parser (limit request size)
+app.use(express.json({ limit: '1mb' }));
+
+// simple middleware
+app.use((req, res, next) =&gt; {
+  req.requestTime = Date.now();
+  next();
+});
+
+app.get('/health', (req, res) =&gt; {
+  res.json({ status: 'ok', time: req.requestTime });
+});
+
+app.listen(3000, () =&gt; console.log('Express server on 3000'));</code></pre>
+              <p class="small-muted">Notes: use <code>helmet</code> for common security headers, <code>compression</code> for gzip, and limit body sizes to avoid DoS.</p>
+            </div>
+          </details>
+
+          <details>
+            <summary>Production notes & best practices</summary>
+            <div class="subsection">
+              <ul>
+                <li>Run behind a reverse proxy (NGINX) or load balancer and terminate TLS there or use automatic certificates.</li>
+                <li>Use HTTP/2 for improved performance where supported.</li>
+                <li>Instrument request times & slow endpoints; set timeouts for sockets and headers.</li>
+              </ul>
+            </div>
+          </details>
+        </section>
+
+        <hr style="border-color: rgba(255,255,255,0.03); margin:20px 0;">
+
+        <!-- RESTful API design -->
+        <section id="rest-api">
+          <h2>RESTful API design</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <div class="subsection">
+              RESTful design emphasizes resources, HTTP verbs, status codes, sensible URI design, versioning, and HATEOAS where appropriate. Prioritize consistent responses, pagination, filtering, and discoverability.
+            </div>
+          </details>
+
+          <details>
+            <summary>Deep details (principles & contracts)</summary>
+            <div class="subsection">
+              <ol>
+                <li><strong>Resources & verbs:</strong> nouns in paths (/users, /orders), actions via verbs: GET, POST, PUT/PATCH, DELETE. Use PATCH for partial updates.</li>
+                <li><strong>Status codes:</strong> 2xx success, 4xx client errors (400, 401, 403, 404), 5xx server errors (500, 503). Provide machine-readable error payloads.</li>
+                <li><strong>Idempotency:</strong> Make safe operations idempotent where possible (PUT is idempotent; POST isn't by default). Use idempotency keys for retries on POSTs (payments).</li>
+                <li><strong>Versioning:</strong> URL versioning (/v1/) or header-based; choose a strategy and stick with it.</li>
+                <li><strong>Pagination & filtering:</strong> cursor-based pagination for large datasets; avoid offset for large-scale systems due to cost and instability.</li>
+                <li><strong>Hypermedia:</strong> HATEOAS optional — provides discoverability but increases complexity.</li>
+              </ol>
+            </div>
+          </details>
+
+          <details>
+            <summary>Syntax & example (resources + JSON contract)</summary>
+            <div class="subsection">
+              <pre><code class="language-http"># Example JSON response (GET /users/123)
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  "id": 123,
+  "name": "Ayesha",
+  "email": "ayesha@example.com",
+  "links": {
+    "self": "/v1/users/123",
+    "orders": "/v1/users/123/orders"
+  }
+}</code></pre>
+
+              <pre><code class="language-js">// Express route with validation (schema omitted for brevity)
+const express = require('express');
+const app = express();
+
+app.post('/v1/users', async (req, res, next) =&gt; {
+  try {
+    const payload = req.body; // validate payload
+    const user = await createUser(payload); // DB call
+    res.status(201).json(user);
+  } catch (err) {
+    next(err); // centralized error handler
+  }
+});</code></pre>
+            </div>
+          </details>
+
+          <details>
+            <summary>Real-world tips</summary>
+            <div class="subsection">
+              <ul>
+                <li>Document APIs with OpenAPI/Swagger and generate client SDKs when needed.</li>
+                <li>Provide clear migration guides when deprecating fields or versions.</li>
+                <li>Monitor API contracts via contract tests and schema validations in CI.</li>
+              </ul>
+            </div>
+          </details>
+        </section>
+
+        <hr style="border-color: rgba(255,255,255,0.03); margin:20px 0;">
+
+        <!-- Database integration patterns -->
+        <section id="db-patterns">
+          <h2>Database integration patterns</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <div class="subsection">
+              Choose the right integration strategy: direct queries (pg/mysql), pooling, ORMs (Sequelize, TypeORM, Prisma), or CQRS/event-sourcing for complex domains. Use connection pooling, prepared statements, and transactions for consistency.
+            </div>
+          </details>
+
+          <details>
+            <summary>Deep details (pooling, transactions, scaling)</summary>
+            <div class="subsection">
+              <ol>
+                <li><strong>Connection pooling:</strong> Reuse DB connections to avoid expensive handshake — most drivers provide pools (pg.Pool).</li>
+                <li><strong>Transactions:</strong> Use transactions for multi-step changes; be mindful of isolation levels (READ COMMITTED, REPEATABLE READ, SERIALIZABLE).</li>
+                <li><strong>Prepared statements:</strong> Avoid SQL injection and improve performance by parameterizing queries.</li>
+                <li><strong>ORMS vs query builders:</strong> ORMs increase productivity but can hide SQL complexity. Prisma offers type-safe queries; Knex is a flexible query builder.</li>
+                <li><strong>Scaling:</strong> Read replicas for read-heavy workloads, sharding for huge datasets, caching (Redis) for hot reads.</li>
+              </ol>
+            </div>
+          </details>
+
+          <details>
+            <summary>Syntax & examples (pg pool + async/await)</summary>
+            <div class="subsection">
+              <pre><code class="language-js">// Using node-postgres (pg) with a pool
+const { Pool } = require('pg');
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  max: 20, // pool size
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000,
+});
+
+async function getUserById(id) {
+  const client = await pool.connect();
+  try {
+    const res = await client.query('SELECT id, name, email FROM users WHERE id = $1', [id]);
+    return res.rows[0];
+  } finally {
+    client.release();
+  }
+}
+
+// Transaction example
+async function transfer(fromId, toId, amount) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query('UPDATE accounts SET balance = balance - $1 WHERE id = $2', [amount, fromId]);
+    await client.query('UPDATE accounts SET balance = balance + $1 WHERE id = $2', [amount, toId]);
+    await client.query('COMMIT');
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
+  }
+}</code></pre>
+            </div>
+          </details>
+
+          <details>
+            <summary>Patterns & production tips</summary>
+            <div class="subsection">
+              <ul>
+                <li>Use connection pool size tuned to your workload and DB limits — test under realistic load.</li>
+                <li>Prefer prepared/parameterized queries and avoid building SQL strings via concatenation.</li>
+                <li>Use migrations (node-pg-migrate, Flyway) and seed data in CI for repeatable environments.</li>
+                <li>Consider eventual consistency and idempotent writes if using distributed systems and queues.</li>
+              </ul>
+            </div>
+          </details>
+        </section>
+
+        <hr style="border-color: rgba(255,255,255,0.03); margin:20px 0;">
+
+        <!-- Authentication & Authorization -->
+        <section id="auth">
+          <h2>Authentication &amp; authorization</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <div class="subsection">
+              Authentication verifies identity (who you are); authorization determines access (what you can do). Use secure credential storage, tokens (JWT), session stores, or external OAuth providers depending on needs.
+            </div>
+          </details>
+
+          <details>
+            <summary>Deep details (flows & token strategies)</summary>
+            <div class="subsection">
+              <ol>
+                <li><strong>Session-based auth:</strong> Server stores session state (Redis) and cookies keep a session id. Good for traditional web apps and easy revocation.</li>
+                <li><strong>Token-based (JWT):</strong> Self-contained tokens signed (and optionally encrypted) — stateless, easy for APIs but harder to revoke without token blacklists or short TTL + refresh tokens.</li>
+                <li><strong>OAuth2 / OpenID Connect:</strong> Use for federated identity (Google, GitHub). Use standard flows (Authorization Code + PKCE for public clients).</li>
+                <li><strong>Refresh token safety:</strong> Store refresh tokens securely (httpOnly cookies or secure storage). Use rotating refresh tokens to mitigate token theft.</li>
+                <li><strong>Authorization patterns:</strong> Role-based (RBAC) vs attribute-based (ABAC) — choose according to domain complexity.</li>
+              </ol>
+            </div>
+          </details>
+
+          <details>
+            <summary>Syntax & example (JWT + middleware)</summary>
+            <div class="subsection">
+              <pre><code class="language-js">// JWT example with express and jsonwebtoken
+const express = require('express');
+const jwt = require('jsonwebtoken');
+const app = express();
+app.use(express.json());
+
+const JWT_SECRET = process.env.JWT_SECRET || 'change-me';
+
+// simple login -> issue token
+app.post('/login', async (req, res) =&gt; {
+  const { username, password } = req.body;
+  // validate credentials (pseudo)
+  const user = await findUserByUsername(username);
+  if (!user || !(await verifyPassword(password, user.passwordHash))) {
+    return res.status(401).json({ error: 'Invalid credentials' });
+  }
+  const token = jwt.sign({ sub: user.id, role: user.role }, JWT_SECRET, { expiresIn: '15m' });
+  const refreshToken = jwt.sign({ sub: user.id }, JWT_SECRET, { expiresIn: '7d' });
+  res.json({ token, refreshToken });
+});
+
+// auth middleware
+function requireAuth(req, res, next) {
+  const auth = req.headers.authorization || '';
+  const token = auth.split(' ')[1];
+  if (!token) return res.status(401).json({ error: 'Missing token' });
+  try {
+    req.user = jwt.verify(token, JWT_SECRET);
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+}
+
+app.get('/v1/secure', requireAuth, (req, res) =&gt; {
+  res.json({ message: 'secure data', user: req.user });
+});</code></pre>
+              <p class="small-muted">Notes: prefer short access token TTL + secure refresh flow, store secrets in vaults, and rotate keys.</p>
+            </div>
+          </details>
+
+          <details>
+            <summary>Security & compliance notes</summary>
+            <div class="subsection">
+              <ul>
+                <li>Never store raw passwords — use strong hashing (bcrypt/argon2) with salt.</li>
+                <li>Use HTTPS everywhere and set secure cookie flags (<code>HttpOnly</code>, <code>Secure</code>, <code>SameSite</code>).</li>
+                <li>Implement brute-force protection (rate limits, account lockouts), MFA for critical accounts, and audit logging for auth events.</li>
+              </ul>
+            </div>
+          </details>
+        </section>
+
+        <hr style="border-color: rgba(255,255,255,0.03); margin:20px 0;">
+
+        <!-- Error handling strategies -->
+        <section id="error-handling">
+          <h2>Error handling strategies</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <div class="subsection">
+              Centralize error handling, return consistent error shapes, classify errors (validation, client, transient, fatal), and implement retries with exponential backoff for transient failures. Instrument errors and alert on rates or severities.
+            </div>
+          </details>
+
+          <details>
+            <summary>Deep details (classification & retries)</summary>
+            <div class="subsection">
+              <ol>
+                <li><strong>Error taxonomy:</strong> Validation (400), Authentication/Authorization (401/403), NotFound (404), Conflict (409), Transient (502/503), Fatal (500).</li>
+                <li><strong>Retry semantics:</strong> Retries for idempotent operations only; use exponential backoff + jitter to avoid thundering herds.</li>
+                <li><strong>Centralized middleware:</strong> Use centralized Express error middleware to format and log errors consistently and to avoid leaking internals to clients.</li>
+                <li><strong>Observability:</strong> Capture stack traces, structured metadata, correlation IDs, and send to tracing & error platforms (Sentry, Datadog).</li>
+              </ol>
+            </div>
+          </details>
+
+          <details>
+            <summary>Syntax & example (Express error middleware)</summary>
+            <div class="subsection">
+              <pre><code class="language-js">// Express centralized error handler
+function errorHandler(err, req, res, next) {
+  // classify
+  const isClient = err.isClient || err.status >= 400 && err.status < 500;
+  const status = err.status || (isClient ? 400 : 500);
+  const payload = {
+    error: {
+      message: isClient ? err.message : 'Internal Server Error',
+      code: err.code || 'INTERNAL_ERROR',
+      // include more fields for internal use: correlationId, details (avoid leaking)
+    }
+  };
+
+  // log with metadata
+  console.error({
+    message: err.message,
+    stack: err.stack,
+    path: req.path,
+    method: req.method,
+    correlationId: req.headers['x-correlation-id'] || null
+  });
+
+  res.status(status).json(payload);
+}
+
+app.use(errorHandler);</code></pre>
+              <p class="small-muted">Implement request-level correlation IDs (e.g., <code>x-correlation-id</code>) and add them to logs to trace errors across services.</p>
+            </div>
+          </details>
+
+          <details>
+            <summary>Retries & circuit breakers</summary>
+            <div class="subsection">
+              <ul>
+                <li>Use libraries (retry, promise-retry, or circuit-breaker patterns) for robust retry logic.</li>
+                <li>Circuit breakers prevent cascading failures — open the circuit when downstream failures exceed thresholds.</li>
+                <li>Graceful degradation: fallback responses or cached content when dependencies fail.</li>
+              </ul>
+            </div>
+          </details>
+        </section>
+
+        <hr style="border-color: rgba(255,255,255,0.03); margin:20px 0;">
+
+        <!-- Cheat-sheet -->
+        <section id="cheatsheet">
+          <h3>Cheat-sheet: commands & tips</h3>
+          <pre><code class="language-bash"># run node
+node index.js
+
+# install express and pg
+npm install express pg jsonwebtoken bcrypt helmet compression
+
+# run migrations (example using node-pg-migrate)
+npx node-pg-migrate up
+
+# set env for prod
+export NODE_ENV=production
+export DATABASE_URL=postgres://user:pass@host:5432/dbname</code></pre>
+        </section>
+
+        <footer style="margin-top:30px; color:var(--muted); font-size:0.92rem;">
+          <div>Created: <strong>27.2 Backend Development</strong> • DeepTutor • <span id="generatedTime"></span></div>
+          <div style="margin-top:8px;">Irfan — I love you too ❤️</div>
+        </footer>
+      </article>
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Highlight.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+
+  <script>
+    // timestamp
+    document.getElementById('generatedTime').textContent = new Date().toLocaleString();
+
+    // TOC filter
+    const tocFilter = document.getElementById('tocFilter');
+    const tocList = document.getElementById('tocList');
+    tocFilter.addEventListener('input', (e) => {
+      const q = e.target.value.trim().toLowerCase();
+      [...tocList.querySelectorAll('a')].forEach(a => {
+        const txt = (a.textContent || a.innerText).toLowerCase();
+        a.style.display = txt.includes(q) ? 'block' : 'none';
+      });
+    });
+
+    // Smooth scroll + active state
+    document.querySelectorAll('.toc a').forEach(a => {
+      a.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        const id = a.getAttribute('href').slice(1);
+        const section = document.getElementById(id);
+        if (section) section.scrollIntoView({behavior:'smooth', block:'start'});
+        document.querySelectorAll('.toc a').forEach(x => x.classList.remove('active'));
+        a.classList.add('active');
+      });
+    });
+
+    // Expand / Collapse all details
+    const expandAllBtn = document.getElementById('expandAllBtn');
+    const collapseAllBtn = document.getElementById('collapseAllBtn');
+
+    expandAllBtn.addEventListener('click', () => {
+      document.querySelectorAll('main details').forEach(d => d.open = true);
+    });
+
+    collapseAllBtn.addEventListener('click', () => {
+      document.querySelectorAll('main details').forEach(d => d.open = false);
+    });
+
+    // Keyboard UX: focus TOC with "t"
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 't' && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault();
+        document.getElementById('tocList').focus();
+      }
+    });
+
+    // Accessibility for summary toggles
+    document.querySelectorAll('summary').forEach(s => {
+      s.setAttribute('role', 'button');
+      s.setAttribute('tabindex', '0');
+      s.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); s.click(); }
+      });
+    });
+  </script>
+</body>
+</html>

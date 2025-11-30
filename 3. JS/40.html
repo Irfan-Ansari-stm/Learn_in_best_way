@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>13.2 – Constructor Functions in JavaScript</title>
+
+<!-- Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+:root{
+    --bg-main:#050816;
+    --bg-sidebar:#060b18;
+    --accent-cyan:#22d3ee;
+    --accent-amber:#fbbf24;
+    --text-main:#e5e7eb;
+    --text-muted:#9ca3af;
+    --border-subtle:#1f2937;
+    --code-bg:#020617;
+}
+
+/* Base */
+*{box-sizing:border-box;}
+html,body{
+    margin:0;
+    padding:0;
+    height:100%;
+    background:var(--bg-main);
+    color:var(--text-main);
+    font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    scroll-behavior:smooth;
+}
+body{overflow:hidden;}
+
+/* Layout */
+.app-wrapper{height:100vh;}
+.sidebar{
+    background:radial-gradient(circle at top left,#0f172a,var(--bg-sidebar));
+    border-right:1px solid var(--border-subtle);
+    height:100vh;
+    position:sticky;top:0;
+    overflow-y:auto;
+    padding:1.2rem 1rem;
+}
+.content-panel{
+    height:100vh;
+    overflow-y:auto;
+    padding:1.5rem 2rem;
+    background:radial-gradient(circle at top right,#020617,var(--bg-main));
+}
+
+/* Scrollbars */
+.sidebar::-webkit-scrollbar,
+.content-panel::-webkit-scrollbar{width:8px;}
+.sidebar::-webkit-scrollbar-thumb,
+.content-panel::-webkit-scrollbar-thumb{
+    background:#1f2937;border-radius:999px;
+}
+
+/* Sidebar text */
+.course-tag{
+    font-size:0.75rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--accent-amber);
+}
+.main-title{
+    font-size:1.4rem;
+    font-weight:700;
+    color:var(--accent-cyan);
+}
+.subtitle{
+    font-size:0.9rem;
+    color:var(--text-muted);
+}
+.meta-text{
+    font-size:0.8rem;
+    color:var(--text-muted);
+}
+.pill{
+    display:inline-flex;
+    align-items:center;
+    border-radius:999px;
+    padding:0.15rem 0.55rem;
+    font-size:0.72rem;
+    border:1px solid rgba(148,163,184,0.6);
+    color:var(--text-muted);
+    margin:0.15rem 0.25rem 0.15rem 0;
+}
+.pill span.bullet{
+    width:6px;height:6px;border-radius:999px;
+    background:var(--accent-cyan);
+    margin-right:0.25rem;
+}
+
+/* TOC */
+.toc-card{
+    margin-top:1rem;
+    background:rgba(15,23,42,0.95);
+    border-radius:0.75rem;
+    border:1px solid rgba(148,163,184,0.3);
+    padding:0.9rem;
+}
+.toc-title{
+    font-size:0.9rem;
+    font-weight:600;
+    color:var(--accent-amber);
+}
+.toc-search input{
+    width:100%;
+    border-radius:999px;
+    border:1px solid #111827;
+    background:#020617;
+    color:var(--text-main);
+    font-size:0.78rem;
+    padding:0.2rem 0.6rem;
+}
+.toc-list{
+    list-style:none;
+    padding-left:0;
+    margin:0.4rem 0 0 0;
+}
+.toc-link{
+    display:flex;
+    align-items:center;
+    gap:0.4rem;
+    font-size:0.8rem;
+    padding:0.18rem 0.4rem;
+    border-radius:0.4rem;
+    text-decoration:none;
+    color:var(--text-muted);
+}
+.toc-link-dot{
+    width:6px;height:6px;border-radius:999px;
+    background:rgba(148,163,184,0.7);
+}
+.toc-link:hover{
+    background:rgba(15,23,42,0.9);
+    color:var(--accent-cyan);
+}
+.toc-link.active{
+    background:rgba(8,47,73,0.85);
+    color:var(--accent-cyan);
+}
+.toc-link.active .toc-link-dot{background:var(--accent-cyan);}
+.toc-actions button{
+    border-radius:999px;
+    border:1px solid rgba(148,163,184,0.45);
+    background:rgba(15,23,42,0.9);
+    color:var(--text-muted);
+    font-size:0.72rem;
+    padding:0.12rem 0.6rem;
+}
+
+/* Content */
+.content-heading h1{
+    font-size:1.6rem;
+    color:var(--accent-cyan);
+}
+.content-heading p{
+    font-size:0.9rem;
+    color:var(--text-muted);
+}
+.badge-level,.badge-topic{
+    font-size:0.75rem;
+    border-radius:999px;
+    padding:0.12rem 0.6rem;
+}
+.badge-level{
+    border:1px solid rgba(56,189,248,0.6);
+    color:var(--accent-cyan);
+}
+.badge-topic{
+    border:1px dashed rgba(251,191,36,0.6);
+    color:var(--accent-amber);
+}
+.summary-strip{
+    background:radial-gradient(circle at left,rgba(56,189,248,0.2),transparent);
+    border-radius:0.8rem;
+    border:1px solid rgba(148,163,184,0.5);
+    padding:0.8rem 1rem;
+    font-size:0.86rem;
+    margin-bottom:1.1rem;
+}
+.summary-strip strong{color:var(--accent-amber);}
+.section-label{
+    font-size:0.7rem;
+    text-transform:uppercase;
+    letter-spacing:0.16em;
+    color:#9ca3af;
+}
+.section-title{
+    font-size:1.05rem;
+    font-weight:600;
+    color:var(--accent-amber);
+}
+.section-subtitle{
+    font-size:0.85rem;
+    color:var(--text-muted);
+    margin-bottom:0.6rem;
+}
+
+/* Details blocks */
+details{
+    background:rgba(15,23,42,0.9);
+    border-radius:0.8rem;
+    border:1px solid rgba(30,64,175,0.8);
+    padding:0.25rem 0.85rem 0.6rem;
+    margin-bottom:0.8rem;
+}
+details[open]{border-color:rgba(56,189,248,0.85);}
+summary{
+    list-style:none;
+    cursor:pointer;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0.35rem 0;
+    font-size:0.92rem;
+    font-weight:600;
+}
+summary::-webkit-details-marker{display:none;}
+.summary-label{display:flex;align-items:center;gap:0.4rem;}
+.summary-label .dot{
+    width:7px;height:7px;border-radius:999px;
+    background:var(--accent-cyan);
+}
+.summary-tag{
+    font-size:0.75rem;
+    color:var(--accent-amber);
+}
+details .inner{
+    font-size:0.84rem;
+    color:var(--text-muted);
+}
+details .inner ul{padding-left:1.1rem;}
+details .inner li{margin-bottom:0.2rem;}
+.hint{
+    border-left:3px solid var(--accent-cyan);
+    padding-left:0.6rem;
+    margin:0.4rem 0;
+    font-size:0.8rem;
+}
+
+/* Code */
+pre{
+    background:var(--code-bg);
+    border-radius:0.7rem;
+    border:1px solid rgba(15,118,110,0.7);
+    padding:0.7rem 0.9rem;
+    overflow-x:auto;
+    margin:0.4rem 0;
+}
+code{
+    font-family:"JetBrains Mono","Fira Code",ui-monospace,monospace;
+    font-size:0.8rem;
+}
+.token-comment{color:#6b7280;font-style:italic;}
+.token-string{color:#fb923c;}
+.token-number{color:#a855f7;}
+.token-keyword{color:#22c55e;font-weight:600;}
+.token-builtins{color:#facc15;}
+.token-function{color:#38bdf8;}
+
+/* Responsive */
+@media (max-width:991.98px){
+    body{overflow:auto;}
+    .app-wrapper{height:auto;}
+    .sidebar{
+        height:auto;
+        position:static;
+        border-right:none;
+        border-bottom:1px solid var(--border-subtle);
+    }
+    .content-panel{height:auto;}
+}
+</style>
+</head>
+
+<body>
+<div class="container-fluid app-wrapper">
+  <div class="row flex-nowrap">
+    <!-- SIDEBAR -->
+    <aside class="col-12 col-md-4 col-lg-3 sidebar">
+      <div>
+        <div class="course-tag">Modern JavaScript Deep Dive</div>
+        <div class="main-title">13.2 – Constructor Functions</div>
+        <div class="subtitle">Pre-ES6 OOP core: new, prototype, instanceof &amp; factories</div>
+        <div class="meta-text">
+          Prepared for: College → Master / PhD level<br>
+          Focus: Historical foundations + modern usage
+        </div>
+      </div>
+
+      <div class="mt-2">
+        <span class="pill"><span class="bullet"></span>Constructor pattern</span>
+        <span class="pill"><span class="bullet"></span><code>new</code> behaviour</span>
+        <span class="pill"><span class="bullet"></span><code>Constructor.prototype</code></span>
+        <span class="pill"><span class="bullet"></span><code>instanceof</code></span>
+        <span class="pill"><span class="bullet"></span>Factory vs constructor</span>
+      </div>
+
+      <div class="toc-card mt-2">
+        <div class="toc-title mb-1">On this page</div>
+        <div class="mb-2">
+          <input id="tocSearch" type="text" placeholder="Search sections…">
+        </div>
+        <ul id="tocList" class="toc-list">
+          <li data-label="constructor function pattern">
+            <a href="#sec-pattern" class="toc-link">
+              <span class="toc-link-dot"></span>
+              <span>13.2.1 Constructor function pattern</span>
+            </a>
+          </li>
+          <li data-label="new operator behavior">
+            <a href="#sec-new" class="toc-link">
+              <span class="toc-link-dot"></span>
+              <span>13.2.2 <code>new</code> operator behavior</span>
+            </a>
+          </li>
+          <li data-label="constructor prototype property">
+            <a href="#sec-prototype" class="toc-link">
+              <span class="toc-link-dot"></span>
+              <span>13.2.3 <code>Constructor.prototype</code> property</span>
+            </a>
+          </li>
+          <li data-label="instanceof operator">
+            <a href="#sec-instanceof" class="toc-link">
+              <span class="toc-link-dot"></span>
+              <span>13.2.4 <code>instanceof</code> operator</span>
+            </a>
+          </li>
+          <li data-label="constructor function vs factory function">
+            <a href="#sec-vs-factory" class="toc-link">
+              <span class="toc-link-dot"></span>
+              <span>13.2.5 Constructor vs factory functions</span>
+            </a>
+          </li>
+        </ul>
+        <div class="toc-actions mt-2">
+          <button id="btnExpandAll" type="button">Expand all</button>
+          <button id="btnCollapseAll" type="button">Collapse all</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="col content-panel">
+      <section class="content-heading">
+        <div class="d-flex flex-wrap align-items-center mb-2">
+          <span class="badge-level">Level: Advanced (pre-ES6 internals)</span>
+          <span class="badge-topic ms-1">Topic: Constructor functions &amp; prototypes</span>
+        </div>
+        <h1>13.2 – Constructor Functions in JavaScript</h1>
+        <p>
+          Before ES6 <code>class</code>, constructor functions were the canonical way to model “classes”
+          and create multiple instances with shared behaviour. Even ES6 classes are compiled internally
+          to constructor functions + prototypes. Mastering this pattern gives you the deepest possible
+          understanding of how objects, prototypes and <code>instanceof</code> actually work.
+        </p>
+      </section>
+
+      <section>
+        <div class="summary-strip">
+          <strong>Executive intuition:</strong>
+          A constructor function is just a normal function intended to be called with <code>new</code>.
+          The <code>new</code> operator creates a fresh object, sets its <code>[[Prototype]]</code> to
+          the function’s <code>prototype</code> property, binds <code>this</code> to that object, then
+          returns it (unless you explicitly return another object). This is the core “object factory”
+          mechanism underlying ES6 classes.
+        </div>
+      </section>
+
+      <!-- 13.2.1 Constructor function pattern -->
+      <section id="sec-pattern" class="mb-4">
+        <div class="section-label">13.2.1</div>
+        <div class="section-title">Constructor function pattern</div>
+        <div class="section-subtitle">How to define and use constructor-style functions.</div>
+
+        <details open>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Basic shape of a constructor function</span>
+            <span class="summary-tag">overview</span>
+          </summary>
+          <div class="inner">
+            <p>
+              By convention, constructor function names start with a capital letter (e.g. <code>Person</code>,
+              <code>Car</code>), but semantically they are just normal functions.
+            </p>
+
+            <pre><code>
+function Person(name, age) {
+    this.name = name;
+    this.age = age;
+}
+
+const p1 = new Person("Irfan", 25);
+const p2 = new Person("Kittu", 10);
+
+console.log(p1.name, p1.age);
+console.log(p2.name, p2.age);
+            </code></pre>
+
+            <ul>
+              <li><code>this</code> refers to the new object (created by <code>new</code>).</li>
+              <li>Each call with <code>new</code> creates a fresh instance.</li>
+              <li>Properties assigned to <code>this</code> become instance properties.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>What happens if you forget <code>new</code>?</span>
+            <span class="summary-tag">common bug</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+function User(name) {
+    this.name = name;
+}
+
+const u1 = new User("Irfan"); // correct
+
+const u2 = User("Kittu");     // ❌ called without new
+
+console.log(u1.name); // "Irfan"
+console.log(u2);      // undefined
+            </code></pre>
+
+            <p>
+              When you call without <code>new</code>:
+            </p>
+            <ul>
+              <li>In non-strict mode, <code>this</code> becomes the global object (<code>window</code> in browsers).</li>
+              <li>In strict mode (<code>'use strict'</code>), <code>this</code> is <code>undefined</code> &rarr; TypeError.</li>
+            </ul>
+
+            <pre><code>
+// 'use strict';
+function Bad(name) {
+    this.name = name; // may throw TypeError if 'this' is undefined
+}
+            </code></pre>
+
+            <p class="hint">
+              ES6 classes automatically throw if you forget <code>new</code>. Constructor functions do not,
+              so you must be careful (or add defensive checks).
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Defensive constructor pattern</span>
+            <span class="summary-tag">pattern</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+function SafePerson(name) {
+    if (!(this instanceof SafePerson)) {
+        // If called without new, recursively call with new
+        return new SafePerson(name);
+    }
+    this.name = name;
+}
+
+const a = new SafePerson("Irfan");
+const b = SafePerson("Kittu"); // still works!
+
+console.log(a instanceof SafePerson); // true
+console.log(b instanceof SafePerson); // true
+            </code></pre>
+
+            <p>
+              This pattern ensures correct behaviour even if a developer forgets <code>new</code>.
+            </p>
+          </div>
+        </details>
+      </section>
+
+      <!-- 13.2.2 new operator behavior -->
+      <section id="sec-new" class="mb-4">
+        <div class="section-label">13.2.2</div>
+        <div class="section-title"><code>new</code> operator behavior</div>
+        <div class="section-subtitle">Step-by-step internal algorithm.</div>
+
+        <details open>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Conceptual algorithm of <code>new</code></span>
+            <span class="summary-tag">mechanism</span>
+          </summary>
+          <div class="inner">
+            <p>
+              When you execute <code>new Fn(arg1, arg2)</code>, the engine conceptually does:
+            </p>
+            <pre><code>
+1. Create a new empty object:  obj = {};
+2. Set obj.[[Prototype]] = Fn.prototype;
+3. Call Fn with 'this' bound to obj:  result = Fn.call(obj, arg1, arg2);
+4. If result is an object, return result; otherwise return obj.
+            </code></pre>
+
+            <pre><code>
+// Equivalent reimplementation (simplified)
+function myNew(Fn, ...args) {
+    const obj = Object.create(Fn.prototype); // step 1 + 2
+    const result = Fn.apply(obj, args);      // step 3
+    return (result !== null &amp;&amp; typeof result === "object") ? result : obj; // step 4
+}
+            </code></pre>
+
+            <p class="hint">
+              This is why returning your own object from a constructor can override the usual instance.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Explicit return from constructor function</span>
+            <span class="summary-tag">edge case</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+function Strange() {
+    this.x = 1;
+    return { x: 2 }; // object return
+}
+
+const s = new Strange();
+console.log(s.x); // 2, not 1
+            </code></pre>
+
+            <p>
+              If you <strong>explicitly return an object</strong> from a constructor, that object becomes
+              the result of <code>new</code>, not the automatically created instance.
+            </p>
+
+            <pre><code>
+function Normal() {
+    this.x = 1;
+    return 123; // primitive ignored
+}
+
+const n = new Normal();
+console.log(n.x); // 1
+            </code></pre>
+
+            <p class="hint">
+              In practice, returning an object from a constructor is rarely used and often considered
+              confusing &ndash; avoid unless you have a very specific reason.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Simulating <code>new</code> for testing or metaprogramming</span>
+            <span class="summary-tag">advanced</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+function applyNew(constructorFn, argsArray) {
+    const obj = Object.create(constructorFn.prototype);
+    const result = constructorFn.apply(obj, argsArray);
+    return (result &amp;&amp; typeof result === "object") ? result : obj;
+}
+
+function Person(name) {
+    this.name = name;
+}
+
+const p = applyNew(Person, ["Irfan"]);
+console.log(p instanceof Person); // true
+            </code></pre>
+          </div>
+        </details>
+      </section>
+
+      <!-- 13.2.3 Constructor.prototype property -->
+      <section id="sec-prototype" class="mb-4">
+        <div class="section-label">13.2.3</div>
+        <div class="section-title"><code>Constructor.prototype</code> property</div>
+        <div class="section-subtitle">Shared methods and properties for instances.</div>
+
+        <details open>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Why use <code>prototype</code> instead of defining methods in the constructor?</span>
+            <span class="summary-tag">design</span>
+          </summary>
+          <div class="inner">
+            <p>
+              If you define methods inside the constructor, each instance gets its <em>own copy</em> of
+              those functions, wasting memory and breaking identity equality.
+            </p>
+
+            <pre><code>
+function CounterInline() {
+    this.value = 0;
+    this.inc = function () {
+        this.value++;
+    };
+}
+
+const c1 = new CounterInline();
+const c2 = new CounterInline();
+
+console.log(c1.inc === c2.inc); // false
+            </code></pre>
+
+            <p>
+              Using <code>Counter.prototype</code> means methods are stored once and shared by all instances.
+            </p>
+
+            <pre><code>
+function Counter() {
+    this.value = 0;
+}
+
+Counter.prototype.inc = function () {
+    this.value++;
+};
+
+const a = new Counter();
+const b = new Counter();
+console.log(a.inc === b.inc); // true
+            </code></pre>
+
+            <p class="hint">
+              This pattern directly inspired ES6 class instance methods, which are also placed on the prototype.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Prototype and constructor link</span>
+            <span class="summary-tag">structure</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+function Person(name) {
+    this.name = name;
+}
+
+Person.prototype.sayHello = function () {
+    console.log("Hello, I am " + this.name);
+};
+
+const p = new Person("Irfan");
+
+console.log(Object.getPrototypeOf(p) === Person.prototype); // true
+console.log(Person.prototype.constructor === Person);       // true
+            </code></pre>
+
+            <p>
+              The typical triangle:
+            </p>
+            <pre><code>
+p --[[Prototype]]--&gt; Person.prototype --constructor--&gt; Person
+            </code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Replacing the whole prototype object</span>
+            <span class="summary-tag">gotcha</span>
+          </summary>
+          <div class="inner">
+            <p>
+              You can also replace the prototype completely, but you must restore the <code>constructor</code>
+              property manually to keep tools like <code>instanceof</code> and debugging sane.
+            </p>
+
+            <pre><code>
+function Animal(name) {
+    this.name = name;
+}
+
+// Replace entire prototype with a new object
+Animal.prototype = {
+    speak: function () {
+        console.log(this.name + " makes a noise.");
+    }
+};
+
+const a = new Animal("Dog");
+a.speak();
+
+// But now:
+console.log(a.constructor === Animal); // false (constructor points to Object)
+
+// Fix:
+Object.defineProperty(Animal.prototype, "constructor", {
+    value: Animal,
+    enumerable: false,
+    writable: true
+});
+
+console.log(a.constructor === Animal); // true
+            </code></pre>
+
+            <p class="hint">
+              Many libraries intentionally ignore <code>constructor</code>, but for teaching and
+              introspection it is nice to keep it correct.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Prototype methods vs instance fields</span>
+            <span class="summary-tag">design</span>
+          </summary>
+          <div class="inner">
+            <ul>
+              <li>Instance data: set inside constructor on <code>this</code>.</li>
+              <li>Shared behaviour: attach to <code>Constructor.prototype</code>.</li>
+              <li>Static utilities: attach directly to constructor (<code>Constructor.util = ...</code>).</li>
+            </ul>
+
+            <pre><code>
+function User(name) {
+    this.name = name;      // instance
+}
+
+User.prototype.greet = function () { // shared
+    return "Hi " + this.name;
+};
+
+User.fromJson = function (obj) { // "static"
+    return new User(obj.name);
+};
+            </code></pre>
+          </div>
+        </details>
+      </section>
+
+      <!-- 13.2.4 instanceof operator -->
+      <section id="sec-instanceof" class="mb-4">
+        <div class="section-label">13.2.4</div>
+        <div class="section-title"><code>instanceof</code> operator</div>
+        <div class="section-subtitle">How it really checks prototype chains.</div>
+
+        <details open>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Conceptual definition of <code>instanceof</code></span>
+            <span class="summary-tag">mechanism</span>
+          </summary>
+          <div class="inner">
+            <p>
+              <code>a instanceof Ctor</code> checks whether
+              <code>Ctor.prototype</code> appears somewhere on <code>a</code>&rsquo;s prototype chain.
+            </p>
+
+            <pre><code>
+function Person() {}
+const p = new Person();
+
+console.log(p instanceof Person);      // true
+console.log(Object.getPrototypeOf(p) === Person.prototype); // true
+            </code></pre>
+
+            <p>
+              Conceptual algorithm:
+            </p>
+            <pre><code>
+function myInstanceOf(obj, Ctor) {
+    let proto = Object.getPrototypeOf(obj);
+    const target = Ctor.prototype;
+
+    while (proto !== null) {
+        if (proto === target) return true;
+        proto = Object.getPrototypeOf(proto);
+    }
+    return false;
+}
+            </code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Effect of replacing <code>prototype</code></span>
+            <span class="summary-tag">gotcha</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+function A() {}
+const a1 = new A();
+
+console.log(a1 instanceof A); // true
+
+// Change A.prototype:
+A.prototype = {};
+
+console.log(a1 instanceof A); // false now!
+// Because a1.[[Prototype]] is old prototype, not new A.prototype
+            </code></pre>
+
+            <p class="hint">
+              Instances keep their original prototype. Changing <code>Constructor.prototype</code> only
+              affects <em>future</em> instances created with <code>new</code>.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span><code>instanceof</code> with primitives and built-ins</span>
+            <span class="summary-tag">edge cases</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+console.log(123 instanceof Number);        // false (primitive)
+console.log(new Number(123) instanceof Number); // true (wrapper object)
+
+console.log([] instanceof Array);          // true
+console.log([] instanceof Object);         // true, because Array.prototype.[[Prototype]] === Object.prototype
+            </code></pre>
+
+            <p>
+              For cross-realm (iframes, workers) objects, <code>instanceof</code> can become unreliable,
+              because each realm has its own global constructors.
+            </p>
+          </div>
+        </details>
+      </section>
+
+      <!-- 13.2.5 Constructor vs factory functions -->
+      <section id="sec-vs-factory" class="mb-4">
+        <div class="section-label">13.2.5</div>
+        <div class="section-title">Constructor function vs factory function</div>
+        <div class="section-subtitle">Two competing object creation idioms.</div>
+
+        <details open>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Factory function recap</span>
+            <span class="summary-tag">factory</span>
+          </summary>
+          <div class="inner">
+            <p>
+              A factory function is a normal function that <em>returns</em> a new object, without using
+              <code>new</code> or <code>this</code>.
+            </p>
+
+            <pre><code>
+function createPoint(x, y) {
+    return {
+        x,
+        y,
+        length() {
+            return Math.sqrt(this.x * this.x + this.y * this.y);
+        }
+    };
+}
+
+const p = createPoint(3, 4);
+console.log(p.length()); // 5
+            </code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Constructor version of the same concept</span>
+            <span class="summary-tag">constructor</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+function Point(x, y) {
+    this.x = x;
+    this.y = y;
+}
+
+Point.prototype.length = function () {
+    return Math.sqrt(this.x * this.x + this.y * this.y);
+};
+
+const p1 = new Point(3, 4);
+console.log(p1.length()); // 5
+
+console.log(p1 instanceof Point); // true
+            </code></pre>
+
+            <p>
+              Behaviourally similar, but:
+            </p>
+            <ul>
+              <li>Constructor version uses prototype for method sharing.</li>
+              <li>Factory version creates a fresh function object per call unless shared elsewhere.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Pros &amp; cons comparison</span>
+            <span class="summary-tag">trade-offs</span>
+          </summary>
+          <div class="inner">
+            <ul>
+              <li>
+                <strong>Constructor function</strong><br>
+                + Natural with <code>new</code>, <code>instanceof</code><br>
+                + Prototype-based method sharing &rarr; memory efficient for many instances<br>
+                − Requires careful use of <code>this</code> and <code>new</code><br>
+                − Easier to misuse in inexperienced teams
+              </li>
+              <li>
+                <strong>Factory function</strong><br>
+                + No <code>new</code>, no <code>this</code>, works nicely with closures<br>
+                + Flexible return values, can easily wrap/compose existing objects<br>
+                − Without prototypes, may duplicate methods per instance (unless using shared prototypes)<br>
+                − <code>instanceof</code> isn't meaningful unless you set prototype manually
+              </li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Hybrid: factory with shared prototype</span>
+            <span class="summary-tag">pattern</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+// Shared prototype object
+const personProto = {
+    greet() {
+        console.log("Hi, I am " + this.name);
+    }
+};
+
+function createPerson(name) {
+    const obj = Object.create(personProto);
+    obj.name = name;
+    return obj;
+}
+
+const pA = createPerson("Irfan");
+const pB = createPerson("Kittu");
+
+pA.greet();
+pB.greet();
+
+console.log(Object.getPrototypeOf(pA) === personProto); // true
+            </code></pre>
+
+            <p class="hint">
+              This hybrid pattern combines factory syntax with prototype efficiency. Many libraries and
+              frameworks used this style before ES6 classes became dominant.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Summary &amp; exam checklist</span>
+            <span class="summary-tag">summary</span>
+          </summary>
+          <div class="inner">
+            <ul>
+              <li>Write a constructor function and explain why it is just a normal function with <code>new</code>.</li>
+              <li>Describe the four conceptual steps performed by the <code>new</code> operator.</li>
+              <li>Correctly use <code>Constructor.prototype</code> for shared methods, and explain why this matters for memory and identity.</li>
+              <li>Re-implement <code>instanceof</code> by walking the prototype chain.</li>
+              <li>Compare and implement both constructor and factory patterns for the same domain model.</li>
+            </ul>
+            <p>
+              If you can do all of the above without looking anything up, you have a deep, research-ready
+              understanding of <span class="pill-inline">Constructor Functions in JavaScript</span>.
+            </p>
+          </div>
+        </details>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script>
+// Smooth scrolling + active TOC + search + expand/collapse + simple highlighting
+document.addEventListener("DOMContentLoaded", () => {
+  const contentPanel = document.querySelector(".content-panel");
+  const tocLinks = Array.from(document.querySelectorAll(".toc-link"));
+  const sections = tocLinks.map(link => {
+    const id = link.getAttribute("href");
+    return { link, target: document.querySelector(id) };
+  });
+
+  // Smooth scroll
+  tocLinks.forEach(link => {
+    link.addEventListener("click", e => {
+      e.preventDefault();
+      const id = link.getAttribute("href");
+      const target = document.querySelector(id);
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+        history.replaceState(null, "", id);
+      }
+    });
+  });
+
+  // Active TOC highlight
+  function updateActive() {
+    const y = contentPanel.scrollTop;
+    let current = null;
+    sections.forEach(({ link, target }) => {
+      if (!target) return;
+      const top = target.offsetTop;
+      if (top - 80 <= y) current = link;
+    });
+    tocLinks.forEach(l => l.classList.remove("active"));
+    if (current) current.classList.add("active");
+  }
+  contentPanel.addEventListener("scroll", updateActive);
+  updateActive();
+
+  // TOC search
+  const tocSearch = document.getElementById("tocSearch");
+  const tocItems = Array.from(document.querySelectorAll("#tocList li"));
+  tocSearch.addEventListener("input", () => {
+    const q = tocSearch.value.toLowerCase();
+    tocItems.forEach(li => {
+      const text = li.textContent.toLowerCase() || "";
+      li.style.display = text.includes(q) ? "" : "none";
+    });
+  });
+
+  // Expand / collapse all
+  document.getElementById("btnExpandAll").onclick =
+    () => document.querySelectorAll("details").forEach(d => d.open = true);
+  document.getElementById("btnCollapseAll").onclick =
+    () => document.querySelectorAll("details").forEach(d => d.open = false);
+
+  // Simple syntax highlighting
+  function escapeHtml(str){
+    return str.replace(/&/g,"&amp;")
+              .replace(/</g,"&lt;")
+              .replace(/>/g,"&gt;");
+  }
+  const keywords = [
+    "class","extends","constructor","super",
+    "function","return","const","let","var",
+    "if","else","while","for","new","async","await",
+    "try","catch","throw","in","instanceof"
+  ];
+  const builtins = [
+    "Object","Array","Map","Set","Date","Promise",
+    "console","Math","JSON","fetch"
+  ];
+
+  document.querySelectorAll("pre code").forEach(codeEl => {
+    const raw = codeEl.textContent;
+    let html = escapeHtml(raw);
+
+    // comments
+    html = html.replace(/(\/\/.*?$)/gm,"<span class='token-comment'>$1</span>");
+    // strings
+    html = html.replace(/(&quot;.*?&quot;|'.*?'|`.*?`)/g,
+      "<span class='token-string'>$1</span>");
+    // numbers
+    html = html.replace(/\b(\d+(\.\d+)?)\b/g,
+      "<span class='token-number'>$1</span>");
+    // builtins
+    builtins.forEach(b => {
+      const re = new RegExp("\\b"+b+"\\b","g");
+      html = html.replace(re,"<span class='token-builtins'>"+b+"</span>");
+    });
+    // keywords
+    keywords.forEach(k => {
+      const re = new RegExp("\\b"+k+"\\b","g");
+      html = html.replace(re,"<span class='token-keyword'>"+k+"</span>");
+    });
+    // functions (simple heuristic)
+    html = html.replace(/([a-zA-Z_$][\w$]*)\s*(?=\()/g,
+      "<span class='token-function'>$1</span>");
+
+    codeEl.innerHTML = html;
+  });
+});
+</script>
+</body>
+</html>

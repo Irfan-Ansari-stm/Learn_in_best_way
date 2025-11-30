@@ -1,0 +1,1117 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7.2 Object Methods and this</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00f5ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --accent: #00f5ff;
+            --card-bg: #112240;
+            --border-color: #007a99;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            position: fixed;
+            width: 300px;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            box-shadow: 2px 0 10px rgba(0, 245, 255, 0.1);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--amber);
+        }
+
+        .toc-item {
+            margin: 8px 0;
+            padding-left: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .toc-item a {
+            color: var(--cyan);
+            text-decoration: none;
+            display: block;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .toc-item a:hover {
+            color: var(--amber);
+            padding-left: 20px;
+        }
+
+        .toc-subitem {
+            margin-left: 20px;
+            font-size: 0.9rem;
+            color: #b0c4de;
+        }
+
+        details {
+            margin: 15px 0;
+            border-left: 3px solid var(--amber);
+            padding-left: 15px;
+            background-color: rgba(17, 34, 64, 0.5);
+            border-radius: 0 5px 5px 0;
+        }
+
+        summary {
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--amber);
+            list-style: none;
+            padding: 10px;
+            background-color: rgba(0, 245, 255, 0.08);
+            border-radius: 5px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        summary::before {
+            content: "▶";
+            margin-right: 10px;
+            font-size: 0.8rem;
+            transition: transform 0.3s;
+        }
+
+        details[open] summary::before {
+            transform: rotate(90deg);
+        }
+
+        pre code {
+            display: block;
+            padding: 15px;
+            background-color: #0d1b2a;
+            color: var(--cyan);
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            border-left: 3px solid var(--amber);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.2);
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+
+        .formula {
+            background-color: rgba(0, 245, 255, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 3px solid var(--cyan);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.1rem;
+        }
+
+        .definition {
+            color: var(--amber);
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .detail {
+            margin: 12px 0;
+            line-height: 1.6;
+        }
+
+        .syntax {
+            margin: 15px 0;
+        }
+
+        .example {
+            margin: 15px 0;
+        }
+
+        .use-case {
+            color: var(--cyan);
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
+        .code-comment {
+            color: #7f8c8d;
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: #0a192f;
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-left: 8px;
+        }
+
+        .method-diagram {
+            background-color: rgba(0, 245, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px dashed var(--cyan);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            white-space: pre;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .this-context {
+            background-color: rgba(17, 34, 64, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid var(--amber);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .context-box {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 5px;
+            border: 1px solid var(--amber);
+            border-radius: 5px;
+            background-color: rgba(255, 183, 77, 0.2);
+        }
+
+        .method-box {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 5px;
+            border: 1px solid var(--cyan);
+            border-radius: 5px;
+            background-color: rgba(0, 245, 255, 0.1);
+        }
+
+        @media (max-width: 991px) {
+            .left-panel {
+                position: relative;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .right-panel {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid p-0">
+    <div class="row g-0">
+        <!-- Left Panel -->
+        <div class="col-md-3 left-panel">
+            <h2>7.2 Object Methods and this</h2>
+            <p class="text-muted small">Mastering Method Context and Dynamic this Binding</p>
+            <p class="text-secondary small">Author: AI Tutor • Updated: 2024</p>
+
+            <div class="mb-3 d-flex gap-2">
+                <button id="expandAll" class="btn btn-control">Expand All</button>
+                <button id="collapseAll" class="btn btn-control">Collapse All</button>
+            </div>
+
+            <div class="search-box mb-4">
+                <input type="text" id="searchToc" class="form-control bg-dark border-cyan" placeholder="Search topics..." style="color: var(--cyan); background-color: #112240; border-color: var(--amber);">
+            </div>
+
+            <h5 class="text-uppercase text-muted fw-bold mb-3">Table of Contents</h5>
+            <ul class="list-unstyled">
+                <li class="toc-item">
+                    <a href="#method-definitions">Method Definitions</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#method-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#method-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#method-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#method-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#method-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#this-behavior">this Keyword Behavior</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#this-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#this-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#this-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#this-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#this-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#method-borrowing">Method Borrowing</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#borrow-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#borrow-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#borrow-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#borrow-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#borrow-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#call-apply-bind">call(), apply(), and bind()</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#call-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#call-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#call-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#call-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#call-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#arrow-functions">Arrow Functions and this Context</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#arrow-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#arrow-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#arrow-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#arrow-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#arrow-uses">Uses</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="col-md-9 right-panel">
+            <section id="method-definitions">
+                <details>
+                    <summary>Method Definitions</summary>
+                    <div class="definition">Definition:</div>
+                    <p>A <span class="highlight">method</span> is a function that is stored as a property of an object.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>Methods are functions that operate on the data contained within their parent object. They provide behavior for objects, allowing them to perform actions like calculating values, modifying state, or interacting with other objects. In JavaScript, there are several ways to define methods within objects, each with subtle differences in syntax and behavior.</p>
+                    <p>The key insight: when a method is called using dot notation (<code>obj.method()</code>), the object becomes the context for <code>this</code> inside the method.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// Method definition styles:
+
+// 1. Traditional property assignment (function expression)
+const obj1 = {
+    name: "Alice",
+    greet: function() {
+        return "Hello, I'm " + this.name;
+    }
+};
+
+// 2. Shorthand method syntax (ES6+)
+const obj2 = {
+    name: "Bob",
+    greet() {  // Same as greet: function() {...}
+        return "Hello, I'm " + this.name;
+    }
+};
+
+// 3. Computed property names
+const action = "speak";
+const obj3 = {
+    name: "Charlie",
+    [action]() {
+        return "I'm speaking!";
+    }
+};
+
+// 4. Adding methods after creation
+const obj4 = { name: "Diana" };
+obj4.greet = function() {
+    return "Hi, I'm " + this.name;
+};</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// Complete example with multiple methods
+const calculator = {
+    value: 0,
+    
+    // Method to add a number
+    add(num) {
+        this.value += num;
+        return this;
+    },
+    
+    // Method to subtract a number
+    subtract(num) {
+        this.value -= num;
+        return this;
+    },
+    
+    // Method to multiply by a number
+    multiply(num) {
+        this.value *= num;
+        return this;
+    },
+    
+    // Method to reset value
+    reset() {
+        this.value = 0;
+        return this;
+    },
+    
+    // Method to get current value
+    getValue() {
+        return this.value;
+    },
+    
+    // Method to display status
+    display() {
+        console.log(`Current value: ${this.value}`);
+        return this;
+    }
+};
+
+// Chaining methods together!
+calculator.add(5).multiply(3).subtract(2).display(); 
+// Output: Current value: 13
+
+console.log(calculator.getValue()); // 13
+
+// Another example: User object with methods
+const user = {
+    firstName: "John",
+    lastName: "Doe",
+    age: 30,
+    
+    getFullName() {
+        return `${this.firstName} ${this.lastName}`;
+    },
+    
+    isAdult() {
+        return this.age >= 18;
+    },
+    
+    celebrateBirthday() {
+        this.age++;
+        return `Happy birthday! Now ${this.age} years old.`;
+    },
+    
+    introduce() {
+        return `Hi, I'm ${this.getFullName()} and I'm ${this.age} years old.`;
+    }
+};
+
+console.log(user.getFullName()); // "John Doe"
+console.log(user.isAdult());     // true
+console.log(user.celebrateBirthday()); // "Happy birthday! Now 31 years old."
+console.log(user.introduce());   // "Hi, I'm John Doe and I'm 31 years old."</code></pre>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Encapsulating behavior related to data</li>
+                        <li>Creating fluent interfaces with method chaining</li>
+                        <li>Implementing domain-specific logic</li>
+                        <li>Building reusable components</li>
+                        <li>Organizing code in object-oriented style</li>
+                    </ul>
+                    <p class="text-info mt-2">💡 Pro Tip: Methods can return <code>this</code> to enable method chaining — a powerful pattern used in libraries like jQuery and Lodash.</p>
+                </details>
+            </section>
+
+            <section id="this-behavior">
+                <details>
+                    <summary>this Keyword Behavior</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">this</span> is a special keyword in JavaScript that refers to the object that is executing the current piece of code. Its value is determined dynamically at runtime based on how a function is called.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>This is one of the most confusing aspects of JavaScript. Unlike other languages where <code>this</code> always refers to the instance of a class, JavaScript's <code>this</code> depends entirely on the invocation context — not where the function is defined, but how it's called.</p>
+                    <p>When a method is called as <code>object.method()</code>, <code>this</code> inside the method refers to the object. But if you extract the method and call it separately, <code>this</code> loses its connection to the original object!</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// Different contexts produce different this values:
+
+// 1. Method call - this = object
+obj.method();
+
+// 2. Function call - this = global/window (or undefined in strict mode)
+const func = obj.method;
+func();
+
+// 3. Constructor call - this = new instance
+new Constructor();
+
+// 4. Call/Apply/Bind - this = explicitly set
+func.call(context, arg1, arg2);
+func.apply(context, [arg1, arg2]);
+func.bind(context);</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// EXAMPLE 1: Method call - this works correctly
+const person = {
+    name: "Alice",
+    greet() {
+        return "Hello, I'm " + this.name;
+    }
+};
+
+console.log(person.greet()); // "Hello, I'm Alice" ✅
+
+// EXAMPLE 2: Extracted method - this breaks!
+const greetFunc = person.greet;
+console.log(greetFunc()); // "Hello, I'm undefined" ❌
+
+// Why? Because greetFunc() is called as a regular function, not as a method.
+// In non-strict mode, this refers to window/global object (which has no name property)
+// In strict mode, this would be undefined
+
+// EXAMPLE 3: Arrow function method - different behavior
+const person2 = {
+    name: "Bob",
+    greet: () =&gt; {
+        return "Hello, I'm " + this.name; // this refers to outer scope!
+    }
+};
+
+console.log(person2.greet()); // "Hello, I'm undefined" ❌
+// Arrow functions don't have their own this — they inherit from enclosing scope
+
+// EXAMPLE 4: Nested methods - careful with this!
+const company = {
+    name: "TechCorp",
+    department: {
+        name: "Engineering",
+        getInfo() {
+            return this.name; // This refers to department, not company!
+        },
+        getCompanyInfo() {
+            // This won't work as expected:
+            return this.name + " at " + this.company.name; // ❌ company is undefined
+        },
+        
+        // Fixed version using arrow function:
+        getCompanyInfoFixed() {
+            return this.name + " at " + company.name; // ✅ Explicit reference
+        }
+    }
+};
+
+console.log(company.department.getInfo()); // "Engineering" ✅
+console.log(company.department.getCompanyInfo()); // "Engineering at undefined" ❌
+console.log(company.department.getCompanyInfoFixed()); // "Engineering at TechCorp" ✅
+
+// EXAMPLE 5: Event handler - common pitfall
+const button = document.createElement('button');
+button.textContent = "Click me";
+
+// WRONG: this will be the button element, not our object
+button.addEventListener('click', function() {
+    console.log(this.name); // undefined (button has no name property)
+});
+
+// CORRECT: Use arrow function to preserve context
+const controller = {
+    name: "MyController",
+    attachHandler() {
+        button.addEventListener('click', () =&gt; {
+            console.log(this.name); // "MyController" ✅
+        });
+    }
+};
+
+controller.attachHandler();</code></pre>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Understanding why methods lose context when extracted</li>
+                        <li>Debugging unexpected <code>this</code> behavior in callbacks</li>
+                        <li>Writing event handlers that maintain proper context</li>
+                        <li>Designing reusable methods that work in different contexts</li>
+                    </ul>
+                    <p class="text-warning mt-2"><strong>⚠️ Critical Rule:</strong> <code>this</code> is determined by how a function is called, not where it's defined. Always ask: "How am I calling this function?"</p>
+                </details>
+            </section>
+
+            <section id="method-borrowing">
+                <details>
+                    <summary>Method Borrowing</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">Method borrowing</span> is the practice of using a method from one object on another object by accessing the method directly and calling it with the target object as context.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>JavaScript's flexible <code>this</code> binding allows us to borrow methods from one object and use them on completely different objects. This is possible because methods are just functions that happen to be properties of objects. By using <code>call()</code>, <code>apply()</code>, or even direct assignment, we can make a method execute with any object as its <code>this</code> context.</p>
+                    <p>This technique promotes code reuse and avoids duplication — especially useful when multiple objects need similar functionality.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// Basic borrowing pattern
+targetObject.methodName = sourceObject.methodName;
+
+// Or more commonly with call/apply:
+sourceObject.methodName.call(targetObject, arg1, arg2);
+
+// Example with built-in array methods
+const arrayLike = { length: 3, 0: 'a', 1: 'b', 2: 'c' };
+Array.prototype.slice.call(arrayLike); // Convert array-like to array</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// EXAMPLE 1: Simple method borrowing
+const dog = {
+    name: "Buddy",
+    speak() {
+        return this.name + " says woof!";
+    }
+};
+
+const cat = {
+    name: "Whiskers"
+};
+
+// Borrow dog's speak method for cat
+cat.speak = dog.speak;
+console.log(cat.speak()); // "Whiskers says woof!" ✅
+
+// EXAMPLE 2: One-time borrowing without assignment
+const rabbit = { name: "Flopsy" };
+
+// Borrow directly without storing
+console.log(dog.speak.call(rabbit)); // "Flopsy says woof!" ✅
+console.log(dog.speak.apply(rabbit)); // "Flopsy says woof!" ✅
+
+// EXAMPLE 3: Real-world example - Array-like objects
+const args = { 0: 'first', 1: 'second', 2: 'third', length: 3 };
+console.log(args.length); // 3
+
+// Can't use array methods directly on args
+// args.forEach(console.log); // ❌ TypeError!
+
+// Borrow slice method from Array prototype
+const realArray = Array.prototype.slice.call(args);
+console.log(realArray); // ['first', 'second', 'third'] ✅
+
+// Even shorter with modern JS:
+const realArray2 = [...args]; // Spread operator converts array-like to array
+
+// EXAMPLE 4: Borrowing Array methods for arguments object
+function logArguments() {
+    // arguments is array-like but not a real array
+    console.log(arguments.length); // Number of arguments
+    
+    // Borrow forEach from Array
+    Array.prototype.forEach.call(arguments, (arg, index) => {
+        console.log(`Arg ${index}: ${arg}`);
+    });
+    
+    // Or use Array.from()
+    const argsArray = Array.from(arguments);
+    console.log(argsArray.map(arg => arg.toUpperCase()));
+}
+
+logArguments("apple", "banana", "cherry");
+// Output:
+// 3
+// Arg 0: apple
+// Arg 1: banana
+// Arg 2: cherry
+// ["APPLE", "BANANA", "CHERRY"]
+
+// EXAMPLE 5: Borrowing string methods for DOM elements
+const div = document.createElement('div');
+div.innerHTML = "&lt;p&gt;Hello&lt;/p&gt;";
+
+// Get innerHTML as string
+const htmlString = div.innerHTML;
+
+// Borrow string methods
+const hasParagraph = String.prototype.includes.call(htmlString, '&lt;p&gt;');
+console.log(hasParagraph); // true
+
+// Borrow indexOf
+const firstPIndex = String.prototype.indexOf.call(htmlString, '&lt;p&gt;');
+console.log(firstPIndex); // 0</code></pre>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Reusing functionality across different object types</li>
+                        <li>Working with array-like objects (arguments, NodeList)</li>
+                        <li>Extending objects with methods without inheritance</li>
+                        <li>Creating utility functions that work on various data types</li>
+                        <li>Implementing mixins and functional composition</li>
+                    </ul>
+                    <p class="text-success mt-2">✅ Best Practice: Method borrowing is a powerful tool for code reuse. When you find yourself writing similar code for different objects, consider borrowing a method instead!</p>
+                </details>
+            </section>
+
+            <section id="call-apply-bind">
+                <details>
+                    <summary>call(), apply(), and bind()</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">call()</span>, <span class="highlight">apply()</span>, and <span class="highlight">bind()</span> are built-in JavaScript methods that allow you to explicitly control the value of <code>this</code> when calling a function.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>All three methods let you specify what <code>this</code> should refer to during function execution. The key differences are:</p>
+                    <ul>
+                        <li><strong>call()</strong>: Invokes the function immediately with individual arguments</li>
+                        <li><strong>apply()</strong>: Invokes the function immediately with arguments as an array</li>
+                        <li><strong>bind()</strong>: Returns a new function with permanently bound <code>this</code> (doesn't invoke immediately)</li>
+                    </ul>
+                    <p>These methods are essential for controlling context in callbacks, event handlers, and method borrowing scenarios.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// call() - explicit context + individual arguments
+func.call(context, arg1, arg2, arg3);
+
+// apply() - explicit context + array of arguments
+func.apply(context, [arg1, arg2, arg3]);
+
+// bind() - returns new function with bound context
+const boundFunc = func.bind(context, arg1, arg2);
+boundFunc(arg3); // later invocation</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// EXAMPLE 1: Using call() to change context
+const person1 = { name: "Alice", age: 30 };
+const person2 = { name: "Bob", age: 25 };
+
+function introduce(greeting) {
+    return greeting + ", I'm " + this.name + " and I'm " + this.age + " years old.";
+}
+
+// Call introduce with person1 as this
+console.log(introduce.call(person1, "Hi")); 
+// "Hi, I'm Alice and I'm 30 years old."
+
+// Call introduce with person2 as this
+console.log(introduce.call(person2, "Hello")); 
+// "Hello, I'm Bob and I'm 25 years old."
+
+// EXAMPLE 2: Using apply() with arrays
+function sum(a, b, c) {
+    return a + b + c;
+}
+
+const numbers = [1, 2, 3];
+
+// Without apply() - manual parameter passing
+console.log(sum(numbers[0], numbers[1], numbers[2])); // 6
+
+// With apply() - pass array as arguments
+console.log(sum.apply(null, numbers)); // 6
+
+// EXAMPLE 3: bind() - creating specialized functions
+const car = {
+    brand: "Toyota",
+    model: "Camry",
+    getDetails() {
+        return this.brand + " " + this.model;
+    }
+};
+
+// Create a specialized version that always uses car as context
+const getCarDetails = car.getDetails.bind(car);
+console.log(getCarDetails()); // "Toyota Camry"
+
+// Even if we extract it, context remains bound
+const detached = getCarDetails;
+console.log(detached()); // "Toyota Camry" ✅ still works!
+
+// EXAMPLE 4: Practical use case - event handlers
+const button = document.createElement('button');
+button.textContent = "Click me";
+
+const counter = {
+    count: 0,
+    increment() {
+        this.count++;
+        console.log(`Count: ${this.count}`);
+    },
+    attachButton() {
+        // Using bind() to ensure 'this' refers to counter, not button
+        button.addEventListener('click', this.increment.bind(this));
+    }
+};
+
+counter.attachButton();
+button.click(); // "Count: 1" ✅
+
+// EXAMPLE 5: Partial application with bind()
+function multiply(a, b, c) {
+    return a * b * c;
+}
+
+// Create a function that multiplies by 2 and 3
+const timesSix = multiply.bind(null, 2, 3);
+console.log(timesSix(5)); // 30 (2 * 3 * 5)
+
+// Create a function that always adds 10
+const addTen = function(x, y) {
+    return x + y;
+}.bind(null, 10);
+
+console.log(addTen(5)); // 15 (10 + 5)
+
+// EXAMPLE 6: Comparing call, apply, and bind
+const person = { name: "Charlie" };
+
+function greet(message, punctuation) {
+    return message + " " + this.name + punctuation;
+}
+
+// call() - immediate execution
+console.log(greet.call(person, "Hello", "!")); // "Hello Charlie!"
+
+// apply() - immediate execution with array
+console.log(greet.apply(person, ["Hi", "?"])); // "Hi Charlie?"
+
+// bind() - create reusable function
+const greetCharlie = greet.bind(person, "Welcome");
+console.log(greetCharlie("...")); // "Welcome Charlie..."
+console.log(greetCharlie("!")); // "Welcome Charlie!"</code></pre>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Controlling <code>this</code> in callback functions</li>
+                        <li>Creating specialized versions of generic functions</li>
+                        <li>Implementing partial application and currying</li>
+                        <li>Fixing context issues in event handlers</li>
+                        <li>Method borrowing with explicit context control</li>
+                    </ul>
+                    <p class="text-info mt-2">💡 Rule of Thumb: Use <code>call()</code> and <code>apply()</code> for one-time context changes. Use <code>bind()</code> when you need to create a permanently bound function.</p>
+                </details>
+            </section>
+
+            <section id="arrow-functions">
+                <details>
+                    <summary>Arrow Functions and this Context</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">Arrow functions</span> (<code>=&gt;</code>) are a concise syntax for writing functions in JavaScript that do not have their own <code>this</code> context — they inherit <code>this</code> from the surrounding lexical scope.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>Arrow functions were introduced in ES6 to solve the common problem of <code>this</code> losing context in nested functions and callbacks. Unlike regular functions, arrow functions don't create their own <code>this</code> binding. Instead, they lexically capture the <code>this</code> value from the enclosing scope at the time they're created.</p>
+                    <p>This makes them perfect for callbacks, event handlers, and methods where you want to preserve the outer context — but terrible for object methods where you specifically need dynamic <code>this</code>.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// Regular function
+function regular() {
+    return this;
+}
+
+// Arrow function
+const arrow = () =&gt; {
+    return this;
+};
+
+// More examples:
+const obj = {
+    regularMethod() {
+        return this; // Refers to obj
+    },
+    
+    arrowMethod: () =&gt; {
+        return this; // Refers to outer scope (window/global)
+    },
+    
+    complex() {
+        setTimeout(() =&gt; {
+            console.log(this); // Refers to obj (lexical this)
+        }, 100);
+        
+        setTimeout(function() {
+            console.log(this); // Refers to window/global (default this)
+        }, 100);
+    }
+};</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// EXAMPLE 1: Basic comparison
+const obj = {
+    name: "Alice",
+    regularMethod() {
+        console.log("Regular:", this.name); // "Alice"
+    },
+    
+    arrowMethod: () =&gt; {
+        console.log("Arrow:", this.name); // undefined (inherited from outside)
+    }
+};
+
+obj.regularMethod(); // "Regular: Alice"
+obj.arrowMethod();   // "Arrow: undefined"
+
+// EXAMPLE 2: Nested functions - classic problem solved
+const person = {
+    name: "Bob",
+    friends: ["Alice", "Charlie", "David"],
+    
+    // Problematic: this loses context in callback
+    printFriendsWrong() {
+        this.friends.forEach(function(friend) {
+            console.log(this.name + " knows " + friend); // "undefined knows Alice"
+        });
+    },
+    
+    // Solution: use arrow function
+    printFriendsCorrect() {
+        this.friends.forEach(friend =&gt; {
+            console.log(this.name + " knows " + friend); // "Bob knows Alice"
+        });
+    },
+    
+    // Alternative solution: save this in variable
+    printFriendsAlternative() {
+        const self = this;
+        this.friends.forEach(function(friend) {
+            console.log(self.name + " knows " + friend);
+        });
+    }
+};
+
+person.printFriendsWrong();   // "undefined knows Alice"
+person.printFriendsCorrect(); // "Bob knows Alice" ✅
+person.printFriendsAlternative(); // "Bob knows Alice" ✅
+
+// EXAMPLE 3: Event handlers and timeouts
+const timer = {
+    seconds: 0,
+    start() {
+        // Arrow function preserves 'this' context
+        setInterval(() =&gt; {
+            this.seconds++;
+            console.log(`${this.seconds} seconds passed`);
+        }, 1000);
+    },
+    
+    // Wrong way - this will be window
+    startWrong() {
+        setInterval(function() {
+            this.seconds++; // this.seconds is undefined
+            console.log(`${this.seconds} seconds passed`);
+        }, 1000);
+    }
+};
+
+timer.start(); // Works perfectly!
+
+// EXAMPLE 4: Constructor functions - arrow functions don't work
+function Person(name) {
+    this.name = name;
+    this.getName = () =&gt; {
+        return this.name; // Lexical this - correct
+    };
+}
+
+const alice = new Person("Alice");
+console.log(alice.getName()); // "Alice" ✅
+
+// But you cannot use arrow functions as constructors
+// const newObj = new (() =&gt; {})(); // ❌ TypeError: (...) is not a constructor
+
+// EXAMPLE 5: Object methods vs arrow methods
+const calculator = {
+    value: 0,
+    
+    // Regular method - this refers to calculator
+    add(num) {
+        this.value += num;
+        return this;
+    },
+    
+    // Arrow method - this refers to outer scope (probably window)
+    addArrow: (num) =&gt; {
+        this.value += num; // this.value is undefined!
+        return this;
+    },
+    
+    // Correct way with arrow inside regular method
+    asyncProcess() {
+        setTimeout(() =&gt; {
+            // This arrow function inherits calculator's this
+            this.value *= 2;
+            console.log("Async result:", this.value);
+        }, 100);
+    }
+};
+
+calculator.add(5).add(3); // value = 8
+console.log(calculator.value); // 8
+
+calculator.addArrow(2); // Doesn't work! value remains 8
+console.log(calculator.value); // Still 8 ❌
+
+calculator.asyncProcess(); // After 100ms: "Async result: 16" ✅</code></pre>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Callbacks in asynchronous operations (setTimeout, setInterval, promises)</li>
+                        <li>Event handlers that need to access outer context</li>
+                        <li>Array methods like map, filter, reduce</li>
+                        <li>React component methods (class components)</li>
+                        <li>Any situation where you need to preserve lexical this</li>
+                    </ul>
+                    <p class="text-warning mt-2"><strong>⚠️ When NOT to use arrow functions:</strong></p>
+                    <ul>
+                        <li>As object methods (you usually want dynamic this)</li>
+                        <li>As constructor functions (no this binding)</li>
+                        <li>When you need to use call/apply/bind to change context</li>
+                        <li>For methods that need to be borrowed (context isn't preserved)</li>
+                    </ul>
+                    <p class="text-success mt-2">✅ Rule of Thumb: Use arrow functions when you want to preserve the outer <code>this</code>. Use regular functions when you want dynamic <code>this</code> based on how the function is called.</p>
+                </details>
+            </section>
+
+            <hr class="my-5">
+
+            <div class="alert alert-info">
+                <h5>Key Takeaways</h5>
+                <ul>
+                    <li>Methods are functions stored as object properties that operate on the object's data.</li>
+                    <li><code>this</code> is determined by how a function is called, not where it's defined.</li>
+                    <li>Method borrowing lets you reuse methods across different objects using call/apply/bind.</li>
+                    <li><code>call()</code> and <code>apply()</code> invoke functions immediately with specified context.</li>
+                    <li><code>bind()</code> creates a new function with permanently bound context.</li>
+                    <li>Arrow functions inherit <code>this</code> from their lexical scope — they don't have their own this.</li>
+                    <li>Use regular functions for object methods; use arrow functions for callbacks and closures.</li>
+                </ul>
+            </div>
+
+            <div class="alert alert-warning">
+                <h5>Common Pitfalls</h5>
+                <ul>
+                    <li>Expecting arrow functions to have dynamic this like regular functions</li>
+                    <li>Using arrow functions as object methods when you need this to refer to the object</li>
+                    <li>Trying to use bind/call/apply on arrow functions (they ignore the context)</li>
+                    <li>Not understanding that method extraction breaks this binding</li>
+                    <li>Confusing lexical scoping with this binding</li>
+                </ul>
+            </div>
+
+            <div class="alert alert-success">
+                <h5>Interview Question Prep</h5>
+                <p><strong>Q: What is the value of this in an arrow function?</strong></p>
+                <p><strong>A:</strong> Arrow functions don't have their own this. They inherit the this value from the enclosing lexical scope at the time they're created. This means they always use the same this as the surrounding code.</p>
+                
+                <p><strong>Q: Why does this code output "undefined"? How do you fix it?</strong></p>
+                <pre><code>const obj = {
+    name: "Alice",
+    greet: function() {
+        setTimeout(function() {
+            console.log(this.name); // undefined
+        }, 100);
+    }
+};
+
+obj.greet();</code></pre>
+                <p><strong>A:</strong> The inner function is a regular function, so its this refers to the global object (not obj). Fix by using an arrow function: <code>setTimeout(() =&gt; console.log(this.name), 100);</code></p>
+                
+                <p><strong>Q: Explain the difference between call() and bind().</strong></p>
+                <p><strong>A:</strong> Both change the this context of a function. <code>call()</code> invokes the function immediately with the specified context and arguments. <code>bind()</code> returns a new function with the context permanently bound, which can be called later.</p>
+                
+                <p><strong>Q: When would you use method borrowing?</strong></p>
+                <p><strong>A:</strong> When you want to reuse a method from one object on another object without copying code. Common examples include using Array methods on array-like objects (arguments, NodeList) or sharing utility methods across different data structures.</p>
+            </div>
+
+            <div class="text-center mt-4">
+                <small class="text-muted">© 2024 AI Tutor — Mastering Programming Fundamentals One Concept at a Time</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript Utilities -->
+<script>
+    // Expand/Collapse All
+    document.getElementById('expandAll').addEventListener('click', () => {
+        document.querySelectorAll('details').forEach(detail => {
+            detail.open = true;
+        });
+    });
+
+    document.getElementById('collapseAll').addEventListener('click', () => {
+        document.querySelectorAll('details').forEach(detail => {
+            detail.open = false;
+        });
+    });
+
+    // Smooth scrolling for TOC links
+    document.querySelectorAll('.toc-item a, .toc-subitem a').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+            
+            if (targetElement) {
+                window.scrollTo({
+                    top: targetElement.offsetTop - 100,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+
+    // Search functionality for TOC
+    document.getElementById('searchToc').addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
+        
+        tocItems.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            if (query === '' || text.includes(query)) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+
+    // Syntax Highlighting (basic)
+    document.querySelectorAll('pre code').forEach(block => {
+        hljs.highlightBlock(block);
+    });
+
+    // Add highlight.js if not present (fallback)
+    if (typeof hljs === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js';
+        script.onload = () => {
+            document.querySelectorAll('pre code').forEach(block => {
+                hljs.highlightBlock(block);
+            });
+        };
+        document.head.appendChild(script);
+    }
+</script>
+
+<!-- Optional: Add highlight.js for better syntax highlighting -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+
+</body>
+</html>
+```

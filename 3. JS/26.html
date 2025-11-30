@@ -1,0 +1,1532 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>9.4 Practical Applications - Deep Learning Notes</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00d1ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --text-muted: #b8cde0;
+        }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .left-panel {
+            background-color: rgba(10, 25, 47, 0.9);
+            border-right: 1px solid rgba(0, 209, 255, 0.2);
+            height: 100vh;
+            position: fixed;
+            width: 300px;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5);
+        }
+        
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+        
+        h1, h2, h3, h4 {
+            color: var(--cyan);
+            border-bottom: 1px solid rgba(0, 209, 255, 0.3);
+            padding-bottom: 8px;
+            margin-top: 30px;
+        }
+        
+        h1 {
+            font-size: 2.2rem;
+            color: var(--amber);
+        }
+        
+        h2 {
+            font-size: 1.8rem;
+            color: var(--cyan);
+        }
+        
+        h3 {
+            font-size: 1.4rem;
+            color: var(--amber);
+        }
+        
+        .subtitle {
+            color: var(--text-muted);
+            font-style: italic;
+            margin-bottom: 20px;
+        }
+        
+        .author-info {
+            color: var(--amber);
+            font-weight: 500;
+            margin: 15px 0;
+            font-size: 0.9rem;
+        }
+        
+        .toc-item {
+            margin: 8px 0;
+            padding: 6px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .toc-item:hover {
+            background-color: rgba(0, 209, 255, 0.1);
+            transform: translateX(5px);
+        }
+        
+        .toc-subitem {
+            margin-left: 20px;
+            padding: 5px 8px;
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            border-left: 2px solid rgba(0, 209, 255, 0.2);
+        }
+        
+        .toc-subitem:hover {
+            background-color: rgba(0, 209, 255, 0.08);
+            color: var(--cyan);
+        }
+        
+        .search-box {
+            background-color: rgba(10, 25, 47, 0.7);
+            border: 1px solid rgba(0, 209, 255, 0.3);
+            color: var(--text-light);
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .btn-control {
+            background-color: rgba(0, 209, 255, 0.1);
+            border: 1px solid rgba(0, 209, 255, 0.3);
+            color: var(--cyan);
+            margin: 10px 0;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+        }
+        
+        .btn-control:hover {
+            background-color: rgba(0, 209, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        pre code {
+            display: block;
+            padding: 15px;
+            background-color: rgba(10, 25, 47, 0.8);
+            border-left: 4px solid var(--amber);
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--cyan);
+        }
+        
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.1);
+            padding: 2px 5px;
+            border-radius: 3px;
+            color: var(--amber);
+            font-weight: 500;
+        }
+        
+        .details-container {
+            margin-bottom: 30px;
+            border: 1px solid rgba(0, 209, 255, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .details-container summary {
+            padding: 15px;
+            background-color: rgba(0, 209, 255, 0.1);
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--cyan);
+            list-style: none;
+            font-size: 1.1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .details-container summary::-webkit-details-marker {
+            display: none;
+        }
+        
+        .details-container summary::after {
+            content: "▼";
+            color: var(--amber);
+            font-size: 0.8rem;
+        }
+        
+        .details-container[open] summary::after {
+            content: "▲";
+        }
+        
+        .details-container div {
+            padding: 15px;
+            border-top: 1px solid rgba(0, 209, 255, 0.1);
+            color: var(--text-light);
+            font-size: 0.95rem;
+            line-height: 1.7;
+        }
+        
+        .code-block {
+            margin: 15px 0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .formula {
+            background-color: rgba(10, 25, 47, 0.6);
+            padding: 12px;
+            border-left: 3px solid var(--cyan);
+            margin: 15px 0;
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--amber);
+            font-size: 1.1rem;
+            text-align: center;
+            border-radius: 5px;
+        }
+        
+        .note {
+            background-color: rgba(255, 183, 77, 0.1);
+            border-left: 4px solid var(--amber);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+        }
+        
+        .badge {
+            background-color: var(--amber);
+            color: #000;
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-left: 8px;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 992px) {
+            .left-panel {
+                width: 250px;
+            }
+            .right-panel {
+                margin-left: 250px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .left-panel {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding: 15px;
+            }
+            .right-panel {
+                margin-left: 0;
+                padding: 15px;
+            }
+            h1 {
+                font-size: 1.8rem;
+            }
+            h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Left Panel -->
+    <div class="left-panel">
+        <h1>9.4 Practical Applications</h1>
+        <p class="subtitle">Real-World Use Cases for Destructuring and Spread in Modern JavaScript</p>
+        <p class="author-info">By: Master Tutor • Advanced JavaScript Concepts</p>
+        
+        <input type="text" class="form-control search-box" id="searchTOC" placeholder="Search topics...">
+        
+        <button class="btn btn-sm btn-control w-100 mb-2" id="expandAll">Expand All</button>
+        <button class="btn btn-sm btn-control w-100 mb-3" id="collapseAll">Collapse All</button>
+        
+        <h4 class="mb-3">Table of Contents</h4>
+        <div id="tocContainer">
+            <div class="toc-item" data-target="#functionParameterPatterns">Function parameter patterns</div>
+            <div class="toc-item" data-target="#apiResponseHandling">API response handling</div>
+            <div class="toc-item" data-target="#configurationObjectPatterns">Configuration object patterns</div>
+            <div class="toc-item" data-target="#cloneAndMergeOperations">Clone and merge operations</div>
+        </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="right-panel">
+        <section id="functionParameterPatterns">
+            <details class="details-container">
+                <summary>Function Parameter Patterns</summary>
+                <div>
+                    <p>Modern JavaScript functions leverage destructuring and spread to create clean, flexible, and self-documenting APIs.</p>
+                    
+                    <h5>Pattern 1: Destructured Parameters with Defaults</h5>
+                    <pre><code>// Instead of this messy pattern:
+function createUser(userObj) {
+    const name = userObj.name || 'Anonymous';
+    const age = userObj.age || 18;
+    const email = userObj.email || 'no-email@example.com';
+    const role = userObj.role || 'user';
+    
+    return { name, age, email, role };
+}
+
+// Use destructuring with defaults:
+function createUser({
+    name = 'Anonymous',
+    age = 18,
+    email = 'no-email@example.com',
+    role = 'user'
+} = {}) { // Note: = {} provides default for entire object parameter
+    return { name, age, email, role };
+}
+
+// Usage examples:
+createUser(); // { name: 'Anonymous', age: 18, email: 'no-email@example.com', role: 'user' }
+createUser({ name: 'Alice', age: 28 }); // { name: 'Alice', age: 28, email: 'no-email@example.com', role: 'user' }
+createUser({ role: 'admin', email: 'alice@email.com' }); // { name: 'Anonymous', age: 18, email: 'alice@email.com', role: 'admin' }</code></pre>
+                    
+                    <div class="note">
+                        <strong>Advantage:</strong> The function signature itself becomes documentation. Anyone reading the code immediately knows what parameters are expected and their defaults.
+                    </div>
+                    
+                    <h5>Pattern 2: Rest Parameters for Variable Arguments</h5>
+                    <pre><code>// Function that accepts any number of numbers and returns sum
+function calculateSum(first, second, ...rest) {
+    let total = first + second;
+    for (let num of rest) {
+        total += num;
+    }
+    return total;
+}
+
+// Or even more flexible:
+function calculateSum(...numbers) {
+    return numbers.reduce((sum, num) =&gt; sum + num, 0);
+}
+
+console.log(calculateSum(1, 2)); // 3
+console.log(calculateSum(1, 2, 3, 4, 5)); // 15
+
+// With destructuring in rest parameter
+function processUserData({ id, name }, ...preferences) {
+    console.log('User:', { id, name });
+    console.log('Preferences:', preferences);
+}
+
+processUserData({ id: 123, name: 'Alice' }, 'dark-mode', 'notifications', 'email-alerts');
+// Output:
+// User: { id: 123, name: 'Alice' }
+// Preferences: ['dark-mode', 'notifications', 'email-alerts']</code></pre>
+                    
+                    <h5>Pattern 3: Nested Object Destructuring in Parameters</h5>
+                    <pre><code>// Handling complex API request objects
+function sendEmail({
+    to,
+    from,
+    subject,
+    body,
+    attachments = [],
+    priority = 'normal',
+    cc = [],
+    bcc = []
+} = {}) {
+    return {
+        success: true,
+        message: `Email sent to ${to}`,
+        details: {
+            recipients: { to, cc, bcc },
+            priority,
+            attachmentsCount: attachments.length
+        }
+    };
+}
+
+// Usage with nested structure
+sendEmail({
+    to: 'recipient@example.com',
+    from: 'sender@example.com',
+    subject: 'Hello!',
+    body: 'This is a test email',
+    priority: 'high',
+    cc: ['manager@example.com'],
+    bcc: ['archive@example.com'],
+    attachments: ['document.pdf', 'image.jpg']
+});</code></pre>
+                    
+                    <h5>Pattern 4: Array Destructuring for Multiple Return Values</h5>
+                    <pre><code>// Functions returning multiple values as array
+function divideAndRemainder(dividend, divisor) {
+    if (divisor === 0) throw new Error('Cannot divide by zero');
+    return [Math.floor(dividend / divisor), dividend % divisor];
+}
+
+// Destructure the returned array
+const [quotient, remainder] = divideAndRemainder(17, 5);
+console.log(quotient); // 3
+console.log(remainder); // 2
+
+// Real-world example: Parsing date strings
+function parseDate(dateString) {
+    const [year, month, day] = dateString.split('-').map(Number);
+    return [year, month, day];
+}
+
+const [y, m, d] = parseDate('2023-12-25');
+console.log(`Year: ${y}, Month: ${m}, Day: ${d}`); // Year: 2023, Month: 12, Day: 25</code></pre>
+                    
+                    <h5>Pattern 5: Combining Spread and Destructuring</h5>
+                    <pre><code>// Function that takes an object and spreads additional properties
+function createProduct(baseProduct, additionalProps = {}) {
+    return {
+        ...baseProduct,
+        ...additionalProps,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+    };
+}
+
+const baseProduct = {
+    name: 'Laptop',
+    price: 999,
+    category: 'Electronics'
+};
+
+const enhancedProduct = createProduct(baseProduct, {
+    warranty: '2 years',
+    rating: 4.5,
+    inStock: true
+});
+
+console.log(enhancedProduct);
+// {
+//   name: 'Laptop',
+//   price: 999,
+//   category: 'Electronics',
+//   warranty: '2 years',
+//   rating: 4.5,
+//   inStock: true,
+//   createdAt: '2023-12-01T10:30:00Z',
+//   updatedAt: '2023-12-01T10:30:00Z'
+// }</code></pre>
+                    
+                    <div class="note">
+                        <strong>Best Practice:</strong> Always provide a default empty object <code>= {}</code> when using object destructuring in parameters to avoid runtime errors when no argument is passed.
+                    </div>
+                </div>
+            </details>
+        </section>
+
+        <section id="apiResponseHandling">
+            <details class="details-container">
+                <summary>API Response Handling</summary>
+                <div>
+                    <p>Modern web applications frequently interact with REST APIs that return JSON data. Destructuring and spread make processing these responses clean and efficient.</p>
+                    
+                    <h5>Basic API Response Processing</h5>
+                    <pre><code>// Typical API response
+const apiResponse = {
+    status: 'success',
+    data: {
+        user: {
+            id: 123,
+            username: 'alice123',
+            email: 'alice@email.com',
+            profile: {
+                firstName: 'Alice',
+                lastName: 'Smith',
+                avatar: '/avatars/alice.jpg',
+                bio: 'Software engineer'
+            }
+        },
+        posts: [
+            { id: 1, title: 'First Post', likes: 15 },
+            { id: 2, title: 'Second Post', likes: 23 }
+        ],
+        metadata: {
+            totalCount: 2,
+            page: 1,
+            pageSize: 10
+        }
+    },
+    timestamp: '2023-12-01T10:30:00Z'
+};
+
+// Extract only what you need with destructuring
+const {
+    data: {
+        user: {
+            id,
+            username,
+            email,
+            profile: { firstName, lastName, avatar, bio }
+        },
+        posts,
+        metadata: { totalCount, page }
+    },
+    timestamp
+} = apiResponse;
+
+console.log({ id, username, email, firstName, lastName, avatar, bio, totalCount, page, timestamp });
+
+// Much cleaner than:
+// const id = apiResponse.data.user.id;
+// const username = apiResponse.data.user.username;
+// ... etc.</code></pre>
+                    
+                    <h5>Handling Arrays of Objects from API</h5>
+                    <pre><code>// API returns array of products
+const productsResponse = [
+    { id: 1, name: 'iPhone', price: 999, category: 'Electronics', inStock: true },
+    { id: 2, name: 'Book', price: 25, category: 'Books', inStock: false },
+    { id: 3, name: 'Headphones', price: 199, category: 'Electronics', inStock: true }
+];
+
+// Extract specific fields for display
+const productCards = productsResponse.map(({ id, name, price, inStock }) =&gt; ({
+    id,
+    name,
+    price,
+    inStock,
+    displayPrice: `$${price.toLocaleString()}`
+}));
+
+console.log(productCards);
+// [
+//   { id: 1, name: 'iPhone', price: 999, inStock: true, displayPrice: '$999' },
+//   { id: 2, name: 'Book', price: 25, inStock: false, displayPrice: '$25' },
+//   { id: 3, name: 'Headphones', price: 199, inStock: true, displayPrice: '$199' }
+// ]</code></pre>
+                    
+                    <h5>Combining Multiple API Responses</h5>
+                    <pre><code>// Imagine getting data from two different endpoints
+async function fetchUserProfile(userId) {
+    const [userResponse, profileResponse, settingsResponse] = await Promise.all([
+        fetch(`/api/users/${userId}`),
+        fetch(`/api/profiles/${userId}`),
+        fetch(`/api/settings/${userId}`)
+    ]);
+    
+    const userData = await userResponse.json();
+    const profileData = await profileResponse.json();
+    const settingsData = await settingsResponse.json();
+    
+    // Combine all data into one object
+    const completeProfile = {
+        ...userData,
+        ...profileData,
+        ...settingsData,
+        lastUpdated: new Date().toISOString()
+    };
+    
+    return completeProfile;
+}
+
+// Usage
+fetchUserProfile(123).then(profile =&gt; {
+    console.log(profile);
+    // Contains combined data from all three API calls
+});</code></pre>
+                    
+                    <h5>Handling Pagination and Metadata</h5>
+                    <pre><code>// API response with pagination
+const paginatedResponse = {
+    items: [
+        { id: 1, name: 'Item 1' },
+        { id: 2, name: 'Item 2' },
+        { id: 3, name: 'Item 3' }
+    ],
+    pagination: {
+        currentPage: 1,
+        totalPages: 5,
+        perPage: 10,
+        totalCount: 47
+    },
+    filters: {
+        category: 'electronics',
+        sortBy: 'name'
+    }
+};
+
+// Extract data and metadata separately
+const { 
+    items: products, 
+    pagination: { currentPage, totalPages, totalCount }, 
+    filters: { category, sortBy } 
+} = paginatedResponse;
+
+console.log('Products:', products);
+console.log('Page:', currentPage, 'of', totalPages, 'Total:', totalCount);
+console.log('Filters:', { category, sortBy });
+
+// Create a state object for your component
+const state = {
+    products,
+    pagination: { currentPage, totalPages, totalCount },
+    filters: { category, sortBy },
+    isLoading: false
+};</code></pre>
+                    
+                    <h5>Error Handling with Destructuring</h5>
+                    <pre><code>// API error response structure
+const apiError = {
+    error: {
+        code: 'NOT_FOUND',
+        message: 'User not found',
+        details: {
+            requestedId: 999,
+            timestamp: '2023-12-01T10:30:00Z'
+        }
+    }
+};
+
+// Safe destructuring with defaults
+function handleApiError(errorResponse) {
+    const { 
+        error: { 
+            code = 'UNKNOWN_ERROR', 
+            message = 'An unknown error occurred', 
+            details: { 
+                requestedId = null, 
+                timestamp = new Date().toISOString() 
+            } = {} 
+        } = {} 
+    } = errorResponse || {};
+    
+    return {
+        code,
+        message,
+        requestedId,
+        timestamp,
+        severity: code === 'NOT_FOUND' ? 'warning' : 'error'
+    };
+}
+
+console.log(handleApiError(apiError));
+// {
+//   code: 'NOT_FOUND',
+//   message: 'User not found',
+//   requestedId: 999,
+//   timestamp: '2023-12-01T10:30:00Z',
+//   severity: 'warning'
+// }
+
+// Works even with undefined/null
+console.log(handleApiError(undefined));
+// {
+//   code: 'UNKNOWN_ERROR',
+//   message: 'An unknown error occurred',
+//   requestedId: null,
+//   timestamp: '2023-12-01T10:30:00Z',
+//   severity: 'error'
+// }</code></pre>
+                    
+                    <div class="note">
+                        <strong>Pro Tip:</strong> When working with third-party APIs, always use default values in destructuring. API schemas can change, and having sensible defaults prevents your application from crashing.
+                    </div>
+                </div>
+            </details>
+        </section>
+
+        <section id="configurationObjectPatterns">
+            <details class="details-container">
+                <summary>Configuration Object Patterns</summary>
+                <div>
+                    <p>Configuration objects are essential for making libraries and components configurable while maintaining simplicity.</p>
+                    
+                    <h5>Pattern 1: Default Configuration with Overrides</h5>
+                    <pre><code>// Library configuration pattern
+function createChart(container, options = {}) {
+    // Default configuration
+    const defaultConfig = {
+        width: 800,
+        height: 600,
+        theme: 'light',
+        animations: true,
+        tooltips: true,
+        responsive: true,
+        legend: true,
+        grid: true,
+        xAxisLabel: 'Time',
+        yAxisLabel: 'Value',
+        fontSize: 14,
+        fontFamily: 'Arial'
+    };
+    
+    // Merge with user overrides
+    const config = { ...defaultConfig, ...options };
+    
+    // Now use the merged config
+    console.log('Chart configured with:', config);
+    
+    // Implementation here...
+    return {
+        render: () =&gt; { /* render logic */ },
+        update: () =&gt; { /* update logic */ }
+    };
+}
+
+// Usage examples:
+createChart('#chart1'); // Uses all defaults
+createChart('#chart2', { width: 1000, theme: 'dark' }); // Override some
+createChart('#chart3', { 
+    width: 1200, 
+    height: 800, 
+    theme: 'dark', 
+    animations: false,
+    legend: false 
+}); // Override many</code></pre>
+                    
+                    <h5>Pattern 2: Nested Configuration Objects</h5>
+                    <pre><code>// Complex configuration with nested objects
+const defaultEditorConfig = {
+    toolbar: {
+        enabled: true,
+        position: 'top',
+        buttons: ['bold', 'italic', 'underline', 'link', 'image'],
+        colorPalette: ['#000000', '#FF0000', '#00FF00', '#0000FF']
+    },
+    autosave: {
+        enabled: true,
+        interval: 30000, // 30 seconds
+        timeout: 5000
+    },
+    plugins: [
+        'markdown',
+        'code-highlight',
+        'spell-check'
+    ],
+    limits: {
+        maxLength: 10000,
+        imageUploadSize: 5 * 1024 * 1024 // 5MB
+    },
+    language: 'en',
+    spellCheck: true
+};
+
+function initializeEditor(element, userConfig = {}) {
+    const config = { 
+        ...defaultEditorConfig, 
+        ...userConfig,
+        toolbar: { 
+            ...defaultEditorConfig.toolbar, 
+            ...userConfig.toolbar 
+        },
+        autosave: { 
+            ...defaultEditorConfig.autosave, 
+            ...userConfig.autosave 
+        },
+        limits: { 
+            ...defaultEditorConfig.limits, 
+            ...userConfig.limits 
+        }
+    };
+    
+    console.log('Final configuration:', config);
+    // Initialize editor with config...
+    return config;
+}
+
+// Usage - override only what's needed
+initializeEditor('#editor', {
+    toolbar: {
+        buttons: ['bold', 'italic', 'code'],
+        colorPalette: ['#000000', '#FF0000']
+    },
+    autosave: {
+        enabled: false
+    },
+    limits: {
+        maxLength: 5000
+    }
+});</code></pre>
+                    
+                    <h5>Pattern 3: Feature Flags and Conditional Configuration</h5>
+                    <pre><code>// Application feature flags configuration
+const appConfig = {
+    features: {
+        darkMode: true,
+        notifications: true,
+        analytics: true,
+        multiLanguage: false,
+        socialLogin: true,
+        fileUpload: true,
+        chatSupport: false
+    },
+    ui: {
+        theme: 'modern',
+        layout: 'sidebar',
+        animationSpeed: 300
+    },
+    api: {
+        baseUrl: 'https://api.example.com',
+        timeout: 5000,
+        retries: 3
+    },
+    permissions: {
+        admin: ['read', 'write', 'delete'],
+        user: ['read'],
+        guest: ['read']
+    }
+};
+
+// Function to check if feature is enabled
+function isFeatureEnabled(featurePath, config = appConfig) {
+    const keys = featurePath.split('.');
+    let current = config;
+    
+    for (let key of keys) {
+        if (current && current.hasOwnProperty(key)) {
+            current = current[key];
+        } else {
+            return false;
+        }
+    }
+    
+    return Boolean(current);
+}
+
+// Usage with destructuring for multiple checks
+function renderApp(config = appConfig) {
+    const { 
+        features: { 
+            darkMode, 
+            notifications, 
+            analytics, 
+            socialLogin, 
+            fileUpload 
+        },
+        ui: { theme, layout },
+        api: { baseUrl, timeout }
+    } = config;
+    
+    // Conditionally render components based on features
+    const components = [];
+    
+    if (darkMode) components.push('DarkModeToggle');
+    if (notifications) components.push('NotificationBell');
+    if (analytics) components.push('AnalyticsTracker');
+    if (socialLogin) components.push('SocialLoginButtons');
+    if (fileUpload) components.push('FileUploader');
+    
+    console.log('Rendering components:', components);
+    console.log(`App running at ${baseUrl} with ${theme} theme and ${layout} layout`);
+    
+    return {
+        components,
+        config: { baseUrl, timeout }
+    };
+}
+
+renderApp();</code></pre>
+                    
+                    <h5>Pattern 4: Environment-Specific Configurations</h5>
+                    <pre><code>// Configuration for different environments
+const baseConfig = {
+    apiBaseUrl: 'https://api.example.com',
+    debug: false,
+    cacheTTL: 300000, // 5 minutes
+    retryAttempts: 3,
+    logLevel: 'info'
+};
+
+const devConfig = {
+    ...baseConfig,
+    apiBaseUrl: 'http://localhost:3000/api',
+    debug: true,
+    cacheTTL: 0, // Disable cache in development
+    logLevel: 'debug'
+};
+
+const stagingConfig = {
+    ...baseConfig,
+    apiBaseUrl: 'https://staging.api.example.com',
+    debug: false,
+    cacheTTL: 60000, // 1 minute
+    logLevel: 'warn'
+};
+
+const prodConfig = {
+    ...baseConfig,
+    apiBaseUrl: 'https://api.example.com',
+    debug: false,
+    cacheTTL: 900000, // 15 minutes
+    logLevel: 'error'
+};
+
+// Select config based on environment
+const environment = process.env.NODE_ENV || 'development';
+const configMap = {
+    development: devConfig,
+    staging: stagingConfig,
+    production: prodConfig
+};
+
+const currentConfig = configMap[environment] || baseConfig;
+
+// Destructure for usage
+const { 
+    apiBaseUrl, 
+    debug, 
+    cacheTTL, 
+    retryAttempts, 
+    logLevel 
+} = currentConfig;
+
+console.log('Current environment:', environment);
+console.log('API Base URL:', apiBaseUrl);
+console.log('Debug mode:', debug);
+console.log('Cache TTL:', cacheTTL, 'ms');
+console.log('Log level:', logLevel);</code></pre>
+                    
+                    <div class="note">
+                        <strong>Best Practice:</strong> Always organize configuration objects hierarchically. Group related settings together (like all API settings under an 'api' object) for better organization and easier maintenance.
+                    </div>
+                </div>
+            </details>
+        </section>
+
+        <section id="cloneAndMergeOperations">
+            <details class="details-container">
+                <summary>Clone and Merge Operations</summary>
+                <div>
+                    <p>Cloning and merging are fundamental operations in state management, form handling, and data transformation.</p>
+                    
+                    <h5>Pattern 1: Simple Object Cloning</h5>
+                    <pre><code>// Shallow cloning with spread operator
+const original = {
+    name: 'Alice',
+    age: 28,
+    city: 'New York',
+    hobbies: ['reading', 'swimming']
+};
+
+// Create a clone
+const clone = { ...original };
+
+// Modify clone without affecting original
+clone.name = 'Bob';
+clone.city = 'Boston';
+
+console.log(original); 
+// { name: 'Alice', age: 28, city: 'New York', hobbies: ['reading', 'swimming'] }
+
+console.log(clone); 
+// { name: 'Bob', age: 28, city: 'Boston', hobbies: ['reading', 'swimming'] }
+
+// BUT! Nested arrays/objects are still referenced!
+clone.hobbies.push('coding');
+console.log(original.hobbies); 
+// ['reading', 'swimming', 'coding'] - Original changed! (shallow copy limitation)</code></pre>
+                    
+                    <h5>Pattern 2: Deep Cloning with Recursion</h5>
+                    <pre><code>// Recursive deep clone function
+function deepClone(obj) {
+    // Handle null, undefined, primitives
+    if (obj === null || typeof obj !== 'object') {
+        return obj;
+    }
+    
+    // Handle Date
+    if (obj instanceof Date) {
+        return new Date(obj.getTime());
+    }
+    
+    // Handle Array
+    if (Array.isArray(obj)) {
+        return obj.map(item =&gt; deepClone(item));
+    }
+    
+    // Handle Object
+    const cloned = {};
+    for (let key in obj) {
+        if (obj.hasOwnProperty(key)) {
+            cloned[key] = deepClone(obj[key]);
+        }
+    }
+    
+    return cloned;
+}
+
+const complexObject = {
+    name: 'Alice',
+    age: 28,
+    hobbies: ['reading', 'swimming'],
+    address: {
+        street: '123 Main St',
+        city: 'New York',
+        coordinates: {
+            lat: 40.7128,
+            lng: -74.0060
+        }
+    },
+    created: new Date(),
+    tags: ['developer', 'designer']
+};
+
+const deepCloned = deepClone(complexObject);
+
+// Now modifications to nested objects won't affect original
+deepCloned.address.city = 'Boston';
+deepCloned.hobbies.push('coding');
+deepCloned.tags.push('engineer');
+
+console.log(complexObject.address.city); // 'New York' - unchanged!
+console.log(complexObject.hobbies); // ['reading', 'swimming'] - unchanged!
+console.log(complexObject.tags); // ['developer', 'designer'] - unchanged!</code></pre>
+                    
+                    <h5>Pattern 3: Merging Objects with Conflict Resolution</h5>
+                    <pre><code>// Smart merge function that handles conflicts
+function mergeObjects(target, source, options = {}) {
+    const {
+        overwrite = true,
+        deep = false,
+        ignoreNull = false
+    } = options;
+    
+    const result = { ...target };
+    
+    for (let key in source) {
+        if (source.hasOwnProperty(key)) {
+            const sourceValue = source[key];
+            
+            // Skip null/undefined if specified
+            if (ignoreNull &amp;&amp; (sourceValue === null || sourceValue === undefined)) {
+                continue;
+            }
+            
+            // Handle deep merging
+            if (deep &amp;&amp; 
+                result[key] &amp;&amp; 
+                typeof result[key] === 'object' &amp;&amp; 
+                !Array.isArray(result[key]) &amp;&amp; 
+                sourceValue &amp;&amp; 
+                typeof sourceValue === 'object' &amp;&amp; 
+                !Array.isArray(sourceValue)) {
+                
+                result[key] = mergeObjects(result[key], sourceValue, options);
+            } else if (overwrite || !(key in result)) {
+                result[key] = sourceValue;
+            }
+        }
+    }
+    
+    return result;
+}
+
+// Usage examples:
+const defaults = {
+    theme: 'light',
+    language: 'en',
+    features: {
+        notifications: true,
+        darkMode: false,
+        analytics: true
+    },
+    limits: {
+        maxFiles: 5,
+        maxSize: 10485760 // 10MB
+    }
+};
+
+const userPrefs = {
+    theme: 'dark',
+    language: 'es',
+    features: {
+        notifications: false,
+        darkMode: true
+    },
+    limits: {
+        maxFiles: 10
+    },
+    timezone: 'UTC'
+};
+
+// Shallow merge (overwrites)
+const shallowMerged = mergeObjects(defaults, userPrefs);
+console.log(shallowMerged.features.notifications); // false
+console.log(shallowMerged.features.analytics); // true (unchanged)
+
+// Deep merge (preserves nested structure)
+const deepMerged = mergeObjects(defaults, userPrefs, { deep: true });
+console.log(deepMerged.features.notifications); // false
+console.log(deepMerged.features.analytics); // true (still preserved!)
+console.log(deepMerged.timezone); // 'UTC' (added)
+
+// Merge ignoring null values
+const partialUpdate = {
+    theme: null, // Don't want to clear theme
+    language: 'fr',
+    features: { analytics: null } // Don't want to disable analytics
+};
+
+const conservativeMerge = mergeObjects(defaults, partialUpdate, { 
+    overwrite: true, 
+    ignoreNull: true 
+});
+console.log(conservativeMerge.theme); // 'light' (unchanged because null was ignored)
+console.log(conservativeMerge.language); // 'fr' (updated)
+console.log(conservativeMerge.features.analytics); // true (unchanged because null was ignored)</code></pre>
+                    
+                    <h5>Pattern 4: Immutable State Updates in React/Vue</h5>
+                    <pre><code>// React hook example: updating state immutably
+import React, { useState } from 'react';
+
+function TodoApp() {
+    const [todos, setTodos] = useState([
+        { id: 1, text: 'Learn JS', completed: false },
+        { id: 2, text: 'Build app', completed: false }
+    ]);
+    
+    const [filter, setFilter] = useState('all');
+    
+    // Add todo - creates new array with new item
+    const addTodo = (text) =&gt; {
+        setTodos([...todos, { 
+            id: Date.now(), 
+            text, 
+            completed: false 
+        }]);
+    };
+    
+    // Toggle todo completion - creates new array with updated item
+    const toggleTodo = (id) =&gt; {
+        setTodos(todos.map(todo =&gt; 
+            todo.id === id 
+                ? { ...todo, completed: !todo.completed }
+                : todo
+        ));
+    };
+    
+    // Delete todo - creates new array without the item
+    const deleteTodo = (id) =&gt; {
+        setTodos(todos.filter(todo =&gt; todo.id !== id));
+    };
+    
+    // Update filter - simple state update
+    const updateFilter = (newFilter) =&gt; {
+        setFilter(newFilter);
+    };
+    
+    // Clear completed todos - creates new array with only incomplete ones
+    const clearCompleted = () =&gt; {
+        setTodos(todos.filter(todo =&gt; !todo.completed));
+    };
+    
+    // Update multiple properties at once
+    const updateSettings = (newSettings) =&gt; {
+        setFilter(prev =&gt; ({ ...prev, ...newSettings }));
+    };
+    
+    return (
+        &lt;div&gt;
+            &lt;!-- Component UI --&gt;
+        &lt;/div&gt;
+    );
+}</code></pre>
+                    
+                    <h5>Pattern 5: Form State Management</h5>
+                    <pre><code>// Managing form state with destructuring and spread
+function useForm(initialValues = {}) {
+    const [values, setValues] = useState(initialValues);
+    const [errors, setErrors] = useState({});
+    const [touched, setTouched] = useState({});
+    
+    const handleChange = (e) =&gt; {
+        const { name, value, type, checked } = e.target;
+        const newValue = type === 'checkbox' ? checked : value;
+        
+        setValues(prev =&gt; ({
+            ...prev,
+            [name]: newValue
+        }));
+        
+        // Clear error when field is modified
+        if (errors[name]) {
+            setErrors(prev =&gt; ({
+                ...prev,
+                [name]: ''
+            }));
+        }
+    };
+    
+    const handleBlur = (e) =&gt; {
+        const { name } = e.target;
+        setTouched(prev =&gt; ({
+            ...prev,
+            [name]: true
+        }));
+    };
+    
+    const resetForm = () =&gt; {
+        setValues(initialValues);
+        setErrors({});
+        setTouched({});
+    };
+    
+    const setFieldValue = (name, value) =&gt; {
+        setValues(prev =&gt; ({
+            ...prev,
+            [name]: value
+        }));
+    };
+    
+    const setFieldError = (name, error) =&gt; {
+        setErrors(prev =&gt; ({
+            ...prev,
+            [name]: error
+        }));
+    };
+    
+    const getFieldError = (name) =&gt; {
+        return errors[name] &amp;&amp; touched[name] ? errors[name] : '';
+    };
+    
+    const handleSubmit = (onSubmit) =&gt; async (e) =&gt; {
+        e.preventDefault();
+        const validationErrors = validate(values);
+        if (Object.keys(validationErrors).length &gt; 0) {
+            setErrors(validationErrors);
+            return;
+        }
+        
+        await onSubmit(values);
+    };
+    
+    return {
+        values,
+        errors,
+        touched,
+        handleChange,
+        handleBlur,
+        resetForm,
+        setFieldValue,
+        setFieldError,
+        getFieldError,
+        handleSubmit
+    };
+}
+
+// Usage in component
+function ContactForm() {
+    const { 
+        values, 
+        errors, 
+        handleChange, 
+        handleBlur, 
+        handleSubmit 
+    } = useForm({
+        name: '',
+        email: '',
+        phone: '',
+        message: ''
+    });
+    
+    const onSubmit = async (formData) =&gt; {
+        console.log('Submitting:', formData);
+        // Send to API...
+    };
+    
+    return (
+        &lt;form onSubmit={handleSubmit(onSubmit)}&gt;
+            &lt;input 
+                name="name" 
+                value={values.name} 
+                onChange={handleChange} 
+                onBlur={handleBlur}
+                placeholder="Name"
+            /&gt;
+            {errors.name &amp;&amp; &lt;span className="error"&gt;{errors.name}&lt;/span&gt;}
+            
+            &lt;input 
+                name="email" 
+                value={values.email} 
+                onChange={handleChange} 
+                onBlur={handleBlur}
+                placeholder="Email"
+            /&gt;
+            {errors.email &amp;&amp; &lt;span className="error"&gt;{errors.email}&lt;/span&gt;}
+            
+            &lt;textarea 
+                name="message" 
+                value={values.message} 
+                onChange={handleChange} 
+                onBlur={handleBlur}
+                placeholder="Message"
+            /&gt;
+            
+            &lt;button type="submit"&gt;Send&lt;/button&gt;
+        &lt;/form&gt;
+    );
+}</code></pre>
+                    
+                    <div class="note">
+                        <strong>Golden Rule:</strong> Never mutate state directly in React, Vue, Redux, or similar frameworks. Always create new objects/arrays using spread or other immutable patterns.
+                    </div>
+                </div>
+            </details>
+        </section>
+
+        <section id="summary">
+            <details class="details-container">
+                <summary>Summary & Best Practices</summary>
+                <div>
+                    <h4>✅ Key Takeaways</h4>
+                    <ul>
+                        <li><strong>Function parameters:</strong> Use destructuring with defaults for clean, self-documenting APIs</li>
+                        <li><strong>API responses:</strong> Extract only what you need with nested destructuring and provide safe defaults</li>
+                        <li><strong>Configuration:</strong> Use merge patterns with defaults to create flexible, configurable systems</li>
+                        <li><strong>Cloning:</strong> Use spread for shallow copies, implement deep clones for nested structures</li>
+                        <li><strong>Immutable updates:</strong> Always create new objects/arrays instead of mutating existing ones</li>
+                    </ul>
+                    
+                    <h4>🚫 Common Mistakes</h4>
+                    <ul>
+                        <li>Forgetting to provide default empty object <code>= {}</code> in function parameters</li>
+                        <li>Assuming spread creates deep copies (it doesn't!)</li>
+                        <li>Mutating state directly in React/Vue/Redux applications</li>
+                        <li>Not validating API responses before destructuring</li>
+                        <li>Overwriting nested objects instead of merging them properly</li>
+                    </ul>
+                    
+                    <h4>💡 Pro Tips</h4>
+                    <ul>
+                        <li>Use destructuring and spread together for maximum power in data transformation</li>
+                        <li>Create utility functions for common operations like deep merging</li>
+                        <li>Always document your configuration schema for team projects</li>
+                        <li>Consider using TypeScript interfaces for complex configurations</li>
+                        <li>Test your clone/merge functions thoroughly with nested structures</li>
+                        <li>Use object destructuring in function parameters to improve readability</li>
+                    </ul>
+                    
+                    <h4>🚀 Advanced Challenge</h4>
+                    <pre><code>// Can you solve this?
+// Given a complex application state:
+const initialState = {
+    user: {
+        id: 123,
+        name: 'Alice',
+        profile: {
+            avatar: '/avatars/alice.jpg',
+            bio: 'Software engineer',
+            settings: {
+                theme: 'light',
+                notifications: true,
+                language: 'en'
+            }
+        }
+    },
+    app: {
+        theme: 'light',
+        sidebar: {
+            collapsed: false,
+            width: 250
+        },
+        features: {
+            darkMode: true,
+            notifications: true,
+            analytics: false
+        }
+    },
+    preferences: {
+        theme: 'system',
+        language: 'auto'
+    }
+};
+
+// Create a function that:
+// 1. Creates a completely new state object
+// 2. Applies theme preference from preferences.theme
+// 3. Merges user profile settings with app features
+// 4. Preserves all other data
+// 5. Returns a new state object
+
+// Solution:
+function applyThemePreferences(state) {
+    const { 
+        user, 
+        app, 
+        preferences 
+    } = state;
+    
+    // Determine final theme based on preferences
+    const theme = preferences.theme === 'system' 
+        ? window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        : preferences.theme;
+    
+    // Create new state with updated theme and merged settings
+    return {
+        ...state,
+        app: {
+            ...app,
+            theme,
+            features: {
+                ...app.features,
+                darkMode: theme === 'dark',
+                notifications: user.profile.settings.notifications
+            }
+        },
+        user: {
+            ...user,
+            profile: {
+                ...user.profile,
+                settings: {
+                    ...user.profile.settings,
+                    theme
+                }
+            }
+        }
+    };
+}
+
+// Test it
+const newState = applyThemePreferences(initialState);
+console.log(newState.app.theme); // 'light' (based on system setting)
+console.log(newState.app.features.darkMode); // false
+console.log(newState.user.profile.settings.theme); // 'light'</code></pre>
+                    
+                    <h4>🧠 Memory Trick</h4>
+                    <p><strong>Think of these patterns as LEGO blocks:</strong></p>
+                    <ul>
+                        <li><strong>Destructuring:</strong> Taking specific pieces out of a LEGO set</li>
+                        <li><strong>Spread:</strong> Taking pieces from one set and adding them to another</li>
+                        <li><strong>Default values:</strong> Having spare pieces ready if something's missing</li>
+                        <li><strong>Cloning:</strong> Making an exact duplicate of a LEGO creation</li>
+                        <li><strong>Merging:</strong> Combining parts from multiple sets into one new creation</li>
+                    </ul>
+                    
+                    <p>Once you master these patterns, you'll write JavaScript code that's clean, maintainable, and professional — just like the best developers in the industry!</p>
+                </div>
+            </details>
+        </section>
+    </div>
+
+    <!-- JavaScript Utilities -->
+    <script>
+        // Expand/Collapse All Controls
+        document.getElementById('expandAll').addEventListener('click', () => {
+            document.querySelectorAll('.details-container').forEach(detail => {
+                detail.open = true;
+            });
+        });
+
+        document.getElementById('collapseAll').addEventListener('click', () => {
+            document.querySelectorAll('.details-container').forEach(detail => {
+                detail.open = false;
+            });
+        });
+
+        // Search TOC functionality
+        document.getElementById('searchTOC').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const tocItems = document.querySelectorAll('.toc-item');
+            
+            tocItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        // Smooth scrolling to TOC sections
+        document.querySelectorAll('.toc-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Highlight code blocks with syntax highlighting
+        document.querySelectorAll('pre code').forEach(block => {
+            hljs.highlightBlock(block);
+        });
+
+        // Add smooth scroll for internal links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Initialize TOC navigation
+        document.addEventListener('DOMContentLoaded', () => {
+            // Scroll spy - highlight active TOC item based on visible section
+            const sections = document.querySelectorAll('section');
+            const tocItems = document.querySelectorAll('.toc-item');
+            
+            window.addEventListener('scroll', () => {
+                let currentSection = '';
+                
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+                    if (pageYOffset >= sectionTop - 100) {
+                        currentSection = section.id;
+                    }
+                });
+                
+                tocItems.forEach(item => {
+                    item.classList.remove('active');
+                    if (item.getAttribute('data-target') === '#' + currentSection) {
+                        item.classList.add('active');
+                        item.style.backgroundColor = 'rgba(0, 209, 255, 0.2)';
+                        item.style.color = 'var(--cyan)';
+                    } else {
+                        item.style.backgroundColor = '';
+                        item.style.color = '';
+                    }
+                });
+            });
+        });
+    </script>
+
+    <!-- Include highlight.js for syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/darkula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+</html>
+```

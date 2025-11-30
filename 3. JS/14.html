@@ -1,0 +1,785 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>6.3 Execution Context</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00f5ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --accent: #00f5ff;
+            --card-bg: #112240;
+            --border-color: #007a99;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            position: fixed;
+            width: 300px;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            box-shadow: 2px 0 10px rgba(0, 245, 255, 0.1);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--amber);
+        }
+
+        .toc-item {
+            margin: 8px 0;
+            padding-left: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .toc-item a {
+            color: var(--cyan);
+            text-decoration: none;
+            display: block;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .toc-item a:hover {
+            color: var(--amber);
+            padding-left: 20px;
+        }
+
+        .toc-subitem {
+            margin-left: 20px;
+            font-size: 0.9rem;
+            color: #b0c4de;
+        }
+
+        details {
+            margin: 15px 0;
+            border-left: 3px solid var(--amber);
+            padding-left: 15px;
+            background-color: rgba(17, 34, 64, 0.5);
+            border-radius: 0 5px 5px 0;
+        }
+
+        summary {
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--amber);
+            list-style: none;
+            padding: 10px;
+            background-color: rgba(0, 245, 255, 0.08);
+            border-radius: 5px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        summary::before {
+            content: "▶";
+            margin-right: 10px;
+            font-size: 0.8rem;
+            transition: transform 0.3s;
+        }
+
+        details[open] summary::before {
+            transform: rotate(90deg);
+        }
+
+        pre code {
+            display: block;
+            padding: 15px;
+            background-color: #0d1b2a;
+            color: var(--cyan);
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            border-left: 3px solid var(--amber);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.2);
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+
+        .formula {
+            background-color: rgba(0, 245, 255, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 3px solid var(--cyan);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.1rem;
+        }
+
+        .definition {
+            color: var(--amber);
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .detail {
+            margin: 12px 0;
+            line-height: 1.6;
+        }
+
+        .syntax {
+            margin: 15px 0;
+        }
+
+        .example {
+            margin: 15px 0;
+        }
+
+        .use-case {
+            color: var(--cyan);
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
+        .code-comment {
+            color: #7f8c8d;
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: #0a192f;
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-left: 8px;
+        }
+
+        .execution-diagram {
+            background-color: rgba(0, 245, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px dashed var(--cyan);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            white-space: pre;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .call-stack {
+            background-color: rgba(17, 34, 64, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid var(--amber);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .stack-item {
+            margin: 5px 0;
+            padding: 8px;
+            background-color: rgba(0, 245, 255, 0.1);
+            border-left: 3px solid var(--cyan);
+            border-radius: 0 5px 5px 0;
+        }
+
+        .current-execution {
+            background-color: rgba(255, 183, 77, 0.3) !important;
+            border-left-color: var(--amber) !important;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.8; }
+            50% { opacity: 1; }
+            100% { opacity: 0.8; }
+        }
+
+        @media (max-width: 991px) {
+            .left-panel {
+                position: relative;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .right-panel {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid p-0">
+    <div class="row g-0">
+        <!-- Left Panel -->
+        <div class="col-md-3 left-panel">
+            <h2>6.3 Execution Context</h2>
+            <p class="text-muted small">The Engine Behind Every Line of Code</p>
+            <p class="text-secondary small">Author: AI Tutor • Updated: 2024</p>
+
+            <div class="mb-3 d-flex gap-2">
+                <button id="expandAll" class="btn btn-control">Expand All</button>
+                <button id="collapseAll" class="btn btn-control">Collapse All</button>
+            </div>
+
+            <div class="search-box mb-4">
+                <input type="text" id="searchToc" class="form-control bg-dark border-cyan" placeholder="Search topics..." style="color: var(--cyan); background-color: #112240; border-color: var(--amber);">
+            </div>
+
+            <h5 class="text-uppercase text-muted fw-bold mb-3">Table of Contents</h5>
+            <ul class="list-unstyled">
+                <li class="toc-item">
+                    <a href="#creation-vs-execution">Creation vs Execution Phase</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#phase-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#phase-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#phase-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#phase-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#phase-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#variable-environments">Variable and Function Environments</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#env-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#env-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#env-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#env-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#env-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#this-binding">this Binding in Different Contexts</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#this-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#this-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#this-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#this-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#this-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#call-stack">Call Stack and Execution Order</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#stack-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#stack-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#stack-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#stack-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#stack-uses">Uses</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="col-md-9 right-panel">
+            <section id="creation-vs-execution">
+                <details>
+                    <summary>Creation vs Execution Phase</summary>
+                    <div class="definition">Definition:</div>
+                    <p>An <span class="highlight">execution context</span> is an abstract concept representing the environment in which JavaScript code is evaluated and executed. Each context has two phases: <strong>creation</strong> and <strong>execution</strong>.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>When JavaScript encounters any code (global or function), it creates an execution context to manage that code's execution. The creation phase happens before any code runs — it sets up memory space for variables and functions. The execution phase is when actual code statements are interpreted and run line by line.</p>
+                    <p>This two-phase process explains why you can call a function before its declaration (hoisting) but not access a variable declared with <code>let</code> before initialization (temporal dead zone).</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// JavaScript engine automatically creates these phases
+// No explicit syntax — it's handled internally
+
+// But here's what happens behind the scenes:
+
+// CREATION PHASE:
+// - Create VariableEnvironment
+// - Create LexicalEnvironment
+// - Set up 'this' binding
+// - Hoist function declarations
+// - Initialize let/const to 'undefined' (TDZ)
+
+// EXECUTION PHASE:
+// - Run code line by line
+// - Assign values to variables
+// - Execute function calls
+// - Handle scope resolution</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// Example demonstrating the two phases
+
+console.log(greeting); // Output: undefined (not ReferenceError!)
+console.log(sayHello()); // Output: "Hello!" (function hoisted!)
+
+var greeting = "Hi!";
+function sayHello() {
+    return "Hello!";
+}
+
+let message = "This won't work before initialization!";
+console.log(message); // Works now — execution phase
+
+// What happens in creation phase:
+// - greeting → undefined (var)
+// - sayHello → function definition (hoisted)
+// - message → uninitialized (let — TDZ)
+
+// What happens in execution phase:
+// - greeting = "Hi!"
+// - message = "This won't work before initialization!"</code></pre>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Understanding why hoisting works with <code>var</code> and functions</li>
+                        <li>Debugging "ReferenceError" vs "undefined" behavior</li>
+                        <li>Comprehending temporal dead zone with <code>let</code>/<code>const</code></li>
+                        <li>Explaining JavaScript's runtime behavior systematically</li>
+                    </ul>
+                    <p class="text-info mt-2">💡 Think of it like preparing a kitchen (creation phase) before cooking (execution phase). You set up ingredients and tools first, then start making dishes.</p>
+                </details>
+            </section>
+
+            <section id="variable-environments">
+                <details>
+                    <summary>Variable and Function Environments</summary>
+                    <div class="definition">Definition:</div>
+                    <p>The <span class="highlight">variable environment</span> and <span class="highlight">lexical environment</span> are internal structures that store variables, functions, and their scopes during execution context creation.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>Each execution context has two key environments:</p>
+                    <ol>
+                        <li><strong>Variable Environment</strong>: Stores <code>var</code> declarations and function declarations. This is where hoisting occurs.</li>
+                        <li><strong>Lexical Environment</strong>: Stores <code>let</code> and <code>const</code> declarations and references to outer scopes. It links to the outer lexical environment to form the scope chain.</li>
+                    </ol>
+                    <p>During creation phase, <code>var</code> and function declarations are added to the variable environment with initial values (<code>undefined</code> for variables, full function definitions for functions). <code>let</code> and <code>const</code> are added to the lexical environment but remain uninitialized until execution phase.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// Behind-the-scenes structure (conceptual):
+
+Execution Context = {
+    variableEnvironment: {
+        greeting: undefined,
+        sayHello: function() { ... }
+    },
+    lexicalEnvironment: {
+        message: &lt;uninitialized&gt;,
+        count: &lt;uninitialized&gt;
+    },
+    outer: &lt;reference to parent lexical environment&gt;
+}</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">function demonstrateEnvironments() {
+    console.log(a); // undefined — from variable environment
+    console.log(b); // ReferenceError — b is in TDZ
+    
+    var a = 10;     // Added to variable environment in creation phase
+    let b = 20;     // Added to lexical environment, initialized in execution phase
+    const c = 30;   // Added to lexical environment, initialized in execution phase
+    
+    console.log(a); // 10
+    console.log(b); // 20
+    console.log(c); // 30
+}
+
+demonstrateEnvironments();
+
+// Global scope example:
+console.log(window.greet); // undefined (in browser)
+var greet = "Hello";
+
+// Creation phase: window.greet = undefined
+// Execution phase: window.greet = "Hello"</code></pre>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Understanding hoisting differences between <code>var</code>, <code>let</code>, and <code>const</code></li>
+                        <li>Debugging variable access errors</li>
+                        <li>Explaining why function declarations work before definition</li>
+                        <li>Designing code that respects JavaScript's initialization rules</li>
+                    </ul>
+                    <p class="text-warning mt-2"><strong>⚠️ Temporal Dead Zone (TDZ):</strong> Accessing <code>let</code> or <code>const</code> variables before initialization throws ReferenceError. This prevents use-before-declaration bugs.</p>
+                </details>
+            </section>
+
+            <section id="this-binding">
+                <details>
+                    <summary>this Binding in Different Contexts</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">this</span> is a special keyword in JavaScript that refers to the object that is executing the current piece of code. Its value is determined at runtime based on how a function is called.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>Unlike other languages, JavaScript's <code>this</code> is dynamically bound — meaning its value changes depending on the calling context. In global context, <code>this</code> points to the global object (<code>window</code> in browsers, <code>global</code> in Node.js). In strict mode, it's <code>undefined</code>. In methods, it points to the object owning the method. In constructors, it points to the new instance being created.</p>
+                    <p>The execution context determines <code>this</code> during creation phase, but its actual value is assigned during execution phase based on the invocation pattern.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// Different contexts produce different this values:
+
+// 1. Global context
+console.log(this); // window (browser) or global (Node.js)
+
+// 2. Function context
+function regularFunction() {
+    console.log(this); // window/global (non-strict) or undefined (strict)
+}
+
+// 3. Method context
+const obj = {
+    name: "Alice",
+    greet() {
+        console.log(this.name); // "Alice" — this refers to obj
+    }
+};
+
+// 4. Constructor context
+function Person(name) {
+    this.name = name; // this refers to the new instance
+}
+
+// 5. Arrow function context
+const arrowFunc = () =&gt; {
+    console.log(this); // inherits this from outer scope
+};</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// EXAMPLE 1: Global context
+console.log(this === window); // true in browser
+
+// EXAMPLE 2: Method context
+const calculator = {
+    value: 10,
+    add(num) {
+        this.value += num;
+        return this.value;
+    },
+    getValue() {
+        return this.value;
+    }
+};
+
+console.log(calculator.add(5)); // 15 — this refers to calculator
+console.log(calculator.getValue()); // 15
+
+// EXAMPLE 3: Function context (common pitfall)
+const func = calculator.add;
+console.log(func(5)); // NaN — this is now global/window!
+
+// Fix with bind:
+const boundAdd = calculator.add.bind(calculator);
+console.log(boundAdd(5)); // 20
+
+// EXAMPLE 4: Constructor context
+function Car(brand) {
+    this.brand = brand;
+    this.getBrand = function() {
+        return this.brand;
+    };
+}
+
+const myCar = new Car("Toyota");
+console.log(myCar.getBrand()); // "Toyota"
+
+// EXAMPLE 5: Arrow function preserves outer this
+const person = {
+    name: "Bob",
+    greet: function() {
+        setTimeout(() =&gt; {
+            console.log("Hello, I'm " + this.name); // "Bob" — arrow inherits person's this
+        }, 100);
+    },
+    greetOld: function() {
+        setTimeout(function() {
+            console.log("Hello, I'm " + this.name); // "undefined" — this is window!
+        }, 100);
+    }
+};
+
+person.greet();    // "Hello, I'm Bob"
+person.greetOld(); // "Hello, I'm undefined"</code></pre>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Understanding object-oriented patterns in JavaScript</li>
+                        <li>Fixing common "this" binding issues in callbacks</li>
+                        <li>Writing reusable methods that work with different objects</li>
+                        <li>Implementing event handlers with proper context</li>
+                        <li>Using arrow functions to preserve lexical this</li>
+                    </ul>
+                    <p class="text-success mt-2">✅ Rule of Thumb: <strong>"How you call a function determines what this is."</strong></p>
+                    <ul>
+                        <li>Direct call: <code>func()</code> → global/undefined</li>
+                        <li>Method call: <code>obj.method()</code> → obj</li>
+                        <li>Constructor: <code>new Func()</code> → new instance</li>
+                        <li>Arrow function: inherits outer this</li>
+                        <li>Bind/Call/Apply: explicitly set this</li>
+                    </ul>
+                </details>
+            </section>
+
+            <section id="call-stack">
+                <details>
+                    <summary>Call Stack and Execution Order</summary>
+                    <div class="definition">Definition:</div>
+                    <p>The <span class="highlight">call stack</span> is a data structure that records the sequence of function calls in a program using a Last-In-First-Out (LIFO) principle.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>JavaScript is single-threaded, meaning it can only execute one task at a time. The call stack manages this by pushing a new execution context onto the stack whenever a function is called, and popping it off when the function returns. This creates a clear order of execution: each function must complete before the previous one continues.</p>
+                    <p>If too many nested function calls occur (like infinite recursion), the stack overflows, causing a "RangeError: Maximum call stack size exceeded".</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// No direct syntax — managed automatically by JS engine
+
+// Conceptual representation:
+// Call Stack (bottom to top):
+// [globalContext]
+// [functionA]
+// [functionB]
+// [functionC] ← currently executing
+
+// When functionC returns:
+// [globalContext]
+// [functionA]
+// [functionB] ← now executing
+
+// When functionB returns:
+// [globalContext]
+// [functionA] ← now executing</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// Example 1: Simple call stack
+function a() {
+    console.log('a');
+    b();
+}
+
+function b() {
+    console.log('b');
+    c();
+}
+
+function c() {
+    console.log('c');
+}
+
+a(); // Output: a, b, c
+
+// Call stack progression:
+// 1. push globalContext
+// 2. push a() → execute a()
+// 3. push b() → execute b()
+// 4. push c() → execute c()
+// 5. pop c() → back to b()
+// 6. pop b() → back to a()
+// 7. pop a() → back to global
+// 8. pop globalContext
+
+// Example 2: Recursive function (danger!)
+function countdown(n) {
+    if (n &lt; 0) return;
+    console.log(n);
+    countdown(n - 1); // Calls itself
+}
+
+countdown(3);
+// Stack: countdown(3) → countdown(2) → countdown(1) → countdown(0) → countdown(-1)
+
+// Example 3: Event loop interaction
+function delayed() {
+    console.log('Delayed');
+}
+
+setTimeout(delayed, 0);
+console.log('Immediate');
+
+// Output: Immediate, Delayed
+// Why? setTimeout adds delayed to callback queue, 
+// call stack executes console.log('Immediate') first,
+// then picks up delayed from queue when stack is empty!</code></pre>
+
+                    <div class="call-stack">
+// CALL STACK VISUALIZATION:
+//
+//      ┌───────────────┐
+//      │  c()          │ ← TOP of stack (currently running)
+//      ├───────────────┤
+//      │  b()          │
+//      ├───────────────┤
+//      │  a()          │
+//      ├───────────────┤
+//      │  global       │ ← BOTTOM of stack
+//      └───────────────┘
+//
+// When c() completes:
+//
+//      ┌───────────────┐
+//      │  b()          │ ← TOP (now running)
+//      ├───────────────┤
+//      │  a()          │
+//      ├───────────────┤
+//      │  global       │ ← BOTTOM
+//      └───────────────┘</div>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Understanding function call hierarchy</li>
+                        <li>Debugging recursive functions and stack overflows</li>
+                        <li>Grasping asynchronous operations and event loop</li>
+                        <li>Optimizing deep function chains for performance</li>
+                        <li>Diagnosing "Maximum call stack size exceeded" errors</li>
+                    </ul>
+                    <p class="text-info mt-2">💡 Pro Tip: The call stack explains why JavaScript is single-threaded and why async operations need special handling (callbacks, promises, async/await).</p>
+                    <p class="text-warning mt-2"><strong>⚠️ Stack Overflow Warning:</strong> Infinite recursion or deeply nested calls will crash your program. Always ensure base cases in recursion!</p>
+                </details>
+            </section>
+
+            <hr class="my-5">
+
+            <div class="alert alert-info">
+                <h5>Key Takeaways</h5>
+                <ul>
+                    <li>Every function call creates a new execution context with creation and execution phases.</li>
+                    <li>Hoisting happens in the creation phase: <code>var</code> and functions get initialized, <code>let</code>/<code>const</code> enter TDZ.</li>
+                    <li><code>this</code> value is determined by how a function is called, not where it's defined.</li>
+                    <li>The call stack tracks function calls in LIFO order — essential for understanding execution flow.</li>
+                    <li>Understanding these concepts explains JavaScript's behavior better than memorizing rules.</li>
+                </ul>
+            </div>
+
+            <div class="alert alert-warning">
+                <h5>Common Pitfalls</h5>
+                <ul>
+                    <li>Expecting <code>this</code> to behave like in other programming languages</li>
+                    <li>Assuming <code>let</code> variables are hoisted like <code>var</code> (they're not!)</li>
+                    <li>Creating infinite recursion without base case</li>
+                    <li>Forgetting that arrow functions don't have their own <code>this</code></li>
+                    <li>Confusing execution context with scope chain</li>
+                </ul>
+            </div>
+
+            <div class="alert alert-success">
+                <h5>Interview Question Prep</h5>
+                <p><strong>Q: Explain what happens when a function is called in JavaScript.</strong></p>
+                <p><strong>A:</strong> When a function is called, JavaScript creates a new execution context. First, the creation phase sets up the variable environment (hoisting <code>var</code> and functions), lexical environment (declaring <code>let</code>/<code>const</code> in TDZ), and binds <code>this</code>. Then the execution phase runs the function code line by line. After completion, the context is popped off the call stack.</p>
+                
+                <p><strong>Q: Why does this code log "undefined" instead of throwing an error?</strong></p>
+                <pre><code>console.log(x);
+var x = 5;</code></pre>
+                <p><strong>A:</strong> Because during the creation phase, the variable <code>x</code> is hoisted and initialized with <code>undefined</code>. The assignment <code>x = 5</code> happens during execution phase. So when we log <code>x</code>, it exists but hasn't been assigned yet.</p>
+                
+                <p><strong>Q: What is the output of this code?</strong></p>
+                <pre><code>function a() { console.log('a'); b(); }
+function b() { console.log('b'); c(); }
+function c() { console.log('c'); }
+a();</code></pre>
+                <p><strong>A:</strong> <code>a</code>, <code>b</code>, <code>c</code> — because each function call pushes a new context onto the call stack, and they execute in order before popping off.</p>
+            </div>
+
+            <div class="text-center mt-4">
+                <small class="text-muted">© 2024 AI Tutor — Mastering Programming Fundamentals One Concept at a Time</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript Utilities -->
+<script>
+    // Expand/Collapse All
+    document.getElementById('expandAll').addEventListener('click', () => {
+        document.querySelectorAll('details').forEach(detail => {
+            detail.open = true;
+        });
+    });
+
+    document.getElementById('collapseAll').addEventListener('click', () => {
+        document.querySelectorAll('details').forEach(detail => {
+            detail.open = false;
+        });
+    });
+
+    // Smooth scrolling for TOC links
+    document.querySelectorAll('.toc-item a, .toc-subitem a').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+            
+            if (targetElement) {
+                window.scrollTo({
+                    top: targetElement.offsetTop - 100,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+
+    // Search functionality for TOC
+    document.getElementById('searchToc').addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
+        
+        tocItems.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            if (query === '' || text.includes(query)) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+
+    // Syntax Highlighting (basic)
+    document.querySelectorAll('pre code').forEach(block => {
+        hljs.highlightBlock(block);
+    });
+
+    // Add highlight.js if not present (fallback)
+    if (typeof hljs === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js';
+        script.onload = () => {
+            document.querySelectorAll('pre code').forEach(block => {
+                hljs.highlightBlock(block);
+            });
+        };
+        document.head.appendChild(script);
+    }
+</script>
+
+<!-- Optional: Add highlight.js for better syntax highlighting -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+
+</body>
+</html>

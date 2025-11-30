@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>26.3 Server State Management — Deep Learning Note</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
+
+  <style>
+    :root{
+      --bg:#0b0f11; --surface:#121416; --accent-cyan:#06b6d4; --accent-amber:#f59e0b; --muted:#9aa6a6; --panel-width:340px; --radius:14px;
+    }
+    html,body{height:100%;background:var(--bg);color:#e6f3f3;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;margin:0}
+    .app{display:grid;grid-template-columns:var(--panel-width) 1fr;gap:18px;padding:20px;height:100vh;box-sizing:border-box}
+    .left-panel{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);border-radius:var(--radius);padding:18px;position:relative;overflow:auto;border:1px solid rgba(255,255,255,0.03)}
+    .right-panel{background:var(--surface);border-radius:var(--radius);padding:28px;overflow:auto;height:calc(100vh - 40px);box-shadow:0 6px 30px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.03)}
+    .left-fixed{position:sticky;top:20px}.title{font-size:18px;font-weight:700;color:white}.subtitle{color:var(--muted);font-size:13px;margin-top:6px}.meta{margin-top:12px;font-size:13px}
+    .toc-search{display:flex;gap:8px;margin-top:12px}.toc-list{margin-top:12px}.toc-item{padding:8px;border-radius:10px;margin-bottom:6px}.toc-item:hover{background:rgba(255,255,255,0.02)}
+    .controls{display:flex;gap:8px;margin-top:12px} h1,h2,h3{color:#fff} h1{font-size:24px} h2{font-size:20px} h3{font-size:16px}
+    p{line-height:1.6;color:#dbeaea} details{background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);padding:12px;border-radius:10px;margin-bottom:12px;border:1px solid rgba(255,255,255,0.02)} summary{cursor:pointer;font-weight:600}
+    pre{background:rgba(0,0,0,0.6);padding:12px;border-radius:10px;overflow:auto;border:1px solid rgba(255,255,255,0.03)} code{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', 'Courier New', monospace;font-size:13px}
+    .section{scroll-margin-top:48px}.muted{color:var(--muted)}.pill{display:inline-block;padding:6px 10px;border-radius:999px;background:linear-gradient(90deg, rgba(6,182,212,0.08), rgba(245,158,11,0.06));font-size:13px}
+    @media (max-width:900px){.app{grid-template-columns:1fr}.left-panel{order:2}.right-panel{order:1;height:auto}}
+  </style>
+</head>
+<body>
+  <div class="app container-fluid">
+    <aside class="left-panel left-fixed" aria-labelledby="toc-title">
+      <div class="title">26.3 Server State Management</div>
+      <div class="subtitle">Caching, optimistic updates, background sync, React Query/SWR, GraphQL</div>
+      <div class="meta"><div><span class="pill">Author:</span> Deep Tutor</div>
+        <div class="muted" style="margin-top:6px">Designed for college → PhD level: deep and details details details</div>
+      </div>
+
+      <div class="toc-search">
+        <input id="tocFilter" class="form-control form-control-sm" placeholder="Search TOC, e.g. optimistic" aria-label="search toc">
+        <button id="expandAllBtn" class="btn btn-sm btn-outline-light" title="Expand all TOC">Expand</button>
+      </div>
+
+      <div class="controls">
+        <button id="collapseAllBtn" class="btn btn-sm btn-outline-light">Collapse</button>
+        <button id="topBtn" class="btn btn-sm btn-outline-light" onclick="document.querySelector('.right-panel').scrollTo({top:0, behavior:'smooth'})">Top</button>
+      </div>
+
+      <nav class="toc-list" id="tocList">
+        <details class="toc-item open"><summary>Overview & Executive Summary</summary>
+          <ul>
+            <li><a href="#overview">What is Server State?</a></li>
+            <li><a href="#cache">Cache Invalidation Strategies</a></li>
+            <li><a href="#optimistic">Optimistic Updates</a></li>
+            <li><a href="#bg-sync">Background Synchronization</a></li>
+            <li><a href="#react-query">React Query & SWR Patterns</a></li>
+            <li><a href="#graphql">GraphQL State Management</a></li>
+          </ul>
+        </details>
+
+        <details class="toc-item"><summary>Sections</summary>
+          <ul>
+            <li><a href="#cache">Cache invalidation</a></li>
+            <li><a href="#optimistic">Optimistic updates</a></li>
+            <li><a href="#bg-sync">Background sync</a></li>
+            <li><a href="#react-query">React Query / SWR</a></li>
+            <li><a href="#graphql">GraphQL patterns</a></li>
+          </ul>
+        </details>
+
+        <details class="toc-item"><summary>Examples & Snippets</summary>
+          <ul>
+            <li><a href="#example-cache">Cache invalidation examples</a></li>
+            <li><a href="#example-optimistic">Optimistic update example</a></li>
+            <li><a href="#example-reactquery">React Query patterns</a></li>
+            <li><a href="#example-graphql">GraphQL client example</a></li>
+          </ul>
+        </details>
+
+        <details class="toc-item"><summary>Further Reading</summary>
+          <ul>
+            <li><a href="#further">Notes & Links</a></li>
+          </ul>
+        </details>
+      </nav>
+
+      <div style="position:absolute;left:18px;bottom:18px;font-size:12px;color:var(--muted)">Tip: use search to filter headings</div>
+    </aside>
+
+    <main class="right-panel" role="main">
+      <article>
+        <header class="section" id="overview">
+          <h1>26.3 Server State Management — Deep Note</h1>
+          <p class="muted">Design patterns for managing cached server data on the client, keeping UI responsive and correct. Layered explanations use &lt;details&gt; with practical JS examples for modern libraries (React Query, SWR, Apollo GraphQL).</p>
+        </header>
+
+        <section class="section" id="cache">
+          <h2>Cache Invalidation Strategies</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>Cache invalidation ensures client caches reflect server truth. Strategies: time-based (TTL), event-based (invalidate on mutation), manual invalidation, and stale-while-revalidate (serve stale while background refresh occurs).</p>
+          </details>
+
+          <details>
+            <summary>Deep explanation</summary>
+            <p>Choose a strategy based on data volatility and UX needs. TTL is simple but may serve stale data; event-driven invalidation (on mutation success) gives stronger consistency. Stale-while-revalidate (SWR) balances latency and freshness. Combine approaches—use short TTL for volatile endpoints and event invalidation for user-driven mutations.</p>
+          </details>
+
+          <details>
+            <summary>Syntax & pseudocode</summary>
+            <pre><code>// Example: invalidate cache on mutation
+onMutationSuccess = () =&gt; {
+  cache.invalidate('todos'); // pseudo-API
+}
+
+// TTL example (cache library)
+cache.set('users', data, { ttl: 60 * 1000 }); // 1 minute
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Real use cases & caveats</summary>
+            <p>For collaborative apps (multi-user), prefer event-based invalidation or websockets to push updates. For feed-like data, use pagination + SWR. Avoid aggressive invalidation which can cause excessive network calls; measure and tune.</p>
+          </details>
+        </section>
+
+        <section class="section" id="optimistic">
+          <h2>Optimistic Updates</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>Optimistic updates update the UI immediately assuming the mutation will succeed, then reconcile with the server response. This yields snappy UX but requires rollback logic on failure.</p>
+          </details>
+
+          <details>
+            <summary>Deep explanation</summary>
+            <p>Key steps: snapshot current cache, apply optimistic change to cache, send mutation, on success confirm or refetch, on failure rollback to snapshot and show error. Use small, reversible patches and careful idempotency to minimize complex rollbacks.</p>
+          </details>
+
+          <details>
+            <summary>Syntax & pseudocode</summary>
+            <pre><code>// optimistic flow (pseudo)
+const previous = cache.get(key);
+cache.set(key, optimisticValue);
+try{ await api.mutate(payload); cache.invalidate(key); } catch(e){ cache.set(key, previous); }
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Readable example (React Query)</summary>
+            <pre><code>// using @tanstack/react-query
+const queryClient = useQueryClient();
+const mutation = useMutation(api.addTodo, {
+  onMutate: async (newTodo) =&gt; {
+    await queryClient.cancelQueries(['todos']);
+    const previous = queryClient.getQueryData(['todos']);
+    queryClient.setQueryData(['todos'], old =&gt; [...old, newTodo]);
+    return { previous };
+  },
+  onError: (err, newTodo, context) =&gt; {
+    queryClient.setQueryData(['todos'], context.previous);
+  },
+  onSettled: () =&gt; {
+    queryClient.invalidateQueries(['todos']);
+  }
+});
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Real use cases & caveats</summary>
+            <p>Optimistic updates are great for chat, likes, and UIs where latency matters. Avoid for operations that require strong server validation or complex side effects. Always include rollback and error handling.</p>
+          </details>
+        </section>
+
+        <section class="section" id="bg-sync">
+          <h2>Background Synchronization</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>Background sync keeps client and server data reconciled without blocking the UI. Use retry queues, exponential backoff, and network-status awareness to sync when connectivity is available.</p>
+          </details>
+
+          <details>
+            <summary>Deep explanation</summary>
+            <p>Implement a write queue: store pending mutations locally (IndexedDB/localStorage), attempt to send when online, and mark success or keep retrying. Use service workers for reliable background sync in PWAs and exponential backoff to handle transient failures.</p>
+          </details>
+
+          <details>
+            <summary>Syntax & pseudocode</summary>
+            <pre><code>// basic queue pseudocode
+enqueue(mutation){ localQueue.push(mutation); saveToIndexedDB(localQueue); }
+processQueue(){ while(queue not empty){ try{ await send(next); remove from queue; } catch(e){ wait(backoff); break; } }
+}
+
+onOnline() { processQueue(); }
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Readable example (service worker sync placeholder)</summary>
+            <pre><code>// In service worker (high-level)
+self.addEventListener('sync', event =&gt; {
+  if(event.tag === 'sync-queue'){
+    event.waitUntil(processQueueFromIDB());
+  }
+});
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Real use cases & caveats</summary>
+            <p>Background sync is essential for offline-first apps (notes, forms). Consider data conflicts and merging strategies; use CRDTs or server timestamps for conflict resolution if necessary.</p>
+          </details>
+        </section>
+
+        <section class="section" id="react-query">
+          <h2>React Query / SWR Patterns</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>React Query and SWR abstract caching, revalidation, background fetching, and mutation handling, providing battle-tested patterns for server state. They implement features like caching, stale-while-revalidate, retries, pagination helpers, and optimistic updates.</p>
+          </details>
+
+          <details>
+            <summary>Deep explanation</summary>
+            <p>React Query focuses on queries and mutations with a queryClient API for cache operations. SWR emphasizes simplicity (hooks like useSWR) with focus on stale-while-revalidate. Both handle background refetching, window focus revalidation, and cache hydration for SSR apps.</p>
+          </details>
+
+          <details>
+            <summary>Syntax & common patterns</summary>
+            <pre><code>// React Query: basic query
+const { data, error, isLoading } = useQuery(['user', id], () =&gt; fetch('/api/users/' + id).then(r =&gt; r.json()));
+
+// SWR: basic usage
+const { data } = useSWR('/api/user/' + id, fetcher, { revalidateOnFocus: true });
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Readable example (pagination with React Query)</summary>
+            <pre><code>function usePaginatedTodos(page){
+  return useQuery(['todos', page], () =&gt; api.fetchTodos({ page }), { keepPreviousData: true });
+}
+
+// keepPreviousData avoids flicker when changing pages
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Real use cases & caveats</summary>
+            <p>React Query is ideal for REST/HTTP-driven apps; SWR is excellent for simple hooks-based fetching. Beware of over-fetching—tune staleTime, cacheTime, and refetch behaviors. Use query invalidation for consistency after mutations.</p>
+          </details>
+        </section>
+
+        <section class="section" id="graphql">
+          <h2>GraphQL State Management</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>GraphQL clients (Apollo, Relay, urql) combine networking and normalized cache management, allowing queries to populate a client-side graph that maps closely to server schemas. They provide optimistic updates, cache policies, and incremental updates.</p>
+          </details>
+
+          <details>
+            <summary>Deep explanation</summary>
+            <p>GraphQL clients normalize responses into an entity graph keyed by __typename and id. Apollo's cache allows field-level reads/writes, optimisticResponse for mutations, and type policies for merge and pagination. Relay emphasizes strict schemas and compile-time optimizations.</p>
+          </details>
+
+          <details>
+            <summary>Syntax & pseudocode (Apollo optimistic)</summary>
+            <pre><code>// optimistic example (Apollo Client)
+const [addTodo] = useMutation(ADD_TODO, {
+  optimisticResponse: { addTodo: { id: 'temp-id', text: 'optimistic', __typename: 'Todo' } },
+  update(cache, { data: { addTodo } }){
+    const existing = cache.readQuery({ query: GET_TODOS });
+    cache.writeQuery({ query: GET_TODOS, data: { todos: [...existing.todos, addTodo] } });
+  }
+});
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Readable example (Relay/urql notes)</summary>
+            <p>Relay enforces colocated fragments and compiled queries for performance. urql is lightweight and modular with exchanges for caching strategies. Choose client based on app scale and team familiarity.</p>
+          </details>
+
+          <details>
+            <summary>Real use cases & caveats</summary>
+            <p>GraphQL clients shine when the frontend needs fine-grained control over data selection and cache merging. Be careful with cache normalization edge cases and merging strategies—write type policies and tests for pagination and cache updates.</p>
+          </details>
+        </section>
+
+        <section class="section" id="examples">
+          <h2>Examples & Code Snippets</h2>
+
+          <details open>
+            <summary>Cache invalidation: selective invalidation</summary>
+            <pre><code>// React Query: invalidate a tag or query key
+queryClient.invalidateQueries(['todos']);
+
+// Apollo: evict specific cache entry
+cache.evict({ id: cache.identify({ __typename: 'Todo', id: 't1' }) });
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Optimistic update: rollback pattern</summary>
+            <pre><code>// redux or custom store pseudo
+const prev = store.get('items');
+store.set('items', [...prev, tempItem]);
+try { await api.add(tempItem); store.invalidate('items'); } catch(e) { store.set('items', prev); }
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Background sync: queue + retry pseudo</summary>
+            <pre><code>// simple retry with backoff
+async function retrySend(entry, attempts=0){
+  try{ await send(entry); } catch(e){ if(attempts &lt; 5) setTimeout(() =&gt; retrySend(entry, attempts+1), Math.pow(2, attempts)*1000); else markFailed(entry); }
+}
+</code></pre>
+          </details>
+
+          <details>
+            <summary>GraphQL: pagination type policy (Apollo)</summary>
+            <pre><code>const client = new ApolloClient({ cache: new InMemoryCache({ typePolicies: { Query: { fields: { todos: { keyArgs: false, merge(existing = [], incoming){ return [...existing, ...incoming]; } } } } } }) });
+</code></pre>
+          </details>
+        </section>
+
+        <section class="section" id="further">
+          <h2>Further Reading & Resources</h2>
+          <ul>
+            <li>React Query docs (@tanstack/react-query) — caching strategies and mutation patterns.</li>
+            <li>SWR docs — simple hooks-based fetching.</li>
+            <li>Apollo/Relay docs for GraphQL client-side caching and optimistic patterns.</li>
+          </ul>
+        </section>
+
+        <footer style="margin-top:24px;color:var(--muted)">
+          <small>Generated learning note — server state management, single-file HTML. Request TypeScript versions, extra examples (conflict resolution, CRDTs), or conversion to other frameworks.</small>
+        </footer>
+      </article>
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded',() =&gt; {
+      document.querySelectorAll('pre code').forEach((el) =&gt; { try{ hljs.highlightElement(el); }catch(e){} });
+      const filter = document.getElementById('tocFilter');
+      filter.addEventListener('input', (e) =&gt; { const q = e.target.value.toLowerCase(); document.querySelectorAll('#tocList details').forEach(d =&gt; { const text = d.textContent.toLowerCase(); d.style.display = text.includes(q) ? '' : 'none'; }); });
+      document.getElementById('expandAllBtn').addEventListener('click', () =&gt; { document.querySelectorAll('#tocList details').forEach(d =&gt; d.open = true); });
+      document.getElementById('collapseAllBtn').addEventListener('click', () =&gt; { document.querySelectorAll('#tocList details').forEach(d =&gt; d.open = false); });
+      document.querySelectorAll('a[href^="#"]').forEach(a =&gt; { a.addEventListener('click', (e) =&gt; { const href = a.getAttribute('href'); const target = document.querySelector(href); if(target){ e.preventDefault(); document.querySelector('.right-panel').scrollTo({top: target.offsetTop - 12, behavior:'smooth'}); } }); });
+      const rp = document.querySelector('.right-panel'); rp.tabIndex = 0;
+      const obs = new MutationObserver(() =&gt; { document.querySelectorAll('pre code').forEach((el) =&gt; { try { hljs.highlightElement(el); } catch(e){} }); });
+      obs.observe(document.body, {childList:true, subtree:true});
+    });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

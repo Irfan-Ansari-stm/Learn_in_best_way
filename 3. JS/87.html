@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>25.2 React Basics — Deep Learning Note</title>
+
+  <!-- Bootstrap CSS (inline friendly) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Highlight.js -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
+
+  <style>
+    :root{
+      --bg:#0b0f11;         /* deep dark */
+      --surface:#121416;    /* panel surface */
+      --accent-cyan:#06b6d4;/* cyan */
+      --accent-amber:#f59e0b;/* amber */
+      --muted:#9aa6a6;
+      --panel-width:320px;  /* fixed left width */
+      --radius:14px;
+      --glass: rgba(255,255,255,0.02);
+    }
+    html,body{height:100%;background:var(--bg);color:#e6f3f3;font-family:Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;}
+    a{color:var(--accent-cyan)}
+
+    /* Layout */
+    .app{
+      display:grid;
+      grid-template-columns: var(--panel-width) 1fr;
+      gap:18px;
+      padding:20px;
+      height:100vh;
+      box-sizing:border-box;
+    }
+    .left-panel{
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+      border-radius:var(--radius);
+      padding:18px;
+      position:relative;
+      overflow:auto;
+      border:1px solid rgba(255,255,255,0.03);
+    }
+    .right-panel{
+      background:var(--surface);
+      border-radius:var(--radius);
+      padding:28px;
+      overflow:auto;
+      height:calc(100vh - 40px);
+      box-shadow: 0 6px 30px rgba(2,6,23,0.6);
+      border:1px solid rgba(255,255,255,0.03);
+    }
+    .left-fixed{position:sticky;top:20px}
+
+    /* Header */
+    .title{font-size:18px;font-weight:700;color:white}
+    .subtitle{color:var(--muted);font-size:13px;margin-top:6px}
+    .meta{margin-top:12px;font-size:13px}
+
+    /* TOC */
+    .toc-search{display:flex;gap:8px;margin-top:12px}
+    .toc-list{margin-top:12px}
+    .toc-item{padding:8px;border-radius:10px;margin-bottom:6px}
+    .toc-item:hover{background:rgba(255,255,255,0.02)}
+
+    /* Controls */
+    .controls{display:flex;gap:8px;margin-top:12px}
+
+    /* Content styles */
+    h1,h2,h3{color:#fff}
+    h1{font-size:24px}
+    h2{font-size:20px}
+    h3{font-size:16px}
+    p{line-height:1.6;color:#dbeaea}
+
+    details{background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);padding:12px;border-radius:10px;margin-bottom:12px;border:1px solid rgba(255,255,255,0.02)}
+    summary{cursor:pointer;font-weight:600}
+
+    pre{background:rgba(0,0,0,0.6);padding:12px;border-radius:10px;overflow:auto;border:1px solid rgba(255,255,255,0.03)}
+    code{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', 'Courier New', monospace;font-size:13px}
+
+    /* Anchors */
+    .section{scroll-margin-top:48px}
+
+    /* Small helpers */
+    .muted{color:var(--muted)}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:linear-gradient(90deg, rgba(6,182,212,0.08), rgba(245,158,11,0.06));font-size:13px}
+
+    /* Responsive */
+    @media (max-width:900px){
+      .app{grid-template-columns:1fr;}
+      .left-panel{order:2}
+      .right-panel{order:1;height:auto}
+    }
+  </style>
+</head>
+<body>
+  <div class="app container-fluid">
+    <aside class="left-panel left-fixed" aria-labelledby="toc-title">
+      <div class="title">25.2 React Basics</div>
+      <div class="subtitle">JSX, Components, Props, State, Events, Lifecycle & Hooks</div>
+      <div class="meta">
+        <div><span class="pill">Author:</span> Deep Tutor</div>
+        <div class="muted" style="margin-top:6px">Designed for college → PhD level: deep and details details details</div>
+      </div>
+
+      <div class="toc-search">
+        <input id="tocFilter" class="form-control form-control-sm" placeholder="Search TOC, e.g. JSX" aria-label="search toc">
+        <button id="expandAllBtn" class="btn btn-sm btn-outline-light" title="Expand all TOC">Expand</button>
+      </div>
+
+      <div class="controls">
+        <button id="collapseAllBtn" class="btn btn-sm btn-outline-light">Collapse</button>
+        <button id="topBtn" class="btn btn-sm btn-outline-light" onclick="document.querySelector('.right-panel').scrollTo({top:0, behavior:'smooth'})">Top</button>
+      </div>
+
+      <nav class="toc-list" id="tocList">
+        <details class="toc-item open"><summary>Overview & Executive Summary</summary>
+          <ul>
+            <li><a href="#overview">What is React?</a></li>
+            <li><a href="#jsx">JSX and Component Creation</a></li>
+            <li><a href="#props-state">Props & State</a></li>
+            <li><a href="#events">Event Handling</a></li>
+            <li><a href="#lifecycle-hooks">Lifecycle Methods & Hooks</a></li>
+            <li><a href="#ecosystem">React Ecosystem Overview</a></li>
+          </ul>
+        </details>
+
+        <details class="toc-item"><summary>25.2 React Basics — Sections</summary>
+          <ul>
+            <li><a href="#jsx">JSX & Component Creation</a></li>
+            <li><a href="#props-state">Props & State Management</a></li>
+            <li><a href="#events">Event Handling</a></li>
+            <li><a href="#lifecycle-hooks">Lifecycle Methods & Hooks</a></li>
+            <li><a href="#ecosystem">Ecosystem & Best Practices</a></li>
+          </ul>
+        </details>
+
+        <details class="toc-item"><summary>Examples & Code Snippets</summary>
+          <ul>
+            <li><a href="#example-jsx">JSX Example</a></li>
+            <li><a href="#example-props">Props Example</a></li>
+            <li><a href="#example-state">State Example</a></li>
+            <li><a href="#example-hooks">Hooks Example</a></li>
+          </ul>
+        </details>
+
+        <details class="toc-item"><summary>Further Reading & Resources</summary>
+          <ul>
+            <li><a href="#further">Notes & Links</a></li>
+          </ul>
+        </details>
+      </nav>
+
+      <div style="position:absolute;left:18px;bottom:18px;font-size:12px;color:var(--muted)">Tip: use search to filter headings</div>
+    </aside>
+
+    <main class="right-panel" role="main">
+      <article>
+        <header class="section" id="overview">
+          <h1>25.2 React Basics — Deep Note</h1>
+          <p class="muted">This note follows a layered explanation approach: each major topic uses <code>&lt;details&gt;</code> with executive summary, deeper explanation, syntax, readable example, and real-world use-cases. Smooth scrolling anchors and syntax highlighting included.</p>
+        </header>
+
+        <section class="section" id="jsx">
+          <h2>JSX and Component Creation</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>JSX is a syntactic extension that looks like HTML inside JavaScript. Components are the building blocks—either function components or class components (older). Modern React favors function components with hooks. Components accept inputs (props) and return UI description.</p>
+          </details>
+
+          <details>
+            <summary>Deep explanation</summary>
+            <p>JSX compiles to <code>React.createElement()</code> calls. It is not required but improves readability. Function components are plain functions that return JSX. They can be composed, parameterized with props, and can maintain internal state via hooks (e.g., <code>useState</code>). Understanding the virtual DOM diffing algorithm clarifies why React batches updates and why keeping components pure simplifies reasoning.</p>
+          </details>
+
+          <details>
+            <summary>Syntax & pseudocode</summary>
+            <pre><code>&lt;!-- JSX example (displayed as code, with entities) --&gt;
+function Greeting(props) {
+  return &lt;h1&gt;Hello, {props.name}!&lt;/h1&gt;
+}
+
+// Compiles to
+// React.createElement('h1', null, 'Hello, ' + props.name + '!')
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Readable example (JS)</summary>
+            <pre><code>&lt;!-- Example file: App.js --&gt;
+import React from 'react';
+
+function Greeting(props) {
+  return &lt;h1&gt;Hello, {props.name}!&lt;/h1&gt;
+}
+
+export default function App() {
+  return (
+    &lt;div&gt;
+      &lt;Greeting name="Irfan" /&gt;
+    &lt;/div&gt;
+  );
+}
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Real use cases & caveats</summary>
+            <p>Use JSX for component templates; avoid complex inline logic in JSX, prefer helper functions. Keep components small (single responsibility). When performance is critical, consider memoization (<code>React.memo</code>) and avoid unnecessary re-renders by proper keying and immutable updates.</p>
+          </details>
+        </section>
+
+        <section class="section" id="props-state">
+          <h2>Props and State Management</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>Props are immutable inputs from parent to child. State is local mutable data inside a component, managed via hooks (e.g., <code>useState</code>, <code>useReducer</code>). For app-wide state, use context, Redux, MobX, or React Query for server state.</p>
+          </details>
+
+          <details>
+            <summary>Deep explanation</summary>
+            <p>Think of props as function arguments and state as internal variables. Changing state triggers a re-render for that component and its subtree. Use reducers for complex state transitions to centralize logic and keep updates predictable. For many async patterns and caching, libraries like React Query (TanStack Query) simplify server state management.</p>
+          </details>
+
+          <details>
+            <summary>Syntax & pseudocode</summary>
+            <pre><code>// useState
+const [count, setCount] = useState(0);
+
+// useReducer example (pseudocode)
+function reducer(state, action) {
+  switch(action.type) {
+    case 'increment': return {count: state.count + 1};
+    default: return state;
+  }
+}
+const [state, dispatch] = useReducer(reducer, {count:0});
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Readable example (State & Props)</summary>
+            <pre><code>&lt;!-- App.js --&gt;
+import React, { useState } from 'react';
+
+function Counter({initial=0}){
+  const [count, setCount] = useState(initial);
+  return (
+    &lt;div&gt;
+      &lt;p&gt;Count: {count}&lt;/p&gt;
+      &lt;button onClick={() =&gt; setCount(c =&gt; c + 1)}&gt;Increment&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default function App(){
+  return &lt;Counter initial={5} /&gt;;
+}
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Real use cases & best practices</summary>
+            <p>Lift state up when multiple components need the same data. Use <code>useMemo</code> and <code>useCallback</code> to avoid recreating expensive values or functions. For large apps, split responsibilities: local, shared (context), and server state.</p>
+          </details>
+        </section>
+
+        <section class="section" id="events">
+          <h2>Event Handling in React</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>React uses a synthetic event system that wraps browser events, normalizing behavior across browsers. Event handlers are passed as camelCase props (<code>onClick</code>, <code>onChange</code>). Use event pooling awareness (older React) and prefer functional updates when state depends on previous state.</p>
+          </details>
+
+          <details>
+            <summary>Deep explanation</summary>
+            <p>Handlers receive a SyntheticEvent which mirrors native event API. You can call <code>event.preventDefault()</code> and <code>event.stopPropagation()</code>. When passing handlers, bind arguments carefully — use closures or arrow functions to avoid unintended re-renders.</p>
+          </details>
+
+          <details>
+            <summary>Syntax & example</summary>
+            <pre><code>// Button with handler
+function MyButton(){
+  function handleClick(e){
+    e.preventDefault();
+    console.log('clicked');
+  }
+  return &lt;button onClick={handleClick}&gt;Click&lt;/button&gt;
+}
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Real use cases</summary>
+            <p>Form handling: manage controlled components with <code>value</code> + <code>onChange</code>, or use libraries like Formik or React Hook Form for complex forms. Debounce heavy handlers when necessary.</p>
+          </details>
+        </section>
+
+        <section class="section" id="lifecycle-hooks">
+          <h2>Lifecycle Methods and Hooks</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>Class components used lifecycle methods (componentDidMount, componentDidUpdate, componentWillUnmount). In function components, <code>useEffect</code> models mounting, updating, and cleanup. Hooks provide powerful primitives: <code>useState</code>, <code>useEffect</code>, <code>useMemo</code>, <code>useCallback</code>, <code>useRef</code>, and custom hooks.</p>
+          </details>
+
+          <details>
+            <summary>Deep explanation</summary>
+            <p><code>useEffect</code> runs after render. A return function in <code>useEffect</code> is a cleanup (like componentWillUnmount). Use dependency arrays to control execution; mistake-free patterns include listing dependencies and extracting logic into hooks to avoid stale closures.</p>
+          </details>
+
+          <details>
+            <summary>Syntax & examples</summary>
+            <pre><code>// useEffect
+useEffect(() =&gt; {
+  const id = setInterval(() =&gt; console.log('tick'), 1000);
+  return () =&gt; clearInterval(id);
+}, []); // [] means run once on mount
+
+// Custom hook pattern
+function useCounter(initial=0){
+  const [count,setCount] = useState(initial);
+  const inc = () =&gt; setCount(c =&gt; c+1);
+  return {count, inc};
+}
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Real use cases & performance</summary>
+            <p>Use <code>useEffect</code> for data fetching, subscriptions, and DOM interactions. For performance, avoid expensive work in render — memoize derived data and minimize DOM operations. Custom hooks let you share logic succinctly.</p>
+          </details>
+        </section>
+
+        <section class="section" id="ecosystem">
+          <h2>React Ecosystem Overview</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>React sits in a rich ecosystem: routing (React Router), state management (Redux, Zustand, Recoil), server data (React Query), styling (styled-components, Tailwind CSS), bundlers (Vite, Webpack), and frameworks (Next.js). Choose tools based on app size and team familiarity.</p>
+          </details>
+
+          <details>
+            <summary>Deep explanation</summary>
+            <p>For full-stack needs, frameworks like Next.js provide SSR/SSG and API routes. For rapid frontend apps, Vite offers fast builds. Testing tools: Jest + React Testing Library. Accessibility: follow ARIA roles and semantic HTML.</p>
+          </details>
+
+          <details>
+            <summary>Best practices</summary>
+            <ul>
+              <li>Keep components small and focused.</li>
+              <li>Prefer composition over inheritance.</li>
+              <li>Use feature folders for large apps.</li>
+              <li>Use TypeScript for type safety where possible.</li>
+            </ul>
+          </details>
+        </section>
+
+        <section class="section" id="example-jsx">
+          <h2>Examples & Code Snippets</h2>
+
+          <details open>
+            <summary>JSX Example</summary>
+            <pre><code>&lt;!-- This block shows JSX; entities used so it displays correctly --&gt;
+function TodoItem({todo}){
+  return (
+    &lt;li&gt;
+      &lt;input type="checkbox" checked={todo.done} /&gt;
+      &lt;span&gt;{todo.text}&lt;/span&gt;
+    &lt;/li&gt;
+  );
+}
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Props Example</summary>
+            <pre><code>// Passing props
+&lt;Greeting name="Ayesha" /&gt;
+
+// Receiving props
+function Greeting({name}){
+  return &lt;h2&gt;Hi, {name}&lt;/h2&gt;
+}
+</code></pre>
+          </details>
+
+          <details>
+            <summary>State Example</summary>
+            <pre><code>// Controlled input example
+function NameForm(){
+  const [name, setName] = useState('');
+  return (
+    &lt;form onSubmit={(e) =&gt; { e.preventDefault(); alert(name); }}&gt;
+      &lt;input value={name} onChange={(e) =&gt; setName(e.target.value)} /&gt;
+      &lt;button type="submit"&gt;Save&lt;/button&gt;
+    &lt;/form&gt;
+  );
+}
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Hooks Example</summary>
+            <pre><code>// useEffect + fetch pattern
+import React, {useState, useEffect} from 'react';
+
+function Users(){
+  const [users, setUsers] = useState([]);
+  useEffect(() =&gt; {
+    let mounted = true;
+    fetch('/api/users')
+      .then(r =&gt; r.json())
+      .then(data =&gt; { if(mounted) setUsers(data); });
+    return () =&gt; { mounted = false; };
+  }, []);
+  return &lt;div&gt;{users.length} users&lt;/div&gt;
+}
+</code></pre>
+          </details>
+        </section>
+
+        <section class="section" id="further">
+          <h2>Further Reading & Resources</h2>
+          <ul>
+            <li>Official React docs — conceptual guides and API reference.</li>
+            <li>React Router, Redux docs, TanStack Query docs for server state.</li>
+            <li>Testing: React Testing Library + Jest.</li>
+          </ul>
+        </section>
+
+        <footer style="margin-top:24px;color:var(--muted)">
+          <small>Generated learning note — deep and detailed, single-file HTML. Use highlight.js for live syntax highlighting. Feel free to edit, save, or ask for expansion on any subsection.</small>
+        </footer>
+      </article>
+    </main>
+  </div>
+
+  <!-- Inline JS: utilities for search, expand/collapse, smooth scrolling, highlight.js init -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+  <script>
+    // init highlight.js
+    document.addEventListener('DOMContentLoaded',() =&gt; {
+      document.querySelectorAll('pre code').forEach((el) =&gt; {
+        try { hljs.highlightElement(el); } catch(e) { /* ignore */ }
+      });
+
+      // TOC filter
+      const filter = document.getElementById('tocFilter');
+      filter.addEventListener('input', (e) =&gt; {
+        const q = e.target.value.toLowerCase();
+        document.querySelectorAll('#tocList details').forEach(d =&gt; {
+          const text = d.textContent.toLowerCase();
+          d.style.display = text.includes(q) ? '' : 'none';
+        });
+      });
+
+      // expand/collapse
+      document.getElementById('expandAllBtn').addEventListener('click', () =&gt; {
+        document.querySelectorAll('#tocList details').forEach(d =&gt; d.open = true);
+      });
+      document.getElementById('collapseAllBtn').addEventListener('click', () =&gt; {
+        document.querySelectorAll('#tocList details').forEach(d =&gt; d.open = false);
+      });
+
+      // smooth scroll for anchor links within right-panel
+      document.querySelectorAll('a[href^="#"]').forEach(a =&gt; {
+        a.addEventListener('click', (e) =&gt; {
+          const href = a.getAttribute('href');
+          const target = document.querySelector(href);
+          if(target){
+            e.preventDefault();
+            document.querySelector('.right-panel').scrollTo({top: target.offsetTop - 12, behavior:'smooth'});
+          }
+        });
+      });
+
+      // make right-panel keyboard scrollable and accessible
+      const rp = document.querySelector('.right-panel');
+      rp.tabIndex = 0;
+
+      // Re-run highlight when new code is added (if needed)
+      const obs = new MutationObserver(() =&gt; {
+        document.querySelectorAll('pre code').forEach((el) =&gt; {
+          try { hljs.highlightElement(el); } catch(e) {}
+        });
+      });
+      obs.observe(document.body, {childList:true, subtree:true});
+    });
+  </script>
+
+  <!-- Bootstrap JS (optional for UI) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

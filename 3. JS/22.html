@@ -1,0 +1,1954 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8.4 Functional Array Methods</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00f5ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --accent: #00f5ff;
+            --card-bg: #112240;
+            --border-color: #007a99;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            position: fixed;
+            width: 300px;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            box-shadow: 2px 0 10px rgba(0, 245, 255, 0.1);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--amber);
+        }
+
+        .toc-item {
+            margin: 8px 0;
+            padding-left: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .toc-item a {
+            color: var(--cyan);
+            text-decoration: none;
+            display: block;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .toc-item a:hover {
+            color: var(--amber);
+            padding-left: 20px;
+        }
+
+        .toc-subitem {
+            margin-left: 20px;
+            font-size: 0.9rem;
+            color: #b0c4de;
+        }
+
+        details {
+            margin: 15px 0;
+            border-left: 3px solid var(--amber);
+            padding-left: 15px;
+            background-color: rgba(17, 34, 64, 0.5);
+            border-radius: 0 5px 5px 0;
+        }
+
+        summary {
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--amber);
+            list-style: none;
+            padding: 10px;
+            background-color: rgba(0, 245, 255, 0.08);
+            border-radius: 5px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        summary::before {
+            content: "▶";
+            margin-right: 10px;
+            font-size: 0.8rem;
+            transition: transform 0.3s;
+        }
+
+        details[open] summary::before {
+            transform: rotate(90deg);
+        }
+
+        pre code {
+            display: block;
+            padding: 15px;
+            background-color: #0d1b2a;
+            color: var(--cyan);
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            border-left: 3px solid var(--amber);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.2);
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+
+        .formula {
+            background-color: rgba(0, 245, 255, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 3px solid var(--cyan);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.1rem;
+        }
+
+        .definition {
+            color: var(--amber);
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .detail {
+            margin: 12px 0;
+            line-height: 1.6;
+        }
+
+        .syntax {
+            margin: 15px 0;
+        }
+
+        .example {
+            margin: 15px 0;
+        }
+
+        .use-case {
+            color: var(--cyan);
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
+        .code-comment {
+            color: #7f8c8d;
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: #0a192f;
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-left: 8px;
+        }
+
+        .array-diagram {
+            background-color: rgba(0, 245, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px dashed var(--cyan);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            white-space: pre;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .function-diagram {
+            background-color: rgba(17, 34, 64, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid var(--amber);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .method-box {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 5px;
+            border: 1px solid var(--cyan);
+            border-radius: 5px;
+            background-color: rgba(0, 245, 255, 0.1);
+        }
+
+        .result-box {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 5px;
+            border: 1px solid var(--amber);
+            border-radius: 5px;
+            background-color: rgba(255, 183, 77, 0.2);
+        }
+
+        .comparison-table {
+            background-color: rgba(0, 245, 255, 0.05);
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+            border: 1px dashed var(--cyan);
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            text-align: left;
+        }
+
+        .comparison-table th {
+            background-color: rgba(0, 245, 255, 0.1);
+            color: var(--amber);
+            font-weight: bold;
+        }
+
+        .comparison-table tr:nth-child(even) {
+            background-color: rgba(17, 34, 64, 0.3);
+        }
+
+        .comparison-table .functional {
+            color: var(--cyan);
+            font-weight: bold;
+        }
+
+        .comparison-table .mutating {
+            color: var(--amber);
+            font-weight: bold;
+        }
+
+        @media (max-width: 991px) {
+            .left-panel {
+                position: relative;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .right-panel {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid p-0">
+    <div class="row g-0">
+        <!-- Left Panel -->
+        <div class="col-md-3 left-panel">
+            <h2>8.4 Functional Array Methods</h2>
+            <p class="text-muted small">Mastering Functional Programming with Arrays</p>
+            <p class="text-secondary small">Author: AI Tutor • Updated: 2024</p>
+
+            <div class="mb-3 d-flex gap-2">
+                <button id="expandAll" class="btn btn-control">Expand All</button>
+                <button id="collapseAll" class="btn btn-control">Collapse All</button>
+            </div>
+
+            <div class="search-box mb-4">
+                <input type="text" id="searchToc" class="form-control bg-dark border-cyan" placeholder="Search topics..." style="color: var(--cyan); background-color: #112240; border-color: var(--amber);">
+            </div>
+
+            <h5 class="text-uppercase text-muted fw-bold mb-3">Table of Contents</h5>
+            <ul class="list-unstyled">
+                <li class="toc-item">
+                    <a href="#foreach">forEach() for Iteration</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#foreach-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#foreach-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#foreach-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#foreach-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#foreach-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#map">map() for Transformation</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#map-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#map-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#map-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#map-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#map-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#filter">filter() for Selection</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#filter-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#filter-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#filter-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#filter-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#filter-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#reduce">reduce() and reduceRight()</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#reduce-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#reduce-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#reduce-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#reduce-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#reduce-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#find-findindex">find() and findIndex()</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#find-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#find-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#find-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#find-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#find-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#some-every">some() and every()</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#some-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#some-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#some-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#some-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#some-uses">Uses</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="col-md-9 right-panel">
+            <section id="foreach">
+                <details>
+                    <summary>forEach() for Iteration</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">forEach()</span> executes a provided function once for each array element in order.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p><code>forEach()</code> is the most basic functional array method. It's designed for side effects - performing actions on each element without creating a new array. Unlike traditional loops, it doesn't return anything (returns undefined), making it perfect for operations like logging, DOM manipulation, or API calls.</p>
+                    <p>The callback function receives three arguments: the current element, its index, and the entire array. You can also pass a context as the second parameter to <code>forEach()</code>.</p>
+                    <p>Important: <code>forEach()</code> skips holes in sparse arrays and cannot be stopped early with <code>break</code> or <code>return</code> (use <code>for...of</code> or other methods if you need early termination).</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>array.forEach(callback(currentValue, index, array), thisArg)</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// EXAMPLE 1: Basic forEach usage
+const numbers = [1, 2, 3, 4, 5];
+
+// Log each number
+numbers.forEach(number => {
+    console.log(number);
+});
+// Output: 1, 2, 3, 4, 5
+
+// Use all three parameters
+numbers.forEach((number, index, array) => {
+    console.log(`Element ${index} of ${array.length}: ${number}`);
+});
+// Output:
+// Element 0 of 5: 1
+// Element 1 of 5: 2
+// Element 2 of 5: 3
+// Element 3 of 5: 4
+// Element 4 of 5: 5
+
+// EXAMPLE 2: Side effects - DOM manipulation
+const items = ['Apple', 'Banana', 'Orange', 'Grape'];
+const ul = document.createElement('ul');
+
+items.forEach(item => {
+    const li = document.createElement('li');
+    li.textContent = item;
+    ul.appendChild(li);
+});
+
+// EXAMPLE 3: Working with objects
+const students = [
+    { name: 'Alice', grade: 85 },
+    { name: 'Bob', grade: 92 },
+    { name: 'Charlie', grade: 78 },
+    { name: 'Diana', grade: 96 }
+];
+
+students.forEach(student => {
+    console.log(`${student.name} has a grade of ${student.grade}`);
+});
+// Output:
+// Alice has a grade of 85
+// Bob has a grade of 92
+// Charlie has a grade of 78
+// Diana has a grade of 96
+
+// EXAMPLE 4: Using thisArg to set context
+class GradeTracker {
+    constructor() {
+        this.threshold = 80;
+        this.passed = [];
+        this.failed = [];
+    }
+    
+    processGrades(students) {
+        students.forEach(function(student) {
+            if (student.grade >= this.threshold) {
+                this.passed.push(student.name);
+            } else {
+                this.failed.push(student.name);
+            }
+        }, this); // Pass 'this' as context
+    }
+}
+
+const tracker = new GradeTracker();
+tracker.processGrades(students);
+console.log(tracker.passed); // ["Alice", "Bob", "Diana"]
+console.log(tracker.failed); // ["Charlie"]
+
+// EXAMPLE 5: forEach with sparse arrays
+const sparse = [1, , 3, , 5];
+sparse.forEach(value => {
+    console.log(value); // Logs: 1, 3, 5 (skips holes)
+});
+
+// EXAMPLE 6: Practical example - Form validation
+function validateForm(formData) {
+    const errors = [];
+    
+    // Validate each field
+    Object.entries(formData).forEach(([field, value]) => {
+        if (!value) {
+            errors.push(`${field} is required`);
+        } else if (field === 'email' &amp;&amp; !value.includes('@')) {
+            errors.push(`${field} must be a valid email`);
+        } else if (field === 'age' &amp;&amp; (value &lt; 0 || value &gt; 150)) {
+            errors.push(`${field} must be between 0 and 150`);
+        }
+    });
+    
+    return errors;
+}
+
+const form = {
+    name: 'John Doe',
+    email: 'john@example.com',
+    age: 25,
+    password: ''
+};
+
+const validationErrors = validateForm(form);
+console.log(validationErrors); // ["password is required"]
+
+// EXAMPLE 7: Comparison with for...of loop
+const colors = ['red', 'green', 'blue'];
+
+// forEach - functional approach
+colors.forEach(color => {
+    console.log(color.toUpperCase());
+});
+
+// for...of - imperative approach
+for (const color of colors) {
+    console.log(color.toUpperCase());
+}
+
+// Both produce same output but different paradigms</code></pre>
+
+                    <div class="function-diagram">
+// FOREACH EXECUTION FLOW:
+
+// Array: [1, 2, 3]
+// forEach(callback)
+//   → callback(1, 0, [1,2,3])
+//   → callback(2, 1, [1,2,3])
+//   → callback(3, 2, [1,2,3])
+
+// No return value - pure side effect</div>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Performing side effects on each array element</li>
+                        <li>DOM manipulation and rendering</li>
+                        <li>Logging and debugging</li>
+                        <li>API calls for each item in a collection</li>
+                        <li>Updating state based on array elements</li>
+                        <li>Initializing complex data structures</li>
+                    </ul>
+                    <p class="text-warning mt-2"><strong>⚠️ Warning:</strong> Don't use <code>forEach()</code> when you need to create a new array. Use <code>map()</code> instead!</p>
+                    <p class="text-info mt-2">💡 Pro Tip: Use <code>forEach()</code> when you want to perform an action on each element, not when you want to transform data.</p>
+                </details>
+            </section>
+
+            <section id="map">
+                <details>
+                    <summary>map() for Transformation</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">map()</span> creates a new array populated with the results of calling a provided function on every element in the original array.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p><code>map()</code> is one of the most important functional programming methods. It transforms each element in an array according to a function and returns a new array of the same length. The original array remains unchanged.</p>
+                    <p>Each element in the result array corresponds to the same position in the source array. This makes <code>map()</code> perfect for data transformation pipelines.</p>
+                    <p>Like <code>forEach()</code>, the callback receives three arguments: current value, index, and the entire array. However, unlike <code>forEach()</code>, <code>map()</code> returns a new array.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>array.map(callback(currentValue, index, array), thisArg)</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// EXAMPLE 1: Basic map usage
+const numbers = [1, 2, 3, 4, 5];
+
+// Square each number
+const squares = numbers.map(n => n * n);
+console.log(squares); // [1, 4, 9, 16, 25]
+console.log(numbers); // [1, 2, 3, 4, 5] - unchanged!
+
+// Double each number
+const doubled = numbers.map(n => n * 2);
+console.log(doubled); // [2, 4, 6, 8, 10]
+
+// EXAMPLE 2: Transforming strings
+const names = ['alice', 'bob', 'charlie', 'diana'];
+
+// Capitalize first letter
+const capitalized = names.map(name => 
+    name.charAt(0).toUpperCase() + name.slice(1)
+);
+console.log(capitalized); // ["Alice", "Bob", "Charlie", "Diana"]
+
+// Convert to uppercase
+const upperNames = names.map(name => name.toUpperCase());
+console.log(upperNames); // ["ALICE", "BOB", "CHARLIE", "DIANA"]
+
+// EXAMPLE 3: Working with objects
+const products = [
+    { name: 'Laptop', price: 999 },
+    { name: 'Phone', price: 699 },
+    { name: 'Tablet', price: 399 },
+    { name: 'Headphones', price: 199 }
+];
+
+// Add tax to prices
+const productsWithTax = products.map(product => ({
+    ...product,
+    priceWithTax: product.price * 1.08 // 8% tax
+}));
+
+console.log(productsWithTax);
+// [
+//   {name: "Laptop", price: 999, priceWithTax: 1078.92},
+//   {name: "Phone", price: 699, priceWithTax: 754.92},
+//   ...
+// ]
+
+// Extract just the names
+const productNames = products.map(product => product.name);
+console.log(productNames); // ["Laptop", "Phone", "Tablet", "Headphones"]
+
+// EXAMPLE 4: Using index parameter
+const scores = [85, 92, 78, 96, 88];
+
+// Create ranking with positions
+const rankings = scores.map((score, index) => ({
+    rank: index + 1,
+    score: score,
+    status: score >= 90 ? 'Excellent' : 'Good'
+}));
+
+console.log(rankings);
+// [
+//   {rank: 1, score: 85, status: "Good"},
+//   {rank: 2, score: 92, status: "Excellent"},
+//   {rank: 3, score: 78, status: "Good"},
+//   {rank: 4, score: 96, status: "Excellent"},
+//   {rank: 5, score: 88, status: "Good"}
+// ]
+
+// EXAMPLE 5: Complex transformations
+const users = [
+    { id: 1, name: 'Alice', birthYear: 1990 },
+    { id: 2, name: 'Bob', birthYear: 1985 },
+    { id: 3, name: 'Charlie', birthYear: 1995 }
+];
+
+// Transform to user profile objects
+const profiles = users.map(user => ({
+    id: user.id,
+    name: user.name,
+    age: new Date().getFullYear() - user.birthYear,
+    email: `${user.name.toLowerCase()}@example.com`,
+    isActive: true,
+    createdAt: new Date().toISOString()
+}));
+
+console.log(profiles);
+// [
+//   {id: 1, name: "Alice", age: 34, email: "alice@example.com", isActive: true, createdAt: "..."},
+//   {id: 2, name: "Bob", age: 39, email: "bob@example.com", isActive: true, createdAt: "..."},
+//   {id: 3, name: "Charlie", age: 29, email: "charlie@example.com", isActive: true, createdAt: "..."}
+// ]
+
+// EXAMPLE 6: Map with multiple parameters
+const matrix = [
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9]
+];
+
+// Double each element in each row
+const doubledMatrix = matrix.map(row => 
+    row.map(element => element * 2)
+);
+
+console.log(doubledMatrix);
+// [
+//   [2, 4, 6],
+//   [8, 10, 12],
+//   [14, 16, 18]
+// ]
+
+// EXAMPLE 7: Practical example - Data processing pipeline
+class DataProcessor {
+    constructor(data) {
+        this.data = data;
+    }
+    
+    // Chain multiple transformations
+    process() {
+        return this.data
+            .map(item => ({...item})) // Clone object
+            .map(item => {
+                // Add calculated fields
+                item.calculatedValue = item.value * 2;
+                item.status = item.value > 50 ? 'High' : 'Low';
+                return item;
+            })
+            .map(item => {
+                // Format for display
+                item.displayValue = `$${item.calculatedValue.toFixed(2)}`;
+                item.displayStatus = item.status === 'High' ? '✅ High' : '⚠️ Low';
+                return item;
+            });
+    }
+}
+
+const rawData = [
+    { id: 1, value: 25 },
+    { id: 2, value: 75 },
+    { id: 3, value: 40 }
+];
+
+const processor = new DataProcessor(rawData);
+const processedData = processor.process();
+
+console.log(processedData);
+// [
+//   {id: 1, value: 25, calculatedValue: 50, status: "Low", displayValue: "$50.00", displayStatus: "⚠️ Low"},
+//   {id: 2, value: 75, calculatedValue: 150, status: "High", displayValue: "$150.00", displayStatus: "✅ High"},
+//   {id: 3, value: 40, calculatedValue: 80, status: "High", displayValue: "$80.00", displayStatus: "✅ High"}
+// ]
+
+// EXAMPLE 8: Handling sparse arrays
+const sparse = [1, , 3, , 5];
+const mappedSparse = sparse.map(x => x * 10);
+console.log(mappedSparse); // [10, empty × 1, 30, empty × 1, 50]
+// Holes are preserved in the result
+
+// EXAMPLE 9: Map vs forEach comparison
+const numbers = [1, 2, 3, 4, 5];
+
+// Using map - functional approach
+const squares = numbers.map(n => n * n);
+console.log('Map result:', squares); // [1, 4, 9, 16, 25]
+
+// Using forEach - imperative approach
+const squares2 = [];
+numbers.forEach(n => squares2.push(n * n));
+console.log('ForEach result:', squares2); // [1, 4, 9, 16, 25]
+
+// Same result but different paradigms:
+// map: returns new array - declarative
+// forEach: modifies external array - imperative</code></pre>
+
+                    <div class="function-diagram">
+// MAP EXECUTION FLOW:
+
+// Original: [1, 2, 3]
+// map(callback)
+//   → callback(1) → 1
+//   → callback(2) → 4  
+//   → callback(3) → 9
+// Result: [1, 4, 9]
+
+// Original unchanged</div>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Transforming data from one format to another</li>
+                        <li>Creating new arrays based on existing data</li>
+                        <li>Data preprocessing for visualization</li>
+                        <li>Extracting specific properties from objects</li>
+                        <li>Building data pipelines</li>
+                        <li>Converting between different data structures</li>
+                    </ul>
+                    <p class="text-success mt-2">✅ Best Practice: Always use <code>map()</code> when you need to transform data into a new array. Avoid using <code>forEach()</code> for this purpose.</p>
+                    <p class="text-info mt-2">💡 Pro Tip: <code>map()</code> is perfect for functional programming because it's pure - no side effects, always returns the same output for the same input.</p>
+                </details>
+            </section>
+
+            <section id="filter">
+                <details>
+                    <summary>filter() for Selection</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">filter()</span> creates a new array with all elements that pass the test implemented by the provided function.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p><code>filter()</code> is used for selecting elements from an array based on a condition. It returns a new array containing only the elements that satisfy the given predicate function.</p>
+                    <p>The callback function should return a boolean value: <code>true</code> to include the element, <code>false</code> to exclude it. Elements that return false are omitted from the result array.</p>
+                    <p>Like other functional methods, <code>filter()</code> doesn't modify the original array and skips holes in sparse arrays.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>array.filter(callback(element, index, array), thisArg)</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// EXAMPLE 1: Basic filter usage
+const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+// Get even numbers
+const evens = numbers.filter(n => n % 2 === 0);
+console.log(evens); // [2, 4, 6, 8, 10]
+
+// Get odd numbers
+const odds = numbers.filter(n => n % 2 !== 0);
+console.log(odds); // [1, 3, 5, 7, 9]
+
+// Get numbers greater than 5
+const greaterThanFive = numbers.filter(n => n > 5);
+console.log(greaterThanFive); // [6, 7, 8, 9, 10]
+
+// EXAMPLE 2: Filtering objects
+const students = [
+    { name: 'Alice', grade: 85, subject: 'Math' },
+    { name: 'Bob', grade: 92, subject: 'Science' },
+    { name: 'Charlie', grade: 78, subject: 'Math' },
+    { name: 'Diana', grade: 96, subject: 'Science' },
+    { name: 'Eve', grade: 88, subject: 'English' }
+];
+
+// Filter by subject
+const mathStudents = students.filter(student => student.subject === 'Math');
+console.log(mathStudents);
+// [{name: "Alice", grade: 85, subject: "Math"}, {name: "Charlie", grade: 78, subject: "Math"}]
+
+// Filter by grade threshold
+const highAchievers = students.filter(student => student.grade >= 90);
+console.log(highAchievers);
+// [{name: "Bob", grade: 92, subject: "Science"}, {name: "Diana", grade: 96, subject: "Science"}]
+
+// Filter by multiple conditions
+const scienceHighAchievers = students.filter(
+    student => student.subject === 'Science' &amp;&amp; student.grade >= 90
+);
+console.log(scienceHighAchievers);
+// [{name: "Bob", grade: 92, subject: "Science"}, {name: "Diana", grade: 96, subject: "Science"}]
+
+// EXAMPLE 3: Filtering strings
+const words = ['apple', 'banana', 'cherry', 'date', 'elderberry', 'fig'];
+
+// Words longer than 5 characters
+const longWords = words.filter(word => word.length > 5);
+console.log(longWords); // ["banana", "cherry", "elderberry"]
+
+// Words starting with 'a' or 'e'
+const aOrEWords = words.filter(word => 
+    word.startsWith('a') || word.startsWith('e')
+);
+console.log(aOrEWords); // ["apple", "elderberry"]
+
+// EXAMPLE 4: Filtering with index
+const temperatures = [72, 68, 75, 70, 78, 82, 85, 77];
+
+// Temperatures above average on even days
+const avgTemp = temperatures.reduce((sum, temp) => sum + temp, 0) / temperatures.length;
+const aboveAvgEvenDays = temperatures.filter((temp, index) => 
+    temp &gt; avgTemp &amp;&amp; index % 2 === 0
+);
+console.log(aboveAvgEvenDays); // [75, 78, 85]
+
+// EXAMPLE 5: Filtering sparse arrays
+const sparse = [1, , 3, , 5, , 7];
+const filteredSparse = sparse.filter(x => x > 3);
+console.log(filteredSparse); // [5, 7] - holes are ignored
+
+// EXAMPLE 6: Practical example - Search functionality
+class ProductManager {
+    constructor(products) {
+        this.products = products;
+    }
+    
+    search(query, filters = {}) {
+        let result = this.products;
+        
+        // Filter by search query
+        if (query) {
+            result = result.filter(product =>
+                product.name.toLowerCase().includes(query.toLowerCase()) ||
+                product.description.toLowerCase().includes(query.toLowerCase())
+            );
+        }
+        
+        // Filter by category
+        if (filters.category) {
+            result = result.filter(product => 
+                product.category === filters.category
+            );
+        }
+        
+        // Filter by price range
+        if (filters.minPrice !== undefined) {
+            result = result.filter(product => 
+                product.price >= filters.minPrice
+            );
+        }
+        
+        if (filters.maxPrice !== undefined) {
+            result = result.filter(product => 
+                product.price <= filters.maxPrice
+            );
+        }
+        
+        return result;
+    }
+}
+
+const products = [
+    { id: 1, name: 'iPhone 14', category: 'Electronics', price: 999, description: 'Latest smartphone' },
+    { id: 2, name: 'MacBook Pro', category: 'Electronics', price: 1999, description: 'Professional laptop' },
+    { id: 3, name: 'Nike Shoes', category: 'Clothing', price: 120, description: 'Running shoes' },
+    { id: 4, name: 'Coffee Mug', category: 'Home', price: 15, description: 'Ceramic coffee mug' },
+    { id: 5, name: 'iPad Air', category: 'Electronics', price: 599, description: 'Tablet computer' }
+];
+
+const manager = new ProductManager(products);
+
+// Search for electronics under $1000
+const results = manager.search('', { 
+    category: 'Electronics', 
+    maxPrice: 1000 
+});
+console.log(results);
+// [
+//   {id: 1, name: "iPhone 14", category: "Electronics", price: 999, description: "Latest smartphone"},
+//   {id: 5, name: "iPad Air", category: "Electronics", price: 599, description: "Tablet computer"}
+// ]
+
+// Search for products with 'coffee'
+const coffeeResults = manager.search('coffee');
+console.log(coffeeResults);
+// [{id: 4, name: "Coffee Mug", category: "Home", price: 15, description: "Ceramic coffee mug"}]
+
+// EXAMPLE 7: Filtering nested arrays
+const inventory = [
+    { id: 1, items: ['apple', 'banana', 'orange'] },
+    { id: 2, items: ['carrot', 'potato', 'onion'] },
+    { id: 3, items: ['bread', 'milk', 'cheese'] },
+    { id: 4, items: ['apple', 'grape', 'kiwi'] }
+];
+
+// Find all inventories containing 'apple'
+const appleInventories = inventory.filter(inv => 
+    inv.items.includes('apple')
+);
+console.log(appleInventories);
+// [
+//   {id: 1, items: ["apple", "banana", "orange"]},
+//   {id: 4, items: ["apple", "grape", "kiwi"]}
+// ]
+
+// EXAMPLE 8: Performance optimization with early filtering
+const largeArray = Array.from({length: 10000}, (_, i) => i);
+
+// Instead of chaining multiple filters, combine conditions
+const optimizedFilter = largeArray.filter(n => 
+    n % 2 === 0 && // Even numbers
+    n > 100 &&     // Greater than 100
+    n < 500       // Less than 500
+);
+
+console.log(optimizedFilter.length); // 199 (even numbers between 102 and 498)
+
+// EXAMPLE 9: Filter vs map comparison
+const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+// Filter - select elements
+const evens = numbers.filter(n => n % 2 === 0);
+console.log('Filtered:', evens); // [2, 4, 6, 8, 10]
+
+// Map - transform elements
+const doubled = numbers.map(n => n * 2);
+console.log('Mapped:', doubled); // [2, 4, 6, 8, 10, 12, 14, 16, 18, 20]
+
+// Different purposes:
+// filter: reduces array size (selects subset)
+// map: maintains array size (transforms each element)</code></pre>
+
+                    <div class="function-diagram">
+// FILTER EXECUTION FLOW:
+
+// Original: [1, 2, 3, 4, 5]
+// filter(callback)
+//   → callback(1) → false
+//   → callback(2) → true
+//   → callback(3) → false
+//   → callback(4) → true
+//   → callback(5) → false
+// Result: [2, 4]
+
+// Only elements returning true are included</div>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Creating subsets of data based on conditions</li>
+                        <li>Implementing search and filtering functionality</li>
+                        <li>Validating data sets</li>
+                        <li>Removing unwanted elements from arrays</li>
+                        <li>Building dynamic lists and menus</li>
+                        <li>Data cleaning and preprocessing</li>
+                    </ul>
+                    <p class="text-success mt-2">✅ Best Practice: Use <code>filter()</code> when you want to select a subset of elements that meet certain criteria.</p>
+                    <p class="text-info mt-2">💡 Pro Tip: Combine <code>filter()</code> with <code>map()</code> for powerful data transformation pipelines.</p>
+                </details>
+            </section>
+
+            <section id="reduce">
+                <details>
+                    <summary>reduce() and reduceRight()</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">reduce()</span> executes a reducer function on each element of the array, resulting in a single output value. <span class="highlight">reduceRight()</span> does the same but processes elements from right to left.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p><code>reduce()</code> is the most powerful functional array method. It accumulates a single value by applying a function to each element of the array. Think of it as "reducing" an array down to one value.</p>
+                    <p>The reducer function takes four parameters: accumulator, current value, current index, and the entire array. The accumulator holds the accumulated result from previous iterations.</p>
+                    <p>An optional initial value can be provided as the second argument to <code>reduce()</code>. If not provided, the first element becomes the initial accumulator value, and iteration starts from the second element.</p>
+                    <p><code>reduceRight()</code> works identically but processes elements from the end of the array to the beginning.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// reduce()
+array.reduce(callback(accumulator, currentValue, index, array), initialValue)
+
+// reduceRight()
+array.reduceRight(callback(accumulator, currentValue, index, array), initialValue)</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// EXAMPLE 1: Basic reduce usage
+const numbers = [1, 2, 3, 4, 5];
+
+// Sum all numbers
+const sum = numbers.reduce((acc, num) => acc + num, 0);
+console.log(sum); // 15
+
+// Multiply all numbers
+const product = numbers.reduce((acc, num) => acc * num, 1);
+console.log(product); // 120
+
+// EXAMPLE 2: Reduce without initial value
+const numbers2 = [1, 2, 3, 4, 5];
+
+// Without initial value - first element becomes accumulator
+const sumNoInit = numbers2.reduce((acc, num) => acc + num);
+console.log(sumNoInit); // 15
+
+// How it works internally:
+// acc=1, num=2 → acc=3
+// acc=3, num=3 → acc=6  
+// acc=6, num=4 → acc=10
+// acc=10, num=5 → acc=15
+
+// EXAMPLE 3: Reducing objects
+const transactions = [
+    { amount: 100, type: 'deposit' },
+    { amount: -50, type: 'withdrawal' },
+    { amount: 200, type: 'deposit' },
+    { amount: -75, type: 'withdrawal' },
+    { amount: 150, type: 'deposit' }
+];
+
+// Calculate total balance
+const balance = transactions.reduce((acc, transaction) => 
+    acc + transaction.amount, 0
+);
+console.log(balance); // 325
+
+// Group transactions by type
+const grouped = transactions.reduce((acc, transaction) => {
+    if (!acc[transaction.type]) {
+        acc[transaction.type] = [];
+    }
+    acc[transaction.type].push(transaction);
+    return acc;
+}, {});
+
+console.log(grouped);
+// {
+//   deposit: [
+//     {amount: 100, type: "deposit"},
+//     {amount: 200, type: "deposit"},
+//     {amount: 150, type: "deposit"}
+//   ],
+//   withdrawal: [
+//     {amount: -50, type: "withdrawal"},
+//     {amount: -75, type: "withdrawal"}
+//   ]
+// }
+
+// EXAMPLE 4: Finding maximum/minimum values
+const scores = [85, 92, 78, 96, 88, 91];
+
+// Find maximum score
+const maxScore = scores.reduce((max, score) => 
+    score > max ? score : max, 
+    -Infinity
+);
+console.log(maxScore); // 96
+
+// Find minimum score
+const minScore = scores.reduce((min, score) => 
+    score &lt; min ? score : min, 
+    Infinity
+);
+console.log(minScore); // 78
+
+// EXAMPLE 5: Flattening arrays
+const nestedArrays = [[1, 2], [3, 4], [5, 6]];
+
+// Flatten to single array
+const flat = nestedArrays.reduce((acc, arr) => 
+    acc.concat(arr), []
+);
+console.log(flat); // [1, 2, 3, 4, 5, 6]
+
+// Using spread operator (modern approach)
+const flat2 = nestedArrays.reduce((acc, arr) => 
+    [...acc, ...arr], []
+);
+console.log(flat2); // [1, 2, 3, 4, 5, 6]
+
+// Deep flatten (recursive)
+const deeplyNested = [1, [2, [3, 4]], [5, [6, [7, 8]]]];
+const deepFlatten = (arr) => 
+    arr.reduce((acc, val) => 
+        Array.isArray(val) ? [...acc, ...deepFlatten(val)] : [...acc, val], 
+        []
+    );
+
+console.log(deepFlatten(deeplyNested)); // [1, 2, 3, 4, 5, 6, 7, 8]
+
+// EXAMPLE 6: Counting occurrences
+const colors = ['red', 'blue', 'red', 'green', 'blue', 'red', 'yellow'];
+
+// Count frequency of each color
+const colorCounts = colors.reduce((acc, color) => {
+    acc[color] = (acc[color] || 0) + 1;
+    return acc;
+}, {});
+
+console.log(colorCounts);
+// {red: 3, blue: 2, green: 1, yellow: 1}
+
+// EXAMPLE 7: Building a string
+const words = ['Hello', 'world', 'from', 'JavaScript'];
+
+// Join with custom separator
+const sentence = words.reduce((acc, word, index) => 
+    index === 0 ? word : acc + ' ' + word, ''
+);
+console.log(sentence); // "Hello world from JavaScript"
+
+// With punctuation
+const punctuated = words.reduce((acc, word, index) => 
+    index === words.length - 1 ? acc + ' ' + word + '.' : acc + ' ' + word, ''
+);
+console.log(punctuated); // "Hello world from JavaScript."
+
+// EXAMPLE 8: reduceRight() - Processing from right to left
+const numbers3 = [1, 2, 3, 4, 5];
+
+// Regular reduce (left to right): ((((1+2)+3)+4)+5) = 15
+const leftToRight = numbers3.reduce((acc, num) => acc + num, 0);
+console.log(leftToRight); // 15
+
+// reduceRight (right to left): (1+(2+(3+(4+5)))) = 15
+const rightToLeft = numbers3.reduceRight((acc, num) => acc + num, 0);
+console.log(rightToLeft); // 15
+
+// Difference becomes apparent with subtraction
+const subtract = [10, 5, 3, 2];
+
+// Left to right: (((10-5)-3)-2) = 0
+const leftSubtract = subtract.reduce((acc, num) => acc - num, 0);
+console.log(leftSubtract); // 0
+
+// Right to left: (10-(5-(3-2))) = 10 - (5 - 1) = 10 - 4 = 6
+const rightSubtract = subtract.reduceRight((acc, num) => acc - num, 0);
+console.log(rightSubtract); // 6
+
+// EXAMPLE 9: Practical example - Data aggregation
+class AnalyticsReporter {
+    constructor(events) {
+        this.events = events;
+    }
+    
+    generateReport() {
+        return this.events.reduce((report, event) => {
+            // Update total count
+            report.totalEvents++;
+            
+            // Update event types
+            report.eventTypes[event.type] = (report.eventTypes[event.type] || 0) + 1;
+            
+            // Update user stats
+            if (!report.users[event.userId]) {
+                report.users[event.userId] = { count: 0, lastSeen: '' };
+            }
+            report.users[event.userId].count++;
+            report.users[event.userId].lastSeen = event.timestamp;
+            
+            // Update duration stats
+            if (event.duration) {
+                report.totalDuration += event.duration;
+                report.averageDuration = report.totalDuration / report.totalEvents;
+            }
+            
+            // Update success rate
+            if (event.success !== undefined) {
+                if (event.success) {
+                    report.successfulEvents++;
+                }
+                report.successRate = report.successfulEvents / report.totalEvents;
+            }
+            
+            return report;
+        }, {
+            totalEvents: 0,
+            eventTypes: {},
+            users: {},
+            totalDuration: 0,
+            averageDuration: 0,
+            successfulEvents: 0,
+            successRate: 0
+        });
+    }
+}
+
+const events = [
+    { type: 'click', userId: 1, timestamp: '2023-01-01', duration: 2.5, success: true },
+    { type: 'click', userId: 2, timestamp: '2023-01-01', duration: 1.8, success: true },
+    { type: 'scroll', userId: 1, timestamp: '2023-01-02', duration: 5.2, success: false },
+    { type: 'click', userId: 1, timestamp: '2023-01-03', duration: 3.1, success: true },
+    { type: 'submit', userId: 3, timestamp: '2023-01-03', duration: 8.7, success: true },
+    { type: 'scroll', userId: 2, timestamp: '2023-01-04', duration: 4.3, success: false }
+];
+
+const reporter = new AnalyticsReporter(events);
+const report = reporter.generateReport();
+
+console.log(report);
+// {
+//   totalEvents: 6,
+//   eventTypes: { click: 3, scroll: 2, submit: 1 },
+//   users: {
+//     1: { count: 3, lastSeen: "2023-01-03" },
+//     2: { count: 2, lastSeen: "2023-01-04" },
+//     3: { count: 1, lastSeen: "2023-01-03" }
+//   },
+//   totalDuration: 25.6,
+//   averageDuration: 4.266666666666667,
+//   successfulEvents: 4,
+//   successRate: 0.6666666666666666
+// }
+
+// EXAMPLE 10: Implementing other array methods with reduce
+const arr = [1, 2, 3, 4, 5];
+
+// Implement map with reduce
+const mapped = arr.reduce((acc, val) => {
+    acc.push(val * 2);
+    return acc;
+}, []);
+console.log(mapped); // [2, 4, 6, 8, 10]
+
+// Implement filter with reduce
+const filtered = arr.reduce((acc, val) => {
+    if (val % 2 === 0) acc.push(val);
+    return acc;
+}, []);
+console.log(filtered); // [2, 4]
+
+// Implement concat with reduce
+const arr1 = [1, 2, 3];
+const arr2 = [4, 5, 6];
+const concatenated = [arr1, arr2].reduce((acc, curr) => acc.concat(curr), []);
+console.log(concatenated); // [1, 2, 3, 4, 5, 6]
+
+// Implement every with reduce
+const allPositive = arr.reduce((acc, val) => acc &amp;&amp; val > 0, true);
+console.log(allPositive); // true
+
+// Implement some with reduce
+const hasEven = arr.reduce((acc, val) => acc || val % 2 === 0, false);
+console.log(hasEven); // true</code></pre>
+
+                    <div class="function-diagram">
+// REDUCE EXECUTION FLOW:
+
+// Array: [1, 2, 3, 4]
+// Initial: 0
+// reduce(acc, val)
+//   → acc=0, val=1 → acc=1
+//   → acc=1, val=2 → acc=3
+//   → acc=3, val=3 → acc=6
+//   → acc=6, val=4 → acc=10
+// Result: 10
+
+// REDUCE RIGHT EXECUTION FLOW:
+
+// Array: [1, 2, 3, 4]
+// Initial: 0
+// reduceRight(acc, val)
+//   → acc=0, val=4 → acc=4
+//   → acc=4, val=3 → acc=7
+//   → acc=7, val=2 → acc=9
+//   → acc=9, val=1 → acc=10
+// Result: 10</div>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Summing numeric values</li>
+                        <li>Calculating averages, totals, and statistics</li>
+                        <li>Grouping and categorizing data</li>
+                        <li>Flattening nested arrays</li>
+                        <li>Building complex data structures from simple ones</li>
+                        <li>Implementing other array methods</li>
+                        <li>Aggregating data from logs and events</li>
+                    </ul>
+                    <p class="text-warning mt-2"><strong>⚠️ Important Notes:</strong></p>
+                    <ul>
+                        <li>Always provide an initial value unless you're sure about the array's contents</li>
+                        <li>Be careful with empty arrays - reduce throws error if no initial value</li>
+                        <li>Reduce is more powerful but less readable than simpler methods</li>
+                        <li>Use reduce when you need to accumulate a single value from multiple elements</li>
+                    </ul>
+                    <p class="text-success mt-2">✅ Best Practice: Use <code>reduce()</code> when you need to transform an array into a single value or complex data structure.</p>
+                    <p class="text-info mt-2">💡 Pro Tip: <code>reduce()</code> is the functional programming equivalent of a for-loop with accumulation.</p>
+                </details>
+            </section>
+
+            <section id="find-findindex">
+                <details>
+                    <summary>find() and findIndex()</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">find()</span> returns the first element in the array that satisfies the provided testing function. <span class="highlight">findIndex()</span> returns the index of the first element that satisfies the testing function, or -1 if none is found.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>These two methods are designed for finding specific elements in an array based on a condition. They stop searching after finding the first match, making them efficient for scenarios where you only need the first occurrence.</p>
+                    <p><code>find()</code> returns the actual element value, while <code>findIndex()</code> returns the position (index) of that element. Both skip holes in sparse arrays.</p>
+                    <p>Unlike <code>filter()</code> which returns all matching elements, these methods return at most one result.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// find()
+array.find(callback(element, index, array), thisArg)
+
+// findIndex()
+array.findIndex(callback(element, index, array), thisArg)</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// EXAMPLE 1: Basic find() usage
+const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+// Find first even number
+const firstEven = numbers.find(n => n % 2 === 0);
+console.log(firstEven); // 2
+
+// Find first number greater than 7
+const firstBig = numbers.find(n => n > 7);
+console.log(firstBig); // 8
+
+// Find first negative number (none exists)
+const firstNegative = numbers.find(n => n &lt; 0);
+console.log(firstNegative); // undefined
+
+// EXAMPLE 2: find() with objects
+const users = [
+    { id: 1, name: 'Alice', role: 'admin' },
+    { id: 2, name: 'Bob', role: 'user' },
+    { id: 3, name: 'Charlie', role: 'moderator' },
+    { id: 4, name: 'Diana', role: 'admin' }
+];
+
+// Find first admin user
+const firstAdmin = users.find(user => user.role === 'admin');
+console.log(firstAdmin); 
+// {id: 1, name: "Alice", role: "admin"}
+
+// Find user by ID
+const userById = users.find(user => user.id === 3);
+console.log(userById); 
+// {id: 3, name: "Charlie", role: "moderator"}
+
+// Find user with name starting with 'C'
+const charlie = users.find(user => user.name.startsWith('C'));
+console.log(charlie); 
+// {id: 3, name: "Charlie", role: "moderator"}
+
+// EXAMPLE 3: findIndex() usage
+const temperatures = [72, 68, 75, 70, 78, 82, 85, 77];
+
+// Find index of first temperature above 80
+const hotDayIndex = temperatures.findIndex(temp => temp > 80);
+console.log(hotDayIndex); // 5 (temperature 82 at index 5)
+
+// Find index of first low temperature
+const coldDayIndex = temperatures.findIndex(temp => temp &lt; 70);
+console.log(coldDayIndex); // 1 (temperature 68 at index 1)
+
+// Find index of non-existent value
+const missingIndex = temperatures.findIndex(temp => temp === 100);
+console.log(missingIndex); // -1
+
+// EXAMPLE 4: Combining find and findIndex
+const products = [
+    { id: 1, name: 'iPhone', price: 999, category: 'Electronics' },
+    { id: 2, name: 'MacBook', price: 1999, category: 'Electronics' },
+    { id: 3, name: 'iPad', price: 599, category: 'Electronics' },
+    { id: 4, name: 'Nike Shoes', price: 120, category: 'Clothing' },
+    { id: 5, name: 'Coffee Mug', price: 15, category: 'Home' }
+];
+
+// Find the most expensive product
+const mostExpensive = products.reduce((max, product) => 
+    product.price > max.price ? product : max, 
+    products[0]
+);
+
+// Or find it with find
+const expensiveProduct = products.find(product => 
+    product.price === Math.max(...products.map(p => p.price))
+);
+
+// Find index of most expensive product
+const expensiveIndex = products.findIndex(product => 
+    product.price === Math.max(...products.map(p => p.price))
+);
+
+console.log(mostExpensive); // {id: 2, name: "MacBook", price: 1999, category: "Electronics"}
+console.log(expensiveProduct); // {id: 2, name: "MacBook", price: 1999, category: "Electronics"}
+console.log(expensiveIndex); // 1
+
+// EXAMPLE 5: Practical example - User authentication
+class AuthService {
+    constructor(users) {
+        this.users = users;
+    }
+    
+    login(username, password) {
+        // Find user by username
+        const user = this.users.find(u => u.username === username);
+        
+        if (!user) {
+            return { success: false, message: 'User not found' };
+        }
+        
+        if (user.password !== password) {
+            return { success: false, message: 'Incorrect password' };
+        }
+        
+        return { success: true, user: user };
+    }
+    
+    findUserRole(username) {
+        const user = this.users.find(u => u.username === username);
+        return user ? user.role : null;
+    }
+    
+    getUserIndex(username) {
+        return this.users.findIndex(u => u.username === username);
+    }
+    
+    getFirstInactiveUser() {
+        return this.users.find(u => !u.isActive);
+    }
+    
+    getFirstAdminIndex() {
+        return this.users.findIndex(u => u.role === 'admin');
+    }
+}
+
+const users = [
+    { id: 1, username: 'alice', password: 'pass123', role: 'user', isActive: true },
+    { id: 2, username: 'bob', password: 'pass456', role: 'admin', isActive: true },
+    { id: 3, username: 'charlie', password: 'pass789', role: 'user', isActive: false },
+    { id: 4, username: 'diana', password: 'pass000', role: 'admin', isActive: true }
+];
+
+const auth = new AuthService(users);
+
+// Test login
+console.log(auth.login('alice', 'pass123')); 
+// {success: true, user: {id: 1, username: "alice", ...}}
+
+console.log(auth.login('eve', 'wrong')); 
+// {success: false, message: "User not found"}
+
+// Get roles
+console.log(auth.findUserRole('bob')); // "admin"
+console.log(auth.findUserRole('eve')); // null
+
+// Get indices
+console.log(auth.getUserIndex('charlie')); // 2
+console.log(auth.getUserIndex('eve')); // -1
+
+// Find inactive user
+console.log(auth.getFirstInactiveUser()); 
+// {id: 3, username: "charlie", ...}
+
+// Find first admin index
+console.log(auth.getFirstAdminIndex()); // 1
+
+// EXAMPLE 6: Searching in nested arrays
+const matrix = [
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9]
+];
+
+// Find first row containing 5
+const rowWithFive = matrix.find(row => row.includes(5));
+console.log(rowWithFive); // [4, 5, 6]
+
+// Find index of row containing 5
+const rowIndexWithFive = matrix.findIndex(row => row.includes(5));
+console.log(rowIndexWithFive); // 1
+
+// Find first element equal to 8
+const elementFound = matrix.flat().find(x => x === 8);
+console.log(elementFound); // 8
+
+// EXAMPLE 7: find() vs filter() comparison
+const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+// find() - returns first match
+const firstEven = numbers.find(n => n % 2 === 0);
+console.log('find():', firstEven); // 2
+
+// filter() - returns all matches
+const allEvens = numbers.filter(n => n % 2 === 0);
+console.log('filter():', allEvens); // [2, 4, 6, 8, 10]
+
+// When to use which:
+// - Use find() when you need the first occurrence
+// - Use filter() when you need all occurrences
+
+// EXAMPLE 8: Performance considerations
+const largeArray = Array.from({length: 1000000}, (_, i) => i);
+
+// find() stops after finding first match
+const firstMatch = largeArray.find(n => n === 500000);
+console.log('First match found at:', firstMatch); // 500000
+
+// filter() processes entire array
+const allMatches = largeArray.filter(n => n === 500000);
+console.log('All matches found:', allMatches.length); // 1
+
+// find() is much faster for single-match scenarios</code></pre>
+
+                    <div class="function-diagram">
+// FIND EXECUTION FLOW:
+
+// Array: [1, 2, 3, 4, 5]
+// find(callback)
+//   → callback(1) → false
+//   → callback(2) → true → RETURN 2
+// Result: 2 (stops at first match)
+
+// FINDINDEX EXECUTION FLOW:
+
+// Array: [1, 2, 3, 4, 5]
+// findIndex(callback)
+//   → callback(1) → false
+//   → callback(2) → true → RETURN 1
+// Result: 1 (index of first match)</div>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Finding the first occurrence of an element</li>
+                        <li>Searching for specific items in collections</li>
+                        <li>User authentication and authorization</li>
+                        <li>Real-time data filtering</li>
+                        <li>Implementing autocomplete suggestions</li>
+                        <li>Event handling with specific targets</li>
+                    </ul>
+                    <p class="text-success mt-2">✅ Best Practice: Use <code>find()</code> when you need the first matching element value, and <code>findIndex()</code> when you need its position.</p>
+                    <p class="text-info mt-2">💡 Pro Tip: These methods are perfect for search functionality since they stop after finding the first match, making them efficient for large datasets.</p>
+                </details>
+            </section>
+
+            <section id="some-every">
+                <details>
+                    <summary>some() and every()</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">some()</span> tests whether at least one element in the array passes the test implemented by the provided function. <span class="highlight">every()</span> tests whether all elements pass the test.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>These two methods are boolean predicates that evaluate array elements against a condition. They return <code>true</code> or <code>false</code> and short-circuit (stop processing) as soon as the result is determined.</p>
+                    <ul>
+                        <li><code>some()</code>: Returns <code>true</code> if any element passes the test, <code>false</code> otherwise</li>
+                        <li><code>every()</code>: Returns <code>true</code> if all elements pass the test, <code>false</code> otherwise</li>
+                    </ul>
+                    <p>Both methods skip holes in sparse arrays and stop execution early for performance optimization.</p>
+                    <p>They're ideal for validation, checking conditions across collections, and implementing logical assertions.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// some()
+array.some(callback(element, index, array), thisArg)
+
+// every()
+array.every(callback(element, index, array), thisArg)</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// EXAMPLE 1: Basic some() usage
+const numbers = [1, 2, 3, 4, 5];
+
+// Check if any number is even
+const hasEven = numbers.some(n => n % 2 === 0);
+console.log(hasEven); // true
+
+// Check if any number is greater than 10
+const hasBig = numbers.some(n => n > 10);
+console.log(hasBig); // false
+
+// Check if any number is negative
+const hasNegative = numbers.some(n => n &lt; 0);
+console.log(hasNegative); // false
+
+// EXAMPLE 2: some() with objects
+const users = [
+    { name: 'Alice', age: 25, isAdmin: false },
+    { name: 'Bob', age: 30, isAdmin: true },
+    { name: 'Charlie', age: 22, isAdmin: false }
+];
+
+// Check if any user is an admin
+const hasAdmin = users.some(user => user.isAdmin);
+console.log(hasAdmin); // true
+
+// Check if any user is underage (under 18)
+const hasUnderage = users.some(user => user.age &lt; 18);
+console.log(hasUnderage); // false
+
+// Check if any user has name starting with 'Z'
+const hasZName = users.some(user => user.name.startsWith('Z'));
+console.log(hasZName); // false
+
+// EXAMPLE 3: Basic every() usage
+const scores = [85, 92, 78, 96, 88];
+
+// Check if all scores are passing (>= 70)
+const allPassing = scores.every(score => score >= 70);
+console.log(allPassing); // true
+
+// Check if all scores are excellent (>= 90)
+const allExcellent = scores.every(score => score >= 90);
+console.log(allExcellent); // false
+
+// Check if all numbers are positive
+const allPositive = numbers.every(n => n > 0);
+console.log(allPositive); // true
+
+// EXAMPLE 4: every() with objects
+const products = [
+    { name: 'Laptop', price: 999, inStock: true },
+    { name: 'Phone', price: 699, inStock: true },
+    { name: 'Tablet', price: 599, inStock: true },
+    { name: 'Headphones', price: 199, inStock: false }
+];
+
+// Check if all products are in stock
+const allInStock = products.every(product => product.inStock);
+console.log(allInStock); // false
+
+// Check if all prices are reasonable (<= 1000)
+const allReasonablePrices = products.every(product => product.price <= 1000);
+console.log(allReasonablePrices); // true
+
+// EXAMPLE 5: Practical examples - Validation
+class FormValidator {
+    constructor() {}
+    
+    validateEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+    
+    validatePassword(password) {
+        return password.length >= 8 &amp;&amp; /[A-Z]/.test(password) &amp;&amp; /\d/.test(password);
+    }
+    
+    validateForm(formData) {
+        // Check if all required fields are filled
+        const requiredFields = ['name', 'email', 'password'];
+        const allRequiredFilled = requiredFields.every(field => 
+            formData[field] &amp;&amp; formData[field].trim() !== ''
+        );
+        
+        // Check if email is valid
+        const emailValid = this.validateEmail(formData.email);
+        
+        // Check if password meets requirements
+        const passwordValid = this.validatePassword(formData.password);
+        
+        // Check if any field has invalid data
+        const hasInvalidField = ['name', 'email', 'password'].some(field => {
+            const value = formData[field];
+            if (!value) return true;
+            if (field === 'email' &amp;&amp; !this.validateEmail(value)) return true;
+            if (field === 'password' &amp;&amp; !this.validatePassword(value)) return true;
+            return false;
+        });
+        
+        return {
+            isValid: allRequiredFilled &amp;&amp; emailValid &amp;&amp; passwordValid,
+            allRequiredFilled,
+            emailValid,
+            passwordValid,
+            hasInvalidField
+        };
+    }
+}
+
+const validator = new FormValidator();
+
+const validForm = {
+    name: 'John Doe',
+    email: 'john@example.com',
+    password: 'StrongPass123'
+};
+
+const invalidForm = {
+    name: '',
+    email: 'invalid-email',
+    password: 'weak'
+};
+
+console.log(validator.validateForm(validForm));
+// {
+//   isValid: true,
+//   allRequiredFilled: true,
+//   emailValid: true,
+//   passwordValid: true,
+//   hasInvalidField: false
+// }
+
+console.log(validator.validateForm(invalidForm));
+// {
+//   isValid: false,
+//   allRequiredFilled: false,
+//   emailValid: false,
+//   passwordValid: false,
+//   hasInvalidField: true
+// }
+
+// EXAMPLE 6: Checking conditions in arrays
+const temperatures = [72, 75, 78, 70, 73, 77];
+
+// Check if any temperature is above 80
+const hasHeatWave = temperatures.some(temp => temp > 80);
+console.log('Has heat wave:', hasHeatWave); // false
+
+// Check if all temperatures are within normal range (65-85)
+const allNormal = temperatures.every(temp => temp >= 65 &amp;&amp; temp <= 85);
+console.log('All normal:', allNormal); // true
+
+// Check if any temperature is below freezing
+const hasFreezing = temperatures.some(temp => temp < 32);
+console.log('Has freezing:', hasFreezing); // false
+
+// EXAMPLE 7: Logical combinations
+const users = [
+    { name: 'Alice', active: true, premium: false },
+    { name: 'Bob', active: true, premium: true },
+    { name: 'Charlie', active: false, premium: false },
+    { name: 'Diana', active: true, premium: false }
+];
+
+// Check if any user is both active and premium
+const hasActivePremium = users.some(user => user.active &amp;&amp; user.premium);
+console.log('Has active premium user:', hasActivePremium); // true
+
+// Check if all active users are premium
+const allActiveArePremium = users.filter(u => u.active).every(u => u.premium);
+console.log('All active are premium:', allActiveArePremium); // false
+
+// Check if there's at least one inactive user who isn't premium
+const hasInactiveNonPremium = users.some(user => !user.active &amp;&amp; !user.premium);
+console.log('Has inactive non-premium:', hasInactiveNonPremium); // true
+
+// EXAMPLE 8: Performance and short-circuiting
+const largeArray = Array.from({length: 1000000}, (_, i) => i);
+
+// some() stops at first match
+const hasLargeNumber = largeArray.some(n => n === 500000);
+console.log('Some found:', hasLargeNumber); // true
+
+// every() stops at first failure
+const allPositiveNumbers = largeArray.every(n => n > 0);
+console.log('All positive:', allPositiveNumbers); // false
+
+// Quick demonstration of short-circuiting
+function expensiveTest(x) {
+    console.log('Testing', x);
+    return x > 100;
+}
+
+const smallArray = [1, 2, 3, 101, 4, 5];
+console.log('=== Testing some() ===');
+const someResult = smallArray.some(expensiveTest);
+// Output: Testing 1, Testing 2, Testing 3, Testing 101
+console.log('some result:', someResult); // true
+
+console.log('=== Testing every() ===');
+const everyResult = smallArray.every(expensiveTest);
+// Output: Testing 1
+console.log('every result:', everyResult); // false
+
+// EXAMPLE 9: Real-world scenario - Feature flags
+class FeatureManager {
+    constructor(features) {
+        this.features = features;
+    }
+    
+    isEnabled(featureId) {
+        return this.features.some(f => f.id === featureId &amp;&amp; f.enabled);
+    }
+    
+    isAllEnabled() {
+        return this.features.every(f => f.enabled);
+    }
+    
+    hasAnyCriticalFeature() {
+        return this.features.some(f => f.critical &amp;&amp; f.enabled);
+    }
+    
+    requiresUpgrade() {
+        return this.features.every(f => f.requiredForCurrentVersion);
+    }
+}
+
+const features = [
+    { id: 'dark-mode', enabled: true, critical: false, requiredForCurrentVersion: true },
+    { id: 'notifications', enabled: false, critical: true, requiredForCurrentVersion: false },
+    { id: 'analytics', enabled: true, critical: false, requiredForCurrentVersion: true },
+    { id: 'chat', enabled: true, critical: false, requiredForCurrentVersion: false }
+];
+
+const fm = new FeatureManager(features);
+
+console.log(fm.isEnabled('dark-mode')); // true
+console.log(fm.isEnabled('notifications')); // false
+console.log(fm.isAllEnabled()); // false
+console.log(fm.hasAnyCriticalFeature()); // false (notifications disabled)
+console.log(fm.requiresUpgrade()); // true (all required for version)</code></pre>
+
+                    <div class="function-diagram">
+// SOME EXECUTION FLOW:
+
+// Array: [1, 2, 3, 4, 5]
+// some(callback)
+//   → callback(1) → false
+//   → callback(2) → true → RETURN true (short-circuit!)
+
+// EVERY EXECUTION FLOW:
+
+// Array: [1, 2, 3, 4, 5]
+// every(callback)
+//   → callback(1) → true
+//   → callback(2) → true
+//   → callback(3) → true
+//   → callback(4) → true
+//   → callback(5) → false → RETURN false (short-circuit!)</div>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Validation of forms and inputs</li>
+                        <li>Checking conditions across collections</li>
+                        <li>Feature flag management</li>
+                        <li>Security and access control</li>
+                        <li>Data quality checks</li>
+                        <li>Logical assertions in algorithms</li>
+                    </ul>
+                    <p class="text-success mt-2">✅ Best Practice: Use <code>some()</code> to check if at least one element meets a condition, and <code>every()</code> to verify that all elements meet a condition.</p>
+                    <p class="text-info mt-2">💡 Pro Tip: Both methods short-circuit for performance — they stop as soon as the result is determined, making them very efficient for large datasets.</p>
+                </details>
+            </section>
+
+            <hr class="my-5">
+
+            <div class="alert alert-info">
+                <h5>Key Takeaways</h5>
+                <ul>
+                    <li><code>forEach()</code>: Perform side effects on each element (no return value)</li>
+                    <li><code>map()</code>: Transform each element into a new array of the same size</li>
+                    <li><code>filter()</code>: Select elements that meet a condition to create a smaller array</li>
+                    <li><code>reduce()</code>: Accumulate a single value from all elements</li>
+                    <li><code>find()</code> and <code>findIndex()</code>: Locate the first matching element</li>
+                    <li><code>some()</code> and <code>every()</code>: Test conditions across the entire array</li>
+                    <li>All functional methods are non-mutating and preserve the original array</li>
+                    <li>Functional methods are chainable and promote immutable data patterns</li>
+                </ul>
+            </div>
+
+            <div class="alert alert-warning">
+                <h5>Common Pitfalls</h5>
+                <ul>
+                    <li>Using <code>forEach()</code> when you need to create a new array (use <code>map()</code> instead)</li>
+                    <li>Not providing an initial value to <code>reduce()</code> with empty arrays</li>
+                    <li>Confusing <code>filter()</code> with <code>find()</code> (multiple vs single result)</li>
+                    <li>Assuming <code>some()</code> and <code>every()</code> return arrays instead of booleans</li>
+                    <li>Trying to break out of functional methods with <code>break</code> or <code>return</code></li>
+                    <li>Using <code>reduce()</code> for simple transformations when <code>map()</code> would be clearer</li>
+                </ul>
+            </div>
+
+            <div class="alert alert-success">
+                <h5>Interview Question Prep</h5>
+                <p><strong>Q: What's the difference between map() and forEach()?</strong></p>
+                <p><strong>A:</strong> <code>map()</code> returns a new array with transformed elements, while <code>forEach()</code> returns undefined and is used for side effects. Use <code>map()</code> when transforming data, <code>forEach()</code> when performing actions like logging or DOM manipulation.</p>
+                
+                <p><strong>Q: When would you use reduce() over map() or filter()?</strong></p>
+                <p><strong>A:</strong> Use <code>reduce()</code> when you need to accumulate a single value from an array, like calculating sums, averages, or building complex data structures. Use <code>map()</code> for transforming each element, and <code>filter()</code> for selecting elements.</p>
+                
+                <p><strong>Q: How do some() and every() differ?</strong></p>
+                <p><strong>A:</strong> <code>some()</code> returns true if at least one element passes the test, while <code>every()</code> returns true only if all elements pass the test. Both short-circuit for performance.</p>
+                
+                <p><strong>Q: Why are functional array methods preferred over for-loops?</strong></p>
+                <p><strong>A:</strong> Functional methods are declarative, immutable, chainable, and less error-prone. They make code more readable and maintainable by focusing on what to do rather than how to do it.</p>
+                
+                <p><strong>Q: Can you chain multiple functional methods together?</strong></p>
+                <p><strong>A:</strong> Yes! For example: <code>array.filter().map().reduce()</code>. This creates a clean data pipeline where each method transforms the result of the previous one.</p>
+            </div>
+
+            <div class="text-center mt-4">
+                <small class="text-muted">© 2024 AI Tutor — Mastering Programming Fundamentals One Concept at a Time</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript Utilities -->
+<script>
+    // Expand/Collapse All
+    document.getElementById('expandAll').addEventListener('click', () => {
+        document.querySelectorAll('details').forEach(detail => {
+            detail.open = true;
+        });
+    });
+
+    document.getElementById('collapseAll').addEventListener('click', () => {
+        document.querySelectorAll('details').forEach(detail => {
+            detail.open = false;
+        });
+    });
+
+    // Smooth scrolling for TOC links
+    document.querySelectorAll('.toc-item a, .toc-subitem a').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+            
+            if (targetElement) {
+                window.scrollTo({
+                    top: targetElement.offsetTop - 100,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+
+    // Search functionality for TOC
+    document.getElementById('searchToc').addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
+        
+        tocItems.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            if (query === '' || text.includes(query)) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+
+    // Syntax Highlighting (basic)
+    document.querySelectorAll('pre code').forEach(block => {
+        hljs.highlightBlock(block);
+    });
+
+    // Add highlight.js if not present (fallback)
+    if (typeof hljs === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js';
+        script.onload = () => {
+            document.querySelectorAll('pre code').forEach(block => {
+                hljs.highlightBlock(block);
+            });
+        };
+        document.head.appendChild(script);
+    }
+</script>
+
+<!-- Optional: Add highlight.js for better syntax highlighting -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+
+</body>
+</html>

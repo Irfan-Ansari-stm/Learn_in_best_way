@@ -1,0 +1,1402 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 2: Type Conversion, Coercion and Template Literals</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00f5ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --accent: #00c4cc;
+        }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .left-panel {
+            background-color: #0d213a;
+            height: 100vh;
+            position: fixed;
+            width: 300px;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 4px 0 15px rgba(0, 245, 255, 0.1);
+        }
+        
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--amber);
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+        
+        .toc-item {
+            margin: 8px 0;
+            transition: all 0.3s ease;
+        }
+        
+        .toc-item a {
+            color: var(--text-light);
+            text-decoration: none;
+            display: block;
+            padding: 8px 12px;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        
+        .toc-item a:hover {
+            background-color: rgba(0, 245, 255, 0.1);
+            padding-left: 16px;
+        }
+        
+        .toc-subitem {
+            margin-left: 20px;
+            margin-top: 5px;
+            display: none;
+        }
+        
+        .toc-subitem.active {
+            display: block;
+        }
+        
+        .toc-subitem a {
+            color: var(--amber);
+            padding-left: 16px;
+            font-size: 0.9rem;
+        }
+        
+        .toc-subitem a:hover {
+            background-color: rgba(255, 183, 77, 0.1);
+        }
+        
+        details > summary {
+            list-style: none;
+            cursor: pointer;
+            padding: 12px;
+            background-color: rgba(0, 245, 255, 0.08);
+            border-radius: 6px;
+            margin: 12px 0;
+            border-left: 4px solid var(--amber);
+            font-weight: bold;
+            color: var(--cyan);
+            transition: all 0.3s;
+        }
+        
+        details > summary:hover {
+            background-color: rgba(0, 245, 255, 0.15);
+            transform: translateX(5px);
+        }
+        
+        details > summary::-webkit-details-marker {
+            display: none;
+        }
+        
+        details > summary::before {
+            content: "▶ ";
+            color: var(--amber);
+        }
+        
+        details[open] > summary::before {
+            content: "▼ ";
+            color: var(--amber);
+        }
+        
+        pre code {
+            display: block;
+            padding: 16px;
+            overflow-x: auto;
+            background-color: #112240;
+            border-radius: 8px;
+            border-left: 4px solid var(--amber);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        
+        .highlight {
+            color: var(--amber);
+            font-weight: bold;
+        }
+        
+        .badge {
+            background-color: var(--amber);
+            color: #000;
+            font-weight: bold;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+        
+        .control-buttons {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-control {
+            background-color: rgba(0, 245, 255, 0.15);
+            color: var(--cyan);
+            border: 1px solid var(--amber);
+            border-radius: 6px;
+            padding: 8px 16px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        
+        .btn-control:hover {
+            background-color: rgba(0, 245, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .search-box {
+            background-color: rgba(255, 183, 77, 0.1);
+            border: 1px solid var(--amber);
+            color: var(--text-light);
+            padding: 10px;
+            border-radius: 6px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .section-header {
+            border-bottom: 2px solid var(--amber);
+            padding-bottom: 10px;
+            margin: 30px 0 20px;
+            color: var(--cyan);
+        }
+        
+        .code-comment {
+            color: #888;
+        }
+        
+        .code-keyword {
+            color: var(--amber);
+        }
+        
+        .code-string {
+            color: #a5ff88;
+        }
+        
+        .code-function {
+            color: #00f5ff;
+        }
+        
+        .code-number {
+            color: #ff9e6d;
+        }
+        
+        .code-boolean {
+            color: #ff5e5e;
+        }
+        
+        .code-null {
+            color: #9d78ff;
+        }
+        
+        .code-symbol {
+            color: #00f5ff;
+        }
+        
+        .code-bigint {
+            color: #7eff7e;
+        }
+        
+        table.table-dark {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        
+        table.table-dark th,
+        table.table-dark td {
+            border: 1px solid rgba(255, 183, 77, 0.3);
+            padding: 10px;
+        }
+        
+        table.table-dark tr:nth-child(even) {
+            background-color: rgba(0, 245, 255, 0.05);
+        }
+        
+        .memory-diagram {
+            background-color: #112240;
+            border: 1px dashed var(--amber);
+            padding: 15px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre;
+            line-height: 1.6;
+        }
+        
+        .coercion-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+        }
+        
+        .coercion-table th,
+        .coercion-table td {
+            border: 1px solid rgba(255, 183, 77, 0.3);
+            padding: 10px;
+            text-align: center;
+        }
+        
+        .coercion-table th {
+            background-color: rgba(0, 245, 255, 0.1);
+        }
+        
+        .coercion-table tr:nth-child(even) {
+            background-color: rgba(0, 245, 255, 0.05);
+        }
+        
+        .template-demo {
+            background-color: #112240;
+            border: 1px solid var(--amber);
+            border-radius: 6px;
+            padding: 15px;
+            margin: 20px 0;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+        }
+        
+        .footer-note {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(0, 245, 255, 0.2);
+            font-size: 0.9rem;
+            color: #aaa;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 991px) {
+            .left-panel {
+                width: 100%;
+                position: relative;
+                height: auto;
+                padding-bottom: 20px;
+            }
+            
+            .right-panel {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Left Panel -->
+    <div class="left-panel">
+        <h2>JavaScript Fundamentals</h2>
+        <p class="text-muted">Module 2: Type Conversion & Template Literals</p>
+        <p class="text-muted small">Author: Master Tutor • Last Updated: 2024</p>
+        
+        <div class="control-buttons">
+            <button id="expandAll" class="btn-control">Expand All</button>
+            <button id="collapseAll" class="btn-control">Collapse All</button>
+        </div>
+        
+        <input type="text" class="search-box" id="searchToc" placeholder="Search topics...">
+        
+        <div class="toc-container">
+            <div class="toc-item">
+                <a href="#2-3">2.3 Type Conversion and Coercion</a>
+                <div class="toc-subitem" id="sub-2-3">
+                    <a href="#implicit-explicit">Implicit vs explicit</a>
+                    <a href="#conversion-functions">parseInt(), parseFloat(), Number()</a>
+                    <a href="#constructor-conversion">String(), Boolean() constructors</a>
+                    <a href="#typeof-checking">Type checking with typeof</a>
+                    <a href="#coercion-pitfalls">Common coercion pitfalls</a>
+                </div>
+            </div>
+            
+            <div class="toc-item">
+                <a href="#2-4">2.4 Template Literals and String Methods</a>
+                <div class="toc-subitem" id="sub-2-4">
+                    <a href="#template-syntax">Template literal syntax</a>
+                    <a href="#interpolation">Expression interpolation</a>
+                    <a href="#multiline-strings">Multiline strings</a>
+                    <a href="#tagged-templates">Tagged template literals</a>
+                    <a href="#essential-string-methods">Essential string methods</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="right-panel">
+        <h1>Module 2: Type Conversion, Coercion and Template Literals</h1>
+        <p class="lead">Master the art of type conversion and unlock the power of modern template literals</p>
+        
+        <hr class="my-4">
+        
+        <!-- 2.3 Type Conversion and Coercion -->
+        <section id="2-3">
+            <h2 class="section-header">2.3 Type Conversion and Coercion</h2>
+            
+            <details>
+                <summary>Definition: Implicit vs explicit conversion</summary>
+                <p>Type conversion is the process of changing one data type to another. JavaScript handles this in two ways:</p>
+                
+                <h5>Explicit Conversion (Type Casting)</h5>
+                <p>You deliberately convert a value using built-in functions or constructors.</p>
+                <pre><code class="language-javascript">// Explicit conversion examples
+let numStr = "42";
+let number = Number(numStr); // Explicitly convert string to number
+let boolVal = Boolean("hello"); // Explicitly convert string to boolean
+let strVal = String(123); // Explicitly convert number to string
+
+console.log(number); // 42
+console.log(boolVal); // true
+console.log(strVal); // "123"</code></pre>
+                
+                <h5>Implicit Conversion (Coercion)</h5>
+                <p>JavaScript automatically converts types when operators expect different types.</p>
+                <pre><code class="language-javascript">// Implicit conversion examples
+let result1 = "5" + 3; // "53" - number coerced to string
+let result2 = "5" - 3; // 2 - string coerced to number
+let result3 = "5" * "3"; // 15 - both strings coerced to numbers
+let result4 = "5" == 5; // true - string coerced to number for comparison
+let result5 = true + 1; // 2 - boolean coerced to number (true → 1)
+let result6 = false + ""; // "false" - boolean coerced to string
+
+console.log(result1, result2, result3, result4, result5, result6);</code></pre>
+                
+                <div class="highlight">🎯 Key Insight: Explicit conversion is intentional and safe. Implicit conversion is automatic but can lead to unexpected behavior if you don't understand the rules!</div>
+            </details>
+            
+            <details>
+                <summary>parseInt(), parseFloat(), Number()</summary>
+                <p>Three essential functions for converting strings to numbers:</p>
+                
+                <h5>parseInt() - Integer parsing</h5>
+                <pre><code class="language-javascript">// parseInt extracts integer from start of string
+console.log(parseInt("42")); // 42
+console.log(parseInt("42.7")); // 42 (ignores decimal part)
+console.log(parseInt("42px")); // 42 (stops at non-numeric character)
+console.log(parseInt("px42")); // NaN (no valid number at start)
+console.log(parseInt("0xFF")); // 255 (hexadecimal)
+console.log(parseInt("0o755")); // 493 (octal)
+
+// Always specify radix (base)!
+console.log(parseInt("010")); // 10 (in older JS) or 0 (in strict mode)
+console.log(parseInt("010", 10)); // 10 (explicit base 10 - recommended!)
+
+// Edge cases
+console.log(parseInt("")); // NaN
+console.log(parseInt(null)); // NaN
+console.log(parseInt(undefined)); // NaN
+console.log(parseInt(" ")); // NaN</code></pre>
+                
+                <h5>parseFloat() - Floating-point parsing</h5>
+                <pre><code class="language-javascript">// parseFloat extracts floating point number
+console.log(parseFloat("3.14")); // 3.14
+console.log(parseFloat("3.14159")); // 3.14159
+console.log(parseFloat("3.14px")); // 3.14
+console.log(parseFloat("px3.14")); // NaN
+console.log(parseFloat("3.14.15")); // 3.14 (stops at second dot)
+
+// Edge cases
+console.log(parseFloat("")); // NaN
+console.log(parseFloat("   42.5   ")); // 42.5 (trims whitespace)
+console.log(parseFloat(null)); // NaN</code></pre>
+                
+                <h5>Number() - Universal number converter</h5>
+                <pre><code class="language-javascript">// Number() converts to number with strict rules
+console.log(Number("42")); // 42
+console.log(Number("42.7")); // 42.7
+console.log(Number("42px")); // NaN (doesn't ignore units)
+console.log(Number("")); // 0 (empty string → 0!)
+console.log(Number(" ")); // 0 (whitespace → 0)
+console.log(Number(true)); // 1
+console.log(Number(false)); // 0
+console.log(Number(null)); // 0
+console.log(Number(undefined)); // NaN
+console.log(Number("hello")); // NaN
+
+// More edge cases
+console.log(Number("0x1F")); // 31 (hexadecimal)
+console.log(Number("0o755")); // 493 (octal)
+console.log(Number("0b1010")); // 10 (binary)
+
+// Comparison: When to use which?
+let priceInput = "29.99";
+let quantityInput = "3";
+
+// For prices: Use Number() - strict validation
+let price = Number(priceInput); // 29.99
+if (isNaN(price)) { 
+    console.error("Invalid price!"); 
+}
+
+// For measurements: Use parseFloat() - allows units
+let length = parseFloat("12.5cm"); // 12.5
+
+// For integers: Use parseInt() with radix
+let count = parseInt(quantityInput, 10); // 3</code></pre>
+                
+                <div class="highlight">💡 Pro Tip: Use <code>Number()</code> for financial calculations where precision matters. Use <code>parseInt()</code> with radix 10 for user input that should be whole numbers.</div>
+            </details>
+            
+            <details>
+                <summary>String(), Boolean() constructors</summary>
+                <p>Convert values to strings and booleans explicitly.</p>
+                
+                <h5>String() Constructor</h5>
+                <pre><code class="language-javascript">// String() converts any value to its string representation
+console.log(String(42)); // "42"
+console.log(String(3.14)); // "3.14"
+console.log(String(true)); // "true"
+console.log(String(false)); // "false"
+console.log(String(null)); // "null"
+console.log(String(undefined)); // "undefined"
+console.log(String(Symbol('id'))); // "Symbol(id)"
+console.log(String(10n)); // "10"
+
+// Works on objects too
+console.log(String([1, 2, 3])); // "1,2,3"
+console.log(String({name: "Alice"})); // "[object Object]"
+console.log(String(new Date())); // Current date string
+
+// Alternative: Using .toString()
+console.log((42).toString()); // "42"
+console.log((true).toString()); // "true"
+
+// Important difference:
+console.log(String(null)); // "null"
+console.log(null.toString()); // TypeError! Cannot read property 'toString' of null</code></pre>
+                
+                <h5>Boolean() Constructor</h5>
+                <pre><code class="language-javascript">// Boolean() converts to true or false based on truthiness rules
+console.log(Boolean(0)); // false
+console.log(Boolean(1)); // true
+console.log(Boolean("")); // false
+console.log(Boolean("hello")); // true
+console.log(Boolean([])); // true
+console.log(Boolean({})); // true
+console.log(Boolean(null)); // false
+console.log(Boolean(undefined)); // false
+console.log(Boolean(NaN)); // false
+console.log(Boolean(Symbol())); // true
+
+// Practical example: Form validation
+function validateForm(username, email, age) {
+    // Convert to boolean explicitly for clarity
+    let hasUsername = Boolean(username);
+    let hasEmail = Boolean(email);
+    let hasAge = Boolean(age);
+    
+    return hasUsername && hasEmail && hasAge;
+}
+
+console.log(validateForm("", "", "")); // false
+console.log(validateForm("Alice", "alice@example.com", 25)); // true
+console.log(validateForm("Bob", "bob@example.com", 0)); // false (age=0 is falsy!)</code></pre>
+                
+                <h5>When to use each approach:</h5>
+                <table class="table table-dark mt-3">
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Use Case</th>
+                            <th>Example</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>String(value)</code></td>
+                            <td>Universal string conversion</td>
+                            <td><code>String(userInput)</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>value.toString()</code></td>
+                            <td>When you know it's not null/undefined</td>
+                            <td><code>user.name.toString()</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>Boolean(value)</code></td>
+                            <td>Explicit truthiness check</td>
+                            <td><code>Boolean(formData)</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>!!value</code></td>
+                            <td>Concise boolean conversion</td>
+                            <td><code>!!email</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="highlight">⚠️ Warning: Never use <code>value.toString()</code> without checking for null/undefined first!</div>
+            </details>
+            
+            <details>
+                <summary>Type checking with typeof</summary>
+                <p>JavaScript's <code>typeof</code> operator returns the type of a variable as a string.</p>
+                
+                <h5>Basic typeof Usage:</h5>
+                <pre><code class="language-javascript">// Basic type detection
+console.log(typeof "hello"); // "string"
+console.log(typeof 42); // "number"
+console.log(typeof true); // "boolean"
+console.log(typeof undefined); // "undefined"
+console.log(typeof Symbol()); // "symbol"
+console.log(typeof 10n); // "bigint"
+console.log(typeof function() {}); // "function"
+
+// The infamous "null" bug!
+console.log(typeof null); // "object" (historical bug in JS!)
+
+// Objects and arrays
+console.log(typeof {}); // "object"
+console.log(typeof []); // "object" (arrays are objects in JS!)
+
+// Functions
+console.log(typeof console.log); // "function"</code></pre>
+                
+                <h5>Advanced Type Checking:</h5>
+                <pre><code class="language-javascript">// Function to get more accurate type
+function getType(value) {
+    if (value === null) return "null";
+    if (Array.isArray(value)) return "array";
+    return typeof value;
+}
+
+console.log(getType(null)); // "null"
+console.log(getType([])); // "array"
+console.log(getType({})); // "object"
+console.log(getType(function() {})); // "function"
+
+// Check for specific types in conditions
+function processData(data) {
+    if (typeof data === "string") {
+        console.log("Processing string:", data.toUpperCase());
+    } else if (typeof data === "number") {
+        console.log("Processing number:", data * 2);
+    } else if (typeof data === "boolean") {
+        console.log("Processing boolean:", !data);
+    } else if (typeof data === "object" && data !== null) {
+        console.log("Processing object:", Object.keys(data));
+    } else if (typeof data === "function") {
+        console.log("Processing function:", data());
+    } else {
+        console.log("Unknown type:", data);
+    }
+}
+
+processData("Hello");
+processData(42);
+processData(true);
+processData({name: "Alice"});
+processData(() => "executed");
+processData(null);
+processData(undefined);</code></pre>
+                
+                <h5>Using instanceof for complex types:</h5>
+                <pre><code class="language-javascript">// typeof doesn't distinguish between different object types
+console.log(typeof new Date()); // "object"
+console.log(typeof new RegExp()); // "object"
+console.log(typeof new Error()); // "object"
+
+// Use instanceof for specific constructor types
+let now = new Date();
+let regex = /test/;
+let error = new Error();
+
+console.log(now instanceof Date); // true
+console.log(regex instanceof RegExp); // true
+console.log(error instanceof Error); // true
+console.log(now instanceof Object); // true (Date inherits from Object)</code></pre>
+                
+                <div class="highlight">🎯 Best Practice: Combine <code>typeof</code> with <code>=== null</code> checks and <code>Array.isArray()</code> for robust type checking!</div>
+            </details>
+            
+            <details>
+                <summary>Common coercion pitfalls</summary>
+                <p>JavaScript's implicit coercion can create surprising bugs. Here are the most common pitfalls:</p>
+                
+                <h5>Pitfall 1: String Concatenation vs Arithmetic</h5>
+                <pre><code class="language-javascript">// ❌ Common mistake
+let userInput = prompt("Enter your age:");
+let nextYear = userInput + 1; // If user enters "25", result is "251"!
+
+// ✅ Correct way
+let userInput = prompt("Enter your age:");
+let nextYear = Number(userInput) + 1; // Now it works correctly!
+
+// Or use unary plus operator (concise)
+let nextYear = +userInput + 1;</code></pre>
+                
+                <h5>Pitfall 2: Empty String Coercion</h5>
+                <pre><code class="language-javascript">// ❌ Surprising behavior
+console.log("" == 0); // true (empty string coerces to 0)
+console.log("" == false); // true (empty string coerces to false)
+console.log("" == null); // false (different coercion rules)
+console.log("" === 0); // false (strict equality - no coercion)
+
+// This can break logic:
+let userInput = "";
+if (userInput) {
+    console.log("User entered something");
+} else {
+    console.log("User didn't enter anything"); // This runs!
+}
+
+// But what if user enters "0"?
+let userInput2 = "0";
+if (userInput2) {
+    console.log("User entered something"); // This runs! (truthy!)
+} else {
+    console.log("User didn't enter anything");
+}</code></pre>
+                
+                <h5>Pitfall 3: Array to Number Coercion</h5>
+                <pre><code class="language-javascript">// ❌ Unexpected results
+console.log([] + []); // "" (empty string)
+console.log([1] + [2]); // "12" (concatenated strings)
+console.log([1, 2, 3] + 4); // "1,2,34" (array becomes "1,2,3")
+console.log([5] * 2); // 10 (array [5] becomes 5, then multiplied)
+console.log([1, 2] * 2); // NaN (array "1,2" cannot be converted to number)
+
+// Real-world example:
+let scores = ["85", "92", "78"];
+let total = scores[0] + scores[1] + scores[2]; // "859278" - NOT 255!
+
+// ✅ Correct solution:
+let total = Number(scores[0]) + Number(scores[1]) + Number(scores[2]); // 255
+// Or better yet:
+let total = scores.reduce((sum, score) => sum + Number(score), 0); // 255</code></pre>
+                
+                <h5>Pitfall 4: Truthy/Falsy Confusion</h5>
+                <pre><code class="language-javascript">// ❌ Assuming empty array/object is falsy
+let config = {};
+if (!config) {
+    config = getDefaultConfig(); // This won't run! config is truthy!
+}
+
+// ❌ Assuming zero is falsy (which it is) but...
+let balance = 0;
+if (balance) {
+    console.log("You have money!"); // This won't run - correct!
+} else {
+    console.log("No money!"); // This runs - correct!
+}
+
+// BUT what about "0" as string?
+let balanceStr = "0";
+if (balanceStr) {
+    console.log("You have money!"); // This runs! (string "0" is truthy!)
+} else {
+    console.log("No money!");
+}
+
+// ✅ Solution: Be explicit about what you want to check
+let balance = 0;
+if (balance === 0) {
+    console.log("Balance is exactly zero");
+} else if (balance > 0) {
+    console.log("You have positive balance");
+} else {
+    console.log("You have negative balance");
+}</code></pre>
+                
+                <h5>Pitfall 5: Object Property Access</h5>
+                <pre><code class="language-javascript">// ❌ Dangerous coercion
+let user = null;
+console.log(user.name); // TypeError: Cannot read property 'name' of null
+
+// ❌ Even worse: coercing to string
+console.log(user + ""); // "null" (string representation)
+console.log(user.name + ""); // Still throws TypeError!
+
+// ✅ Safe pattern: Optional chaining (ES2020)
+console.log(user?.name); // undefined (no error)
+console.log(user?.profile?.address?.city); // undefined (chain stops safely)
+
+// ✅ Traditional approach: Check before accessing
+if (user && user.name) {
+    console.log(user.name);
+}</code></pre>
+                
+                <h5>Coercion Table Summary:</h5>
+                <table class="coercion-table">
+                    <thead>
+                        <tr>
+                            <th>Value</th>
+                            <th>To Number</th>
+                            <th>To String</th>
+                            <th>To Boolean</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>""</code> (empty string)</td>
+                            <td><code>0</code></td>
+                            <td><code>""</code></td>
+                            <td><code>false</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>"0"</code></td>
+                            <td><code>0</code></td>
+                            <td><code>"0"</code></td>
+                            <td><code>true</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>" "</code> (space)</td>
+                            <td><code>0</code></td>
+                            <td><code>" "</code></td>
+                            <td><code>true</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>null</code></td>
+                            <td><code>0</code></td>
+                            <td><code>"null"</code></td>
+                            <td><code>false</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>undefined</code></td>
+                            <td><code>NaN</code></td>
+                            <td><code>"undefined"</code></td>
+                            <td><code>false</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>true</code></td>
+                            <td><code>1</code></td>
+                            <td><code>"true"</code></td>
+                            <td><code>true</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>false</code></td>
+                            <td><code>0</code></td>
+                            <td><code>"false"</code></td>
+                            <td><code>false</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>[]</code> (empty array)</td>
+                            <td><code>0</code></td>
+                            <td><code>""</code></td>
+                            <td><code>true</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>[1]</code></td>
+                            <td><code>1</code></td>
+                            <td><code>"1"</code></td>
+                            <td><code>true</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>[1,2]</code></td>
+                            <td><code>NaN</code></td>
+                            <td><code>"1,2"</code></td>
+                            <td><code>true</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>{}</code> (empty object)</td>
+                            <td><code>NaN</code></td>
+                            <td><code>"[object Object]"</code></td>
+                            <td><code>true</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="highlight">🚨 Ultimate Rule: When in doubt, be explicit! Use <code>Number()</code>, <code>String()</code>, and <code>Boolean()</code> rather than relying on coercion.</div>
+            </details>
+        </section>
+        
+        <!-- 2.4 Template Literals and String Methods -->
+        <section id="2-4">
+            <h2 class="section-header">2.4 Template Literals and String Methods</h2>
+            
+            <details>
+                <summary>Template literal syntax</summary>
+                <p>Template literals (template strings) are enclosed by backticks (<code>`</code>) instead of single or double quotes.</p>
+                
+                <h5>Basic Syntax:</h5>
+                <pre><code class="language-javascript">// Traditional string concatenation
+let firstName = "Alice";
+let lastName = "Smith";
+let greeting = "Hello, " + firstName + " " + lastName + "!";
+
+// Modern template literal
+let greeting2 = `Hello, ${firstName} ${lastName}!`;
+
+console.log(greeting); // "Hello, Alice Smith!"
+console.log(greeting2); // "Hello, Alice Smith!"
+
+// No need for concatenation operators!
+let message = `Welcome to ${"JavaScript"} programming!`;
+console.log(message); // "Welcome to JavaScript programming!"</code></pre>
+                
+                <h5>Comparison of Approaches:</h5>
+                <div class="template-demo">
+// Traditional: Hard to read and maintain
+let html = "&lt;div&gt;" + 
+           "&lt;h1&gt;" + title + "&lt;/h1&gt;" +
+           "&lt;p&gt;" + description + "&lt;/p&gt;" +
+           "&lt;/div&gt;";
+
+// Template literal: Clean and readable
+let html = `
+&lt;div&gt;
+    &lt;h1&gt;${title}&lt;/h1&gt;
+    &lt;p&gt;${description}&lt;/p&gt;
+&lt;/div&gt;
+`;
+                </div>
+                
+                <div class="highlight">✨ Key Advantage: Template literals make complex string building dramatically more readable!</div>
+            </details>
+            
+            <details>
+                <summary>Expression interpolation</summary>
+                <p>Interpolation means inserting expressions directly into template literals using <code>${expression}</code>.</p>
+                
+                <h5>Basic Interpolation:</h5>
+                <pre><code class="language-javascript">// Variables
+let name = "Bob";
+let age = 30;
+console.log(`My name is ${name} and I'm ${age} years old.`);
+
+// Mathematical expressions
+let price = 19.99;
+let taxRate = 0.08;
+console.log(`Total: $${price * (1 + taxRate).toFixed(2)}`);
+
+// Function calls
+function capitalize(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
+}
+
+let userName = "alice";
+console.log(`Welcome, ${capitalize(userName)}!`);
+
+// Conditional logic with ternary operator
+let isLoggedIn = true;
+console.log(`User status: ${isLoggedIn ? "Logged in" : "Not logged in"}`);
+
+// Complex expressions
+let user = {name: "Charlie", role: "admin"};
+console.log(`Hello ${user.name}, you're an ${user.role === "admin" ? "administrator" : "user"}`);</code></pre>
+                
+                <h5>Real-world Example: Dynamic HTML Generation</h5>
+                <pre><code class="language-javascript">// Create a user profile card
+function generateUserProfile(user) {
+    return `
+        &lt;article class="user-card"&gt;
+            &lt;header&gt;
+                &lt;h2&gt;${user.name}&lt;/h2&gt;
+                &lt;span class="badge"&gt;${user.role}&lt;/span&gt;
+            &lt;/header&gt;
+            &lt;main&gt;
+                &lt;p&gt;Email: &lt;a href="mailto:${user.email}"&gt;${user.email}&lt;/a&gt;&lt;/p&gt;
+                &lt;p&gt;Joined: ${new Date(user.joinedDate).toLocaleDateString()}&lt;/p&gt;
+            &lt;/main&gt;
+            &lt;footer&gt;
+                &lt;p&gt;Status: ${user.isActive ? '&lt;span style="color: green;"&gt;Active&lt;/span&gt;' : '&lt;span style="color: red;"&gt;Inactive&lt;/span&gt;'}&lt;/p&gt;
+            &lt;/footer&gt;
+        &lt;/article&gt;
+    `;
+}
+
+const user = {
+    name: "Diana",
+    role: "Moderator",
+    email: "diana@example.com",
+    joinedDate: "2023-01-15",
+    isActive: true
+};
+
+document.getElementById('profile').innerHTML = generateUserProfile(user);</code></pre>
+                
+                <div class="highlight">💡 Pro Tip: You can even call methods like <code>.toFixed()</code> inside template literals for formatting numbers!</div>
+            </details>
+            
+            <details>
+                <summary>Multiline strings</summary>
+                <p>Template literals naturally support multiline strings without escape characters.</p>
+                
+                <h5>Traditional Approach (Problematic):</h5>
+                <pre><code class="language-javascript">// Old way: Need \n and concatenation
+let poem = "Roses are red,\n" +
+           "Violets are blue,\n" +
+           "JavaScript is fun,\n" +
+           "And so are you!";
+
+console.log(poem);
+// Output: Roses are red,
+//         Violets are blue,
+//         JavaScript is fun,
+//         And so are you!</code></pre>
+                
+                <h5>Template Literal Approach (Elegant):</h5>
+                <pre><code class="language-javascript">// New way: Just press Enter!
+let poem = `Roses are red,
+Violets are blue,
+JavaScript is fun,
+And so are you!`;
+
+console.log(poem);
+// Output: Roses are red,
+//         Violets are blue,
+//         JavaScript is fun,
+//         And so are you!
+
+// Multiline HTML elements
+let html = `&lt;ul&gt;
+    &lt;li&gt;Item 1&lt;/li&gt;
+    &lt;li&gt;Item 2&lt;/li&gt;
+    &lt;li&gt;Item 3&lt;/li&gt;
+&lt;/ul&gt;`;
+
+console.log(html);</code></pre>
+                
+                <h5>Whitespace Control:</h5>
+                <pre><code class="language-javascript">// Template literals preserve whitespace exactly
+let formattedText = `
+    This text
+      has indentation
+        and spacing
+          preserved!
+`;
+
+console.log(formattedText);
+// Output:
+//     This text
+//       has indentation
+//         and spacing
+//           preserved!
+
+// To avoid leading newline, use trimStart()
+let cleanText = `
+    This text
+      has indentation
+`.trimStart();
+
+console.log(cleanText);
+// Output:
+// This text
+//   has indentation</code></pre>
+                
+                <div class="highlight">🚀 Game-Changer: Template literals eliminate the nightmare of escaping newlines and concatenating strings across multiple lines!</div>
+            </details>
+            
+            <details>
+                <summary>Tagged template literals</summary>
+                <p>Tagged templates allow you to parse template literals with a function.</p>
+                
+                <h5>Basic Tagged Template Syntax:</h5>
+                <pre><code class="language-javascript">// Tag function receives strings and values as arguments
+function highlight(strings, ...values) {
+    let result = "";
+    
+    // Loop through strings and values alternately
+    strings.forEach((str, i) => {
+        result += str;
+        if (i < values.length) {
+            // Highlight interpolated values
+            result += `<span style="color: var(--amber); font-weight: bold;">${values[i]}</span>`;
+        }
+    });
+    
+    return result;
+}
+
+let name = "Alice";
+let score = 95;
+let level = "Expert";
+
+let result = highlight`User: ${name}, Score: ${score}, Level: ${level}`;
+console.log(result);
+// Output: User: <span style="color: var(--amber); font-weight: bold;">Alice</span>, Score: <span style="color: var(--amber); font-weight: bold;">95</span>, Level: <span style="color: var(--amber); font-weight: bold;">Expert</span></code></pre>
+                
+                <h5>How Tagged Templates Work Internally:</h5>
+                <div class="memory-diagram">
+// For: highlight`Hello ${name}, you scored ${score}!`
+// strings = ["Hello ", ", you scored ", "!"]
+// values = ["Alice", 95]
+
+// The function gets called as:
+highlight(["Hello ", ", you scored ", "!"], "Alice", 95)
+                </div>
+                
+                <h5>Practical Examples:</h5>
+                
+                <h6>1. HTML Escaping (Security)</h6>
+                <pre><code class="language-javascript">// Prevent XSS attacks by escaping HTML
+function htmlEscape(strings, ...values) {
+    const escapedValues = values.map(value => 
+        String(value)
+            .replace(/&/g, '&amp;')
+            .replace(/&lt;/g, '&lt;')
+            .replace(/&gt;/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#x27;')
+    );
+    
+    let result = "";
+    strings.forEach((str, i) => {
+        result += str;
+        if (i < escapedValues.length) {
+            result += escapedValues[i];
+        }
+    });
+    
+    return result;
+}
+
+let userInput = "&lt;script&gt;alert('Hacked!')&lt;/script&gt;";
+let safeOutput = htmlEscape`Welcome, ${userInput}!`;
+console.log(safeOutput);
+// Output: Welcome, &lt;script&gt;alert('Hacked!')&lt;/script&gt;! (Safe!)
+</code></pre>
+                
+                <h6>2. Currency Formatting</h6>
+                <pre><code class="language-javascript">// Format numbers as currency
+function currency(strings, ...values) {
+    const formattedValues = values.map(value => 
+        new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD'
+        }).format(value)
+    );
+    
+    let result = "";
+    strings.forEach((str, i) => {
+        result += str;
+        if (i < formattedValues.length) {
+            result += formattedValues[i];
+        }
+    });
+    
+    return result;
+}
+
+let price = 1999.99;
+let discount = 0.2;
+
+let result = currency`Original: ${price}, Discounted: ${price * (1 - discount)}`;
+console.log(result);
+// Output: Original: $1,999.99, Discounted: $1,599.99</code></pre>
+                
+                <h6>3. Conditional Formatting</h6>
+                <pre><code class="language-javascript">// Color-code based on value
+function colorCode(strings, ...values) {
+    const coloredValues = values.map((value, i) => {
+        if (typeof value === "number") {
+            if (value > 100) return `<span style="color: green;">${value}</span>`;
+            if (value > 50) return `<span style="color: orange;">${value}</span>`;
+            return `<span style="color: red;">${value}</span>`;
+        }
+        return value;
+    });
+    
+    let result = "";
+    strings.forEach((str, i) => {
+        result += str;
+        if (i < coloredValues.length) {
+            result += coloredValues[i];
+        }
+    });
+    
+    return result;
+}
+
+let temperature = 105;
+let humidity = 30;
+let pressure = 80;
+
+let weatherReport = colorCode`Temperature: ${temperature}°F, Humidity: ${humidity}%, Pressure: ${pressure}hPa`;
+console.log(weatherReport);
+// Temperature: <span style="color: green;">105</span>°F, Humidity: <span style="color: red;">30</span>%, Pressure: <span style="color: orange;">80</span>hPa</code></pre>
+                
+                <div class="highlight">🏆 Power Move: Tagged templates are the secret weapon of professional JavaScript developers for creating domain-specific languages within JavaScript!</div>
+            </details>
+            
+            <details>
+                <summary>Essential string methods</summary>
+                <p>Master these 10 essential string methods for daily development.</p>
+                
+                <h5>1. charAt() and bracket notation</h5>
+                <pre><code class="language-javascript">let text = "JavaScript";
+
+console.log(text.charAt(0)); // "J"
+console.log(text.charAt(4)); // "S"
+console.log(text[0]); // "J" (modern bracket notation)
+console.log(text[4]); // "S"
+
+// Both work similarly, but charAt() is safer with invalid indices
+console.log(text.charAt(100)); // ""
+console.log(text[100]); // undefined</code></pre>
+                
+                <h5>2. slice(), substring(), substr()</h5>
+                <pre><code class="language-javascript">let text = "Hello World";
+
+// slice(start, end) - negative indices count from end
+console.log(text.slice(0, 5)); // "Hello"
+console.log(text.slice(6)); // "World"
+console.log(text.slice(-5)); // "World"
+console.log(text.slice(-5, -1)); // "Worl"
+
+// substring(start, end) - treats negative as 0
+console.log(text.substring(0, 5)); // "Hello"
+console.log(text.substring(6)); // "World"
+console.log(text.substring(-5)); // "Hello World" (negative treated as 0)
+
+// substr(start, length) - DEPRECATED, avoid!
+console.log(text.substr(6, 5)); // "World"
+console.log(text.substr(-5, 5)); // "World"</code></pre>
+                
+                <h5>3. indexOf(), lastIndexOf(), includes()</h5>
+                <pre><code class="language-javascript">let text = "The quick brown fox jumps over the lazy dog";
+
+console.log(text.indexOf("fox")); // 16
+console.log(text.indexOf("cat")); // -1 (not found)
+console.log(text.lastIndexOf("the")); // 31 (last occurrence)
+console.log(text.includes("fox")); // true
+console.log(text.includes("cat")); // false
+console.log(text.includes("Fox")); // false (case-sensitive)</code></pre>
+                
+                <h5>4. startsWith(), endsWith()</h5>
+                <pre><code class="language-javascript">let url = "https://example.com/api/users";
+
+console.log(url.startsWith("https://")); // true
+console.log(url.endsWith("/users")); // true
+console.log(url.startsWith("http://")); // false
+
+// With position parameter
+console.log(url.startsWith("example", 8)); // true (starts at position 8)</code></pre>
+                
+                <h5>5. replace(), replaceAll()</h5>
+                <pre><code class="language-javascript">let text = "I love JavaScript. JavaScript is awesome!";
+
+// replace() - only replaces first match
+console.log(text.replace("JavaScript", "Python"));
+// "I love Python. JavaScript is awesome!"
+
+// replaceAll() - replaces all matches
+console.log(text.replaceAll("JavaScript", "Python"));
+// "I love Python. Python is awesome!"
+
+// Replace with regex
+console.log(text.replace(/JavaScript/g, "Python")); // Same as replaceAll
+console.log(text.replace(/[A-Z]/g, "*")); // "i love ***********. *********** is awesome!"</code></pre>
+                
+                <h5>6. split(), join()</h5>
+                <pre><code class="language-javascript">let sentence = "apple,banana,orange,kiwi";
+
+// Split into array
+let fruits = sentence.split(","); // ["apple", "banana", "orange", "kiwi"]
+let chars = sentence.split(""); // ["a", "p", "p", "l", "e", ",", ...]
+let words = sentence.split(" "); // ["apple,banana,orange,kiwi"] (one element)
+
+// Join array back to string
+let joined = fruits.join(" | "); // "apple | banana | orange | kiwi"
+let joined2 = fruits.join(""); // "applebananaorangekiwi"
+
+// Split by multiple delimiters
+let mixed = "apple, banana; orange|kiwi";
+let items = mixed.split(/[,;|]\s*/); // ["apple", "banana", "orange", "kiwi"]</code></pre>
+                
+                <h5>7. trim(), trimStart(), trimEnd()</h5>
+                <pre><code class="language-javascript">let text = "   Hello World   ";
+
+console.log(text.trim()); // "Hello World"
+console.log(text.trimStart()); // "Hello World   "
+console.log(text.trimEnd()); // "   Hello World"
+
+// Practical use: form input cleaning
+let userInput = "   alice@example.com   ";
+let cleanEmail = userInput.trim().toLowerCase(); // "alice@example.com"</code></pre>
+                
+                <h5>8. padStart(), padEnd()</h5>
+                <pre><code class="language-javascript">let id = "123";
+
+// Pad with zeros to reach length of 8
+console.log(id.padStart(8, "0")); // "00000123"
+
+// Pad with spaces
+console.log("Price".padEnd(15, ".")); // "Price............"
+
+// Practical: Align numbers in console output
+let products = [
+    {name: "Apple", price: 1.2},
+    {name: "Banana", price: 0.8},
+    {name: "Orange", price: 1.5}
+];
+
+products.forEach(product => {
+    console.log(`${product.name.padEnd(10)}: $${product.price.toFixed(2).padStart(6, " ")}`);
+});
+// Output:
+// Apple     : $ 1.20
+// Banana    : $ 0.80
+// Orange    : $ 1.50</code></pre>
+                
+                <h5>9. toUpperCase(), toLowerCase()</h5>
+                <pre><code class="language-javascript">let text = "Hello World";
+
+console.log(text.toUpperCase()); // "HELLO WORLD"
+console.log(text.toLowerCase()); // "hello world"
+
+// Case-insensitive search
+let searchTerm = "world";
+let found = text.toLowerCase().includes(searchTerm.toLowerCase()); // true</code></pre>
+                
+                <h5>10. localeCompare() - Advanced sorting</h5>
+                <pre><code class="language-javascript">let names = ["Zoe", "ápple", "BANANA", "cherry"];
+
+// Default sort (ASCII order - uppercase before lowercase)
+console.log(names.sort()); // ["BANANA", "Zoe", "cherry", "ápple"]
+
+// Locale-aware sort (proper alphabetical order)
+console.log(names.sort((a, b) => a.localeCompare(b))); 
+// ["ápple", "BANANA", "cherry", "Zoe"]
+
+// Sort with options
+console.log(names.sort((a, b) => a.localeCompare(b, 'en', {sensitivity: 'base'})));
+// ["ápple", "BANANA", "cherry", "Zoe"] (ignores case and accents)</code></pre>
+                
+                <div class="highlight">💡 Pro Tip: Memorize these 10 methods - they'll save you hours of coding time every week!</div>
+            </details>
+        </section>
+        
+        <div class="footer-note">
+            <p>🎉 Congratulations! You've mastered type conversion, coercion, and template literals in JavaScript.</p>
+            <p>You now understand how JavaScript automatically converts types behind the scenes, how to control it intentionally, and how to write beautiful, readable code with template literals and advanced string manipulation.</p>
+            <p>Next Module: Arrays, Objects, and Destructuring</p>
+        </div>
+    </div>
+
+    <!-- JavaScript Utilities -->
+    <script>
+        // Expand/Collapse All functionality
+        document.getElementById('expandAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.open = true;
+            });
+        });
+
+        document.getElementById('collapseAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.open = false;
+            });
+        });
+
+        // Search functionality for TOC
+        document.getElementById('searchToc').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const tocItems = document.querySelectorAll('.toc-item');
+            
+            tocItems.forEach(item => {
+                const linkText = item.querySelector('a').textContent.toLowerCase();
+                const subItems = item.querySelectorAll('.toc-subitem a');
+                let matches = false;
+                
+                if (linkText.includes(searchTerm)) {
+                    matches = true;
+                } else {
+                    subItems.forEach(subItem => {
+                        if (subItem.textContent.toLowerCase().includes(searchTerm)) {
+                            matches = true;
+                        }
+                    });
+                }
+                
+                // Show/hide parent item based on search
+                item.style.display = matches ? 'block' : 'none';
+                
+                // Show subitems if parent matches
+                if (matches && searchTerm.length > 0) {
+                    item.querySelector('.toc-subitem').classList.add('active');
+                }
+            });
+        });
+
+        // Smooth scrolling for TOC links
+        document.querySelectorAll('.toc-container a').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Highlight active section in TOC as you scroll
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.toc-container a');
+            
+            let currentSection = '';
+            
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                
+                if (pageYOffset >= sectionTop - 100) {
+                    currentSection = section.id;
+                }
+            });
+            
+            navLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href') === '#' + currentSection) {
+                    link.classList.add('active');
+                }
+            });
+        });
+
+        // Simple syntax highlighting for code blocks
+        document.querySelectorAll('pre code').forEach((block) => {
+            const code = block.innerHTML;
+            
+            // Keywords
+            let highlighted = code
+                .replace(/\b(var|let|const|function|return|if|else|for|while|do|switch|case|break|continue|new|this|class|extends|import|export|default|from|as|try|catch|finally|throw|true|false|null|undefined|typeof|instanceof|BigInt|Symbol|String|Number|Boolean|parseInt|parseFloat|Array|Object)\b/g, '<span class="code-keyword">$1</span>')
+                // Numbers (including BigInt)
+                .replace(/(\b\d+n\b|\b\d+\.\d+|\b\d+\b)/g, '<span class="code-number">$1</span>')
+                // Strings
+                .replace(/(['"])(?:(?!\1)[^\\]|\\.)*\1/g, '<span class="code-string">$&</span>')
+                // Comments
+                .replace(/\/\/.*$/gm, '<span class="code-comment">$&</span>')
+                .replace(/\/\*[\s\S]*?\*\//g, '<span class="code-comment">$&</span>')
+                // Boolean literals
+                .replace(/\b(true|false)\b/g, '<span class="code-boolean">$1</span>')
+                // null and undefined
+                .replace(/\b(null|undefined)\b/g, '<span class="code-null">$1</span>')
+                // Template literal syntax
+                .replace(/`([^`])*`/g, '<span class="code-string">$&</span>')
+                // Method calls
+                .replace(/\.([a-zA-Z_$][a-zA-Z0-9_$]*)\(/g, '.<span class="code-function">$1</span>(')
+                // Arrow functions
+                .replace(/=>/g, '<span class="code-function">=&gt;</span>');
+            
+            block.innerHTML = highlighted;
+        });
+    </script>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+```

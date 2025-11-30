@@ -1,0 +1,389 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>24.2 Testing Frameworks — Deep Learning Note</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
+
+  <style>
+    :root{--bg:#0b0f10;--surface:#111518;--cyan:#06b6d4;--amber:#f59e0b;--muted:#9aa6a6;--panel-width:340px;--radius:12px}
+    html,body{height:100%}
+    body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:#e6eef0}
+    .app{display:flex;gap:18px;height:100vh;padding:20px}
+    .left-panel{width:var(--panel-width);background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.04));padding:18px;border-radius:var(--radius);position:sticky;top:20px;height:calc(100vh - 40px);flex-shrink:0;border:1px solid rgba(255,255,255,0.03)}
+    .right-panel{flex:1;background:linear-gradient(180deg,rgba(255,255,255,0.01),rgba(255,255,255,0.00));padding:22px;border-radius:var(--radius);overflow:auto;box-shadow:0 6px 18px rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.02)}
+    .brand{display:flex;gap:12px;align-items:center}
+    .brand-mark{width:46px;height:46px;border-radius:10px;background:linear-gradient(90deg,var(--cyan),var(--amber));display:flex;align-items:center;justify-content:center;color:#071018;font-weight:700}
+    .title{font-weight:700}
+    .subtitle{font-size:0.82rem;color:var(--muted)}
+    .toc{margin-top:12px}
+    .search{margin-bottom:10px}
+    .controls{display:flex;gap:8px;margin-bottom:8px}
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);padding:6px 8px;border-radius:8px}
+    .toc-list{max-height:58vh;overflow:auto;padding-right:6px}
+    a.toc-item{display:block;padding:8px;border-radius:8px;margin-bottom:6px;color:inherit;text-decoration:none}
+    a.toc-item:hover{background:rgba(255,255,255,0.02);color:var(--cyan)}
+    details{background:rgba(255,255,255,0.015);padding:12px;border-radius:10px;margin-bottom:12px;border:1px solid rgba(255,255,255,0.02)}
+    summary{cursor:pointer;font-weight:600}
+    pre{background:rgba(0,0,0,0.35);padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,'Roboto Mono','Courier New',monospace}
+    h1,h2,h3{color:#dff7fb}
+    p{color:#cfe8ea}
+    .muted{color:var(--muted)}
+    table.table thead th{border-bottom:1px solid rgba(255,255,255,0.04)}
+    @media (max-width:900px){.left-panel{display:none}}
+  </style>
+</head>
+<body>
+  <div class="app container-fluid">
+    <aside class="left-panel" aria-label="Table of contents">
+      <div class="brand">
+        <div class="brand-mark">24.2</div>
+        <div>
+          <div class="title">Testing Frameworks</div>
+          <div class="subtitle">Jest, Mocha+Chai, Cypress, Playwright, Vitest — deep note</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">
+        <div class="muted">Author: <strong>Irfan</strong></div>
+        <div style="background:linear-gradient(90deg,var(--cyan),rgba(0,0,0,0.12));padding:4px 8px;border-radius:999px;color:#021417;font-weight:700">Advanced</div>
+      </div>
+
+      <div class="toc">
+        <input id="tocSearch" class="form-control search" placeholder="Search TOC..." />
+        <div class="controls">
+          <button class="btn-ghost" id="expandAll">Expand all</button>
+          <button class="btn-ghost" id="collapseAll">Collapse all</button>
+          <button class="btn-ghost" id="tocReset">Reset</button>
+        </div>
+        <div class="toc-list" id="tocList">
+          <a class="toc-item" href="#jest">Jest — everything-in-one</a>
+          <a class="toc-item" href="#mocha">Mocha &amp; Chai — flexible combo</a>
+          <a class="toc-item" href="#cypress">Cypress — E2E focused</a>
+          <a class="toc-item" href="#playwright">Playwright — cross-browser automation</a>
+          <a class="toc-item" href="#vitest">Vitest — modern fast testing</a>
+          <a class="toc-item" href="#comparison">Comparisons &amp; when to choose</a>
+          <a class="toc-item" href="#ci">CI setup & best practices</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="right-panel" id="content" tabindex="0">
+      <article>
+        <h1 id="top">24.2 Testing Frameworks — Deep Learning Note</h1>
+        <p class="muted">Detailed guide to modern JavaScript testing frameworks with practical examples, config snippets, best practices, and trade-offs. Code blocks use HTML entities so they render correctly. Use the TOC to navigate.</p>
+
+        <!-- JEST -->
+        <section id="jest" class="anchor-target">
+          <h2>Jest — everything-in-one</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>Jest is a batteries-included testing framework (Facebook) providing test runner, assertion library, mocking, snapshot testing, and coverage. Great default choice for React and general JS projects.</p>
+          </details>
+
+          <details>
+            <summary>Getting started & basic test</summary>
+            <pre><code class="language-bash">npm install -D jest @types/jest
+
+// package.json
+"scripts": { "test": "jest --coverage" }
+</code></pre>
+            <pre><code class="language-javascript">// sum.js
+function sum(a,b){ return a + b }
+module.exports = sum;
+
+// sum.test.js
+const sum = require('./sum');
+test('adds numbers', () =&gt; { expect(sum(1,2)).toBe(3); });
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Advanced features: mocking & snapshots</summary>
+            <pre><code class="language-javascript">// manual mock
+jest.mock('./db', () =&gt; ({ get: jest.fn().mockResolvedValue({id:1}) }));
+
+// snapshot test
+const renderer = require('react-test-renderer');
+expect(renderer.create(&lt;MyComp /&gt;).toJSON()).toMatchSnapshot();
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Performance: parallelization & caching</summary>
+            <p>Jest runs tests in worker processes by default. Use <code>--maxWorkers</code> to tune concurrency. Use persistent cache to speed up repeated runs.</p>
+          </details>
+
+          <details>
+            <summary>When to use Jest</summary>
+            <ul>
+              <li>Default for React projects.</li>
+              <li>When you want an integrated toolset (mocks, snapshots, coverage) with minimal config.</li>
+            </ul>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- MOCHA & CHAI -->
+        <section id="mocha" class="anchor-target">
+          <h2>Mocha &amp; Chai — flexible combo</h2>
+
+          <details>
+            <summary>Executive summary</summary>
+            <p>Mocha is a flexible test runner; Chai provides assertions. Use Sinon for spies/mocks. This combo is great when you want control over reporters, setup, and plugin choices.</p>
+          </details>
+
+          <details>
+            <summary>Getting started & sample test</summary>
+            <pre><code class="language-bash">npm install -D mocha chai sinon
+
+// package.json
+"scripts": { "test": "mocha --recursive --exit" }
+</code></pre>
+            <pre><code class="language-javascript">// test/add.spec.js
+const { expect } = require('chai');
+const add = require('../add');
+
+describe('add', () =&gt; {
+  it('adds numbers', () =&gt; { expect(add(1,2)).to.equal(3); });
+});
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Mocking and test doubles (Sinon)</summary>
+            <pre><code class="language-javascript">const sinon = require('sinon');
+const api = require('../api');
+
+sinon.stub(api, 'fetch').resolves({ data: 1 });
+
+// restore
+api.fetch.restore();
+</code></pre>
+          </details>
+
+          <details>
+            <summary>When to choose Mocha+Chai</summary>
+            <ul>
+              <li>You need fine-grained control over test lifecycle and reporters.</li>
+              <li>Working in non-React ecosystems or legacy projects that prefer flexibility.</li>
+            </ul>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- CYPRESS -->
+        <section id="cypress" class="anchor-target">
+          <h2>Cypress — E2E focused</h2>
+
+          <details>
+            <summary>Executive summary</summary>
+            <p>Cypress is a developer-friendly E2E testing framework with time-travel debugging, network control, and an interactive runner. Focused on reliable browser-based tests and fast feedback for UI flows.</p>
+          </details>
+
+          <details>
+            <summary>Getting started & example</summary>
+            <pre><code class="language-bash">npm install -D cypress
+npx cypress open
+</code></pre>
+            <pre><code class="language-javascript">// cypress/e2e/login.cy.js
+describe('Login', () =&gt; {
+  it('logs in', () =&gt; {
+    cy.visit('/login');
+    cy.get('input[name=email]').type('a@b.com');
+    cy.get('button[type=submit]').click();
+    cy.url().should('include', '/dashboard');
+  });
+});
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Best practices: test data & isolation</summary>
+            <ul>
+              <li>Seed test data through API or fixtures rather than UI when possible.</li>
+              <li>Use cy.intercept to stub network requests for deterministic tests.</li>
+              <li>Keep E2E suite small and focused on user-critical paths.</li>
+            </ul>
+          </details>
+
+          <details>
+            <summary>CI strategies</summary>
+            <p>Run Cypress in headless mode in CI and split tests across runners to parallelize. Use Cypress Dashboard for flakes and recording.</p>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- PLAYWRIGHT -->
+        <section id="playwright" class="anchor-target">
+          <h2>Playwright — cross-browser automation</h2>
+
+          <details>
+            <summary>Executive summary</summary>
+            <p>Playwright supports Chromium, Firefox, and WebKit with a powerful API for automation, network, and cross-browser testing. It's well-suited for E2E, visual testing, and modern CI parallelization.</p>
+          </details>
+
+          <details>
+            <summary>Quick start & example</summary>
+            <pre><code class="language-bash">npm install -D @playwright/test
+npx playwright install
+</code></pre>
+            <pre><code class="language-javascript">// example.spec.js
+const { test, expect } = require('@playwright/test');
+
+test('homepage works', async ({ page }) =&gt; {
+  await page.goto('http://localhost:3000');
+  await expect(page).toHaveTitle(/My App/);
+});
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Parallelism & browsers</summary>
+            <p>Playwright's test runner can run tests across browsers and workers. Use projects in playwright.config to define browser matrix and shard tests to speed up CI.</p>
+          </details>
+
+          <details>
+            <summary>When to pick Playwright</summary>
+            <ul>
+              <li>Need cross-browser coverage including WebKit.</li>
+              <li>Advanced automation (file uploads, multi-page flows, full network control).</li>
+            </ul>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- VITEST -->
+        <section id="vitest" class="anchor-target">
+          <h2>Vitest — modern, Vite-native testing</h2>
+
+          <details>
+            <summary>Executive summary</summary>
+            <p>Vitest is a fast, Vite-native test runner that supports modern features (ESM, TypeScript via esbuild), snapshot testing, mocking, and a Jest-compatible API. Great for projects using Vite for development.</p>
+          </details>
+
+          <details>
+            <summary>Getting started & example</summary>
+            <pre><code class="language-bash">npm install -D vitest @testing-library/react
+
+// package.json
+"scripts": { "test": "vitest" }
+</code></pre>
+            <pre><code class="language-javascript">// sum.test.js
+import { describe, it, expect } from 'vitest';
+import { sum } from './sum';
+
+describe('sum', () =&gt; { it('adds', () =&gt; { expect(sum(1,2)).toBe(3); }); });
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Benefits: speed & ESM-first</summary>
+            <ul>
+              <li>Very fast startup because of esbuild transforms.</li>
+              <li>Works seamlessly with Vite plugins and ESM ecosystem.</li>
+            </ul>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- COMPARISON -->
+        <section id="comparison" class="anchor-target">
+          <h2>Comparisons &amp; when to choose</h2>
+
+          <details open>
+            <summary>Quick decision guide</summary>
+            <table class="table table-dark table-striped">
+              <thead><tr><th>Tool</th><th>Strength</th><th>Best for</th></tr></thead>
+              <tbody>
+                <tr><td>Jest</td><td>All-in-one, snapshots, mocks</td><td>React apps, general unit tests</td></tr>
+                <tr><td>Mocha+Chai</td><td>Flexibility & tooling choices</td><td>Custom stacks, Node libs</td></tr>
+                <tr><td>Cypress</td><td>Great DX for E2E</td><td>UI-focused E2E</td></tr>
+                <tr><td>Playwright</td><td>Cross-browser automation</td><td>E2E with WebKit coverage</td></tr>
+                <tr><td>Vitest</td><td>Speed & Vite integration</td><td>Vite projects, ESM-first stacks</td></tr>
+              </tbody>
+            </table>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- CI -->
+        <section id="ci" class="anchor-target">
+          <h2>CI setup & best practices</h2>
+
+          <details>
+            <summary>Executive summary</summary>
+            <p>Run tests in CI with caching, split suites (fast unit vs slow E2E), parallelize, and fail fast on PR checks. Use matrix jobs for browser matrices (Playwright) and artifacts for test recordings (Cypress Dashboard).</p>
+          </details>
+
+          <details>
+            <summary>Example GitHub Actions snippet (split unit & e2e)</summary>
+            <pre><code class="language-yaml">name: CI
+on: [push, pull_request]
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v4
+        with: { node-version: 16 }
+      - run: npm ci
+      - run: npm run test:unit
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: unit
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v4
+      - run: npm ci
+      - run: npm run test:e2e -- --record
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Flaky test handling</summary>
+            <ul>
+              <li>Identify flaky tests and quarantine them; add retries only after diagnosing root cause.</li>
+              <li>Record failures with screenshots or videos in CI for easier debugging.</li>
+            </ul>
+          </details>
+        </section>
+
+        <footer style="margin-top:20px;padding-bottom:40px;">
+          <p class="muted">End of note. Use the left TOC to navigate and expand/collapse sections. If you want, I can add a full Jest config with transform examples, a Playwright matrix config, a Cypress flaky-test strategy, or a Vitest migration guide — tell me which and I'll extend the same file.</p>
+        </footer>
+      </article>
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/javascript.min.js"></script>
+  <script>
+    if(window.hljs){ hljs.highlightAll(); }
+
+    document.querySelectorAll('#tocList a').forEach(a=>{
+      a.addEventListener('click', function(e){ e.preventDefault(); const id=this.getAttribute('href').slice(1); const el=document.getElementById(id); if(el){ el.scrollIntoView({behavior:'smooth',block:'start'}); const d=el.querySelector('details'); if(d && !d.open) d.open=true; } });
+    });
+
+    document.getElementById('expandAll').addEventListener('click', ()=> document.querySelectorAll('details').forEach(d=> d.open=true));
+    document.getElementById('collapseAll').addEventListener('click', ()=> document.querySelectorAll('details').forEach(d=> d.open=false));
+    document.getElementById('tocReset').addEventListener('click', ()=> document.getElementById('content').scrollTo({top:0,behavior:'smooth'}));
+
+    document.getElementById('tocSearch').addEventListener('input', ()=>{ const q=document.getElementById('tocSearch').value.trim().toLowerCase(); document.querySelectorAll('#tocList a').forEach(a=>{ a.style.display = a.textContent.toLowerCase().includes(q) ? 'block' : 'none'; }); });
+
+    document.addEventListener('keydown',(e)=>{ if(e.key==='E' || e.key==='e') document.querySelectorAll('details').forEach(d=> d.open=true); if(e.key==='C' || e.key==='c') document.querySelectorAll('details').forEach(d=> d.open=false); });
+  </script>
+</body>
+</html>

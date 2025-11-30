@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>19.2 Structural Patterns — Decorator, Facade, Adapter, Composite, Proxy (JavaScript)</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
+  <style>
+    :root{--bg:#0d1117;--surface:#0f1724;--muted:#9ca3af;--cyan:#06b6d4;--amber:#f59e0b;--panel-width:360px;--radius:12px;--mono:ui-monospace,SFMono-Regular,Menlo,Monaco,'Roboto Mono','Courier New',monospace}
+    html,body{height:100%;background:var(--bg);color:#e6eef6;font-family:Inter, system-ui, -apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial;margin:0}
+    .app{display:flex;height:100vh;gap:20px;padding:20px;box-sizing:border-box}
+    .left{width:var(--panel-width);min-width:260px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);border-radius:var(--radius);padding:18px;box-shadow:0 6px 18px rgba(2,6,23,0.7);position:sticky;top:20px;height:calc(100vh - 40px);overflow:auto}
+    .right{flex:1;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);border-radius:var(--radius);padding:28px;box-shadow:0 6px 18px rgba(2,6,23,0.7);height:calc(100vh - 40px);overflow:auto}
+    h1,h2,h3{color:#fff}
+    .muted{color:var(--muted)}
+    .toc-search{display:flex;gap:8px;margin-bottom:12px}
+    .toc-list{list-style:none;padding:0;margin:0}
+    .toc-item{padding:8px 10px;border-radius:8px;cursor:pointer}
+    .toc-item:hover{background:rgba(255,255,255,0.02)}
+    pre{background:rgba(255,255,255,0.02);padding:14px;border-radius:10px;overflow:auto;font-family:var(--mono);font-size:13px}
+    code{font-family:var(--mono);font-size:13px}
+    details{background:rgba(255,255,255,0.01);margin:10px 0;padding:10px;border-radius:8px}
+    details[open]{box-shadow:0 8px 24px rgba(2,6,23,0.7)}
+    summary{cursor:pointer;outline:none;padding:6px 8px;border-radius:6px}
+    summary::-webkit-details-marker{display:none}
+    .summary-title{display:flex;align-items:center;gap:10px}
+    .pill{padding:2px 8px;border-radius:999px;background:rgba(245,158,11,0.12);color:var(--amber);font-size:12px}
+    .section{padding-top:8px;margin-top:8px;border-top:1px dashed rgba(255,255,255,0.03)}
+    .highlight{background:linear-gradient(90deg, rgba(6,182,212,0.06), transparent);}
+    .controls{display:flex;gap:8px;margin-bottom:12px}
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+    .pattern-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media (max-width:900px){.app{flex-direction:column;padding:12px}.left{width:100%;position:relative;height:auto}.right{height:auto}.pattern-grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="app container-fluid">
+    <aside class="left">
+      <div class="d-flex align-items-start mb-3">
+        <div>
+          <h4 class="mb-0">19.2 Structural Patterns</h4>
+          <div class="muted">Decorator, Facade, Adapter, Composite, Proxy — JavaScript</div>
+          <div class="mt-2"><small class="muted">Author: Advanced JS Tutor • Updated: Nov 28, 2025</small></div>
+        </div>
+      </div>
+
+      <div class="toc-search">
+        <input id="tocSearch" class="form-control form-control-sm" placeholder="Search TOC..." aria-label="Search table of contents"/>
+        <button id="tocClear" class="btn btn-sm btn-outline-secondary">Clear</button>
+      </div>
+
+      <div class="controls">
+        <button id="expandAll" class="btn btn-sm btn-primary">Expand all</button>
+        <button id="collapseAll" class="btn btn-sm btn-ghost">Collapse all</button>
+        <button id="tocCollapse" class="btn btn-sm btn-ghost">Collapse TOC</button>
+      </div>
+
+      <nav>
+        <ul id="tocList" class="toc-list">
+          <li class="toc-item" data-target="intro">Introduction &amp; Exec Summary</li>
+          <li class="toc-item" data-target="decorator">Decorator Pattern</li>
+          <li class="toc-item" data-target="facade">Facade Pattern</li>
+          <li class="toc-item" data-target="adapter">Adapter Pattern</li>
+          <li class="toc-item" data-target="composite">Composite Pattern</li>
+          <li class="toc-item" data-target="proxy">Proxy Pattern</li>
+          <li class="toc-item" data-target="comparison">Comparison &amp; Use Cases</li>
+          <li class="toc-item" data-target="examples">Examples &amp; Cheatsheet</li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="right" id="content">
+      <section id="intro" class="section">
+        <h2>Introduction &amp; Executive Summary <span class="pill">Quick</span></h2>
+        <details open>
+          <summary><div class="summary-title"><strong>Executive summary</strong><span class="muted">(short)</span></div></summary>
+          <div class="mt-2 muted">Structural patterns simplify how objects and classes are composed to form larger structures, while keeping systems flexible and maintainable. This module covers Decorator, Facade, Adapter, Composite, and Proxy patterns with idiomatic JavaScript examples and clear, copy-paste-friendly code.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Why this matters</strong></div></summary>
+          <div class="mt-2">These patterns help organize code, add behavior dynamically, adapt interfaces, and create tree-like compositions. They improve separation of concerns and make refactoring easier.</div>
+        </details>
+      </section>
+
+      <section id="decorator" class="section">
+        <h3>Decorator Pattern</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Intent</strong></div></summary>
+          <div class="mt-2">Attach additional responsibilities to objects dynamically without modifying their code. In JS, decorators can be implemented with higher-order functions or wrapper objects.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Function decorator example</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>// loggingDecorator.js
+function withLogging(fn){
+  return function(...args){
+    console.log('calling', fn.name, 'with', args);
+    const res = fn.apply(this, args);
+    console.log('result', res);
+    return res;
+  };
+}
+
+function add(a,b){ return a + b; }
+const addLogged = withLogging(add);
+addLogged(2,3); // logs call + result
+</code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Class decorator via wrapping</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>// wrap an instance to add behavior
+function timedService(service){
+  return {
+    async fetch(...args){
+      const t0 = performance.now();
+      const res = await service.fetch(...args);
+      console.log('fetch took', performance.now() - t0);
+      return res;
+    }
+  };
+}
+</code></pre>
+          </div>
+        </details>
+      </section>
+
+      <section id="facade" class="section">
+        <h3>Facade Pattern</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Intent</strong></div></summary>
+          <div class="mt-2">Provide a simplified interface to a complex subsystem. Facades reduce coupling between clients and the internal components, making the subsystem easier to use.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Facade example: media player</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>// facade.js
+const MediaPlayerFacade = (function(){
+  const decoder = new Decoder();
+  const renderer = new Renderer();
+  const controls = new Controls();
+  return {
+    play(src){ decoder.decode(src); renderer.render(); controls.show(); }
+  };
+})();
+
+MediaPlayerFacade.play('video.mp4');
+</code></pre>
+          </div>
+        </details>
+      </section>
+
+      <section id="adapter" class="section">
+        <h3>Adapter Pattern</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Intent</strong></div></summary>
+          <div class="mt-2">Convert one interface to another so that incompatible systems can work together. Great for wrapping legacy APIs or third-party libraries with your app's expected interface.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Adapter example: legacy API</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>// legacy api expects callback-style
+function legacyFetch(url, cb){ /* ... */ }
+
+// adapter: promise-based wrapper
+function fetchAdapter(url){
+  return new Promise((resolve, reject) =&gt; legacyFetch(url, (err, data) =&gt; err ? reject(err) : resolve(data)) );
+}
+</code></pre>
+          </div>
+        </details>
+      </section>
+
+      <section id="composite" class="section">
+        <h3>Composite Pattern</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Intent</strong></div></summary>
+          <div class="mt-2">Compose objects into tree structures to represent part-whole hierarchies. Composite lets clients treat individual objects and compositions uniformly.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Composite example: UI tree</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>// composite.js
+class Node{
+  constructor(name){ this.name = name; this.children = []; }
+  add(child){ this.children.push(child); }
+  render(indent=0){
+    console.log(' '.repeat(indent) + this.name);
+    for(const c of this.children) c.render(indent+2);
+  }
+}
+
+const root = new Node('App');
+const header = new Node('Header');
+root.add(header);
+root.add(new Node('Main'));
+root.render();
+</code></pre>
+          </div>
+        </details>
+      </section>
+
+      <section id="proxy" class="section">
+        <h3>Proxy Pattern</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Intent</strong></div></summary>
+          <div class="mt-2">Provide a surrogate or placeholder for another object to control access, lazy-load, caching, or add validation. ES6 <code>Proxy</code> enables powerful traps for property access and function calls.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Proxy example: validation</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>// proxy-validate.js
+const userHandler = {
+  set(target, prop, value){
+    if(prop === 'age' &amp;&amp; (typeof value !== 'number' || value &lt; 0)) throw new TypeError('invalid age');
+    target[prop] = value; return true;
+  }
+};
+
+const user = new Proxy({}, userHandler);
+user.age = 30; // ok
+// user.age = -5; // throws
+</code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Proxy for lazy loading</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>// lazy-load heavy module
+function lazyModule(loader){
+  let cached = null;
+  return new Proxy({}, {
+    get(target, prop){
+      if(!cached) cached = loader();
+      return cached[prop];
+    }
+  });
+}
+</code></pre>
+          </div>
+        </details>
+      </section>
+
+      <section id="comparison" class="section">
+        <h3>Comparison &amp; Use Cases</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Quick guide</strong></div></summary>
+          <div class="mt-2">
+            <ul>
+              <li><strong>Decorator</strong>: add responsibilities dynamically (logging, caching).</li>
+              <li><strong>Facade</strong>: simplify complex subsystems behind a unified API.</li>
+              <li><strong>Adapter</strong>: make incompatible interfaces work together (wrappers).</li>
+              <li><strong>Composite</strong>: represent tree structures and treat nodes uniformly.</li>
+              <li><strong>Proxy</strong>: control access, lazy-load, cache, or validate operations.</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
+      <section id="examples" class="section">
+        <h3>Examples &amp; Cheatsheet</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Combined example: caching decorator + adapter</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>// combined.js
+function cacheDecorator(fn){
+  const store = new Map();
+  return async function(arg){
+    if(store.has(arg)) return store.get(arg);
+    const res = await fn(arg);
+    store.set(arg, res);
+    return res;
+  };
+}
+
+// adapter wraps legacy callback API to promise
+function legacyFetchAdapter(url){
+  return new Promise((res, rej) =&gt; legacyFetch(url, (err,data) =&gt; err ? rej(err) : res(data)));
+}
+
+const cachedFetch = cacheDecorator(legacyFetchAdapter);
+</code></pre>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Testing & refactor tips</strong></div></summary>
+          <div class="mt-2">Use small wrappers and dependency injection to make decorators/facades/adapters testable. When refactoring, introduce a facade to isolate breaking changes behind a stable API.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Cheat sheet</strong></div></summary>
+          <div class="mt-2">
+            <ul>
+              <li>Decorator: higher-order functions or wrapping objects.</li>
+              <li>Facade: one-stop API for complex subsystems.</li>
+              <li>Adapter: interface translation layer.</li>
+              <li>Composite: tree structures with uniform operations.</li>
+              <li>Proxy: traps for custom behavior on object operations.</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
+      <footer class="mt-4 muted"><small>Designed for students from college to PhD. Want UML diagrams, interactive visualizers, or TypeScript variants, say which and I'll add them. — Advanced JS Tutor</small></footer>
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+  <script>
+    // TOC interactions, search, expand/collapse, smooth scroll
+    document.querySelectorAll('.toc-item').forEach(item =&gt; {
+      item.addEventListener('click', () =&gt; {
+        const target = document.getElementById(item.dataset.target);
+        if(target){
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          document.querySelectorAll('.section').forEach(s =&gt; s.classList.remove('highlight'));
+          target.classList.add('highlight');
+          setTimeout(() =&gt; target.classList.remove('highlight'), 1400);
+        }
+      });
+    });
+
+    const tocSearch = document.getElementById('tocSearch');
+    const tocList = document.getElementById('tocList');
+    tocSearch.addEventListener('input', (e) =&gt; {
+      const q = e.target.value.trim().toLowerCase();
+      Array.from(tocList.children).forEach(li =&gt; {
+        const text = li.textContent.trim().toLowerCase();
+        li.style.display = text.includes(q) ? '' : 'none';
+      });
+    });
+    document.getElementById('tocClear').addEventListener('click', () =&gt; { tocSearch.value=''; tocSearch.dispatchEvent(new Event('input')); });
+
+    function setAll(open){ document.querySelectorAll('main details').forEach(d =&gt; { d.open = open; }); }
+    document.getElementById('expandAll').addEventListener('click', () =&gt; setAll(true));
+    document.getElementById('collapseAll').addEventListener('click', () =&gt; setAll(false));
+
+    document.getElementById('tocCollapse').addEventListener('click', () =&gt; {
+      const left = document.querySelector('.left');
+      if(left.style.width === '64px'){ left.style.width = getComputedStyle(document.documentElement).getPropertyValue('--panel-width'); }
+      else { left.style.width = '64px'; }
+    });
+
+    document.addEventListener('DOMContentLoaded', (ev) =&gt; {
+      if(window.hljs) hljs.highlightAll();
+    });
+  </script>
+</body>
+</html>

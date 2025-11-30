@@ -1,0 +1,743 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10.2 Callback Patterns - Deep Learning Notes</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00f5ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --border-color: #1a3b60;
+        }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .left-panel {
+            background-color: #0c213d;
+            border-right: 1px solid var(--border-color);
+            height: 100vh;
+            position: fixed;
+            width: 300px;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5);
+        }
+        
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--amber);
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+        
+        .toc-item {
+            margin: 8px 0;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .toc-item:hover {
+            background-color: rgba(0, 245, 255, 0.1);
+            color: var(--amber);
+        }
+        
+        .toc-subitem {
+            margin-left: 20px;
+            margin-top: 5px;
+            padding: 5px 8px;
+            border-radius: 3px;
+            color: #b8daff;
+        }
+        
+        .toc-subitem:hover {
+            background-color: rgba(0, 245, 255, 0.1);
+            color: var(--amber);
+        }
+        
+        .search-input {
+            background-color: #1a3b60;
+            border: 1px solid var(--amber);
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+        
+        .btn-control {
+            background-color: transparent;
+            border: 1px solid var(--amber);
+            color: var(--amber);
+            margin: 10px 0;
+            padding: 6px 12px;
+            font-size: 0.9rem;
+        }
+        
+        .btn-control:hover {
+            background-color: rgba(255, 183, 77, 0.2);
+        }
+        
+        pre code {
+            display: block;
+            padding: 16px;
+            overflow-x: auto;
+            background-color: #0f2a45 !important;
+            border-left: 4px solid var(--amber);
+            border-radius: 6px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--cyan);
+        }
+        
+        code {
+            background-color: #1a3b60;
+            color: var(--amber);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        
+        .details-summary {
+            cursor: pointer;
+            padding: 12px;
+            background-color: #0f2a45;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 8px;
+            color: var(--cyan);
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .details-summary:hover {
+            background-color: #13375e;
+            color: var(--amber);
+        }
+        
+        .details-content {
+            background-color: #0f2a45;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--cyan);
+        }
+        
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.15);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        
+        .definition {
+            border-left: 4px solid var(--cyan);
+        }
+        
+        .detail {
+            border-left: 4px solid var(--amber);
+        }
+        
+        .syntax {
+            border-left: 4px solid #a0f;
+        }
+        
+        .example {
+            border-left: 4px solid #00ff99;
+        }
+        
+        .uses {
+            border-left: 4px solid #ff6b6b;
+        }
+        
+        .table-of-contents h4 {
+            color: var(--amber);
+            margin-top: 20px;
+            border-bottom: 1px dashed var(--amber);
+            padding-bottom: 5px;
+        }
+        
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #0a192f;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--amber);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ffcc80;
+        }
+        
+        .badge {
+            background-color: var(--amber);
+            color: #000;
+            font-weight: bold;
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+        }
+        
+        .note-box {
+            background-color: rgba(0, 245, 255, 0.1);
+            border-left: 4px solid var(--cyan);
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 0 6px 6px 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Left Panel -->
+    <div class="left-panel">
+        <h1 class="text-center">Callback Patterns</h1>
+        <p class="text-muted text-center">Deep Understanding Guide</p>
+        <hr style="border-color: var(--border-color);">
+        
+        <div class="mb-3">
+            <input type="text" class="form-control search-input" id="searchToc" placeholder="Search topics...">
+        </div>
+        
+        <div class="d-grid gap-2 mb-3">
+            <button class="btn btn-control" id="expandAll">Expand All</button>
+            <button class="btn btn-control" id="collapseAll">Collapse All</button>
+        </div>
+        
+        <div class="table-of-contents">
+            <h4>Table of Contents</h4>
+            <div class="toc-item" data-target="understanding-callbacks">
+                • 10.2 Callback Patterns
+            </div>
+            <div class="toc-subitem" data-target="understanding-callbacks">○ Understanding callbacks</div>
+            <div class="toc-subitem" data-target="error-first-callbacks">○ Error-first callbacks (Node.js style)</div>
+            <div class="toc-subitem" data-target="callback-hell">○ Callback hell and solutions</div>
+            <div class="toc-subitem" data-target="event-callbacks">○ Event callbacks and handlers</div>
+        </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="right-panel">
+        <!-- Section: Understanding callbacks -->
+        <details id="understanding-callbacks" open>
+            <summary class="details-summary">Understanding callbacks</summary>
+            <div class="details-content">
+                <h5>Definition</h5>
+                <p>A <span class="highlight">callback</span> is a function passed as an argument to another function, which is then invoked inside the outer function to complete some kind of routine or action.</p>
+                
+                <h5>Detail</h5>
+                <p>Callbacks are fundamental to JavaScript's asynchronous nature. Since JavaScript runs on a single thread, it uses callbacks to handle operations that take time (like file reading, network requests, timers) without blocking the execution of other code.</p>
+                
+                <h5>Syntax</h5>
+                <pre><code>// Basic callback syntax
+function greet(name, callback) {
+    console.log('Hello ' + name);
+    callback(); // Execute the callback function
+}
+
+function sayGoodbye() {
+    console.log('Goodbye!');
+}
+
+greet('Alice', sayGoodbye); // Output: Hello Alice, Goodbye!</code></pre>
+                
+                <h5>Example</h5>
+                <pre><code>// Real-world example: Processing data after loading
+function loadData(callback) {
+    setTimeout(() => {
+        const data = [1, 2, 3, 4, 5];
+        console.log('Data loaded!');
+        callback(data);
+    }, 1000);
+}
+
+function processData(data) {
+    const doubled = data.map(x => x * 2);
+    console.log('Processed data:', doubled);
+}
+
+loadData(processData); // After 1 second: Data loaded! Processed data: [2, 4, 6, 8, 10]</code></pre>
+                
+                <h5>Uses</h5>
+                <ul>
+                    <li>Handling asynchronous operations (file I/O, API calls)</li>
+                    <li>Event listeners (click, scroll, keypress)</li>
+                    <li>Array methods like <code>map()</code>, <code>filter()</code>, <code>forEach()</code></li>
+                    <li>Implementing custom logic in libraries/frameworks</li>
+                </ul>
+                
+                <div class="note-box">
+                    <strong>Note:</strong> Callbacks are first-class functions in JavaScript — meaning they can be assigned to variables, passed as arguments, and returned from functions.
+                </div>
+            </div>
+        </details>
+
+        <!-- Section: Error-first callbacks -->
+        <details id="error-first-callbacks">
+            <summary class="details-summary">Error-first callbacks (Node.js style)</summary>
+            <div class="details-content">
+                <h5>Definition</h5>
+                <p>An <span class="highlight">error-first callback</span> is a pattern where the first argument of a callback function is reserved for an error object, and subsequent arguments contain data or results.</p>
+                
+                <h5>Detail</h5>
+                <p>This convention is standard in Node.js and many npm packages. It follows the principle: "If there's an error, handle it first. Otherwise, proceed with success data."</p>
+                
+                <h5>Syntax</h5>
+                <pre><code>function asyncOperation(param, callback) {
+    // Simulate async operation
+    if (/* some condition */) {
+        // Error case
+        callback(new Error('Something went wrong'), null);
+    } else {
+        // Success case
+        callback(null, result);
+    }
+}</code></pre>
+                
+                <h5>Example</h5>
+                <pre><code>const fs = require('fs'); // Node.js filesystem module
+
+// Reading a file using error-first callback
+fs.readFile('data.txt', 'utf8', (err, data) =&gt; {
+    if (err) {
+        console.error('Error reading file:', err.message);
+        return; // Early return to avoid executing success code
+    }
+    console.log('File content:', data);
+});
+
+// Another example with custom function
+function divide(a, b, callback) {
+    if (b === 0) {
+        callback(new Error('Cannot divide by zero'), null);
+    } else {
+        callback(null, a / b);
+    }
+}
+
+divide(10, 2, (err, result) =&gt; {
+    if (err) {
+        console.error('❌', err.message);
+    } else {
+        console.log('✅ Result:', result); // Output: ✅ Result: 5
+    }
+});</code></pre>
+                
+                <h5>Uses</h5>
+                <ul>
+                    <li>Standard in Node.js core modules (fs, http, path, etc.)</li>
+                    <li>Consistent error handling across asynchronous APIs</li>
+                    <li>Prevents silent failures by forcing explicit error checking</li>
+                    <li>Enables graceful degradation in applications</li>
+                </ul>
+                
+                <div class="note-box">
+                    <strong>Best Practice:</strong> Always check for errors first before processing results. Never ignore the error parameter!
+                </div>
+            </div>
+        </details>
+
+        <!-- Section: Callback hell -->
+        <details id="callback-hell">
+            <summary class="details-summary">Callback hell and solutions</summary>
+            <div class="details-content">
+                <h5>Definition</h5>
+                <p><span class="highlight">Callback hell</span> (also called "Pyramid of Doom") refers to deeply nested callbacks that make code hard to read, debug, and maintain.</p>
+                
+                <h5>Detail</h5>
+                <p>When multiple asynchronous operations depend on each other, each requiring a callback, you end up with indentation that spirals rightward — making logic flow difficult to follow.</p>
+                
+                <h5>Syntax (Problem)</h5>
+                <pre><code>// CALLBACK HELL EXAMPLE
+getUser(userId, (err, user) =&gt; {
+    if (err) return handleError(err);
+    
+    getPosts(user.id, (err, posts) =&gt; {
+        if (err) return handleError(err);
+        
+        getComments(posts[0].id, (err, comments) =&gt; {
+            if (err) return handleError(err);
+            
+            sendEmail(user.email, comments, (err, result) =&gt; {
+                if (err) return handleError(err);
+                
+                console.log('Email sent successfully!');
+            });
+        });
+    });
+});</code></pre>
+                
+                <h5>Example</h5>
+                <pre><code>// Imagine building a blog system:
+// 1. Get user profile
+// 2. Get user's recent posts
+// 3. Get comments on the latest post
+// 4. Send notification email with comment summary
+
+// This creates a pyramid 5 levels deep — nightmare to maintain!
+
+// SOLUTION 1: Named Functions
+function handleUser(user) {
+    getPosts(user.id, handlePosts);
+}
+
+function handlePosts(posts) {
+    getComments(posts[0].id, handleComments);
+}
+
+function handleComments(comments) {
+    sendEmail(user.email, comments, handleSuccess);
+}
+
+function handleSuccess() {
+    console.log('All done!');
+}
+
+// Call it
+getUser(userId, handleUser);
+
+// SOLUTION 2: Promises (Modern Approach)
+getUser(userId)
+    .then(user =&gt; getPosts(user.id))
+    .then(posts =&gt; getComments(posts[0].id))
+    .then(comments =&gt; sendEmail(user.email, comments))
+    .then(() =&gt; console.log('All done!'))
+    .catch(handleError);
+
+// SOLUTION 3: Async/Await (Modern Best Practice)
+async function processBlog() {
+    try {
+        const user = await getUser(userId);
+        const posts = await getPosts(user.id);
+        const comments = await getComments(posts[0].id);
+        await sendEmail(user.email, comments);
+        console.log('All done!');
+    } catch (err) {
+        handleError(err);
+    }
+}</code></pre>
+                
+                <h5>Solutions</h5>
+                <ol>
+                    <li><strong>Named Functions</strong>: Extract nested functions into named ones for readability.</li>
+                    <li><strong>Promises</strong>: Chain operations with <code>.then()</code> and <code>.catch()</code>.</li>
+                    <li><strong>Async/Await</strong>: Write async code that looks synchronous (modern standard).</li>
+                    <li><strong>Modularization</strong>: Break large async workflows into smaller, reusable functions.</li>
+                </ol>
+                
+                <h5>Uses</h5>
+                <ul>
+                    <li>Identifying problematic patterns in legacy codebases</li>
+                    <li>Refactoring old Node.js applications</li>
+                    <li>Teaching best practices for async programming</li>
+                    <li>Code reviews and performance optimization</li>
+                </ul>
+                
+                <div class="note-box">
+                    <strong>Pro Tip:</strong> Modern JavaScript development avoids callback hell entirely by using async/await. Use callbacks only when working with legacy systems or specific libraries that don't support promises.
+                </div>
+            </div>
+        </details>
+
+        <!-- Section: Event callbacks -->
+        <details id="event-callbacks">
+            <summary class="details-summary">Event callbacks and handlers</summary>
+            <div class="details-content">
+                <h5>Definition</h5>
+                <p><span class="highlight">Event callbacks</span> are functions that execute in response to specific events — such as user interactions (click, hover), system events (timer, load), or DOM changes.</p>
+                
+                <h5>Detail</h5>
+                <p>Event-driven programming is foundational to web development. The browser waits for events, and when they occur, it invokes registered callback functions — this is known as the <em>event loop</em>.</p>
+                
+                <h5>Syntax</h5>
+                <pre><code>// Adding event listener with callback
+element.addEventListener('click', function(event) {
+    console.log('Button clicked!', event.target);
+});
+
+// Or with arrow function
+element.addEventListener('click', (event) =&gt; {
+    console.log('Button clicked!');
+});
+
+// Using inline HTML attribute (not recommended for complex apps)
+&lt;button onclick="handleClick()"&gt;Click Me&lt;/button&gt;</code></pre>
+                
+                <h5>Example</h5>
+                <pre><code>// Complete web application example
+const button = document.getElementById('submit-btn');
+const input = document.getElementById('user-input');
+const output = document.getElementById('output');
+
+// Click callback
+button.addEventListener('click', function(event) {
+    event.preventDefault(); // Prevent default form behavior
+    const value = input.value.trim();
+    
+    if (value) {
+        output.textContent = `You entered: ${value}`;
+        output.style.color = 'var(--cyan)';
+    } else {
+        output.textContent = 'Please enter something!';
+        output.style.color = '#ff6b6b';
+    }
+});
+
+// Keyup callback (real-time feedback)
+input.addEventListener('keyup', function() {
+    if (input.value.length > 0) {
+        button.disabled = false;
+        button.style.opacity = '1';
+    } else {
+        button.disabled = true;
+        button.style.opacity = '0.5';
+    }
+});
+
+// Load callback (fires when page fully loads)
+window.addEventListener('load', () =&gt; {
+    console.log('Page fully loaded!');
+    input.focus();
+});
+
+// Timer callback (asynchronous)
+setTimeout(() =&gt; {
+    alert('Welcome to our app!');
+}, 3000);</code></pre>
+                
+                <h5>Common Event Types</h5>
+                <table class="table table-dark table-sm mt-3">
+                    <thead>
+                        <tr>
+                            <th>Event</th>
+                            <th>Description</th>
+                            <th>Use Case</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>click</code></td>
+                            <td>User clicks element</td>
+                            <td>Buttons, links</td>
+                        </tr>
+                        <tr>
+                            <td><code>submit</code></td>
+                            <td>Form submitted</td>
+                            <td>Login forms, contact pages</td>
+                        </tr>
+                        <tr>
+                            <td><code>keydown</code>/<code>keyup</code></td>
+                            <td>Keyboard pressed/released</td>
+                            <td>Search suggestions, hotkeys</td>
+                        </tr>
+                        <tr>
+                            <td><code>mouseover</code>/<code>mouseout</code></td>
+                            <td>Mouse enters/exits element</td>
+                            <td>Tooltips, hover effects</td>
+                        </tr>
+                        <tr>
+                            <td><code>load</code></td>
+                            <td>Resource fully loaded</td>
+                            <td>Images, scripts, pages</td>
+                        </tr>
+                        <tr>
+                            <td><code>resize</code></td>
+                            <td>Window resized</td>
+                            <td>Responsive layouts</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h5>Uses</h5>
+                <ul>
+                    <li>Building interactive web interfaces</li>
+                    <li>Creating real-time dashboards and controls</li>
+                    <li>Implementing game mechanics</li>
+                    <li>Handling user input validation</li>
+                    <li>Connecting frontend with backend via AJAX</li>
+                </ul>
+                
+                <div class="note-box">
+                    <strong>Important:</strong> Always remove event listeners when no longer needed (especially in SPAs) to prevent memory leaks:
+                    <code>element.removeEventListener('click', handlerFunction);</code>
+                </div>
+            </div>
+        </details>
+
+        <!-- Summary Section -->
+        <details>
+            <summary class="details-summary">Summary & Best Practices</summary>
+            <div class="details-content">
+                <h5>Key Takeaways</h5>
+                <ol>
+                    <li><strong>Callbacks are essential</strong> for handling asynchronous operations in JavaScript.</li>
+                    <li><strong>Error-first pattern</strong> ensures consistent error handling in Node.js environments.</li>
+                    <li><strong>Callback hell</strong> makes code unreadable — refactor using Promises or async/await.</li>
+                    <li><strong>Event callbacks</strong> power interactivity in web browsers and should be managed carefully.</li>
+                    <li>Always validate inputs and handle edge cases in your callbacks.</li>
+                </ol>
+                
+                <h5>When to Use What?</h5>
+                <table class="table table-dark table-sm mt-3">
+                    <thead>
+                        <tr>
+                            <th>Scenario</th>
+                            <th>Recommended Pattern</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Simple one-off async task</td>
+                            <td>Basic callback</td>
+                        </tr>
+                        <tr>
+                            <td>Node.js server-side code</td>
+                            <td>Error-first callback</td>
+                        </tr>
+                        <tr>
+                            <td>Multiple chained async operations</td>
+                            <td>Promise chains</td>
+                        </tr>
+                        <tr>
+                            <td>Modern web applications</td>
+                            <td>Async/Await</td>
+                        </tr>
+                        <tr>
+                            <td>User interface interactions</td>
+                            <td>Event callbacks</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h5>Final Advice</h5>
+                <p>While callbacks are foundational, modern JavaScript has moved toward <code>Promise</code> and <code>async/await</code> for cleaner, more readable code. However, understanding callbacks is critical because:</p>
+                <ul>
+                    <li>Many legacy systems still use them</li>
+                    <li>They underpin how Promises work internally</li>
+                    <li>Event systems rely on them</li>
+                    <li>Interview questions often test callback concepts</li>
+                </ul>
+                <p><strong>Mastery Tip:</strong> Try rewriting every callback-based function you encounter as a Promise — it will deepen your understanding dramatically.</p>
+            </div>
+        </details>
+    </div>
+
+    <!-- JavaScript Utilities -->
+    <script>
+        // Expand/Collapse All
+        document.getElementById('expandAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.setAttribute('open', '');
+            });
+        });
+
+        document.getElementById('collapseAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.removeAttribute('open');
+            });
+        });
+
+        // Smooth scrolling to TOC items
+        document.querySelectorAll('.toc-item, .toc-subitem').forEach(item => {
+            item.addEventListener('click', () => {
+                const targetId = item.getAttribute('data-target');
+                const targetElement = document.getElementById(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 100,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Highlight clicked item
+                    document.querySelectorAll('.toc-item, .toc-subitem').forEach(el => {
+                        el.style.backgroundColor = '';
+                    });
+                    item.style.backgroundColor = 'rgba(0, 245, 255, 0.2)';
+                }
+            });
+        });
+
+        // Search functionality
+        document.getElementById('searchToc').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
+            
+            tocItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        // Syntax highlighting enhancement (basic)
+        document.querySelectorAll('pre code').forEach(block => {
+            hljs.highlightBlock(block);
+        });
+
+        // Add smooth scrolling to headings
+        document.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach(heading => {
+            heading.addEventListener('click', () => {
+                window.scrollTo({
+                    top: heading.offsetTop - 80,
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Ensure TOC items are visible on load
+            const currentHash = window.location.hash;
+            if (currentHash) {
+                const target = document.querySelector(currentHash);
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        });
+
+        // Simple highlight.js alternative since we're not including it externally
+        // Just add basic coloring for common keywords
+        document.querySelectorAll('pre code').forEach(block => {
+            const code = block.textContent;
+            // Simple keyword highlighting
+            block.innerHTML = code
+                .replace(/(&lt;|&gt;|&amp;)/g, '<span class="highlight">$1</span>')
+                .replace(/\b(function|return|if|else|for|while|new|this|const|let|var|true|false|null|undefined)\b/g, '<span style="color: #ffcc80;">$1</span>')
+                .replace(/\/\/.*$/gm, '<span style="color: #666;">$&</span>')
+                .replace(/\/\*[\s\S]*?\*\//g, '<span style="color: #666;">$&</span>');
+        });
+    </script>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+```

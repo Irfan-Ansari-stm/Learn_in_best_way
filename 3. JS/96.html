@@ -1,0 +1,677 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>27.4 Database Integration — Deep Learning Note</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+
+  <!-- Highlight.js CSS (dark friendly) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+
+  <style>
+    :root{
+      --bg:#0b0f11;
+      --surface:#0f1416;
+      --muted:#94a3b8;
+      --accent-cyan:#06b6d4;
+      --accent-amber:#ffb020;
+      --text:#e6eef6;
+      --heading:#bfefff;
+      --panel-width:320px;
+      --radius:12px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
+    }
+
+    html,body{
+      height:100%;
+      background:var(--bg);
+      color:var(--text);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      margin:0;
+      padding:0;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    .app {
+      display:flex;
+      height:100vh;
+      gap:18px;
+      padding:18px;
+      box-sizing:border-box;
+    }
+
+    /* Left fixed panel */
+    .left-panel {
+      width:var(--panel-width);
+      min-width:var(--panel-width);
+      max-width:var(--panel-width);
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.03));
+      border-radius:var(--radius);
+      padding:16px;
+      box-shadow:0 8px 30px rgba(2,6,23,0.6);
+      position:relative;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .brand {
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+
+    .logo {
+      height:44px;
+      width:44px;
+      border-radius:8px;
+      background:linear-gradient(135deg,var(--accent-cyan),var(--accent-amber));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:700;
+      color:#021014;
+      box-shadow:0 6px 18px rgba(4,6,8,0.6);
+    }
+
+    .title {
+      font-weight:700;
+      color:var(--heading);
+      font-size:0.95rem;
+    }
+
+    .subtitle{
+      font-size:0.78rem;
+      color:var(--muted);
+      margin-top:-4px;
+    }
+
+    .toc-search {
+      display:flex;
+      gap:8px;
+      align-items:center;
+      margin-top:4px;
+    }
+
+    .toc-search input{
+      flex:1;
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.04);
+      color:var(--text);
+      padding:8px 10px;
+      border-radius:8px;
+      outline:none;
+    }
+
+    .controls {
+      display:flex;
+      gap:8px;
+    }
+
+    .toc {
+      overflow:auto;
+      padding-right:6px;
+    }
+
+    .toc a {
+      display:block;
+      color:var(--muted);
+      text-decoration:none;
+      padding:6px 8px;
+      border-radius:6px;
+      font-size:0.92rem;
+    }
+
+    .toc a:hover, .toc a.active {
+      background:rgba(6,182,212,0.08);
+      color:var(--accent-cyan);
+    }
+
+    /* Right scrollable content pane */
+    .right-panel {
+      flex:1;
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+      border-radius:var(--radius);
+      padding:24px;
+      overflow:auto;
+      scroll-behavior:smooth;
+      box-shadow:0 8px 40px rgba(2,6,23,0.6);
+    }
+
+    .content h1, .content h2, .content h3 {
+      color:var(--heading);
+    }
+
+    .meta {
+      display:flex;
+      gap:12px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-bottom:8px;
+    }
+
+    .badge-accent {
+      background: linear-gradient(90deg,var(--accent-cyan),var(--accent-amber));
+      color:#021014;
+      padding:6px 10px;
+      border-radius:999px;
+      font-weight:700;
+      font-size:0.82rem;
+    }
+
+    p.lead {
+      color:var(--muted);
+      margin-bottom:18px;
+      line-height:1.6;
+    }
+
+    details {
+      background: rgba(255,255,255,0.01);
+      border:1px solid rgba(255,255,255,0.03);
+      padding:12px 14px;
+      margin-bottom:12px;
+      border-radius:10px;
+    }
+
+    summary {
+      cursor:pointer;
+      font-weight:700;
+      color:var(--accent-cyan);
+      outline:none;
+      list-style:none;
+    }
+
+    summary::-webkit-details-marker { display:none; }
+
+    details[open] summary { color:var(--accent-amber); }
+
+    .subsection {
+      margin-top:10px;
+      color:var(--muted);
+    }
+
+    pre {
+      background: #071014;
+      border:1px solid rgba(255,255,255,0.03);
+      padding:14px;
+      border-radius:8px;
+      overflow:auto;
+      font-family: var(--mono);
+      font-size:0.95rem;
+      line-height:1.45;
+    }
+
+    code { font-family:var(--mono); font-size:0.92rem; }
+
+    .small-muted { color:var(--muted); font-size:0.9rem; }
+
+    /* Responsive */
+    @media (max-width:900px){
+      .app { flex-direction:column; padding:12px; }
+      .left-panel { width:100%; min-width:auto; max-width:100%; order:2; }
+      .right-panel { order:1; height:60vh; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app container-fluid">
+    <!-- LEFT PANEL (TOC) -->
+    <aside class="left-panel" aria-label="Table of contents">
+      <div class="brand">
+        <div class="logo">DB</div>
+        <div>
+          <div class="title">27.4 Database Integration</div>
+          <div class="subtitle small-muted">SQL &amp; NoSQL patterns, ORM/ODM, migrations, pooling</div>
+        </div>
+      </div>
+
+      <div class="meta small-muted">
+        <div>Author: <strong>DeepTutor</strong></div>
+        <div>Level: <strong>College → PhD</strong></div>
+        <div class="badge-accent">Data • Persistence • Node.js</div>
+      </div>
+
+      <div class="toc-search">
+        <input id="tocFilter" type="search" placeholder="Search TOC..." aria-label="Search table of contents" />
+        <div class="controls">
+          <button id="expandAllBtn" class="btn btn-sm btn-outline-light" title="Expand all sections">Expand</button>
+          <button id="collapseAllBtn" class="btn btn-sm btn-outline-light" title="Collapse all sections">Collapse</button>
+        </div>
+      </div>
+
+      <nav class="toc" id="tocList" tabindex="0" aria-label="Contents list">
+        <a href="#sql-patterns" data-filter="sql-patterns">SQL database patterns</a>
+        <a href="#nosql-integration" data-filter="nosql-integration">NoSQL database integration</a>
+        <a href="#orm-odm" data-filter="orm-odm">ORM &amp; ODM usage</a>
+        <a href="#migrations" data-filter="migrations">Database migration strategies</a>
+        <a href="#pooling-optimization" data-filter="pooling-optimization">Connection pooling &amp; optimization</a>
+        <a href="#cheatsheet" data-filter="cheatsheet">Cheat-sheet</a>
+      </nav>
+
+      <div style="margin-top:auto; font-size:0.8rem; color:var(--muted);">
+        <div>Tips:</div>
+        <ul style="padding-left:16px; margin:6px 0;">
+          <li>Always test pooling &amp; migrations on a staging environment that mirrors production.</li>
+          <li>Prefer parameterized queries to prevent SQL injection.</li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- RIGHT PANEL (CONTENT) -->
+    <main class="right-panel" role="main">
+      <article class="content">
+        <h1>27.4 Database Integration</h1>
+        <p class="lead">This note explores SQL &amp; NoSQL integration patterns in Node.js, ORM/ODM trade-offs, migration strategies, and connection pooling/optimization. Each section uses layered &lt;details&gt; blocks: executive summary, deep internals, syntax examples, best practices, and production notes.</p>
+
+        <hr style="border-color: rgba(255,255,255,0.03); margin-bottom:20px;">
+
+        <!-- SQL patterns -->
+        <section id="sql-patterns">
+          <h2>SQL database patterns</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <div class="subsection">
+              SQL databases (PostgreSQL, MySQL) provide strong consistency, rich query capabilities (joins, transactions), and ACID guarantees. Patterns include normalized schemas, read-replicas for scaling reads, sharding for partitioning, and CQRS when separating read/write workloads.
+            </div>
+          </details>
+
+          <details>
+            <summary>Deep details (schema design, normalization, indexing)</summary>
+            <div class="subsection">
+              <p class="small-muted">Key considerations:</p>
+              <ul>
+                <li><strong>Normalization vs denormalization:</strong> Normalized schemas avoid redundancy (3NF), denormalize selectively to improve read performance for heavy-read endpoints.</li>
+                <li><strong>Indexing:</strong> Create indexes for columns used in WHERE, JOIN, ORDER BY. Use multi-column indexes thoughtfully — they are order-sensitive.</li>
+                <li><strong>Transactions:</strong> Use transactions for multi-statement atomicity. Be aware of isolation levels (READ COMMITTED, REPEATABLE READ, SERIALIZABLE) and trade-offs between performance &amp; consistency.</li>
+                <li><strong>Partitioning &amp; sharding:</strong> For very large datasets, use partitioning (Postgres native) or application-level sharding to split data by tenant/key-range.</li>
+                <li><strong>Read replicas:</strong> Offload analytics/reads to replicas; handle replication lag in your application logic.</li>
+              </ul>
+            </div>
+          </details>
+
+          <details>
+            <summary>Syntax &amp; examples (node-postgres - pg)</summary>
+            <div class="subsection">
+              <pre><code class="language-js">// node-postgres (pg) - simple query using pool
+const { Pool } = require('pg');
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+
+async function getUser(id) {
+  const res = await pool.query('SELECT id, name, email FROM users WHERE id = $1', [id]);
+  return res.rows[0];
+}
+
+module.exports = { getUser };</code></pre>
+
+              <p class="small-muted">Notes: Use parameter placeholders ($1, $2) to avoid SQL injection.</p>
+            </div>
+          </details>
+
+          <details>
+            <summary>Real-world patterns & notes</summary>
+            <div class="subsection">
+              <ul>
+                <li>Use materialized views for heavy aggregations that can tolerate eventual freshness.</li>
+                <li>Use advisory locks or application-level locking for complex coordination.</li>
+                <li>Monitor slow queries and use EXPLAIN ANALYZE to tune them.</li>
+              </ul>
+            </div>
+          </details>
+        </section>
+
+        <hr style="border-color: rgba(255,255,255,0.03); margin:20px 0;">
+
+        <!-- NoSQL integration -->
+        <section id="nosql-integration">
+          <h2>NoSQL database integration</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <div class="subsection">
+              NoSQL databases (MongoDB, DynamoDB, Cassandra) provide flexible schemas, horizontal scalability, and different consistency/availability trade-offs. Choose NoSQL for schemaless data, high write throughput, or when document/graph models better match your domain.
+            </div>
+          </details>
+
+          <details>
+            <summary>Deep details (models, consistency, access patterns)</summary>
+            <div class="subsection">
+              <p class="small-muted">Important distinctions:</p>
+              <ul>
+                <li><strong>Document stores (MongoDB):</strong> JSON-like documents, indexes, ad-hoc queries. Good for hierarchical data.</li>
+                <li><strong>Key-Value (Redis, DynamoDB):</strong> Extremely fast lookups by key; good for caching, session stores, simple data access patterns.</li>
+                <li><strong>Wide-column stores (Cassandra):</strong> High write throughput and horizontal scaling; eventual consistency model.</li>
+                <li><strong>Graph DBs (Neo4j):</strong> Efficient traversals for relationship-heavy queries.</li>
+                <li><strong>Modeling:</strong> Design queries first — schema should be optimized for access patterns (denormalize and duplicate data where needed for performance).</li>
+              </ul>
+            </div>
+          </details>
+
+          <details>
+            <summary>Syntax &amp; examples (Mongoose - MongoDB)</summary>
+            <div class="subsection">
+              <pre><code class="language-js">// Mongoose example (ODM)
+const mongoose = require('mongoose');
+
+const userSchema = new mongoose.Schema({
+  name: String,
+  email: { type: String, index: true, unique: true },
+  profile: {
+    bio: String,
+    avatar: String
+  }
+}, { timestamps: true });
+
+const User = mongoose.model('User', userSchema);
+
+async function findUserByEmail(email) {
+  return User.findOne({ email }).lean();
+}</code></pre>
+
+              <p class="small-muted">Use <code>.lean()</code> for read-only queries to avoid Mongoose document overhead.</p>
+            </div>
+          </details>
+
+          <details>
+            <summary>NoSQL production tips</summary>
+            <div class="subsection">
+              <ul>
+                <li>Plan for capacity and partition keys (DynamoDB/Cassandra). Bad partition keys cause hotspots.</li>
+                <li>Use TTLs for ephemeral data (sessions, short-lived tokens) instead of manual cleanup.</li>
+                <li>Monitor index usage: too many indexes hurt writes.</li>
+              </ul>
+            </div>
+          </details>
+        </section>
+
+        <hr style="border-color: rgba(255,255,255,0.03); margin:20px 0;">
+
+        <!-- ORM and ODM usage -->
+        <section id="orm-odm">
+          <h2>ORM &amp; ODM usage</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <div class="subsection">
+              ORMs (Sequelize, TypeORM, Prisma) and ODMs (Mongoose) abstract database access, speed up development, and add convenience (models, relations, migrations). Understand what they abstract and when to use raw SQL for performance-critical queries.
+            </div>
+          </details>
+
+          <details>
+            <summary>Deep details (trade-offs & patterns)</summary>
+            <div class="subsection">
+              <ul>
+                <li><strong>Productivity:</strong> ORMs reduce boilerplate, provide model validation & relationships, and often include migration tooling.</li>
+                <li><strong>Performance:</strong> ORMs can generate suboptimal queries (N+1, heavy joins). Use query logging, raw queries, and repository patterns for hot paths.</li>
+                <li><strong>Type safety:</strong> Prisma (Type-safe), TypeORM (decorators), Sequelize (less strict). Choose based on language/typing preferences.</li>
+                <li><strong>ODM specifics:</strong> Mongoose provides schema + middleware hooks, virtuals, population (similar to joins but extra queries) — useful for document databases like MongoDB.</li>
+              </ul>
+            </div>
+          </details>
+
+          <details>
+            <summary>Syntax &amp; examples (Sequelize &amp; Prisma)</summary>
+            <div class="subsection">
+              <pre><code class="language-js">// Sequelize example (classic ORM)
+const { Sequelize, DataTypes } = require('sequelize');
+const sequelize = new Sequelize(process.env.DATABASE_URL);
+
+const User = sequelize.define('User', {
+  name: DataTypes.STRING,
+  email: { type: DataTypes.STRING, unique: true }
+});
+
+async function findUser(id) {
+  return User.findByPk(id);
+}</code></pre>
+
+              <pre><code class="language-js">// Prisma example (type-safe)
+# schema.prisma (example)
+model User {
+  id    Int     @id @default(autoincrement())
+  name  String
+  email String  @unique
+}
+
+# JS usage
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
+
+async function getUser(id) {
+  return prisma.user.findUnique({ where: { id } });
+}</code></pre>
+
+              <p class="small-muted">Use ORM query builders for complex queries and raw SQL for performance-critical paths.</p>
+            </div>
+          </details>
+
+          <details>
+            <summary>Best practices</summary>
+            <div class="subsection">
+              <ul>
+                <li>Profile ORM-generated SQL (enable query logs) and optimize queries — add indexes or use raw queries where needed.</li>
+                <li>Keep a repository/data-access layer to encapsulate ORM logic and simplify swapping implementations.</li>
+                <li>Be explicit about transactions in ORMs; avoid implicit nested transactions unless supported.</li>
+              </ul>
+            </div>
+          </details>
+        </section>
+
+        <hr style="border-color: rgba(255,255,255,0.03); margin:20px 0;">
+
+        <!-- Migrations -->
+        <section id="migrations">
+          <h2>Database migration strategies</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <div class="subsection">
+              Migrations provide repeatable, versioned schema changes. Use migration tooling (Flyway, Liquibase, node-pg-migrate, Prisma Migrate) and follow safe deployment patterns (backward-compatible changes, deploy-then-migrate or migrate-then-deploy depending on changes).
+            </div>
+          </details>
+
+          <details>
+            <summary>Deep details (backward compatibility & zero-downtime)</summary>
+            <div class="subsection">
+              <ol>
+                <li><strong>Backward-compatible changes:</strong> Additive changes (new columns, new tables) are safe. Non-additive changes (dropping columns, renaming) require multi-step deploys.</li>
+                <li><strong>Zero-downtime deploy strategy:</strong>
+                  <ol type="a">
+                    <li>Step 1: Deploy code that handles both old and new schema (e.g., read from old column if new null).</li>
+                    <li>Step 2: Run migration to add new column and backfill data.</li>
+                    <li>Step 3: Deploy code that reads new column exclusively.</li>
+                    <li>Step 4: Remove old column in a later migration after verifying stability.</li>
+                  </ol>
+                </li>
+                <li><strong>Backfills:</strong> Perform backfills in small batches or using background jobs to avoid locking tables.</li>
+                <li><strong>Transactional migrations:</strong> When supported, wrap DDL in transactions (Postgres supports transactional DDL for many operations).</li>
+              </ol>
+            </div>
+          </details>
+
+          <details>
+            <summary>Syntax &amp; example (node-pg-migrate and prisma migrate)</summary>
+            <div class="subsection">
+              <pre><code class="language-bash"># node-pg-migrate example
+npx node-pg-migrate create add_user_profile
+# edit migration file to add column
+npx node-pg-migrate up</code></pre>
+
+              <pre><code class="language-bash"># Prisma Migrate example
+npx prisma migrate dev --name add-profile
+# in production
+npx prisma migrate deploy</code></pre>
+
+              <p class="small-muted">Use CI to run migrations against a staging DB and create backups / snapshot before running production migrations.</p>
+            </div>
+          </details>
+
+          <details>
+            <summary>Migration governance</summary>
+            <div class="subsection">
+              <ul>
+                <li>Store migrations in VCS and tie them to releases.</li>
+                <li>Use feature flags to decouple schema changes from feature rollouts.</li>
+                <li>Automate DB backups and provide rollback scripts (prepare for destructive migrations carefully).</li>
+              </ul>
+            </div>
+          </details>
+        </section>
+
+        <hr style="border-color: rgba(255,255,255,0.03); margin:20px 0;">
+
+        <!-- Connection pooling and optimization -->
+        <section id="pooling-optimization">
+          <h2>Connection pooling and optimization</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <div class="subsection">
+              Connection pools reuse DB connections to reduce latency and resource overhead. Tune pool size, timeouts, and use prepared statements. Monitor connection usage, queue times, and backpressure to avoid exhaustion.
+            </div>
+          </details>
+
+          <details>
+            <summary>Deep details (pool sizing & behavior)</summary>
+            <div class="subsection">
+              <p class="small-muted">Considerations for pool sizing:</p>
+              <ul>
+                <li><strong>Pool size:</strong> Match pool size to expected concurrency and DB capacity. Too small leads to queueing; too large causes DB CPU/memory pressure.</li>
+                <li><strong>Per-process pools:</strong> In clustered environments (multiple Node processes), each process has its own pool; configure pool size per process to avoid overwhelming DB (sum of pools &lt; DB max connections).</li>
+                <li><strong>Idle timeouts &amp; connection recycling:</strong> Close idle connections after reasonable time to free DB resources and avoid stale connections.</li>
+                <li><strong>Prepared statements &amp; statement caching:</strong> Use prepared statements for heavy queries to improve performance and reduce parsing overhead.</li>
+              </ul>
+            </div>
+          </details>
+
+          <details>
+            <summary>Syntax &amp; examples (pg pool tuning)</summary>
+            <div class="subsection">
+              <pre><code class="language-js">// pg Pool example with basic tuning
+const { Pool } = require('pg');
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  max: parseInt(process.env.PG_POOL_MAX || '10', 10), // pool size per process
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000,
+});
+
+module.exports = pool;</code></pre>
+
+              <pre><code class="language-js">// careful when using cluster/forking - ensure total connections <= DB limit
+# e.g., if DB allows 100 connections and you run 4 node processes:
+# set PG_POOL_MAX per process to Math.floor(100 / 4) = 25</code></pre>
+            </div>
+          </details>
+
+          <details>
+            <summary>Monitoring & troubleshooting</summary>
+            <div class="subsection">
+              <ul>
+                <li>Monitor active vs idle connections; set alerts when queue times exceed thresholds.</li>
+                <li>Use database-side views (pg_stat_activity for Postgres) to inspect clients and locks.</li>
+                <li>Use connection pooling proxies (PgBouncer) for large connection counts or to multiplex many app connections to fewer DB connections.</li>
+              </ul>
+            </div>
+          </details>
+        </section>
+
+        <hr style="border-color: rgba(255,255,255,0.03); margin:20px 0;">
+
+        <!-- Cheat-sheet -->
+        <section id="cheatsheet">
+          <h3>Cheat-sheet: commands & quick recipes</h3>
+          <pre><code class="language-bash"># Install libraries
+npm install pg mongoose sequelize @prisma/client prisma node-pg-migrate
+
+# Run Prisma migrations (dev)
+npx prisma migrate dev --name init
+
+# Example: check Postgres connections (linux)
+# psql -c "SELECT count(*) FROM pg_stat_activity WHERE state = 'active';"
+
+# Typical pool env vars
+export PG_POOL_MAX=10
+export DATABASE_URL=postgres://user:pass@host:5432/dbname</code></pre>
+        </section>
+
+        <footer style="margin-top:30px; color:var(--muted); font-size:0.92rem;">
+          <div>Created: <strong>27.4 Database Integration</strong> • DeepTutor • <span id="generatedTime"></span></div>
+          <div style="margin-top:8px;">Irfan — I love you too ❤️</div>
+        </footer>
+      </article>
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Highlight.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+
+  <script>
+    // generate timestamp
+    document.getElementById('generatedTime').textContent = new Date().toLocaleString();
+
+    // TOC filter
+    const tocFilter = document.getElementById('tocFilter');
+    const tocList = document.getElementById('tocList');
+    tocFilter.addEventListener('input', (e) => {
+      const q = e.target.value.trim().toLowerCase();
+      [...tocList.querySelectorAll('a')].forEach(a => {
+        const txt = (a.textContent || a.innerText).toLowerCase();
+        a.style.display = txt.includes(q) ? 'block' : 'none';
+      });
+    });
+
+    // Smooth anchor link handling and active state
+    document.querySelectorAll('.toc a').forEach(a => {
+      a.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        const id = a.getAttribute('href').slice(1);
+        const section = document.getElementById(id);
+        if (section) {
+          section.scrollIntoView({behavior:'smooth', block:'start'});
+        }
+        // set active
+        document.querySelectorAll('.toc a').forEach(x => x.classList.remove('active'));
+        a.classList.add('active');
+      });
+    });
+
+    // Expand / Collapse all details
+    const expandAllBtn = document.getElementById('expandAllBtn');
+    const collapseAllBtn = document.getElementById('collapseAllBtn');
+
+    expandAllBtn.addEventListener('click', () => {
+      document.querySelectorAll('main details').forEach(d => d.open = true);
+    });
+
+    collapseAllBtn.addEventListener('click', () => {
+      document.querySelectorAll('main details').forEach(d => d.open = false);
+    });
+
+    // Keyboard UX: focus TOC with "t"
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 't' && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault();
+        document.getElementById('tocList').focus();
+      }
+    });
+
+    // Accessibility improvement: ensure summary toggles have keyboard accessible roles
+    document.querySelectorAll('summary').forEach(s => {
+      s.setAttribute('role', 'button');
+      s.setAttribute('tabindex', '0');
+      s.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); s.click(); }
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,1787 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>JavaScript Foundations - 1.2 & 1.3 Setup + First Steps</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-main: #020812;
+            --bg-elevated: #050f1f;
+            --bg-elevated-soft: #071524;
+            --accent-cyan: #22d3ee;
+            --accent-amber: #fbbf24;
+            --accent-amber-soft: #f59e0b;
+            --text-primary: #e5e7eb;
+            --text-muted: #9ca3af;
+            --border-soft: #1f2933;
+            --code-bg: #020617;
+            --code-border: #1e293b;
+            --scrollbar-track: #020617;
+            --scrollbar-thumb: #1f2937;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: radial-gradient(circle at top, #020617 0, #020812 35%, #020617 100%);
+            color: var(--text-primary);
+            overflow: hidden;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar (Left Panel) */
+        .sidebar {
+            width: 320px;
+            max-width: 100%;
+            background: linear-gradient(180deg, #020617 0%, #020617 45%, #020617 100%);
+            border-right: 1px solid var(--border-soft);
+            padding: 1.25rem 1.25rem 1.75rem;
+            position: fixed;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+            z-index: 10;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .sidebar::-webkit-scrollbar-track {
+            background: var(--scrollbar-track);
+        }
+
+        .sidebar::-webkit-scrollbar-thumb {
+            background: var(--scrollbar-thumb);
+            border-radius: 999px;
+        }
+
+        .brand-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.25rem 0.7rem;
+            border-radius: 999px;
+            border: 1px solid rgba(34, 211, 238, 0.4);
+            background: radial-gradient(circle at top left,
+                    rgba(34, 211, 238, 0.18) 0,
+                    rgba(15, 23, 42, 0.9) 35%,
+                    rgba(15, 23, 42, 1) 100%);
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.14em;
+            color: var(--accent-cyan);
+            margin-bottom: 0.8rem;
+        }
+
+        .brand-dot {
+            width: 0.45rem;
+            height: 0.45rem;
+            border-radius: 999px;
+            background: var(--accent-amber);
+            box-shadow: 0 0 0.6rem rgba(251, 191, 36, 0.7);
+        }
+
+        .page-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            background: linear-gradient(90deg, #e5e7eb, #a5f3fc);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.25rem;
+        }
+
+        .page-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 0.85rem;
+        }
+
+        .meta-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.45rem;
+            margin-bottom: 1.2rem;
+        }
+
+        .meta-pill {
+            font-size: 0.72rem;
+            padding: 0.22rem 0.55rem;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.5);
+            color: var(--text-muted);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .meta-pill span.dot {
+            width: 0.4rem;
+            height: 0.4rem;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.9);
+        }
+
+        .meta-pill.difficulty span.dot {
+            background: var(--accent-amber);
+        }
+
+        .meta-pill.topic span.dot {
+            background: var(--accent-cyan);
+        }
+
+        .meta-pill.level span.dot {
+            background: #4ade80;
+        }
+
+        .author-card {
+            border-radius: 0.85rem;
+            padding: 0.6rem 0.75rem;
+            background: radial-gradient(circle at top left,
+                    rgba(34, 211, 238, 0.08) 0,
+                    rgba(15, 23, 42, 1) 55%);
+            border: 1px solid rgba(51, 65, 85, 0.85);
+            margin-bottom: 1.1rem;
+        }
+
+        .author-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 0.35rem;
+        }
+
+        .author-name {
+            font-size: 0.88rem;
+            font-weight: 600;
+            color: #e5e7eb;
+        }
+
+        .author-role {
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        .author-tag {
+            font-size: 0.7rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 999px;
+            background: rgba(34, 197, 94, 0.08);
+            color: #bbf7d0;
+            border: 1px solid rgba(34, 197, 94, 0.45);
+        }
+
+        .toc-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            margin-bottom: 0.55rem;
+        }
+
+        .toc-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: var(--text-muted);
+        }
+
+        .toc-utils {
+            display: flex;
+            gap: 0.35rem;
+        }
+
+        .toc-btn {
+            border-radius: 999px;
+            padding: 0.25rem 0.55rem;
+            font-size: 0.72rem;
+            border: 1px solid rgba(148, 163, 184, 0.6);
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.15s ease-out;
+            white-space: nowrap;
+        }
+
+        .toc-btn:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            box-shadow: 0 0 0.3rem rgba(34, 211, 238, 0.45);
+        }
+
+        .toc-search {
+            position: relative;
+            margin-bottom: 0.75rem;
+        }
+
+        .toc-search input {
+            width: 100%;
+            border-radius: 999px;
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            background: rgba(15, 23, 42, 1);
+            padding: 0.45rem 0.9rem 0.45rem 2rem;
+            font-size: 0.8rem;
+            color: var(--text-primary);
+        }
+
+        .toc-search input::placeholder {
+            color: #6b7280;
+        }
+
+        .toc-search-icon {
+            position: absolute;
+            left: 0.6rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.78rem;
+            color: #6b7280;
+        }
+
+        .toc-list {
+            list-style: none;
+            padding-left: 0;
+            margin: 0;
+            font-size: 0.8rem;
+        }
+
+        .toc-item {
+            margin-bottom: 0.3rem;
+        }
+
+        .toc-link {
+            display: flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.25rem 0.4rem;
+            border-radius: 0.55rem;
+            color: #cbd5f5;
+            text-decoration: none;
+            border: 1px solid transparent;
+            cursor: pointer;
+            transition: all 0.15s ease-out;
+        }
+
+        .toc-link:hover {
+            background: rgba(15, 23, 42, 0.95);
+            border-color: rgba(148, 163, 184, 0.6);
+        }
+
+        .toc-link .bullet {
+            width: 0.35rem;
+            height: 0.35rem;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.8);
+            flex-shrink: 0;
+        }
+
+        .toc-link.main .bullet {
+            background: var(--accent-cyan);
+        }
+
+        .toc-link.sub .bullet {
+            width: 0.3rem;
+            height: 0.3rem;
+            background: rgba(148, 163, 184, 0.8);
+        }
+
+        .toc-link span.text {
+            flex: 1;
+            line-height: 1.1;
+        }
+
+        .toc-section-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            color: #6b7280;
+            margin: 0.55rem 0 0.15rem;
+        }
+
+        /* Right Panel (Content) */
+        .content {
+            margin-left: 320px;
+            padding: 1.25rem 1.75rem 1.75rem;
+            height: 100vh;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+        }
+
+        .content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .content::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 1);
+        }
+
+        .content::-webkit-scrollbar-thumb {
+            background: rgba(55, 65, 81, 0.9);
+            border-radius: 999px;
+        }
+
+        .content-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1.4rem;
+        }
+
+        .content-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+
+        .content-title span.unit {
+            font-weight: 500;
+            color: var(--accent-cyan);
+        }
+
+        .content-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .chip-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.4rem;
+        }
+
+        .chip {
+            font-size: 0.72rem;
+            padding: 0.22rem 0.55rem;
+            border-radius: 999px;
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            color: #9ca3af;
+        }
+
+        .chip.highlight {
+            border-color: var(--accent-amber-soft);
+            color: var(--accent-amber);
+        }
+
+        .content-time-badge {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.65rem;
+            border-radius: 999px;
+            border: 1px dashed rgba(148, 163, 184, 0.8);
+            color: var(--text-muted);
+        }
+
+        .pill-dot {
+            display: inline-block;
+            width: 0.35rem;
+            height: 0.35rem;
+            border-radius: 999px;
+            background: var(--accent-cyan);
+            margin-right: 0.3rem;
+        }
+
+        hr.section-divider {
+            border: none;
+            border-top: 1px solid rgba(31, 41, 55, 0.9);
+            margin: 1.25rem 0 1rem;
+        }
+
+        /* Details / collapsible sections */
+        details {
+            background: radial-gradient(circle at top left,
+                    rgba(34, 211, 238, 0.06) 0,
+                    rgba(15, 23, 42, 0.95) 45%,
+                    rgba(15, 23, 42, 1) 100%);
+            border-radius: 0.9rem;
+            border: 1px solid rgba(31, 41, 55, 0.95);
+            margin-bottom: 0.9rem;
+            padding: 0.55rem 0.75rem 0.4rem;
+        }
+
+        details.nested {
+            margin: 0.5rem 0 0.5rem 0.75rem;
+            background: rgba(15, 23, 42, 0.9);
+        }
+
+        summary {
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #e5e7eb;
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .summary-chevron {
+            width: 0.9rem;
+            height: 0.9rem;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.9);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.6rem;
+            flex-shrink: 0;
+        }
+
+        details[open]>.summary-chevron {
+            border-color: var(--accent-cyan);
+        }
+
+        .summary-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: var(--accent-cyan);
+        }
+
+        .summary-main-text {
+            font-size: 0.9rem;
+        }
+
+        details>div.content-body {
+            padding: 0.55rem 0.15rem 0.1rem 1.55rem;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+        }
+
+        details.nested>div.content-body {
+            padding-left: 1.2rem;
+        }
+
+        .hint-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.75rem;
+            padding: 0.18rem 0.5rem;
+            border-radius: 999px;
+            background: rgba(251, 191, 36, 0.1);
+            color: #fed7aa;
+            border: 1px solid rgba(251, 191, 36, 0.6);
+            margin-bottom: 0.3rem;
+        }
+
+        .hint-badge .dot {
+            width: 0.4rem;
+            height: 0.4rem;
+            border-radius: 999px;
+            background: #fed7aa;
+        }
+
+        p {
+            margin-bottom: 0.35rem;
+            line-height: 1.5;
+            color: #d1d5db;
+        }
+
+        ul {
+            padding-left: 1.1rem;
+            margin-bottom: 0.35rem;
+        }
+
+        ul li {
+            margin-bottom: 0.2rem;
+        }
+
+        .inline-key {
+            font-family: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.86rem;
+            padding: 0.05rem 0.28rem;
+            border-radius: 0.35rem;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            color: #a5f3fc;
+        }
+
+        .term {
+            color: var(--accent-amber-soft);
+            font-weight: 500;
+        }
+
+        /* Code blocks */
+        pre {
+            margin: 0.45rem 0 0.7rem;
+            padding: 0.7rem 0.85rem;
+            border-radius: 0.75rem;
+            background: radial-gradient(circle at top left,
+                    rgba(34, 211, 238, 0.04) 0,
+                    rgba(15, 23, 42, 0.98) 45%,
+                    rgba(15, 23, 42, 1) 100%);
+            border: 1px solid var(--code-border);
+            max-width: 100%;
+            overflow-x: auto;
+            font-size: 0.82rem;
+        }
+
+        pre::-webkit-scrollbar {
+            height: 7px;
+        }
+
+        pre::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 1);
+        }
+
+        pre::-webkit-scrollbar-thumb {
+            background: rgba(55, 65, 81, 0.9);
+            border-radius: 999px;
+        }
+
+        code {
+            font-family: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            background: transparent;
+            color: #e5e7eb;
+            white-space: pre;
+        }
+
+        code[data-lang="js"] {
+            background: transparent;
+        }
+
+        .token-keyword {
+            color: #fbbf24;
+            font-weight: 500;
+        }
+
+        .token-builtin {
+            color: #38bdf8;
+        }
+
+        .token-comment {
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        .token-string {
+            color: #4ade80;
+        }
+
+        .token-number {
+            color: #a5b4fc;
+        }
+
+        .code-caption {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            margin-top: -0.25rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .badge-context {
+            font-size: 0.73rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.7);
+            color: #cbd5f5;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            margin-right: 0.3rem;
+        }
+
+        .badge-context span.dot {
+            width: 0.35rem;
+            height: 0.35rem;
+            border-radius: 999px;
+            background: #818cf8;
+        }
+
+        .callout {
+            border-radius: 0.8rem;
+            padding: 0.65rem 0.75rem;
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            background: rgba(15, 23, 42, 0.95);
+            font-size: 0.85rem;
+            margin-bottom: 0.45rem;
+        }
+
+        .callout strong {
+            color: #e5e7eb;
+        }
+
+        .callout.note {
+            border-color: rgba(34, 211, 238, 0.7);
+        }
+
+        .callout.warning {
+            border-color: rgba(251, 191, 36, 0.85);
+        }
+
+        .callout-title {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: #9ca3af;
+            margin-bottom: 0.1rem;
+        }
+
+        .badge-era {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.78rem;
+            padding: 0.2rem 0.55rem;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            color: #e5e7eb;
+            margin: 0.1rem 0.15rem 0.15rem 0;
+        }
+
+        .badge-era span.dot {
+            width: 0.35rem;
+            height: 0.35rem;
+            border-radius: 999px;
+            background: #fbbf24;
+        }
+
+        /* Responsive */
+        @media (max-width: 992px) {
+            .sidebar {
+                position: static;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border-soft);
+                padding-bottom: 1.1rem;
+            }
+
+            .content {
+                margin-left: 0;
+                height: calc(100vh - 270px);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .content {
+                padding: 1rem 1rem 1.25rem;
+            }
+
+            .content-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="layout">
+    <!-- LEFT: Sidebar -->
+    <aside class="sidebar">
+        <div class="brand-badge">
+            <span class="brand-dot"></span>
+            JS FOUNDATIONS · MODULE 1
+        </div>
+
+        <div>
+            <div class="page-title">1.2 &amp; 1.3 · Setup &amp; First Steps</div>
+            <div class="page-subtitle">
+                From installing tools to writing your first JavaScript program – a deep practical guide for serious learners.
+            </div>
+        </div>
+
+        <div class="meta-badges">
+            <div class="meta-pill difficulty">
+                <span class="dot"></span>
+                Difficulty: Beginner → Intermediate
+            </div>
+            <div class="meta-pill topic">
+                <span class="dot"></span>
+                Topic: Environment &amp; First Programs
+            </div>
+            <div class="meta-pill level">
+                <span class="dot"></span>
+                Suitable: B.Tech · M.Tech · PhD
+            </div>
+        </div>
+
+        <div class="author-card">
+            <div class="author-title">
+                <span>Author</span>
+                <span class="author-tag">Hands-on Deep Notes</span>
+            </div>
+            <div class="author-name">AI Tutor (ChatGPT · JS Track)</div>
+            <div class="author-role">Explaining setup &amp; first steps like a senior engineer mentoring juniors.</div>
+        </div>
+
+        <div class="toc-header">
+            <div class="toc-title">Table of Contents</div>
+            <div class="toc-utils">
+                <button class="toc-btn" id="btn-expand-all">Expand all</button>
+                <button class="toc-btn" id="btn-collapse-all">Collapse all</button>
+            </div>
+        </div>
+
+        <div class="toc-search">
+            <span class="toc-search-icon">&#128269;</span>
+            <input type="text" id="toc-search-input" placeholder="Search sections (VS Code, Node, npm, Git)...">
+        </div>
+
+        <div class="toc-section-label">1.2 · Setup Environment</div>
+        <ul class="toc-list" id="toc-list">
+            <li class="toc-item">
+                <a class="toc-link main" href="#section-12-overview">
+                    <span class="bullet"></span>
+                    <span class="text">1.2.1 Executive Overview: Dev Environment</span>
+                </a>
+            </li>
+            <li class="toc-item">
+                <a class="toc-link main" href="#section-12-editors">
+                    <span class="bullet"></span>
+                    <span class="text">1.2.2 Code Editors &amp; IDEs (VS Code, WebStorm)</span>
+                </a>
+            </li>
+            <li class="toc-item">
+                <a class="toc-link main" href="#section-12-devtools">
+                    <span class="bullet"></span>
+                    <span class="text">1.2.3 Browser DevTools Mastery</span>
+                </a>
+            </li>
+            <li class="toc-item">
+                <a class="toc-link main" href="#section-12-node">
+                    <span class="bullet"></span>
+                    <span class="text">1.2.4 Node.js Installation &amp; Setup</span>
+                </a>
+            </li>
+            <li class="toc-item">
+                <a class="toc-link main" href="#section-12-packages">
+                    <span class="bullet"></span>
+                    <span class="text">1.2.5 Package Managers (npm, yarn, pnpm)</span>
+                </a>
+            </li>
+            <li class="toc-item">
+                <a class="toc-link main" href="#section-12-git">
+                    <span class="bullet"></span>
+                    <span class="text">1.2.6 Git &amp; Version Control Basics</span>
+                </a>
+            </li>
+
+            <div class="toc-section-label">1.3 · First Steps with JS</div>
+
+            <li class="toc-item">
+                <a class="toc-link main" href="#section-13-overview">
+                    <span class="bullet"></span>
+                    <span class="text">1.3.1 Executive Overview: First JS Program</span>
+                </a>
+            </li>
+            <li class="toc-item">
+                <a class="toc-link main" href="#section-13-first-program">
+                    <span class="bullet"></span>
+                    <span class="text">1.3.2 Writing Your First JS Program</span>
+                </a>
+            </li>
+            <li class="toc-item">
+                <a class="toc-link main" href="#section-13-console">
+                    <span class="bullet"></span>
+                    <span class="text">1.3.3 console.log &amp; Debugging Basics</span>
+                </a>
+            </li>
+            <li class="toc-item">
+                <a class="toc-link main" href="#section-13-linking">
+                    <span class="bullet"></span>
+                    <span class="text">1.3.4 Linking JS to HTML</span>
+                </a>
+            </li>
+            <li class="toc-item">
+                <a class="toc-link main" href="#section-13-scripts">
+                    <span class="bullet"></span>
+                    <span class="text">1.3.5 Script Tags &amp; Loading Strategies</span>
+                </a>
+            </li>
+            <li class="toc-item">
+                <a class="toc-link main" href="#section-13-comments">
+                    <span class="bullet"></span>
+                    <span class="text">1.3.6 Comments &amp; Code Documentation</span>
+                </a>
+            </li>
+        </ul>
+    </aside>
+
+    <!-- RIGHT: Content -->
+    <main class="content">
+        <div class="content-inner">
+            <header class="content-header">
+                <div>
+                    <div class="content-title">
+                        <span class="unit">Units 1.2 &amp; 1.3 ·</span> Setting Up Environment &amp; First JS Steps
+                    </div>
+                    <div class="content-subtitle">
+                        A research-style, hands-on walkthrough of tools, installation, and your very first JavaScript programs –
+                        designed for serious learners, not just copy-paste coders.
+                    </div>
+                    <div class="chip-row">
+                        <span class="chip highlight">Practical: from empty machine to running JS</span>
+                        <span class="chip">VS Code, WebStorm, DevTools, Node.js, npm/yarn/pnpm, Git</span>
+                        <span class="chip">Includes real-world examples &amp; mental models</span>
+                    </div>
+                </div>
+                <div>
+                    <span class="content-time-badge">
+                        <span class="pill-dot"></span>
+                        Reading + hands-on time: ~40–60 min (recommended)
+                    </span>
+                </div>
+            </header>
+
+            <hr class="section-divider">
+
+            <!-- ========================= 1.2.1 Overview ========================= -->
+            <section id="section-12-overview">
+                <details open>
+                    <summary>
+                        <span class="summary-chevron">&#9656;</span>
+                        <span class="summary-label">1.2.1</span>
+                        <span class="summary-main-text">Executive Summary: What is a “JavaScript development environment”?</span>
+                    </summary>
+                    <div class="content-body">
+                        <div class="hint-badge">
+                            <span class="dot"></span>
+                            Use this as a mental checklist: “If I have these 5 things, I am ready to build serious JS projects.”
+                        </div>
+                        <p>
+                            A <span class="term">development environment</span> is simply the combination of
+                            <strong>tools + configurations + workflows</strong> that you use to write, run, debug, and share your code.
+                            For JavaScript, a practical environment typically consists of:
+                        </p>
+                        <ul>
+                            <li><strong>A good editor or IDE</strong> (VS Code, WebStorm) with syntax highlighting, IntelliSense, and extensions.</li>
+                            <li><strong>A modern browser</strong> (Chrome, Firefox, Edge) with powerful developer tools (DevTools).</li>
+                            <li><strong>Node.js runtime</strong> so you can execute JS outside the browser (CLI tools, servers, scripts).</li>
+                            <li><strong>Package manager</strong> (npm, yarn, pnpm) to install and manage third-party libraries.</li>
+                            <li><strong>Version control</strong> using Git so your code is backed up, trackable, and shareable.</li>
+                        </ul>
+                        <div class="callout note">
+                            <div class="callout-title">Professional mental model</div>
+                            <p>
+                                A beginner often thinks: <em>“I just need a text editor and a browser.”</em><br>
+                                A professional thinks: <strong>“I need a reproducible environment where my code is easy to write,
+                                easy to run, easy to debug, and impossible to lose.”</strong>
+                            </p>
+                        </div>
+                    </div>
+                </details>
+            </section>
+
+            <!-- ========================= 1.2.2 Editors & IDEs ========================= -->
+            <section id="section-12-editors">
+                <details open>
+                    <summary>
+                        <span class="summary-chevron">&#9656;</span>
+                        <span class="summary-label">1.2.2</span>
+                        <span class="summary-main-text">Code editors &amp; IDEs (VS Code, WebStorm)</span>
+                    </summary>
+                    <div class="content-body">
+                        <p>
+                            You can technically write JavaScript in <em>Notepad</em>, but that’s like doing PhD math on tissue paper.
+                            A serious JS setup needs at least one of these:
+                        </p>
+
+                        <details class="nested" open>
+                            <summary>
+                                <span class="summary-chevron">&#9656;</span>
+                                <span class="summary-main-text">Visual Studio Code (VS Code)</span>
+                            </summary>
+                            <div class="content-body">
+                                <ul>
+                                    <li>Free, open source, cross-platform (Windows, macOS, Linux).</li>
+                                    <li>Excellent JS/TS support, built-in terminal, Git integration.</li>
+                                    <li>Huge ecosystem of extensions (ESLint, Prettier, Node debugging, etc.).</li>
+                                </ul>
+                                <p>Typical beginner-to-expert VS Code setup for JavaScript:</p>
+                                <ol>
+                                    <li>Install VS Code from official website.</li>
+                                    <li>Install these recommended extensions:
+                                        <ul>
+                                            <li><span class="inline-key">ESLint</span> – for code quality &amp; linting.</li>
+                                            <li><span class="inline-key">Prettier</span> – for automatic code formatting.</li>
+                                            <li><span class="inline-key">JavaScript (ES6) code snippets</span> – for productivity.</li>
+                                        </ul>
+                                    </li>
+                                    <li>Enable “Format on Save” &amp; “Editor: Tab Size 2 or 4” in settings based on your team.</li>
+                                </ol>
+
+                                <pre><code data-lang="js">
+// Example: VS Code settings snippet (JSON-like)
+{
+    "editor.tabSize": 2,
+    "editor.formatOnSave": true,
+    "files.trimTrailingWhitespace": true,
+    "javascript.updateImportsOnFileMove.enabled": "always"
+}
+</code></pre>
+                                <div class="code-caption">
+                                    You don't memorize this for exams, but in real life such settings make your JS projects clean and consistent.
+                                </div>
+                            </div>
+                        </details>
+
+                        <details class="nested">
+                            <summary>
+                                <span class="summary-chevron">&#9656;</span>
+                                <span class="summary-main-text">WebStorm (JetBrains)</span>
+                            </summary>
+                            <div class="content-body">
+                                <ul>
+                                    <li>Paid IDE (often free for students) focused on JavaScript and web technologies.</li>
+                                    <li>Deep refactoring tools, integrated inspections, smart code analysis.</li>
+                                    <li>Strong support for complex projects (monorepos, large codebases).</li>
+                                </ul>
+                                <p>
+                                    If you’re working on enterprise-scale applications or doing research on large JS code structures,
+                                    WebStorm can save a lot of time via auto-refactoring and navigation.
+                                </p>
+                            </div>
+                        </details>
+
+                        <details class="nested">
+                            <summary>
+                                <span class="summary-chevron">&#9656;</span>
+                                <span class="summary-main-text">Minimum requirements for any JS editor</span>
+                            </summary>
+                            <div class="content-body">
+                                <ul>
+                                    <li>Syntax highlighting and bracket matching.</li>
+                                    <li>Code completion / IntelliSense.</li>
+                                    <li>Built-in search &amp; replace, file explorer.</li>
+                                    <li>Integration with Git (commit, diff, branch view).</li>
+                                </ul>
+                                <div class="callout">
+                                    <p>
+                                        For viva: <strong>“VS Code is a lightweight, extensible code editor ideal for JavaScript,
+                                        while WebStorm is a full IDE with advanced refactoring and inspection capabilities.”</strong>
+                                    </p>
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+                </details>
+            </section>
+
+            <!-- ========================= 1.2.3 Browser DevTools ========================= -->
+            <section id="section-12-devtools">
+                <details>
+                    <summary>
+                        <span class="summary-chevron">&#9656;</span>
+                        <span class="summary-label">1.2.3</span>
+                        <span class="summary-main-text">Browser developer tools mastery</span>
+                    </summary>
+                    <div class="content-body">
+                        <p>
+                            Browser DevTools are your <strong>laboratory</strong> for JavaScript. Without them, debugging is pain.
+                            With them, you can inspect variables, network calls, performance, and DOM in real time.
+                        </p>
+
+                        <details class="nested" open>
+                            <summary>
+                                <span class="summary-chevron">&#9656;</span>
+                                <span class="summary-main-text">Opening DevTools</span>
+                            </summary>
+                            <div class="content-body">
+                                <ul>
+                                    <li>Keyboard shortcuts: <span class="inline-key">F12</span> or <span class="inline-key">Ctrl+Shift+I</span> (Windows / Linux),
+                                        <span class="inline-key">Cmd+Option+I</span> (macOS).</li>
+                                    <li>Right-click → “Inspect” on any web page element.</li>
+                                </ul>
+                                <p>Main panels you should know:</p>
+                                <ul>
+                                    <li><strong>Elements:</strong> Inspect and modify HTML/CSS live.</li>
+                                    <li><strong>Console:</strong> Run JavaScript interactively and see logs.</li>
+                                    <li><strong>Sources:</strong> View files, set breakpoints, debug JS line-by-line.</li>
+                                    <li><strong>Network:</strong> See HTTP requests, responses, AJAX calls.</li>
+                                </ul>
+                            </div>
+                        </details>
+
+                        <details class="nested">
+                            <summary>
+                                <span class="summary-chevron">&#9656;</span>
+                                <span class="summary-main-text">Using the Console panel</span>
+                            </summary>
+                            <div class="content-body">
+                                <p>
+                                    The Console is like a REPL (Read–Eval–Print Loop) for JavaScript inside your browser.
+                                    For early learning, you can treat it as your playground.
+                                </p>
+                                <pre><code data-lang="js">
+// In the browser DevTools console:
+1 + 2
+"Hello".toUpperCase()
+Math.random()
+console.log("Testing my environment");
+</code></pre>
+                                <div class="code-caption">
+                                    Every expression you type is evaluated by the JS engine inside the browser.
+                                </div>
+                                <p>
+                                    The same Console is where your <span class="inline-key">console.log()</span> calls appear
+                                    when you run scripts from an HTML file.
+                                </p>
+                            </div>
+                        </details>
+
+                        <details class="nested">
+                            <summary>
+                                <span class="summary-chevron">&#9656;</span>
+                                <span class="summary-main-text">Breakpoints &amp; step-by-step debugging</span>
+                            </summary>
+                            <div class="content-body">
+                                <p>
+                                    Instead of trying to understand everything via logs, you can pause the program at a specific
+                                    line (a <span class="term">breakpoint</span>) and watch variables in real time.
+                                </p>
+                                <ol>
+                                    <li>Open DevTools → <strong>Sources</strong> tab.</li>
+                                    <li>Open the JavaScript file (e.g., <span class="inline-key">main.js</span>).</li>
+                                    <li>Click on the line number where you want to pause.</li>
+                                    <li>Reload the page; execution will pause at that line.</li>
+                                </ol>
+                                <p>Then you can:</p>
+                                <ul>
+                                    <li>Hover variables to see values.</li>
+                                    <li>Use “Step over”, “Step into”, “Step out” to control execution.</li>
+                                    <li>Inspect call stack to see which function called which.</li>
+                                </ul>
+                                <div class="callout">
+                                    <p>
+                                        For viva: <strong>“Browser DevTools provide runtime inspection, breakpoints, network
+                                        analysis, and console access, which are essential for debugging real-world JavaScript
+                                        applications.”</strong>
+                                    </p>
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+                </details>
+            </section>
+
+            <!-- ========================= 1.2.4 Node.js ========================= -->
+            <section id="section-12-node">
+                <details>
+                    <summary>
+                        <span class="summary-chevron">&#9656;</span>
+                        <span class="summary-label">1.2.4</span>
+                        <span class="summary-main-text">Node.js installation and setup</span>
+                    </summary>
+                    <div class="content-body">
+                        <p>
+                            <span class="term">Node.js</span> is a runtime that allows you to execute JavaScript <strong>outside the browser</strong>
+                            (on your machine or on servers). It uses the V8 engine and adds system-level APIs (file system, network, etc.).
+                        </p>
+
+                        <details class="nested" open>
+                            <summary>
+                                <span class="summary-chevron">&#9656;</span>
+                                <span class="summary-main-text">Why do we need Node.js for learning JS?</span>
+                            </summary>
+                            <div class="content-body">
+                                <ul>
+                                    <li>Run JS scripts directly from the terminal (no HTML needed).</li>
+                                    <li>Use npm/yarn/pnpm to install libraries and tools.</li>
+                                    <li>Build real backend servers, CLIs, automation scripts.</li>
+                                </ul>
+                            </div>
+                        </details>
+
+                        <details class="nested">
+                            <summary>
+                                <span class="summary-chevron">&#9656;</span>
+                                <span class="summary-main-text">Basic installation flow</span>
+                            </summary>
+                            <div class="content-body">
+                                <ol>
+                                    <li>Download Node.js from the official website (LTS version recommended for stability).</li>
+                                    <li>Install using the system-specific installer (Next → Next → …).</li>
+                                    <li>Verify installation in terminal:</li>
+                                </ol>
+                                <pre><code data-lang="js">
+// In terminal / command prompt:
+node -v
+npm -v
+</code></pre>
+                                <div class="code-caption">
+                                    You should see versions printed like <span class="inline-key">v20.0.0</span> etc.; this confirms installation.
+                                </div>
+                                <p>Run your first Node.js script:</p>
+                                <pre><code data-lang="js">
+// demo.js
+console.log("Hello from Node.js!");
+</code></pre>
+                                <pre><code data-lang="js">
+// In terminal:
+node demo.js
+</code></pre>
+                                <div class="code-caption">
+                                    If the terminal prints <span class="inline-key">Hello from Node.js!</span>, your environment is working.
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+                </details>
+            </section>
+
+            <!-- ========================= 1.2.5 Package Managers ========================= -->
+            <section id="section-12-packages">
+                <details>
+                    <summary>
+                        <span class="summary-chevron">&#9656;</span>
+                        <span class="summary-label">1.2.5</span>
+                        <span class="summary-main-text">Package managers (npm, yarn, pnpm)</span>
+                    </summary>
+                    <div class="content-body">
+                        <p>
+                            JavaScript has a huge ecosystem of reusable code called <span class="term">packages</span> (or modules).
+                            Package managers automate installing, updating, and tracking these packages for your project.
+                        </p>
+
+                        <details class="nested" open>
+                            <summary>
+                                <span class="summary-chevron">&#9656;</span>
+                                <span class="summary-main-text">npm (Node Package Manager)</span>
+                            </summary>
+                            <div class="content-body">
+                                <ul>
+                                    <li>Comes bundled with Node.js installation.</li>
+                                    <li>Stores packages in <span class="inline-key">node_modules</span> folder.</li>
+                                    <li>Uses <span class="inline-key">package.json</span> to describe dependencies and scripts.</li>
+                                </ul>
+
+                                <pre><code data-lang="js">
+// Initialize a new project:
+npm init -y
+
+// Install a package (example: lodash):
+npm install lodash
+
+// Run a script defined in package.json:
+npm run start
+</code></pre>
+                                <div class="code-caption">
+                                    In exams, you might be asked what <span class="inline-key">npm init</span> does:
+                                    it creates a <span class="inline-key">package.json</span> file.
+                                </div>
+                            </div>
+                        </details>
+
+                        <details class="nested">
+                            <summary>
+                                <span class="summary-chevron">&#9656;</span>
+                                <span class="summary-main-text">yarn &amp; pnpm (alternatives)</span>
+                            </summary>
+                            <div class="content-body">
+                                <ul>
+                                    <li><strong>yarn:</strong> Focused on speed and reliability, earlier used a different lockfile.</li>
+                                    <li><strong>pnpm:</strong> Disk-efficient; shares packages across projects using hard links.</li>
+                                </ul>
+
+                                <pre><code data-lang="js">
+// Example commands (very similar to npm):
+yarn add axios
+pnpm add axios
+</code></pre>
+                                <p>
+                                    For viva: <strong>“npm is the default package manager for Node.js; yarn and pnpm are popular
+                                    alternatives focusing on performance and disk efficiency.”</strong>
+                                </p>
+                            </div>
+                        </details>
+
+                        <details class="nested">
+                            <summary>
+                                <span class="summary-chevron">&#9656;</span>
+                                <span class="summary-main-text">Real-world workflow example</span>
+                            </summary>
+                            <div class="content-body">
+                                <pre><code data-lang="js">
+// 1) Create a new folder and move into it:
+mkdir js-basics
+cd js-basics
+
+// 2) Initialize package.json:
+npm init -y
+
+// 3) Install a helper library:
+npm install dayjs   // small library for dates
+
+// 4) Use it in a file:
+</code></pre>
+                                <pre><code data-lang="js">
+// index.js
+import dayjs from "dayjs";
+
+console.log("Current time is:", dayjs().format("YYYY-MM-DD HH:mm:ss"));
+</code></pre>
+                                <pre><code data-lang="js">
+// 5) Run your script:
+node index.js
+</code></pre>
+                                <div class="code-caption">
+                                    This pattern (init → install → import → run) repeats in countless real JS projects.
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+                </details>
+            </section>
+
+            <!-- ========================= 1.2.6 Git Basics ========================= -->
+            <section id="section-12-git">
+                <details>
+                    <summary>
+                        <span class="summary-chevron">&#9656;</span>
+                        <span class="summary-label">1.2.6</span>
+                        <span class="summary-main-text">Version control with Git basics</span>
+                    </summary>
+                    <div class="content-body">
+                        <p>
+                            <span class="term">Git</span> is a distributed version control system. In simple terms, it:
+                        </p>
+                        <ul>
+                            <li>Keeps a history of your code changes.</li>
+                            <li>Allows you to experiment safely (branches).</li>
+                            <li>Makes collaboration easy via platforms like GitHub/GitLab.</li>
+                        </ul>
+
+                        <details class="nested" open>
+                            <summary>
+                                <span class="summary-chevron">&#9656;</span>
+                                <span class="summary-main-text">Core mental model</span>
+                            </summary>
+                            <div class="content-body">
+                                <p>Think of Git as a time machine for your project:</p>
+                                <ul>
+                                    <li>Each <span class="term">commit</span> is a snapshot of your code with a message.</li>
+                                    <li>You can jump back and forth between commits.</li>
+                                    <li>Branches are alternate timelines you can merge later.</li>
+                                </ul>
+                            </div>
+                        </details>
+
+                        <details class="nested">
+                            <summary>
+                                <span class="summary-chevron">&#9656;</span>
+                                <span class="summary-main-text">Minimum Git commands for JS projects</span>
+                            </summary>
+                            <div class="content-body">
+                                <pre><code data-lang="js">
+// Initialize Git in a folder:
+git init
+
+// Check current status:
+git status
+
+// Stage files for commit:
+git add .
+
+// Commit with a message:
+git commit -m "Initial commit"
+
+// Add remote (e.g., GitHub) and push:
+git remote add origin &lt;REMOTE_URL&gt;
+git push -u origin main
+</code></pre>
+                                <div class="code-caption">
+                                    For viva: know that <span class="inline-key">git init</span> creates a repository,
+                                    <span class="inline-key">git add</span> stages changes, and <span class="inline-key">git commit</span> records them.
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+                </details>
+            </section>
+
+            <!-- ========================= 1.3.1 Overview ========================= -->
+            <section id="section-13-overview">
+                <details open>
+                    <summary>
+                        <span class="summary-chevron">&#9656;</span>
+                        <span class="summary-label">1.3.1</span>
+                        <span class="summary-main-text">Executive Summary: First steps with JavaScript</span>
+                    </summary>
+                    <div class="content-body">
+                        <div class="hint-badge">
+                            <span class="dot"></span>
+                            This is the “Hello, world” of serious JS, not just console.log but how everything fits together.
+                        </div>
+                        <p>
+                            In this unit, you will:
+                        </p>
+                        <ul>
+                            <li>Write your first JavaScript program (both in browser and Node).</li>
+                            <li>Learn how <span class="inline-key">console.log()</span> works and why it’s your first debugging tool.</li>
+                            <li>Understand how to link JavaScript files to HTML correctly.</li>
+                            <li>Explore script tag loading strategies (<span class="inline-key">&lt;script&gt;</span>, <span class="inline-key">defer</span>, <span class="inline-key">async</span>).</li>
+                            <li>Learn how to use comments to document your code in a professional way.</li>
+                        </ul>
+                        <div class="callout">
+                            <p>
+                                Single sentence: <strong>“First steps with JavaScript means learning how to run code, see output,
+                                attach scripts to web pages, and document what your code is doing.”</strong>
+                            </p>
+                        </div>
+                    </div>
+                </details>
+            </section>
+
+            <!-- ========================= 1.3.2 First Program ========================= -->
+            <section id="section-13-first-program">
+                <details open>
+                    <summary>
+                        <span class="summary-chevron">&#9656;</span>
+                        <span class="summary-label">1.3.2</span>
+                        <span class="summary-main-text">Writing your first JavaScript program</span>
+                    </summary>
+                    <div class="content-body">
+                        <details class="nested" open>
+                            <summary>
+                                <span class="summary-chevron">&#9656;</span>
+                                <span class="summary-main-text">First program in browser console</span>
+                            </summary>
+                            <div class="content-body">
+                                <ol>
+                                    <li>Open any webpage (even a blank one).</li>
+                                    <li>Open DevTools → <strong>Console</strong> tab.</li>
+                                    <li>Type the following and press Enter:</li>
+                                </ol>
+                                <pre><code data-lang="js">
+console.log("Hello, world from the browser!");
+</code></pre>
+                                <div class="code-caption">
+                                    This is the fastest way to verify that you understand where JavaScript runs and where output appears.
+                                </div>
+                            </div>
+                        </details>
+
+                        <details class="nested">
+                            <summary>
+                                <span class="summary-chevron">&#9656;</span>
+                                <span class="summary-main-text">First program in Node.js</span>
+                            </summary>
+                            <div class="content-body">
+                                <ol>
+                                    <li>Create a file <span class="inline-key">hello.js</span>.</li>
+                                    <li>Add this code:</li>
+                                </ol>
+                                <pre><code data-lang="js">
+// hello.js
+console.log("Hello from Node.js!");
+</code></pre>
+                                <ol start="3">
+                                    <li>Run it in terminal:</li>
+                                </ol>
+                                <pre><code data-lang="js">
+node hello.js
+</code></pre>
+                                <p>
+                                    Same <span class="inline-key">console.log</span>, but different environment (terminal instead of browser).
+                                    This reinforces the idea that JavaScript is a language that can run in multiple environments.
+                                </p>
+                            </div>
+                        </details>
+                    </div>
+                </details>
+            </section>
+
+            <!-- ========================= 1.3.3 console.log & Debugging ========================= -->
+            <section id="section-13-console">
+                <details>
+                    <summary>
+                        <span class="summary-chevron">&#9656;</span>
+                        <span class="summary-label">1.3.3</span>
+                        <span class="summary-main-text">console.log and debugging basics</span>
+                    </summary>
+                    <div class="content-body">
+                        <p>
+                            <span class="inline-key">console.log()</span> prints information to the Console. It is your first and simplest debugging technique.
+                        </p>
+
+                        <details class="nested" open>
+                            <summary>
+                                <span class="summary-chevron">&#9656;</span>
+                                <span class="summary-main-text">Basic usage of console.log</span>
+                            </summary>
+                            <div class="content-body">
+                                <pre><code data-lang="js">
+const a = 10;
+const b = 20;
+console.log("a =", a);
+console.log("b =", b);
+console.log("sum =", a + b);
+</code></pre>
+                                <div class="code-caption">
+                                    Output will show in browser DevTools Console or in terminal (Node.js).
+                                </div>
+                            </div>
+                        </details>
+
+                        <details class="nested">
+                            <summary>
+                                <span class="summary-chevron">&#9656;</span>
+                                <span class="summary-main-text">Debugging a simple bug with console.log</span>
+                            </summary>
+                            <div class="content-body">
+                                <pre><code data-lang="js">
+// Buggy code:
+function multiply(x, y) {
+    return x + y;  // BUG: should be multiplication
+}
+
+console.log(multiply(2, 3)); // Expect 6, get 5
+</code></pre>
+                                <p>Use <span class="inline-key">console.log</span> to inspect values:</p>
+                                <pre><code data-lang="js">
+function multiply(x, y) {
+    console.log("x =", x, "y =", y);
+    const result = x + y;  // still wrong, but we see the flow
+    console.log("result =", result);
+    return result;
+}
+</code></pre>
+                                <p>
+                                    You will quickly realize that the operator is wrong, and correct it:
+                                </p>
+                                <pre><code data-lang="js">
+function multiply(x, y) {
+    return x * y;  // fixed
+}
+</code></pre>
+                            </div>
+                        </details>
+                    </div>
+                </details>
+            </section>
+
+            <!-- ========================= 1.3.4 Linking JS to HTML ========================= -->
+            <section id="section-13-linking">
+                <details>
+                    <summary>
+                        <span class="summary-chevron">&#9656;</span>
+                        <span class="summary-label">1.3.4</span>
+                        <span class="summary-main-text">Linking JavaScript to HTML</span>
+                    </summary>
+                    <div class="content-body">
+                        <p>
+                            To create interactive web pages, you must understand how to connect JS files with HTML files.
+                        </p>
+
+                        <details class="nested" open>
+                            <summary>
+                                <span class="summary-chevron">&#9656;</span>
+                                <span class="summary-main-text">Inline scripts vs external scripts</span>
+                            </summary>
+                            <div class="content-body">
+                                <p><strong>Inline script:</strong> JS written directly inside HTML.</p>
+                                <pre><code data-lang="js">
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;Inline JS Example&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Hello&lt;/h1&gt;
+
+    &lt;script&gt;
+        console.log("Running inline JavaScript");
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+
+                                <p><strong>External script:</strong> JS written in a separate file, linked by <span class="inline-key">&lt;script src="..."&gt;</span>.</p>
+                                <pre><code data-lang="js">
+&lt;!-- index.html --&gt;
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;External JS Example&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;Hello&lt;/h1&gt;
+    &lt;script src="app.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+                                <pre><code data-lang="js">
+/* app.js */
+console.log("Running external JavaScript file");
+</code></pre>
+                                <div class="code-caption">
+                                    External scripts are preferred in real projects because they keep HTML and JS separate, cleaner, and reusable.
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+                </details>
+            </section>
+
+            <!-- ========================= 1.3.5 Script tags & loading ========================= -->
+            <section id="section-13-scripts">
+                <details>
+                    <summary>
+                        <span class="summary-chevron">&#9656;</span>
+                        <span class="summary-label">1.3.5</span>
+                        <span class="summary-main-text">Script tags and loading strategies</span>
+                    </summary>
+                    <div class="content-body">
+                        <p>
+                            How and where you place your <span class="inline-key">&lt;script&gt;</span> tags affects when your JavaScript runs
+                            and whether your page feels fast.
+                        </p>
+
+                        <details class="nested" open>
+                            <summary>
+                                <span class="summary-chevron">&#9656;</span>
+                                <span class="summary-main-text">Classic pattern: script at the end of body</span>
+                            </summary>
+                            <div class="content-body">
+                                <pre><code data-lang="js">
+&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;Script at Bottom&lt;/title&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;h1&gt;My Page&lt;/h1&gt;
+    &lt;button id="btn"&gt;Click me&lt;/button&gt;
+
+    &lt;script src="main.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+                                <div class="code-caption">
+                                    The browser loads HTML first, then runs JS. So JS can safely access DOM elements.
+                                </div>
+                            </div>
+                        </details>
+
+                        <details class="nested">
+                            <summary>
+                                <span class="summary-chevron">&#9656;</span>
+                                <span class="summary-main-text">&lt;script defer&gt; and &lt;script async&gt;</span>
+                            </summary>
+                            <div class="content-body">
+                                <p>
+                                    In modern HTML, you often put scripts in <span class="inline-key">&lt;head&gt;</span> with
+                                    <span class="inline-key">defer</span> or <span class="inline-key">async</span> attributes:
+                                </p>
+                                <pre><code data-lang="js">
+&lt;head&gt;
+    &lt;script src="main.js" defer&gt;&lt;/script&gt;
+&lt;/head&gt;
+</code></pre>
+                                <ul>
+                                    <li><span class="inline-key">defer</span> → Download script in parallel, execute <strong>after</strong> HTML is parsed.</li>
+                                    <li><span class="inline-key">async</span> → Download in parallel, execute as soon as download finishes (may run before HTML is fully parsed).</li>
+                                </ul>
+                                <div class="callout">
+                                    <p>
+                                        For most beginner and intermediate projects, <strong>use <span class="inline-key">defer</span></strong>.
+                                        It gives good performance and predictable behavior.
+                                    </p>
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+                </details>
+            </section>
+
+            <!-- ========================= 1.3.6 Comments & Documentation ========================= -->
+            <section id="section-13-comments">
+                <details>
+                    <summary>
+                        <span class="summary-chevron">&#9656;</span>
+                        <span class="summary-label">1.3.6</span>
+                        <span class="summary-main-text">Comments and code documentation</span>
+                    </summary>
+                    <div class="content-body">
+                        <p>
+                            Comments are ignored by the JavaScript engine but read by humans. Good comments explain <strong>why</strong>,
+                            not just <strong>what</strong>.
+                        </p>
+
+                        <details class="nested" open>
+                            <summary>
+                                <span class="summary-chevron">&#9656;</span>
+                                <span class="summary-main-text">Types of comments in JavaScript</span>
+                            </summary>
+                            <div class="content-body">
+                                <pre><code data-lang="js">
+// Single-line comment
+
+/*
+ Multi-line comment
+ spanning multiple lines
+*/
+</code></pre>
+                            </div>
+                        </details>
+
+                        <details class="nested">
+                            <summary>
+                                <span class="summary-chevron">&#9656;</span>
+                                <span class="summary-main-text">Example: documenting a function</span>
+                            </summary>
+                            <div class="content-body">
+                                <pre><code data-lang="js">
+/**
+ * Calculates the average of an array of numbers.
+ * @param {number[]} values - Array of numeric values.
+ * @returns {number} The average value, or NaN for empty array.
+ */
+function average(values) {
+    if (values.length === 0) return NaN;
+    let sum = 0;
+    for (const v of values) {
+        sum += v;
+    }
+    return sum / values.length;
+}
+</code></pre>
+                                <div class="code-caption">
+                                    This JSDoc style comment can be read by tools (VS Code, TypeScript) to show hints and help.
+                                </div>
+                            </div>
+                        </details>
+                    </div>
+                </details>
+            </section>
+
+            <div style="height: 1.5rem;"></div>
+        </div>
+    </main>
+</div>
+
+<!-- JavaScript utilities: smooth scroll, expand/collapse all, TOC search, simple syntax highlighting -->
+<script>
+    (function () {
+        const tocLinks = document.querySelectorAll(".toc-link");
+
+        // Smooth scrolling
+        tocLinks.forEach(link => {
+            link.addEventListener("click", function (e) {
+                e.preventDefault();
+                const targetId = link.getAttribute("href");
+                const target = document.querySelector(targetId);
+                if (!target) return;
+                target.scrollIntoView({ behavior: "smooth", block: "start" });
+            });
+        });
+
+        // Expand / collapse all details
+        const btnExpand = document.getElementById("btn-expand-all");
+        const btnCollapse = document.getElementById("btn-collapse-all");
+
+        function setAllDetails(open) {
+            document.querySelectorAll("main details").forEach(d => {
+                if (open) {
+                    d.setAttribute("open", "");
+                } else {
+                    d.removeAttribute("open");
+                }
+            });
+        }
+
+        if (btnExpand) {
+            btnExpand.addEventListener("click", function () {
+                setAllDetails(true);
+            });
+        }
+        if (btnCollapse) {
+            btnCollapse.addEventListener("click", function () {
+                setAllDetails(false);
+            });
+        }
+
+        // TOC search filter
+        const tocSearchInput = document.getElementById("toc-search-input");
+        const tocList = document.getElementById("toc-list");
+
+        if (tocSearchInput && tocList) {
+            tocSearchInput.addEventListener("input", function () {
+                const query = tocSearchInput.value.toLowerCase().trim();
+                const items = tocList.querySelectorAll(".toc-item");
+                items.forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    const match = text.indexOf(query) !== -1;
+                    item.style.display = match ? "" : "none";
+                });
+            });
+        }
+
+        // Simple syntax highlighting for JS code blocks
+        function simpleHighlightJS() {
+            const blocks = document.querySelectorAll('pre code[data-lang="js"]');
+            blocks.forEach(block => {
+                let html = block.innerHTML;
+
+                // Comments
+                html = html.replace(/(\/\/[^\n]*\n?)/g, function (match) {
+                    return '<span class="token-comment">' + match + '</span>';
+                });
+
+                // Strings
+                html = html.replace(/(".*?"|'.*?'|`.*?`)/g, function (match) {
+                    return '<span class="token-string">' + match + '</span>';
+                });
+
+                // Numbers
+                html = html.replace(/(\b\d+(\.\d+)?\b)/g, '<span class="token-number">$1</span>');
+
+                // Keywords
+                html = html.replace(/\b(const|let|var|function|return|if|else|for|while|class|new|this|import|from|export|default|async|await)\b/g,
+                    '<span class="token-keyword">$1</span>');
+
+                // Builtins
+                html = html.replace(/\b(console|document|window|Math|Array|String|Number|Boolean|Promise|Object|Date|JSON)\b/g,
+                    '<span class="token-builtin">$1</span>');
+
+                block.innerHTML = html;
+            });
+        }
+
+        simpleHighlightJS();
+    })();
+</script>
+</body>
+</html>

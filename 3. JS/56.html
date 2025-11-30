@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Modern DOM JavaScript Notes – 17.3 Advanced Event Handling</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-main: #050814;
+            --bg-panel: #0b1020;
+            --bg-panel-alt: #10172b;
+            --accent-cyan: #00e5ff;
+            --accent-amber: #ffca28;
+            --text-main: #e0f7fa;
+            --text-muted: #9ca3af;
+            --border-soft: #1f2937;
+            --code-bg: #020617;
+            --code-border: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            background: radial-gradient(circle at top, #111827 0, #020617 45%, #000 100%);
+            color: var(--text-main);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            overflow: hidden;
+        }
+
+        .page-wrapper {
+            height: 100vh;
+        }
+
+        /* Sidebar (left panel) */
+        #sidebar {
+            background: linear-gradient(160deg, #020617 0%, #020617 35%, #0b1020 100%);
+            border-right: 1px solid var(--border-soft);
+            padding: 1.2rem 1rem 1.2rem 1.2rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 320px;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        #sidebar h1 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            color: var(--accent-cyan);
+        }
+
+        #sidebar h2 {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--accent-amber);
+        }
+
+        .badge-topic {
+            border-radius: 999px;
+            border: 1px solid rgba(0, 229, 255, 0.4);
+            padding: 0.15rem 0.6rem;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+        }
+
+        .author-box {
+            background: rgba(15, 23, 42, 0.85);
+            border-radius: 0.75rem;
+            padding: 0.65rem 0.75rem;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            margin-top: 0.6rem;
+        }
+
+        .author-box small {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .author-box strong {
+            color: var(--accent-amber);
+        }
+
+        .toc-header {
+            margin-top: 1rem;
+            margin-bottom: 0.4rem;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 0.5rem;
+        }
+
+        .search-box input {
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 999px;
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            color: var(--text-main);
+            font-size: 0.8rem;
+            padding-right: 2rem;
+        }
+
+        .search-box input::placeholder {
+            color: #6b7280;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 0.65rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
+        .toc-actions {
+            display: flex;
+            gap: 0.4rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .toc-actions button {
+            border-radius: 999px;
+            border-width: 1px;
+            font-size: 0.7rem;
+            padding: 0.25rem 0.6rem;
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text-muted);
+            border-color: rgba(55, 65, 81, 0.8);
+        }
+
+        .toc-actions button:hover {
+            color: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+        }
+
+        #toc-list {
+            list-style: none;
+            padding-left: 0;
+            margin: 0;
+        }
+
+        #toc-list li {
+            margin-bottom: 0.12rem;
+        }
+
+        #toc-list a {
+            display: block;
+            text-decoration: none;
+            font-size: 0.78rem;
+            padding: 0.22rem 0.35rem;
+            border-radius: 0.5rem;
+            color: var(--text-muted);
+            border: 1px solid transparent;
+        }
+
+        #toc-list a:hover {
+            border-color: rgba(56, 189, 248, 0.4);
+            background: radial-gradient(circle at left, rgba(8, 47, 73, 0.9), rgba(15, 23, 42, 0.9));
+            color: var(--accent-cyan);
+        }
+
+        #toc-list a span.section-index {
+            display: inline-block;
+            min-width: 1.4rem;
+            font-weight: 600;
+            color: var(--accent-amber);
+        }
+
+        #toc-list a small {
+            font-size: 0.71rem;
+        }
+
+        /* Right panel (content) */
+        .content-panel {
+            position: absolute;
+            left: 320px;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            overflow-y: auto;
+            padding: 1.4rem 2.2rem 3rem 2.2rem;
+        }
+
+        @media (max-width: 991.98px) {
+            #sidebar {
+                position: static;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border-soft);
+            }
+
+            .content-panel {
+                position: static;
+                left: 0;
+                right: 0;
+                overflow-y: visible;
+                padding: 1.2rem 1rem 2.2rem 1rem;
+            }
+        }
+
+        .section-chip-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .chip {
+            border-radius: 999px;
+            border: 1px solid rgba(75, 85, 99, 0.85);
+            padding: 0.2rem 0.6rem;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        h2.section-title {
+            font-size: 1.1rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.4rem;
+            font-weight: 650;
+            color: var(--accent-cyan);
+        }
+
+        h3.subheading {
+            font-size: 0.98rem;
+            margin-top: 1.1rem;
+            margin-bottom: 0.3rem;
+            color: var(--accent-amber);
+        }
+
+        p {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text-main);
+        }
+
+        .lead-paragraph {
+            font-size: 0.95rem;
+            color: #f9fafb;
+        }
+
+        .note-box,
+        .info-box,
+        .warning-box {
+            border-radius: 0.75rem;
+            padding: 0.7rem 0.9rem;
+            font-size: 0.9rem;
+            margin: 0.65rem 0;
+        }
+
+        .note-box {
+            background: rgba(8, 47, 73, 0.9);
+            border: 1px solid rgba(56, 189, 248, 0.6);
+        }
+
+        .info-box {
+            background: rgba(30, 64, 175, 0.75);
+            border: 1px solid rgba(129, 140, 248, 0.9);
+        }
+
+        .warning-box {
+            background: rgba(120, 53, 15, 0.85);
+            border: 1px solid rgba(251, 191, 36, 0.9);
+        }
+
+        .note-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            opacity: 0.85;
+        }
+
+        .note-label-amber {
+            color: var(--accent-amber);
+        }
+
+        .note-label-cyan {
+            color: var(--accent-cyan);
+        }
+
+        /* details/summary styling */
+        details {
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 0.8rem;
+            border: 1px solid rgba(30, 64, 175, 0.8);
+            margin: 0.55rem 0;
+            padding: 0.45rem 0.7rem 0.55rem 0.7rem;
+        }
+
+        details summary {
+            list-style: none;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: var(--accent-cyan);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        details summary::-webkit-details-marker {
+            display: none;
+        }
+
+        details summary .twist {
+            width: 0.7rem;
+            height: 0.7rem;
+            border-radius: 999px;
+            border: 1px solid rgba(56, 189, 248, 0.8);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            color: var(--accent-cyan);
+        }
+
+        details[open] summary .twist {
+            background: rgba(56, 189, 248, 0.1);
+        }
+
+        details .details-body {
+            margin-top: 0.35rem;
+            font-size: 0.88rem;
+            color: var(--text-main);
+        }
+
+        /* Code blocks */
+        pre {
+            background: var(--code-bg);
+            border-radius: 0.75rem;
+            border: 1px solid var(--code-border);
+            padding: 0.6rem 0.8rem;
+            font-size: 0.8rem;
+            overflow-x: auto;
+            margin: 0.6rem 0;
+        }
+
+        pre code {
+            font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            white-space: pre;
+        }
+
+        .code-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: 0.15rem;
+        }
+
+        .code-meta {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            margin-top: 0.1rem;
+        }
+
+        .token-keyword {
+            font-weight: 600;
+        }
+
+        .token-fn {
+            font-weight: 600;
+        }
+
+        .token-dom {
+            font-style: italic;
+        }
+
+        .token-comment {
+            opacity: 0.7;
+        }
+
+        .token-string {
+            opacity: 0.9;
+        }
+
+        .pill {
+            display: inline-block;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.6);
+            padding: 0.12rem 0.5rem;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .pill-cyan {
+            border-color: rgba(56, 189, 248, 0.9);
+            color: var(--accent-cyan);
+        }
+
+        .pill-amber {
+            border-color: rgba(251, 191, 36, 0.9);
+            color: var(--accent-amber);
+        }
+
+        .exercise-box {
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 0.9rem;
+            border: 1px dashed rgba(56, 189, 248, 0.7);
+            padding: 0.8rem 1rem;
+            margin-top: 0.8rem;
+        }
+
+        .exercise-box ol {
+            padding-left: 1.1rem;
+            font-size: 0.9rem;
+        }
+
+        .exercise-box li {
+            margin-bottom: 0.2rem;
+        }
+
+        .text-soft {
+            color: var(--text-muted);
+        }
+
+        .gradient-bar {
+            height: 3px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-amber));
+            margin: 0.4rem 0 0.7rem 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page-wrapper container-fluid">
+        <div class="row">
+            <!-- LEFT: Sidebar / TOC -->
+            <nav id="sidebar" class="col-lg-3 col-md-4">
+                <div class="d-flex align-items-center justify-content-between mb-1">
+                    <div>
+                        <span class="badge-topic">Modern DOM – JS</span>
+                    </div>
+                    <span class="text-soft" style="font-size:0.68rem;">Module 17.3</span>
+                </div>
+                <h1>Advanced Event Handling</h1>
+                <h2>Keyboard · Mouse · Touch · Forms · Lifecycle</h2>
+                <div class="gradient-bar"></div>
+
+                <div class="author-box">
+                    <small>Prepared for</small><br>
+                    <strong>College → Master / PhD learners</strong>
+                    <br>
+                    <small>Focus: Deep mental models + production-grade event handling in complex UIs
+                    </small>
+                </div>
+
+                <div class="mt-3">
+                    <div class="toc-header">Contents &amp; Navigator</div>
+                    <div class="search-box">
+                        <input id="toc-search" type="text" class="form-control form-control-sm"
+                            placeholder="Search sections (e.g., keyboard, touch)">
+                        <span class="search-icon">⌕</span>
+                    </div>
+                    <div class="toc-actions">
+                        <button id="btn-expand-all" type="button" class="btn btn-sm btn-outline-light">Expand all
+                            details</button>
+                        <button id="btn-collapse-all" type="button" class="btn btn-sm btn-outline-light">Collapse
+                            all</button>
+                    </div>
+                    <ul id="toc-list">
+                        <li><a href="#sec-intro" data-scroll><span class="section-index">1.</span> <small>Why advanced
+                                    events matter</small></a></li>
+                        <li><a href="#sec-keyboard" data-scroll><span class="section-index">2.</span> <small>Keyboard
+                                    events &amp; key codes</small></a></li>
+                        <li><a href="#sec-mouse" data-scroll><span class="section-index">3.</span> <small>Mouse events
+                                    &amp; coordinates</small></a></li>
+                        <li><a href="#sec-touch" data-scroll><span class="section-index">4.</span> <small>Touch events
+                                    for mobile</small></a></li>
+                        <li><a href="#sec-forms" data-scroll><span class="section-index">5.</span> <small>Form events &amp;
+                                    validation</small></a></li>
+                        <li><a href="#sec-lifecycle" data-scroll><span class="section-index">6.</span> <small>Page
+                                    lifecycle events</small></a></li>
+                        <li><a href="#sec-patterns" data-scroll><span class="section-index">7.</span> <small>Patterns &amp;
+                                    best practices</small></a></li>
+                        <li><a href="#sec-exercises" data-scroll><span class="section-index">8.</span> <small>Exercises
+                                    &amp; checkpoints</small></a></li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- RIGHT: Content -->
+            <main class="content-panel col-lg-9 col-md-8">
+                <!-- 1. Intro -->
+                <section id="sec-intro">
+                    <h2 class="section-title">1. Why “advanced” event handling matters</h2>
+                    <p class="lead-paragraph">
+                        In real-world apps you rarely stop at simple <code>click</code> events. You build keyboard
+                        shortcuts, drag &amp; drop, swipe gestures on mobile, instant form validation, and logic that
+                        reacts when the page gains/loses focus or the user closes the tab. This module turns those
+                        behaviours into <strong>clean, predictable JavaScript patterns</strong>.
+                    </p>
+
+                    <details open>
+                        <summary><span class="twist">▶</span> Executive summary</summary>
+                        <div class="details-body">
+                            <ul class="mb-1">
+                                <li><strong>Keyboard events</strong> (<code>keydown</code>, <code>keyup</code>,
+                                    <code>keypress</code>): use <code>event.key</code>, modifier keys
+                                    (<code>ctrlKey</code>, <code>altKey</code>, <code>metaKey</code>) for shortcuts.
+                                </li>
+                                <li><strong>Mouse events</strong>:
+                                    <code>click</code>, <code>dblclick</code>, <code>mousedown</code>,
+                                    <code>mouseup</code>, <code>mousemove</code>, <code>contextmenu</code> with precise
+                                    coordinates (<code>clientX</code>, <code>pageX</code>, <code>offsetX</code>).
+                                </li>
+                                <li><strong>Touch events</strong>: <code>touchstart</code>, <code>touchmove</code>,
+                                    <code>touchend</code> plus <code>TouchList</code> for multi-finger gestures.
+                                </li>
+                                <li><strong>Form events</strong>:
+                                    <code>input</code>, <code>change</code>, <code>submit</code>,
+                                    <code>invalid</code> for real-time and on-submit validation patterns.
+                                </li>
+                                <li><strong>Page lifecycle events</strong>:
+                                    <code>DOMContentLoaded</code>, <code>load</code>, <code>beforeunload</code>,
+                                    <code>visibilitychange</code> to control when logic runs relative to page state.
+                                </li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary><span class="twist">▶</span> Design goal: one mental model for many devices</summary>
+                        <div class="details-body">
+                            <p>
+                                Think of all user interactions as <strong>signals</strong> describing:
+                            </p>
+                            <ul>
+                                <li><strong>What</strong> happened (key, mouse button, gesture).</li>
+                                <li><strong>Where</strong> (coordinates / element).</li>
+                                <li><strong>When</strong> (time, order, lifecycle state).</li>
+                                <li><strong>Context</strong> (modifiers like Ctrl/Alt, active form, visible tab).</li>
+                            </ul>
+                            <p>
+                                Advanced event handling is the engineering process of capturing these signals and
+                                transforming them into domain actions: “open command palette”, “validate email field”,
+                                “pause video because tab is hidden”, “start drag from here to there”.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 2. Keyboard events -->
+                <section id="sec-keyboard">
+                    <h2 class="section-title">2. Keyboard events &amp; key codes</h2>
+                    <div class="section-chip-row">
+                        <span class="chip">keydown / keyup</span>
+                        <span class="chip">event.key &amp; modifiers</span>
+                        <span class="chip">Accessibility</span>
+                    </div>
+
+                    <p>
+                        Keyboard interaction is essential for power users, accessibility (screen readers, tab
+                        navigation), and app-like UIs. Modern JavaScript uses <code>event.key</code> instead of the
+                        older <code>keyCode</code> / <code>which</code>.
+                    </p>
+
+                    <details open>
+                        <summary><span class="twist">▶</span> The main keyboard events</summary>
+                        <div class="details-body">
+                            <ul>
+                                <li><code>keydown</code> – fires when a key is pressed down (repeats while held).</li>
+                                <li><code>keyup</code> – fires when a key is released.</li>
+                                <li><code>keypress</code> – legacy; related to printable characters, usually avoided in
+                                    modern code.</li>
+                            </ul>
+                            <p>
+                                For shortcuts and interactions, you typically use <code>keydown</code> (very responsive)
+                                and sometimes <code>keyup</code> (for one-shot actions).
+                            </p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary><span class="twist">▶</span> Reading keys: event.key and modifiers</summary>
+                        <div class="details-body">
+                            <div class="code-title">Basic keyboard shortcut handling</div>
+                            <pre><code class="language-js">
+// Listen globally for keyboard shortcuts
+document.addEventListener("keydown", function (event) {
+    // Normalize key to lower-case for letters
+    const key = event.key.toLowerCase();
+
+    // Check modifier keys
+    const isCtrlOrCmd = event.ctrlKey || event.metaKey; // Windows Ctrl, macOS Command
+
+    if (isCtrlOrCmd &amp;&amp; key === "s") {
+        event.preventDefault(); // avoid browser's Save Page
+        console.log("Shortcut: Save document");
+        // saveDocument();
+    }
+
+    if (isCtrlOrCmd &amp;&amp; key === "p") {
+        event.preventDefault();
+        console.log("Shortcut: Print / open print preview");
+        // openPrintPreview();
+    }
+
+    if (key === "escape") {
+        console.log("Escape pressed: close dialogs, menus, etc.");
+        // closeAllDialogs();
+    }
+});
+                            </code></pre>
+                            <p class="code-meta">
+                                Using <code>event.key</code> gives you readable values like <code>"a"</code>,
+                                <code>"Enter"</code>, <code>"ArrowUp"</code>, <code>"Escape"</code>, independent from
+                                numeric key codes.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary><span class="twist">▶</span> Text input vs. keyboard shortcuts</summary>
+                        <div class="details-body">
+                            <p>
+                                One common bug: global keyboard shortcuts triggering while a user types in a text field.
+                                You must check who owns focus before acting.
+                            </p>
+                            <pre><code class="language-js">
+document.addEventListener("keydown", function (event) {
+    const active = document.activeElement;
+
+    const isTypingContext =
+        active &amp;&amp;
+        (active.tagName === "INPUT" ||
+         active.tagName === "TEXTAREA" ||
+         active.isContentEditable);
+
+    // If user is typing, ignore some shortcuts
+    if (isTypingContext) {
+        return;
+    }
+
+    if ((event.ctrlKey || event.metaKey) &amp;&amp; event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        console.log("Open global search / command palette");
+    }
+});
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary><span class="twist">▶</span> Pattern: keyboard navigation in a list</summary>
+                        <div class="details-body">
+                            <pre><code class="language-js">
+// Simple "active row" navigation using ArrowUp / ArrowDown
+const rows = Array.from(document.querySelectorAll(".nav-row"));
+let activeIndex = 0;
+
+function updateActiveRow() {
+    rows.forEach((row, index) =&gt; {
+        row.classList.toggle("is-active", index === activeIndex);
+    });
+}
+
+updateActiveRow();
+
+document.addEventListener("keydown", function (event) {
+    const key = event.key;
+
+    if (key === "ArrowDown") {
+        event.preventDefault();
+        activeIndex = (activeIndex + 1) % rows.length;
+        updateActiveRow();
+    } else if (key === "ArrowUp") {
+        event.preventDefault();
+        activeIndex = (activeIndex - 1 + rows.length) % rows.length;
+        updateActiveRow();
+    } else if (key === "Enter") {
+        event.preventDefault();
+        const row = rows[activeIndex];
+        console.log("Activated row:", row.dataset.id);
+        // row.click(); // or custom logic
+    }
+});
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <div class="note-box">
+                        <div class="note-label note-label-cyan">Accessibility note</div>
+                        <p class="mb-0">
+                            Always ensure that interactive components (custom buttons, menus, dialogs) are operable via
+                            keyboard only (Tab, Enter, Space, Arrow keys, Escape). This aligns with accessibility
+                            standards such as WCAG and ARIA authoring practices.
+                        </p>
+                    </div>
+                </section>
+
+                <!-- 3. Mouse events -->
+                <section id="sec-mouse">
+                    <h2 class="section-title">3. Mouse events &amp; coordinates</h2>
+                    <div class="section-chip-row">
+                        <span class="chip">click / dblclick</span>
+                        <span class="chip">mousedown / mousemove / mouseup</span>
+                        <span class="chip">clientX / pageX / offsetX</span>
+                    </div>
+
+                    <p>
+                        Mouse events are not just about clicking buttons. They power drawing tools, custom sliders,
+                        map panning, drag &amp; drop, and more. You need to understand <strong>which event</strong> to
+                        use and <strong>which coordinate system</strong> to read.
+                    </p>
+
+                    <details open>
+                        <summary><span class="twist">▶</span> Common mouse events</summary>
+                        <div class="details-body">
+                            <ul>
+                                <li><code>click</code> – primary button pressed and released on the same element.</li>
+                                <li><code>dblclick</code> – double click.</li>
+                                <li><code>mousedown</code> – button pressed down.</li>
+                                <li><code>mouseup</code> – button released.</li>
+                                <li><code>mousemove</code> – pointer moves over an element (very frequent).</li>
+                                <li><code>contextmenu</code> – right click / context menu trigger.</li>
+                                <li><code>wheel</code> – mouse wheel scroll (or touchpad scroll).</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary><span class="twist">▶</span> Coordinate systems: client vs. page vs. offset</summary>
+                        <div class="details-body">
+                            <ul>
+                                <li><code>event.clientX</code> / <code>clientY</code> – relative to the viewport
+                                    (visible area of the browser window).</li>
+                                <li><code>event.pageX</code> / <code>pageY</code> – relative to the whole document
+                                    (includes scrolling).</li>
+                                <li><code>event.offsetX</code> / <code>offsetY</code> – relative to the event target
+                                    element’s top-left corner.</li>
+                            </ul>
+
+                            <pre><code class="language-js">
+someElement.addEventListener("click", function (event) {
+    console.log("client:", event.clientX, event.clientY);
+    console.log("page  :", event.pageX, event.pageY);
+    console.log("offset:", event.offsetX, event.offsetY);
+});
+                            </code></pre>
+                            <p class="code-meta">
+                                For drawing on a canvas-like area, you typically use <code>offsetX</code> /
+                                <code>offsetY</code>, because they give the position inside that element.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary><span class="twist">▶</span> Example: simple drag to move a box</summary>
+                        <div class="details-body">
+                            <div class="code-title">Drag logic using mousedown / mousemove / mouseup</div>
+                            <pre><code class="language-js">
+// HTML:
+// &lt;div id="draggableBox"&gt;Drag me&lt;/div&gt;
+
+const box = document.getElementById("draggableBox");
+
+let isDragging = false;
+let startX, startY;
+let startLeft, startTop;
+
+box.addEventListener("mousedown", function (event) {
+    isDragging = true;
+
+    // Starting mouse position (page coordinates)
+    startX = event.pageX;
+    startY = event.pageY;
+
+    // Current box position (assumes position: absolute or relative)
+    const rect = box.getBoundingClientRect();
+    startLeft = rect.left + window.pageXOffset;
+    startTop  = rect.top  + window.pageYOffset;
+
+    // Prevent text selection during drag
+    event.preventDefault();
+});
+
+document.addEventListener("mousemove", function (event) {
+    if (!isDragging) return;
+
+    const dx = event.pageX - startX;
+    const dy = event.pageY - startY;
+
+    box.style.position = "absolute";
+    box.style.left = (startLeft + dx) + "px";
+    box.style.top  = (startTop  + dy) + "px";
+});
+
+document.addEventListener("mouseup", function () {
+    isDragging = false;
+});
+                            </code></pre>
+                            <p class="code-meta">
+                                This pattern (start on <code>mousedown</code>, track on <code>mousemove</code>, stop on
+                                <code>mouseup</code>) generalises to sliders, resizers, custom scrollbars, etc.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary><span class="twist">▶</span> Example: custom context menu</summary>
+                        <div class="details-body">
+                            <pre><code class="language-js">
+// HTML:
+// &lt;div id="fileArea"&gt;Right click here&lt;/div&gt;
+// &lt;div id="contextMenu"&gt;...&lt;/div&gt;
+
+const area  = document.getElementById("fileArea");
+const menu  = document.getElementById("contextMenu");
+
+area.addEventListener("contextmenu", function (event) {
+    event.preventDefault(); // prevent default browser menu
+
+    const x = event.clientX;
+    const y = event.clientY;
+
+    menu.style.display = "block";
+    menu.style.position = "fixed";
+    menu.style.left = x + "px";
+    menu.style.top  = y + "px";
+});
+
+document.addEventListener("click", function () {
+    menu.style.display = "none";
+});
+                            </code></pre>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 4. Touch events -->
+                <section id="sec-touch">
+                    <h2 class="section-title">4. Touch events for mobile</h2>
+                    <div class="section-chip-row">
+                        <span class="chip">touchstart / touchmove / touchend</span>
+                        <span class="chip">Gestures</span>
+                        <span class="chip">Pointer events note</span>
+                    </div>
+
+                    <p>
+                        On mobile and tablets, users interact with <strong>fingers</strong>, not mice. Traditional mouse
+                        events may still fire (depending on the browser), but touch events give finer control and multi
+                        touch support.
+                    </p>
+
+                    <details open>
+                        <summary><span class="twist">▶</span> Basics: TouchList and touch points</summary>
+                        <div class="details-body">
+                            <ul>
+                                <li><code>touchstart</code> – finger(s) placed on the screen.</li>
+                                <li><code>touchmove</code> – finger moves while still touching.</li>
+                                <li><code>touchend</code> – finger lifted.</li>
+                                <li><code>touchcancel</code> – system cancels touch (e.g., OS gesture takes over).</li>
+                            </ul>
+                            <p>
+                                Each touch event contains:
+                            </p>
+                            <ul>
+                                <li><code>touches</code> – all fingers currently touching the surface.</li>
+                                <li><code>targetTouches</code> – fingers that are on the same target element.</li>
+                                <li><code>changedTouches</code> – fingers that changed in this event (e.g., the one that
+                                    was lifted).</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary><span class="twist">▶</span> Example: implementing a basic swipe gesture</summary>
+                        <div class="details-body">
+                            <pre><code class="language-js">
+// HTML:
+// &lt;div id="swipeArea"&gt;Swipe left/right here&lt;/div&gt;
+
+const swipeArea = document.getElementById("swipeArea");
+
+let startX = null;
+let startY = null;
+
+swipeArea.addEventListener("touchstart", function (event) {
+    const touch = event.touches[0]; // first finger
+    startX = touch.clientX;
+    startY = touch.clientY;
+});
+
+swipeArea.addEventListener("touchend", function (event) {
+    if (startX === null || startY === null) return;
+
+    const touch = event.changedTouches[0];
+    const dx = touch.clientX - startX;
+    const dy = touch.clientY - startY;
+
+    const absDx = Math.abs(dx);
+    const absDy = Math.abs(dy);
+
+    const threshold = 40; // minimum px distance
+
+    if (absDx &gt; absDy &amp;&amp; absDx &gt; threshold) {
+        if (dx &gt; 0) {
+            console.log("Swipe right");
+        } else {
+            console.log("Swipe left");
+        }
+    } else if (absDy &gt; threshold) {
+        if (dy &gt; 0) {
+            console.log("Swipe down");
+        } else {
+            console.log("Swipe up");
+        }
+    }
+
+    startX = startY = null;
+});
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary><span class="twist">▶</span> Preventing scroll vs. allowing scroll</summary>
+                        <div class="details-body">
+                            <p>
+                                On touch devices, vertical movement usually scrolls the page. Sometimes you want to
+                                capture the gesture instead (for example, a horizontal carousel).
+                            </p>
+                            <pre><code class="language-js">
+const carousel = document.getElementById("carousel");
+
+carousel.addEventListener("touchmove", function (event) {
+    // Decide if movement is "enough" horizontal
+    const touch = event.touches[0];
+    // ... compute dx, dy similar to swipe example ...
+    // If primarily horizontal:
+    event.preventDefault(); // stop page from scrolling
+}, { passive: false });
+                            </code></pre>
+                            <p class="code-meta">
+                                Note the option <code>{ passive: false }</code>. By default many browsers treat touch
+                                listeners as passive (they assume you will not call <code>preventDefault()</code>),
+                                so you must explicitly mark it non-passive to allow prevention of scroll.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary><span class="twist">▶</span> Pointer events (modern alternative)</summary>
+                        <div class="details-body">
+                            <p>
+                                Modern browsers support <strong>pointer events</strong>
+                                (<code>pointerdown</code>, <code>pointermove</code>, <code>pointerup</code>) that unify
+                                mouse, touch, and pen. In new code, pointer events are often preferred because they
+                                drastically reduce the need to handle both mouse &amp; touch separately.
+                            </p>
+                            <pre><code class="language-js">
+const area = document.getElementById("multiDeviceArea");
+
+area.addEventListener("pointerdown", function (event) {
+    console.log("Pointer down:", event.pointerType); // "mouse", "touch", "pen"
+});
+                            </code></pre>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 5. Form events & validation -->
+                <section id="sec-forms">
+                    <h2 class="section-title">5. Form events &amp; validation</h2>
+                    <div class="section-chip-row">
+                        <span class="chip">input / change / submit</span>
+                        <span class="chip">invalid</span>
+                        <span class="chip">Client-side validation</span>
+                    </div>
+
+                    <p>
+                        Forms are where user data enters the system. Advanced event handling lets you build smooth,
+                        user-friendly validation: instant feedback, preventing invalid submissions, and integrating with
+                        HTML5 validation features.
+                    </p>
+
+                    <details open>
+                        <summary><span class="twist">▶</span> Key form-related events</summary>
+                        <div class="details-body">
+                            <ul>
+                                <li><code>input</code> – fires on every value change (typing, paste, etc.).</li>
+                                <li><code>change</code> – fires when the element loses focus and its value changed.</li>
+                                <li><code>submit</code> – fires when the form is submitted (button or Enter).</li>
+                                <li><code>invalid</code> – fires when built-in constraint validation fails.</li>
+                            </ul>
+                            <p>
+                                For <strong>real-time validation</strong>, use <code>input</code>. For “validate when
+                                user finishes editing”, use <code>change</code>. For final checks, use
+                                <code>submit</code> and optionally <code>invalid</code>.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary><span class="twist">▶</span> Example: real-time email validation</summary>
+                        <div class="details-body">
+                            <pre><code class="language-js">
+// HTML:
+// &lt;form id="signupForm"&gt;
+//   &lt;input type="email" id="email" required&gt;
+//   &lt;small id="emailError"&gt;&lt;/small&gt;
+//   &lt;button type="submit"&gt;Sign up&lt;/button&gt;
+// &lt;/form&gt;
+
+const form       = document.getElementById("signupForm");
+const emailInput = document.getElementById("email");
+const emailError = document.getElementById("emailError");
+
+function validateEmailField() {
+    const value = emailInput.value.trim();
+
+    if (!value) {
+        emailError.textContent = "Email is required.";
+        emailInput.classList.add("is-invalid");
+        return false;
+    }
+
+    // Simple pattern; real apps use stronger checks or backend validation
+    const pattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!pattern.test(value)) {
+        emailError.textContent = "Please enter a valid email address.";
+        emailInput.classList.add("is-invalid");
+        return false;
+    }
+
+    emailError.textContent = "";
+    emailInput.classList.remove("is-invalid");
+    return true;
+}
+
+emailInput.addEventListener("input", function () {
+    validateEmailField();
+});
+
+form.addEventListener("submit", function (event) {
+    if (!validateEmailField()) {
+        event.preventDefault(); // block submission
+    }
+});
+                            </code></pre>
+                            <p class="code-meta">
+                                This pattern combines real-time feedback on <code>input</code> with a final check on
+                                <code>submit</code>, ensuring that invalid data is never submitted.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary><span class="twist">▶</span> Using built-in HTML5 constraint validation</summary>
+                        <div class="details-body">
+                            <p>
+                                Browsers already support validation rules via attributes like <code>required</code>,
+                                <code>min</code>, <code>max</code>, <code>pattern</code>, <code>minlength</code>,
+                                <code>maxlength</code>. The <code>checkValidity()</code> and
+                                <code>reportValidity()</code> methods expose this through JS.
+                            </p>
+                            <pre><code class="language-js">
+const formProfile = document.getElementById("profileForm");
+
+formProfile.addEventListener("submit", function (event) {
+    // Use built-in constraint validation
+    if (!formProfile.checkValidity()) {
+        event.preventDefault();
+        formProfile.reportValidity(); // show native browser messages
+    }
+});
+                            </code></pre>
+                            <p class="code-meta">
+                                For custom UIs, you can read <code>input.validationMessage</code> or use
+                                <code>setCustomValidity()</code> to provide your own messages while still leveraging the
+                                browser’s constraint engine.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary><span class="twist">▶</span> Example: form-level event delegation</summary>
+                        <div class="details-body">
+                            <pre><code class="language-js">
+// Real forms often have many inputs: use delegation on the &lt;form&gt;
+const profileForm = document.getElementById("profileForm");
+
+profileForm.addEventListener("input", function (event) {
+    const field = event.target;
+
+    if (!field.matches("[data-validate]")) {
+        return; // ignore fields without this attribute
+    }
+
+    const rule = field.dataset.validate;
+
+    if (rule === "username") {
+        if (field.value.length &lt; 3) {
+            field.setCustomValidity("Username must be at least 3 characters.");
+        } else {
+            field.setCustomValidity("");
+        }
+    }
+
+    if (rule === "age") {
+        const age = Number(field.value);
+        if (age &lt; 18) {
+            field.setCustomValidity("You must be at least 18.");
+        } else {
+            field.setCustomValidity("");
+        }
+    }
+
+    field.reportValidity();
+});
+                            </code></pre>
+                            <p class="code-meta">
+                                Delegating <code>input</code> events at the form level makes it simpler to maintain
+                                validation rules for many fields in one place.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 6. Page lifecycle events -->
+                <section id="sec-lifecycle">
+                    <h2 class="section-title">6. Page lifecycle events</h2>
+                    <div class="section-chip-row">
+                        <span class="chip">DOMContentLoaded</span>
+                        <span class="chip">load / beforeunload</span>
+                        <span class="chip">visibilitychange</span>
+                    </div>
+
+                    <p>
+                        Not all events come from the user directly. Some come from the <strong>browser lifecycle</strong>:
+                        when the DOM is ready, when resources finish loading, when the user switches tabs, or attempts to
+                        leave the page. These events help you control initialisation, cleanup, and resource usage.
+                    </p>
+
+                    <details open>
+                        <summary><span class="twist">▶</span> DOMContentLoaded vs. load</summary>
+                        <div class="details-body">
+                            <ul>
+                                <li><code>DOMContentLoaded</code> – fired when the initial HTML has been parsed and the
+                                    DOM is ready (stylesheets may still be loading).</li>
+                                <li><code>load</code> – fired when everything is loaded, including images, stylesheets,
+                                    iframes, etc.</li>
+                            </ul>
+                            <pre><code class="language-js">
+// Run after DOM is built (sufficient for most JS that queries elements)
+document.addEventListener("DOMContentLoaded", function () {
+    console.log("DOM is ready");
+    // initApp();
+});
+
+// Run after *everything* has loaded
+window.addEventListener("load", function () {
+    console.log("All resources loaded");
+});
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary><span class="twist">▶</span> Example: pausing work when tab is hidden</summary>
+                        <div class="details-body">
+                            <p>
+                                The <code>visibilitychange</code> event fires when the tab becomes hidden or visible,
+                                with the state in <code>document.visibilityState</code> (<code>"visible"</code> or
+                                <code>"hidden"</code>).
+                            </p>
+                            <pre><code class="language-js">
+document.addEventListener("visibilitychange", function () {
+    if (document.visibilityState === "hidden") {
+        console.log("Tab hidden: pause animations, video, polling, etc.");
+        // pauseVideo();
+        // stopPolling();
+    } else {
+        console.log("Tab visible: resume.");
+        // resumeVideo();
+        // startPolling();
+    }
+});
+                            </code></pre>
+                            <p class="code-meta">
+                                This is crucial for performance and battery life in SPAs or dashboards that do periodic
+                                work in the background.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary><span class="twist">▶</span> Example: beforeunload confirmation</summary>
+                        <div class="details-body">
+                            <p>
+                                <code>beforeunload</code> is fired when the user is about to close the tab, refresh, or
+                                navigate away. Modern browsers restrict how it can be used, but it still allows basic
+                                “Unsaved changes” prompts.
+                            </p>
+                            <pre><code class="language-js">
+let hasUnsavedChanges = false;
+
+// Somewhere in your code:
+function markDirty() {
+    hasUnsavedChanges = true;
+}
+
+window.addEventListener("beforeunload", function (event) {
+    if (!hasUnsavedChanges) return;
+
+    // Most browsers ignore the custom message for security reasons,
+    // but showing any prompt requires preventing default in this way.
+    event.preventDefault();
+    event.returnValue = ""; // required in some browsers
+});
+                            </code></pre>
+                            <p class="code-meta">
+                                Use this sparingly and only when there is genuinely unsaved work, otherwise it becomes
+                                annoying and users stop trusting your UI.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 7. Patterns & best practices -->
+                <section id="sec-patterns">
+                    <h2 class="section-title">7. Patterns &amp; best practices</h2>
+                    <p>
+                        Advanced event handling is about <strong>composing</strong> keyboard, mouse, touch, form, and
+                        lifecycle events into robust interaction patterns. A few practical guidelines:
+                    </p>
+
+                    <details open>
+                        <summary><span class="twist">▶</span> General design guidelines</summary>
+                        <div class="details-body">
+                            <ul>
+                                <li><strong>Separate “what happened” from “what to do”</strong>: use small handler
+                                    functions that interpret events, then call domain functions (e.g.,
+                                    <code>openCommandPalette()</code>, <code>saveDraft()</code>).
+                                </li>
+                                <li><strong>Centralise shortcuts</strong>: keep global keyboard shortcuts defined in one
+                                    module to avoid conflicts.</li>
+                                <li><strong>Use delegation where possible</strong>: for lists, forms, and grids, attach
+                                    fewer listeners at container level.</li>
+                                <li><strong>Respect platform conventions</strong>: Cmd on macOS, Ctrl on Windows,
+                                    Escape to close, Enter to confirm, etc.</li>
+                                <li><strong>Be gentle with lifecycle events</strong>: do not trigger heavy work on
+                                    every <code>visibilitychange</code> or <code>scroll</code> without throttling /
+                                    debouncing.
+                                </li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary><span class="twist">▶</span> Pattern: unified input layer for shortcuts &amp; clicks</summary>
+                        <div class="details-body">
+                            <pre><code class="language-js">
+// A simple "command bus" for actions from different input sources
+
+const commandHandlers = {
+    "app:save": () =&gt; console.log("Saving..."),
+    "app:openSearch": () =&gt; console.log("Opening search..."),
+    "app:closeAll": () =&gt; console.log("Closing all dialogs...")
+};
+
+function runCommand(name) {
+    const handler = commandHandlers[name];
+    if (handler) handler();
+}
+
+// 1) Map keyboard events to commands
+document.addEventListener("keydown", function (event) {
+    const key = event.key.toLowerCase();
+    const isCtrlOrCmd = event.ctrlKey || event.metaKey;
+
+    if (isCtrlOrCmd &amp;&amp; key === "s") {
+        event.preventDefault();
+        runCommand("app:save");
+    }
+
+    if (isCtrlOrCmd &amp;&amp; key === "k") {
+        event.preventDefault();
+        runCommand("app:openSearch");
+    }
+
+    if (key === "escape") {
+        runCommand("app:closeAll");
+    }
+});
+
+// 2) Map buttons clicks to the same commands
+document.addEventListener("click", function (event) {
+    const btn = event.target.closest("[data-command]");
+    if (!btn) return;
+
+    const name = btn.dataset.command;
+    runCommand(name);
+});
+                            </code></pre>
+                            <p class="code-meta">
+                                Keyboard shortcuts and button clicks both trigger the same command handlers. This makes
+                                behaviour consistent and easier to test.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary><span class="twist">▶</span> Pattern: responsive drag using mouse + touch</summary>
+                        <div class="details-body">
+                            <p>
+                                For production, you often want one drag implementation that works with both mouse and
+                                touch. Using pointer events is the cleanest option, but many codebases still support
+                                mouse + touch. A common pattern:
+                            </p>
+                            <ul>
+                                <li>Start drag on <code>mousedown</code> and <code>touchstart</code>.</li>
+                                <li>Track on <code>mousemove</code> and <code>touchmove</code>.</li>
+                                <li>Stop on <code>mouseup</code> and <code>touchend</code>/<code>touchcancel</code>.
+                                </li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary><span class="twist">▶</span> Debugging tip: log event properties carefully</summary>
+                        <div class="details-body">
+                            <p>
+                                When behaviour is confusing (e.g., drag jumps, wrong key detection), log only the most
+                                relevant properties:
+                            </p>
+                            <pre><code class="language-js">
+document.addEventListener("keydown", function (event) {
+    console.log({
+        key: event.key,
+        code: event.code,      // physical key on keyboard
+        ctrl: event.ctrlKey,
+        alt: event.altKey,
+        meta: event.metaKey,
+        shift: event.shiftKey
+    });
+});
+                            </code></pre>
+                            <p>
+                                For mouse / touch integration, logging <code>type</code>, <code>clientX</code>,
+                                <code>clientY</code>, and <code>button</code> or <code>touches.length</code> is often
+                                enough.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 8. Exercises -->
+                <section id="sec-exercises">
+                    <h2 class="section-title">8. Exercises &amp; mental checkpoints</h2>
+                    <p>
+                        Use these tasks to test your understanding at a deeper level. Try to implement them without
+                        copy-pasting the examples, then compare patterns.
+                    </p>
+
+                    <div class="exercise-box">
+                        <div class="note-label note-label-cyan mb-1">Keyboard &amp; mouse</div>
+                        <ol>
+                            <li>
+                                Implement a global shortcut system with the following keys:
+                                <code>Ctrl/Cmd + /</code> opens a help overlay,
+                                <code>Ctrl/Cmd + Shift + F</code> focuses the main search input,
+                                <code>Escape</code> closes the overlay. Ensure typing inside text inputs does not trigger
+                                shortcuts.
+                            </li>
+                            <li>
+                                Create a resizable sidebar that can be resized horizontally by dragging its right edge
+                                using the mouse. Use <code>mousedown</code>, <code>mousemove</code>, and
+                                <code>mouseup</code> and show the width in pixels while dragging.
+                            </li>
+                            <li>
+                                Build a custom context menu that only appears when right-clicking on list items,
+                                and the menu shows different options based on a <code>data-type</code> attribute on the
+                                item.
+                            </li>
+                        </ol>
+                    </div>
+
+                    <div class="exercise-box mt-3">
+                        <div class="note-label note-label-amber mb-1">Touch, forms &amp; lifecycle</div>
+                        <ol>
+                            <li>
+                                Implement a swipe-based image gallery on mobile using touch events. Swiping left/right
+                                should move to next/previous image, and the page should not scroll during the swipe.
+                            </li>
+                            <li>
+                                Create a multi-step form where each step validates its fields on
+                                <code>input</code> and only allows moving to the next step when all current fields are
+                                valid. On final submit, perform a complete validation pass and prevent submission if any
+                                step is invalid.
+                            </li>
+                            <li>
+                                Add logic to a dashboard that pauses all periodic data fetching when the tab is hidden
+                                and resumes when it is visible again. Use <code>visibilitychange</code> and
+                                <code>setInterval</code> / <code>clearInterval</code>.
+                            </li>
+                        </ol>
+                    </div>
+
+                    <p class="mt-3 text-soft">
+                        If you can confidently design keyboard shortcuts, draggable UI components, mobile gestures,
+                        robust validation, and lifecycle-aware behaviours, you have truly mastered
+                        <strong>advanced event handling</strong> in modern JavaScript.
+                    </p>
+                </section>
+
+                <p class="mt-4 mb-0 text-center text-soft" style="font-size:0.75rem;">
+                    17.3 – Advanced Event Handling · Modern DOM JavaScript Notes · Dark theme, cyan+amber for
+                    research-friendly reading.
+                </p>
+            </main>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Inline JS utilities: smooth scroll, expand/collapse details, simple syntax highlighting, TOC search -->
+    <script>
+        // Smooth scrolling for sidebar links
+        document.querySelectorAll('#toc-list a[data-scroll]').forEach(function (link) {
+            link.addEventListener('click', function (event) {
+                event.preventDefault();
+                const targetId = this.getAttribute('href');
+                const el = document.querySelector(targetId);
+                if (!el) return;
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
+        // Expand / collapse all <details>
+        const btnExpandAll = document.getElementById('btn-expand-all');
+        const btnCollapseAll = document.getElementById('btn-collapse-all');
+
+        if (btnExpandAll && btnCollapseAll) {
+            btnExpandAll.addEventListener('click', function () {
+                document.querySelectorAll('details').forEach(function (d) {
+                    d.open = true;
+                });
+            });
+
+            btnCollapseAll.addEventListener('click', function () {
+                document.querySelectorAll('details').forEach(function (d) {
+                    d.open = false;
+                });
+            });
+        }
+
+        // Simple TOC search filter
+        const tocSearch = document.getElementById('toc-search');
+        const tocList = document.getElementById('toc-list');
+
+        if (tocSearch && tocList) {
+            tocSearch.addEventListener('input', function () {
+                const query = this.value.toLowerCase();
+                tocList.querySelectorAll('li').forEach(function (li) {
+                    const text = li.textContent.toLowerCase();
+                    li.style.display = text.includes(query) ? '' : 'none';
+                });
+            });
+        }
+
+        // Very simple syntax highlighting for <pre><code>
+        (function simpleHighlight() {
+            const codeBlocks = document.querySelectorAll('pre code');
+
+            function escapeSpanSafe(html) {
+                // Avoid double-wrapping; extremely minimal safety
+                return html.replace(/&lt;span class="token-/g, '&lt;span data-token="');
+            }
+
+            codeBlocks.forEach(function (code) {
+                let html = code.innerHTML;
+
+                // prevent accidental re-processing of spans
+                html = escapeSpanSafe(html);
+
+                // Keywords
+                html = html.replace(/\b(const|let|var|function|if|else|for|while|break|continue|return|class|extends|new|try|catch|finally|throw|async|await)\b/g,
+                    '<span class="token-keyword">$1</span>');
+
+                // DOM / event related words
+                html = html.replace(/\b(document|window|addEventListener|removeEventListener|dispatchEvent|CustomEvent|event|target|currentTarget|preventDefault|stopPropagation|stopImmediatePropagation|checkValidity|reportValidity)\b/g,
+                    '<span class="token-dom">$1</span>');
+
+                // Strings (very naive)
+                html = html.replace(/("[^"]*"|'[^']*')/g,
+                    '<span class="token-string">$1</span>');
+
+                // Comments (//...)
+                html = html.replace(/(\/\/[^\n]*)/g,
+                    '<span class="token-comment">$1</span>');
+
+                // restore any spans we protected (data-token → class)
+                html = html.replace(/&lt;span data-token="([^"]*)"/g, '&lt;span class="token-$1"');
+
+                code.innerHTML = html;
+            });
+        })();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>JavaScript DOM Deep Notes – 16.1 Document Object Model (DOM)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+
+    <style>
+        :root {
+            --bg-main: #020617;
+            --bg-panel: #020617;
+            --bg-sidebar: #020617;
+            --bg-card: #020617;
+            --border-color: #1e293b;
+            --accent-cyan: #22d3ee;
+            --accent-amber: #fbbf24;
+            --text-main: #e5e7eb;
+            --text-muted: #9ca3af;
+            --code-bg: #020617;
+            --code-border: #1e293b;
+            --tag-bg: #0f172a;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: radial-gradient(circle at top, #0f172a 0, #020617 45%, #000 100%);
+            color: var(--text-main);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        }
+
+        .app-wrapper {
+            display: flex;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* LEFT SIDEBAR */
+        #sidebar {
+            width: 320px;
+            max-width: 100%;
+            background: linear-gradient(180deg, #020617 0, #020617 50%, #020617 100%);
+            border-right: 1px solid var(--border-color);
+            padding: 1rem 1rem 1.5rem;
+            position: sticky;
+            top: 0;
+            align-self: flex-start;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        #sidebar h1 {
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            color: var(--accent-cyan);
+        }
+
+        .subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .badge-tag {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.15rem 0.5rem;
+            border-radius: 999px;
+            border: 1px solid var(--border-color);
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            background: var(--tag-bg);
+            margin-right: 0.25rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .badge-tag span {
+            opacity: 0.7;
+        }
+
+        .toc-title {
+            font-size: 0.85rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-top: 1.2rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .search-input {
+            background-color: #020617;
+            border-radius: 999px;
+            border: 1px solid var(--border-color);
+            font-size: 0.8rem;
+            padding: 0.35rem 0.75rem;
+            color: var(--text-main);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 1px rgba(34, 211, 238, 0.25);
+        }
+
+        .toc-list {
+            list-style: none;
+            padding-left: 0;
+            margin: 0.5rem 0 0;
+            font-size: 0.85rem;
+        }
+
+        .toc-list li {
+            margin-bottom: 0.15rem;
+        }
+
+        .toc-link {
+            display: block;
+            padding: 0.25rem 0.35rem;
+            border-radius: 0.375rem;
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: background 0.15s, color 0.15s, transform 0.1s;
+        }
+
+        .toc-link:hover {
+            background: #020617;
+            color: var(--accent-cyan);
+            transform: translateX(2px);
+        }
+
+        .toc-link.active {
+            background: rgba(34, 211, 238, 0.12);
+            color: var(--accent-cyan);
+        }
+
+        .sidebar-actions {
+            margin-top: 0.8rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+
+        .btn-ghost {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.65rem;
+            border-radius: 999px;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            background: rgba(15, 23, 42, 0.75);
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn-ghost:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            transform: translateY(-1px);
+        }
+
+        /* RIGHT CONTENT */
+        #content {
+            flex: 1;
+            max-height: 100vh;
+            overflow-y: auto;
+            padding: 1.25rem 1.5rem 3rem;
+        }
+
+        .content-inner {
+            max-width: 980px;
+            margin: 0 auto;
+        }
+
+        h2.section-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-top: 1.75rem;
+            margin-bottom: 0.75rem;
+            color: var(--accent-cyan);
+        }
+
+        h3.section-subtitle {
+            font-size: 1.05rem;
+            margin-top: 1.25rem;
+            margin-bottom: 0.35rem;
+            color: var(--accent-amber);
+        }
+
+        p {
+            font-size: 0.92rem;
+            line-height: 1.7;
+            color: var(--text-main);
+        }
+
+        .lead {
+            font-size: 0.98rem;
+            color: #e5e7eb;
+        }
+
+        .note-chip {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--accent-amber);
+        }
+
+        details {
+            margin: 0.35rem 0;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border-color);
+            background: rgba(15, 23, 42, 0.75);
+        }
+
+        summary {
+            padding: 0.4rem 0.7rem;
+            cursor: pointer;
+            font-size: 0.86rem;
+            color: var(--accent-cyan);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .summary-icon {
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+
+        details[open] summary {
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(15, 23, 42, 0.9);
+        }
+
+        details .details-body {
+            padding: 0.55rem 0.75rem 0.6rem;
+            font-size: 0.88rem;
+            color: var(--text-main);
+        }
+
+        .pill-label {
+            display: inline-block;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            padding: 0.1rem 0.5rem;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        /* CODE BLOCKS */
+        pre {
+            background: var(--code-bg);
+            border-radius: 0.5rem;
+            border: 1px solid var(--code-border);
+            padding: 0.7rem 0.8rem;
+            font-size: 0.8rem;
+            overflow-x: auto;
+            margin-top: 0.5rem;
+            margin-bottom: 0.7rem;
+        }
+
+        code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            color: #e5e7eb;
+        }
+
+        .code-keyword {
+            font-weight: 600;
+        }
+
+        .code-string {
+            opacity: 0.9;
+        }
+
+        .code-comment {
+            opacity: 0.6;
+            font-style: italic;
+        }
+
+        .code-property {
+            opacity: 0.9;
+        }
+
+        .inline-code {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.82rem;
+            padding: 0.1rem 0.3rem;
+            border-radius: 0.25rem;
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(30, 64, 175, 0.7);
+            color: var(--accent-amber);
+        }
+
+        .callout {
+            border-radius: 0.75rem;
+            border: 1px dashed var(--border-color);
+            padding: 0.7rem 0.85rem;
+            font-size: 0.86rem;
+            background: rgba(15, 23, 42, 0.65);
+            margin: 0.7rem 0;
+        }
+
+        .callout-title {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--accent-cyan);
+            margin-bottom: 0.25rem;
+        }
+
+        .badge-small {
+            font-size: 0.7rem;
+            padding: 0.1rem 0.45rem;
+            border-radius: 999px;
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+        }
+
+        @media (max-width: 992px) {
+            #sidebar {
+                position: fixed;
+                z-index: 10;
+                height: auto;
+                max-height: 55vh;
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                background: radial-gradient(circle at top, #020617 0, #020617 60%, #020617 100%);
+            }
+
+            #content {
+                margin-top: 55vh;
+                padding: 1rem 1rem 3rem;
+            }
+        }
+
+        @media (max-width: 576px) {
+            #sidebar {
+                padding: 0.75rem 0.9rem 1rem;
+            }
+
+            #content {
+                padding: 0.75rem 0.9rem 3rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="app-wrapper">
+    <!-- SIDEBAR -->
+    <aside id="sidebar">
+        <header>
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <h1>16.1 Document Object Model (DOM)</h1>
+            </div>
+            <div class="subtitle">
+                Deep-dive notes for serious JavaScript learners (college → MSc/PhD level).
+            </div>
+            <div class="mt-2 mb-2" style="font-size:0.8rem;">
+                <span class="text-muted">Author:</span>
+                <span class="text-light">Your AI Tutor</span>
+            </div>
+            <div class="mb-2">
+                <span class="badge-tag"><span>Topic:</span>&nbsp;JavaScript DOM</span>
+                <span class="badge-tag"><span>Level:</span>&nbsp;Intermediate–Advanced</span>
+                <span class="badge-tag"><span>Focus:</span>&nbsp;DOM vs BOM, nodes, window</span>
+            </div>
+        </header>
+
+        <!-- TOC CONTROLS -->
+        <div class="mt-3">
+            <div class="toc-title">Quick navigation</div>
+            <input id="tocSearch" type="text" class="form-control form-control-sm search-input"
+                   placeholder="Search sections (DOM, window, nodes…)"
+                   oninput="filterTOC()" />
+            <div class="sidebar-actions">
+                <button class="btn-ghost" onclick="expandAllDetails()">Expand all</button>
+                <button class="btn-ghost" onclick="collapseAllDetails()">Collapse all</button>
+                <button class="btn-ghost" onclick="scrollToTop()">Scroll top</button>
+            </div>
+
+            <!-- TOC -->
+            <nav class="mt-2">
+                <ul id="tocList" class="toc-list">
+                    <li><a class="toc-link" href="#dom-intro">1. DOM – Big picture</a></li>
+                    <li><a class="toc-link" href="#dom-tree-structure">2. DOM tree structure</a></li>
+                    <li><a class="toc-link" href="#node-types-properties">3. Node types &amp; properties</a></li>
+                    <li><a class="toc-link" href="#document-object">4. The document object</a></li>
+                    <li><a class="toc-link" href="#window-object">5. The window object</a></li>
+                    <li><a class="toc-link" href="#dom-vs-bom">6. DOM vs BOM</a></li>
+                    <li><a class="toc-link" href="#patterns-practices">7. Patterns, tips &amp; pitfalls</a></li>
+                    <li><a class="toc-link" href="#summary-checklist">8. Summary &amp; interview checklist</a></li>
+                </ul>
+            </nav>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main id="content">
+        <div class="content-inner">
+            <!-- OVERVIEW -->
+            <section id="dom-intro">
+                <h2 class="section-title">1. DOM – The mental model of the page</h2>
+                <p class="lead">
+                    When a browser loads an HTML page, it does <span class="inline-code">not</span> directly work on the raw text.
+                    Instead, it builds an in-memory, tree-like representation called the
+                    <span class="inline-code">Document Object Model (DOM)</span>. JavaScript talks to this tree, not to the
+                    literal HTML file.
+                </p>
+
+                <details open>
+                    <summary><span class="summary-icon">➤</span><span>Executive summary (intuition first)</span></summary>
+                    <div class="details-body">
+                        <p>
+                            Imagine your web page as a family tree. At the top you have the root
+                            <span class="inline-code">&lt;html&gt;</span> node. Inside it you have children
+                            (<span class="inline-code">&lt;head&gt;</span>, <span class="inline-code">&lt;body&gt;</span>),
+                            inside them more children, and so on.
+                            JavaScript gets a “live handle” to this tree and can:
+                        </p>
+                        <ul>
+                            <li>Add, remove, or move nodes (elements, text, comments…)</li>
+                            <li>Read or change attributes and styles</li>
+                            <li>Attach event listeners to react to user actions</li>
+                        </ul>
+                        <p>
+                            <span class="inline-code">document</span> is the entry point into this tree.
+                            <span class="inline-code">window</span> is the global browser container which holds
+                            <span class="inline-code">document</span> plus many other browser-level APIs.
+                        </p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary><span class="summary-icon">⚙</span><span>How HTML becomes a DOM tree (step-by-step)</span></summary>
+                    <div class="details-body">
+                        <ol>
+                            <li><strong>HTML parsing:</strong> the browser parses HTML text into tokens.</li>
+                            <li><strong>Tree construction:</strong> tokens are turned into nodes and linked as parent/child.</li>
+                            <li><strong>DOM ready:</strong> once the DOM tree is built, JavaScript can access it via
+                                <span class="inline-code">document</span>.
+                            </li>
+                            <li><strong>CSSOM &amp; render tree:</strong> CSS is parsed into CSSOM and combined with DOM to create the render tree.</li>
+                            <li><strong>Layout &amp; painting:</strong> the render tree is used to draw the page on screen.</li>
+                        </ol>
+                        <p>
+                            Understanding this pipeline explains why <span class="inline-code">&lt;script&gt;</span> placement
+                            (head vs body vs <span class="inline-code">defer</span>/<span class="inline-code">async</span>)
+                            matters: scripts can only manipulate nodes that already exist in the DOM.
+                        </p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary><span class="summary-icon">💡</span><span>Minimal example: DOM vs HTML text</span></summary>
+                    <div class="details-body">
+                        <p>Consider this HTML:</p>
+                        <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;body&gt;
+    &lt;h1 id="title"&gt;Hello DOM&lt;/h1&gt;
+    &lt;button id="btn"&gt;Click&lt;/button&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+                        </code></pre>
+                        <p>DOM-wise, you can imagine an in-memory structure (conceptually):</p>
+                        <pre><code>html
+└── body
+    ├── h1#title   ("Hello DOM")
+    └── button#btn ("Click")
+                        </code></pre>
+                        <p>JavaScript code interacts with that tree:</p>
+                        <pre><code>&lt;script&gt;
+  const titleNode = document.getElementById("title");
+  titleNode.textContent = "DOM is a live tree";
+
+  const btn = document.getElementById("btn");
+  btn.addEventListener("click", () =&gt; {
+    alert("You just triggered a DOM event!");
+  });
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            The key idea: HTML is the source; DOM is the live, dynamic structure your JS manipulates.
+                        </p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- DOM TREE STRUCTURE -->
+            <section id="dom-tree-structure">
+                <h2 class="section-title">2. DOM tree structure</h2>
+                <p>
+                    The DOM is formally defined as a <strong>tree of nodes</strong> with exactly one root (the
+                    <span class="inline-code">document.documentElement</span>, usually the
+                    <span class="inline-code">&lt;html&gt;</span> element). Every node except the root has exactly one parent.
+                </p>
+
+                <h3 class="section-subtitle">2.1 Core relationships</h3>
+
+                <details open>
+                    <summary><span class="summary-icon">➤</span><span>Parent, child, sibling relationships</span></summary>
+                    <div class="details-body">
+                        <p>
+                            DOM exposes family-like relationships between nodes using properties on each node.
+                            The most common:
+                        </p>
+                        <ul>
+                            <li><span class="inline-code">parentNode</span> / <span class="inline-code">parentElement</span></li>
+                            <li><span class="inline-code">children</span> / <span class="inline-code">childNodes</span></li>
+                            <li><span class="inline-code">firstChild</span>, <span class="inline-code">lastChild</span></li>
+                            <li><span class="inline-code">nextSibling</span>, <span class="inline-code">previousSibling</span></li>
+                        </ul>
+                        <pre><code>&lt;body&gt;
+  &lt;ul id="list"&gt;
+    &lt;li&gt;A&lt;/li&gt;
+    &lt;li&gt;B&lt;/li&gt;
+    &lt;li&gt;C&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/body&gt;
+
+&lt;script&gt;
+  const list = document.getElementById("list");
+
+  console.log(list.parentElement.tagName);   // "BODY"
+  console.log(list.children.length);         // 3 (only element children)
+  console.log(list.childNodes.length);       // May be &gt; 3, text nodes included
+
+  const firstLi = list.firstElementChild;    // &lt;li&gt;A&lt;/li&gt;
+  console.log(firstLi.nextElementSibling.textContent); // "B"
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            For layout/logic, prefer <span class="inline-code">children</span> and
+                            <span class="inline-code">firstElementChild</span> to avoid text nodes.
+                        </p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary><span class="summary-icon">🌳</span><span>Visualizing a DOM tree like a graph</span></summary>
+                    <div class="details-body">
+                        <p>
+                            For reasoning at “research” or “interview” level, treat the DOM as a rooted, ordered tree:
+                        </p>
+                        <ul>
+                            <li><strong>Rooted:</strong> root is <span class="inline-code">document.documentElement</span>.</li>
+                            <li><strong>Ordered:</strong> children maintain the same order as in HTML.</li>
+                            <li><strong>Dynamic:</strong> nodes can be inserted, removed, or moved at runtime.</li>
+                        </ul>
+                        <p>Example HTML:</p>
+                        <pre><code>&lt;div id="container"&gt;
+  Text
+  &lt;span class="badge"&gt;New&lt;/span&gt;
+  &lt;strong&gt;DOM&lt;/strong&gt;
+&lt;/div&gt;
+                        </code></pre>
+                        <p>Abstract DOM tree (simplified):</p>
+                        <pre><code>div#container
+├── #text "Text\n  "
+├── span.badge
+│   └── #text "New"
+└── strong
+    └── #text "DOM"
+                        </code></pre>
+                        <p>
+                            As you move into performance or virtual DOM algorithms (React, etc.), this tree mental model
+                            becomes crucial.
+                        </p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary><span class="summary-icon">🧪</span><span>Real-world use: traversing subtrees</span></summary>
+                    <div class="details-body">
+                        <p>Walk all descendants of a node (simple DFS):</p>
+                        <pre><code>&lt;script&gt;
+  function walk(node, depth = 0) {
+    console.log(" ".repeat(depth * 2) + node.nodeName);
+
+    let child = node.firstChild;
+    while (child) {
+      walk(child, depth + 1);
+      child = child.nextSibling;
+    }
+  }
+
+  walk(document.body);
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            This kind of traversal logic underlies many frameworks and tools that “diff” or “serialize”
+                            DOM subtrees.
+                        </p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- NODE TYPES & PROPERTIES -->
+            <section id="node-types-properties">
+                <h2 class="section-title">3. Node types and core properties</h2>
+                <p>
+                    Every item in the DOM tree is a <span class="inline-code">Node</span>. Specific kinds of nodes
+                    (element, text, comment…) extend this base type with extra behavior.
+                </p>
+
+                <h3 class="section-subtitle">3.1 Common node types</h3>
+
+                <details open>
+                    <summary><span class="summary-icon">🧱</span><span>Main node types &amp; numerical codes</span></summary>
+                    <div class="details-body">
+                        <p>
+                            Important types in browser DOM:
+                        </p>
+                        <ul>
+                            <li><span class="inline-code">Node.ELEMENT_NODE (1)</span> – HTML elements like
+                                <span class="inline-code">&lt;div&gt;</span>, <span class="inline-code">&lt;p&gt;</span>
+                            </li>
+                            <li><span class="inline-code">Node.TEXT_NODE (3)</span> – text between tags</li>
+                            <li><span class="inline-code">Node.COMMENT_NODE (8)</span> – <span class="inline-code">&lt;!-- ... --&gt;</span></li>
+                            <li><span class="inline-code">Node.DOCUMENT_NODE (9)</span> – the
+                                <span class="inline-code">document</span> itself
+                            </li>
+                            <li><span class="inline-code">Node.DOCUMENT_FRAGMENT_NODE (11)</span> – lightweight container</li>
+                        </ul>
+                        <pre><code>&lt;div id="box"&gt;Hello&lt;!-- note --&gt;&lt;/div&gt;
+
+&lt;script&gt;
+  const box = document.getElementById("box");
+  console.log(box.nodeType);            // 1  (ELEMENT_NODE)
+  console.log(box.firstChild.nodeType); // 3  (TEXT_NODE)
+
+  const comment = box.childNodes[1];
+  console.log(comment.nodeType);        // 8  (COMMENT_NODE)
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            Many algorithms filter nodes by <span class="inline-code">nodeType</span> to ignore comments/text.
+                        </p>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">3.2 Universal node properties</h3>
+
+                <details>
+                    <summary><span class="summary-icon">⚙</span><span>Properties that exist on all nodes</span></summary>
+                    <div class="details-body">
+                        <p>
+                            Core properties from the <span class="inline-code">Node</span> interface:
+                        </p>
+                        <ul>
+                            <li><span class="inline-code">nodeType</span> – numeric type (1, 3, 8,…)</li>
+                            <li><span class="inline-code">nodeName</span> – tag name (<span class="inline-code">DIV</span>) or
+                                <span class="inline-code">#text</span>, <span class="inline-code">#comment</span>, etc.</li>
+                            <li><span class="inline-code">nodeValue</span> / <span class="inline-code">textContent</span></li>
+                            <li><span class="inline-code">parentNode</span>, <span class="inline-code">childNodes</span></li>
+                            <li><span class="inline-code">appendChild()</span>, <span class="inline-code">removeChild()</span>,
+                                <span class="inline-code">cloneNode()</span></li>
+                        </ul>
+                        <pre><code>&lt;div id="demo"&gt;Hello&lt;span&gt;World&lt;/span&gt;&lt;/div&gt;
+
+&lt;script&gt;
+  const demo = document.getElementById("demo");
+
+  console.log(demo.nodeName);        // "DIV"
+  console.log(demo.childNodes.length); // 2 (text + span)
+
+  // Clone subtree:
+  const clone = demo.cloneNode(true);
+  document.body.appendChild(clone);
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            <span class="inline-code">cloneNode(true)</span> performs a deep clone (includes descendants),
+                            while <span class="inline-code">cloneNode(false)</span> clones only the node itself.
+                        </p>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">3.3 Element-specific properties</h3>
+
+                <details>
+                    <summary><span class="summary-icon">🧩</span><span>Attributes, classes, dataset, style</span></summary>
+                    <div class="details-body">
+                        <p>
+                            When <span class="inline-code">nodeType === 1</span>, the node is an <span class="inline-code">Element</span>
+                            and exposes more properties:
+                        </p>
+                        <ul>
+                            <li><span class="inline-code">id</span>, <span class="inline-code">className</span>, <span class="inline-code">classList</span></li>
+                            <li><span class="inline-code">getAttribute()</span> / <span class="inline-code">setAttribute()</span></li>
+                            <li><span class="inline-code">dataset</span> (for <span class="inline-code">data-*</span> attributes)</li>
+                            <li><span class="inline-code">style</span> (inline styles)</li>
+                        </ul>
+                        <pre><code>&lt;button id="saveBtn"
+        class="btn primary"
+        data-role="save"
+        data-version="2"&gt;Save&lt;/button&gt;
+
+&lt;script&gt;
+  const btn = document.getElementById("saveBtn");
+
+  console.log(btn.classList.contains("primary")); // true
+  btn.classList.add("active");
+
+  console.log(btn.dataset.role);     // "save"
+  console.log(btn.dataset.version);  // "2"
+
+  btn.setAttribute("aria-label", "Save document");
+  btn.style.backgroundColor = "#22d3ee";
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            In modern code, use <span class="inline-code">classList</span> and <span class="inline-code">dataset</span>
+                            instead of parsing strings manually.
+                        </p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- DOCUMENT OBJECT -->
+            <section id="document-object">
+                <h2 class="section-title">4. The <span class="inline-code">document</span> object</h2>
+                <p>
+                    <span class="inline-code">document</span> is the global entry point into the DOM.
+                    It represents the loaded HTML document and offers powerful methods for querying and creating nodes.
+                </p>
+
+                <h3 class="section-subtitle">4.1 Document as root + API hub</h3>
+
+                <details open>
+                    <summary><span class="summary-icon">🧭</span><span>Key properties and methods</span></summary>
+                    <div class="details-body">
+                        <p>Commonly used:</p>
+                        <ul>
+                            <li><span class="inline-code">document.documentElement</span> – usually the <span class="inline-code">&lt;html&gt;</span> element.</li>
+                            <li><span class="inline-code">document.head</span>, <span class="inline-code">document.body</span></li>
+                            <li><span class="inline-code">document.title</span>, <span class="inline-code">document.URL</span></li>
+                            <li><span class="inline-code">document.getElementById()</span></li>
+                            <li><span class="inline-code">document.querySelector()</span>,
+                                <span class="inline-code">document.querySelectorAll()</span></li>
+                            <li><span class="inline-code">document.createElement()</span>,
+                                <span class="inline-code">document.createTextNode()</span></li>
+                            <li><span class="inline-code">document.addEventListener()</span></li>
+                        </ul>
+                        <pre><code>&lt;div id="app"&gt;&lt;/div&gt;
+
+&lt;script&gt;
+  console.log(document.title);
+  console.log(document.URL);
+
+  const app = document.getElementById("app");
+
+  const heading = document.createElement("h1");
+  heading.textContent = "Generated via DOM API";
+
+  app.appendChild(heading);
+&lt;/script&gt;
+                        </code></pre>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">4.2 Querying the DOM</h3>
+
+                <details>
+                    <summary><span class="summary-icon">🔍</span><span>Selector-based queries (modern, flexible)</span></summary>
+                    <div class="details-body">
+                        <p>
+                            <span class="inline-code">querySelector()</span> and
+                            <span class="inline-code">querySelectorAll()</span> understand CSS selectors.
+                        </p>
+                        <pre><code>&lt;ul id="menu"&gt;
+  &lt;li class="item"&gt;Home&lt;/li&gt;
+  &lt;li class="item active"&gt;Docs&lt;/li&gt;
+  &lt;li class="item"&gt;About&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;script&gt;
+  const menu = document.querySelector("#menu");
+  const activeItem = document.querySelector("#menu .item.active");
+  const allItems = document.querySelectorAll("#menu .item");
+
+  activeItem.textContent = "Documentation";
+
+  allItems.forEach((li, index) =&gt; {
+    li.dataset.index = index;
+  });
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            Use <span class="inline-code">querySelector*</span> in new code; legacy
+                            <span class="inline-code">getElementsBy*</span> still appear in old codebases.
+                        </p>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">4.3 Creating and inserting nodes</h3>
+
+                <details>
+                    <summary><span class="summary-icon">🛠</span><span>Element factory pattern with the document</span></summary>
+                    <div class="details-body">
+                        <p>
+                            Creating elements in a structured way helps avoid XSS and keeps code readable.
+                        </p>
+                        <pre><code>&lt;div id="todoList"&gt;&lt;/div&gt;
+
+&lt;script&gt;
+  function createTodoItem(text) {
+    const li = document.createElement("div");
+    li.className = "todo-item";
+
+    const span = document.createElement("span");
+    span.textContent = text;
+
+    const btn = document.createElement("button");
+    btn.textContent = "×";
+    btn.addEventListener("click", () =&gt; li.remove());
+
+    li.appendChild(span);
+    li.appendChild(btn);
+    return li;
+  }
+
+  const list = document.getElementById("todoList");
+  list.appendChild(createTodoItem("Study DOM deeply"));
+  list.appendChild(createTodoItem("Implement mini framework"));
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            This pattern is used heavily in libraries that build UI dynamically (e.g., vanilla JS components).
+                        </p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- WINDOW OBJECT -->
+            <section id="window-object">
+                <h2 class="section-title">5. The <span class="inline-code">window</span> object</h2>
+                <p>
+                    <span class="inline-code">window</span> represents the browser window (or tab). It is the global object
+                    for client-side JavaScript: global functions and variables are properties of <span class="inline-code">window</span>.
+                </p>
+
+                <h3 class="section-subtitle">5.1 Window as global namespace</h3>
+
+                <details open>
+                    <summary><span class="summary-icon">🌐</span><span>Global variables, timers, dialogs</span></summary>
+                    <div class="details-body">
+                        <p>Common members of <span class="inline-code">window</span> include:</p>
+                        <ul>
+                            <li><span class="inline-code">window.document</span> – the DOM we discussed.</li>
+                            <li><span class="inline-code">window.location</span>, <span class="inline-code">window.history</span></li>
+                            <li><span class="inline-code">setTimeout()</span>, <span class="inline-code">setInterval()</span></li>
+                            <li><span class="inline-code">alert()</span>, <span class="inline-code">confirm()</span>, <span class="inline-code">prompt()</span></li>
+                            <li>Event handlers like <span class="inline-code">window.addEventListener("resize", ...)</span></li>
+                        </ul>
+                        <pre><code>&lt;script&gt;
+  console.log(window.location.href);
+
+  let counter = 0;
+  const intervalId = window.setInterval(() =&gt; {
+    counter++;
+    console.log("Tick", counter);
+    if (counter === 3) window.clearInterval(intervalId);
+  }, 1000);
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            In non-module scripts, top-level <span class="inline-code">var</span> / functions become properties of
+                            <span class="inline-code">window</span>. With ES modules, this is no longer true, which improves isolation.
+                        </p>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">5.2 Window–document relationship</h3>
+
+                <details>
+                    <summary><span class="summary-icon">🔗</span><span>How window and document are connected</span></summary>
+                    <div class="details-body">
+                        <p>
+                            Conceptually:
+                        </p>
+                        <ul>
+                            <li><span class="inline-code">window</span> is the outer container that owns the browser tab.</li>
+                            <li><span class="inline-code">document</span> is the page loaded in that container.</li>
+                            <li><span class="inline-code">window.document</span> always points to the current DOM.</li>
+                        </ul>
+                        <pre><code>&lt;script&gt;
+  console.log(window.document === document); // true
+
+  // DOM event attached via document:
+  document.addEventListener("click", () =&gt; {
+    console.log("Document click");
+  });
+
+  // Resize event attached to the window:
+  window.addEventListener("resize", () =&gt; {
+    console.log("Viewport changed to", window.innerWidth, "x", window.innerHeight);
+  });
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            In interviews, you may be asked: “Is <span class="inline-code">window</span> part of DOM?”
+                            Technically, no. <span class="inline-code">window</span> is part of BOM (Browser Object Model).
+                            But <span class="inline-code">window.document</span> is the DOM entry.
+                        </p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- DOM vs BOM -->
+            <section id="dom-vs-bom">
+                <h2 class="section-title">6. DOM vs BOM (Browser Object Model)</h2>
+                <p>
+                    Developers frequently mix the terms <strong>DOM</strong> and <strong>BOM</strong>. For exam / interview / deep
+                    understanding, you must clearly differentiate them.
+                </p>
+
+                <h3 class="section-subtitle">6.1 Conceptual distinction</h3>
+
+                <details open>
+                    <summary><span class="summary-icon">🧠</span><span>Definitions in one shot</span></summary>
+                    <div class="details-body">
+                        <ul>
+                            <li>
+                                <strong>DOM (Document Object Model)</strong> – standardized tree representation of the
+                                document. Deals with <em>page content</em> (elements, attributes, text).
+                            </li>
+                            <li>
+                                <strong>BOM (Browser Object Model)</strong> – browser-specific objects exposing browser features
+                                (window, location, history, navigator, screen, etc.).
+                            </li>
+                        </ul>
+                        <p>
+                            DOM is standardized by W3C/WHATWG; BOM is more browser implementation driven, though many parts
+                            are now de facto standardized.
+                        </p>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">6.2 Examples: DOM vs BOM APIs</h3>
+
+                <details>
+                    <summary><span class="summary-icon">🧪</span><span>Side-by-side comparison code</span></summary>
+                    <div class="details-body">
+                        <pre><code>&lt;button id="goDocs"&gt;Go to /docs&lt;/button&gt;
+&lt;div id="info"&gt;&lt;/div&gt;
+
+&lt;script&gt;
+  // ---- DOM (content manipulation) ----
+  const info = document.getElementById("info");
+  info.textContent = "Current URL: " + document.URL;
+
+  // ---- BOM (browser window/location/history) ----
+  console.log("User agent:", window.navigator.userAgent);
+  console.log("Viewport:", window.innerWidth, "x", window.innerHeight);
+
+  const btn = document.getElementById("goDocs");
+  btn.addEventListener("click", () =&gt; {
+    // BOM: change location (navigation)
+    window.location.pathname = "/docs";
+  });
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            DOM part: selecting elements and changing text.
+                            BOM part: reading user agent, viewport size, and changing location.
+                        </p>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">6.3 Interview-style Q&amp;A</h3>
+
+                <details>
+                    <summary><span class="summary-icon">❓</span><span>Typical questions on DOM vs BOM</span></summary>
+                    <div class="details-body">
+                        <div class="callout">
+                            <div class="callout-title">Q1: Is <span class="inline-code">alert()</span> DOM or BOM?</div>
+                            <div>It is BOM. It belongs to <span class="inline-code">window</span> and controls browser dialog, not DOM tree.</div>
+                        </div>
+                        <div class="callout">
+                            <div class="callout-title">Q2: Is <span class="inline-code">document</span> part of BOM?</div>
+                            <div>
+                                <span class="inline-code">document</span> is a property of <span class="inline-code">window</span>
+                                (so it is reachable via BOM), but conceptually it represents the DOM (document content).
+                            </div>
+                        </div>
+                        <div class="callout">
+                            <div class="callout-title">Q3: Can you access DOM without BOM?</div>
+                            <div>
+                                In browsers, no (they are integrated). But server-side environments (like JSDOM in Node)
+                                can implement DOM without a real browser BOM.
+                            </div>
+                        </div>
+                    </div>
+                </details>
+            </section>
+
+            <!-- PATTERNS & PRACTICES -->
+            <section id="patterns-practices">
+                <h2 class="section-title">7. Patterns, tips &amp; real-world practices</h2>
+
+                <h3 class="section-subtitle">7.1 Avoiding common DOM pitfalls</h3>
+
+                <details open>
+                    <summary><span class="summary-icon">⚠</span><span>Text vs HTML, innerHTML vs createElement</span></summary>
+                    <div class="details-body">
+                        <p>
+                            <span class="inline-code">innerHTML</span> is powerful but can be dangerous (XSS) and slower
+                            for large updates.
+                        </p>
+                        <pre><code>&lt;div id="output"&gt;&lt;/div&gt;
+
+&lt;script&gt;
+  const output = document.getElementById("output");
+
+  // ❌ Risky: injecting unsanitized HTML
+  const userInput = "&lt;img src=x onerror=alert('XSS')&gt;";
+  // output.innerHTML = userInput;    // DO NOT DO THIS
+
+  // ✅ Safe: textContent escapes markup
+  output.textContent = userInput;
+
+  // ✅ Clean: structured creation
+  const p = document.createElement("p");
+  p.textContent = "DOM-safe rendering";
+  output.appendChild(p);
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            For dynamic content (comments, chats), prefer
+                            <span class="inline-code">createElement()</span> + <span class="inline-code">textContent</span>.
+                        </p>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">7.2 Event delegation with the DOM tree</h3>
+
+                <details>
+                    <summary><span class="summary-icon">🕸</span><span>Efficient event handling using bubbling</span></summary>
+                    <div class="details-body">
+                        <p>
+                            Instead of attaching listeners to many child nodes, attach one listener to a parent and
+                            use event bubbling.
+                        </p>
+                        <pre><code>&lt;ul id="tasks"&gt;
+  &lt;li data-id="1"&gt;Study DOM&lt;/li&gt;
+  &lt;li data-id="2"&gt;Practice events&lt;/li&gt;
+  &lt;li data-id="3"&gt;Build mini framework&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;script&gt;
+  const tasks = document.getElementById("tasks");
+
+  tasks.addEventListener("click", (event) =&gt; {
+    const li = event.target.closest("li");
+    if (!li) return;
+
+    console.log("Clicked task id:", li.dataset.id);
+    li.classList.toggle("completed");
+  });
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            This pattern scales better when many items are created or removed dynamically.
+                        </p>
+                    </div>
+                </details>
+
+                <h3 class="section-subtitle">7.3 Working with DocumentFragment</h3>
+
+                <details>
+                    <summary><span class="summary-icon">🚀</span><span>Batch DOM updates for performance</span></summary>
+                    <div class="details-body">
+                        <p>
+                            <span class="inline-code">DocumentFragment</span> is a lightweight container that is not part
+                            of the main DOM tree until you insert it. Great for batch append operations.
+                        </p>
+                        <pre><code>&lt;ul id="numbers"&gt;&lt;/ul&gt;
+
+&lt;script&gt;
+  const list = document.getElementById("numbers");
+  const fragment = document.createDocumentFragment();
+
+  for (let i = 1; i &lt;= 1000; i++) {
+    const li = document.createElement("li");
+    li.textContent = "Item " + i;
+    fragment.appendChild(li);
+  }
+
+  // Single reflow/repaint:
+  list.appendChild(fragment);
+&lt;/script&gt;
+                        </code></pre>
+                        <p>
+                            In UI-heavy pages, using fragments can significantly improve perceived performance.
+                        </p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- SUMMARY & CHECKLIST -->
+            <section id="summary-checklist">
+                <h2 class="section-title">8. Summary &amp; interview checklist</h2>
+
+                <details open>
+                    <summary><span class="summary-icon">📌</span><span>Concept checklist</span></summary>
+                    <div class="details-body">
+                        <ul>
+                            <li>DOM is a <strong>tree of nodes</strong> representing the document structure.</li>
+                            <li>Each node has <strong>type</strong>, <strong>name</strong>, <strong>value</strong>, and
+                                parent/children relationships.</li>
+                            <li><span class="inline-code">document</span> object is the gateway into the DOM:
+                                query, create, and manipulate nodes.</li>
+                            <li><span class="inline-code">window</span> is the global browser object, owning
+                                <span class="inline-code">document</span> plus BOM APIs.</li>
+                            <li>DOM ≈ page content; BOM ≈ browser features.</li>
+                            <li>Use modern APIs: <span class="inline-code">querySelector()</span>,
+                                <span class="inline-code">classList</span>, <span class="inline-code">dataset</span>,
+                                <span class="inline-code">addEventListener()</span>, <span class="inline-code">DocumentFragment</span>.</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary><span class="summary-icon">🧪</span><span>Practice tasks</span></summary>
+                    <div class="details-body">
+                        <ol>
+                            <li>Implement a mini “todo app” that uses only DOM APIs (no frameworks).</li>
+                            <li>Build a tree visualizer: given a DOM node, print its subtree with indentation.</li>
+                            <li>Re-implement a simple <span class="inline-code">querySelectorAll</span>-like function using
+                                <span class="inline-code">getElementsByTagName</span> and filters.</li>
+                            <li>Create a library function that safely renders user comments using
+                                <span class="inline-code">createElement</span> and <span class="inline-code">textContent</span>.</li>
+                        </ol>
+                    </div>
+                </details>
+
+                <div class="callout mt-3">
+                    <div class="callout-title">Next topic hint</div>
+                    <div>
+                        After mastering DOM basics (tree, nodes, document, window, DOM vs BOM), the natural next step
+                        is <strong>DOM events</strong> – capturing vs bubbling, event propagation, and building robust
+                        event-driven UIs.
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // Smooth-scrolling + active link highlight
+    (function () {
+        const tocLinks = document.querySelectorAll(".toc-link");
+        const sections = Array.from(document.querySelectorAll("main section"));
+
+        // Click scroll
+        tocLinks.forEach(link =&gt; {
+            link.addEventListener("click", function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute("href").slice(1);
+                const target = document.getElementById(targetId);
+                if (target) {
+                    target.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+            });
+        });
+
+        // Highlight active section
+        document.getElementById("content").addEventListener("scroll", function () {
+            const scrollPos = this.scrollTop;
+            const offset = 120;
+
+            let currentId = null;
+            for (const sec of sections) {
+                if (sec.offsetTop - offset &lt;= scrollPos) {
+                    currentId = sec.id;
+                }
+            }
+
+            tocLinks.forEach(link =&gt; {
+                link.classList.toggle("active", link.getAttribute("href").slice(1) === currentId);
+            });
+        });
+    })();
+
+    // TOC search filter
+    function filterTOC() {
+        const input = document.getElementById("tocSearch");
+        const filter = input.value.toLowerCase();
+        const list = document.getElementById("tocList");
+        const items = list.getElementsByTagName("li");
+
+        Array.from(items).forEach(li =&gt; {
+            const link = li.querySelector("a");
+            const txt = link.textContent.toLowerCase();
+            li.style.display = txt.indexOf(filter) &gt; -1 ? "" : "none";
+        });
+    }
+
+    // Expand / collapse all & scroll top
+    function expandAllDetails() {
+        document.querySelectorAll("details").forEach(d =&gt; d.open = true);
+    }
+
+    function collapseAllDetails() {
+        document.querySelectorAll("details").forEach(d =&gt; d.open = false);
+    }
+
+    function scrollToTop() {
+        document.getElementById("content").scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    // Very simple syntax highlighting for code blocks
+    (function simpleHighlight() {
+        const keywords = [
+            "const", "let", "var", "function", "return", "if", "else",
+            "for", "while", "class", "new", "this", "true", "false",
+            "null", "undefined"
+        ];
+
+        const patternKeywords = new RegExp("\\b(" + keywords.join("|") + ")\\b", "g");
+        const patternString = /("[^"]*"|'[^']*')/g;
+        const patternComment = /(\/\/.*$)/gm;
+        const patternProps = /\.(\w+)/g;
+
+        document.querySelectorAll("pre code").forEach(block =&gt; {
+            let html = block.textContent;
+
+            html = html.replace(patternComment, '&lt;span class="code-comment"&gt;$1&lt;/span&gt;');
+            html = html.replace(patternString, '&lt;span class="code-string"&gt;$1&lt;/span&gt;');
+            html = html.replace(patternKeywords, '&lt;span class="code-keyword"&gt;$1&lt;/span&gt;');
+            html = html.replace(patternProps, '.&lt;span class="code-property"&gt;$1&lt;/span&gt;');
+
+            block.innerHTML = html;
+        });
+    })();
+</script>
+</body>
+</html>

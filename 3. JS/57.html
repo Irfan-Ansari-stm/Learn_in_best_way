@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Modern DOM JavaScript Notes – 17.2 Event Flow &amp; Propagation</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-main: #050814;
+            --bg-panel: #0b1020;
+            --bg-panel-alt: #10172b;
+            --accent-cyan: #00e5ff;
+            --accent-amber: #ffca28;
+            --text-main: #e0f7fa;
+            --text-muted: #9ca3af;
+            --border-soft: #1f2937;
+            --code-bg: #020617;
+            --code-border: #1e293b;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            background: radial-gradient(circle at top, #111827 0, #020617 45%, #000 100%);
+            color: var(--text-main);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            overflow: hidden;
+        }
+
+        .page-wrapper {
+            height: 100vh;
+        }
+
+        /* Sidebar (left panel) */
+        #sidebar {
+            background: linear-gradient(160deg, #020617 0%, #020617 35%, #0b1020 100%);
+            border-right: 1px solid var(--border-soft);
+            padding: 1.2rem 1rem 1.2rem 1.2rem;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 320px;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        #sidebar h1 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+            color: var(--accent-cyan);
+        }
+
+        #sidebar h2 {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--accent-amber);
+        }
+
+        .badge-topic {
+            border-radius: 999px;
+            border: 1px solid rgba(0, 229, 255, 0.4);
+            padding: 0.15rem 0.6rem;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+        }
+
+        .author-box {
+            background: rgba(15, 23, 42, 0.85);
+            border-radius: 0.75rem;
+            padding: 0.65rem 0.75rem;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            margin-top: 0.6rem;
+        }
+
+        .author-box small {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .author-box strong {
+            color: var(--accent-amber);
+        }
+
+        .toc-header {
+            margin-top: 1rem;
+            margin-bottom: 0.4rem;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 0.5rem;
+        }
+
+        .search-box input {
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 999px;
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            color: var(--text-main);
+            font-size: 0.8rem;
+            padding-right: 2rem;
+        }
+
+        .search-box input::placeholder {
+            color: #6b7280;
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 0.65rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
+        .toc-actions {
+            display: flex;
+            gap: 0.4rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .toc-actions button {
+            border-radius: 999px;
+            border-width: 1px;
+            font-size: 0.7rem;
+            padding: 0.25rem 0.6rem;
+            background: rgba(15, 23, 42, 0.9);
+            color: var(--text-muted);
+            border-color: rgba(55, 65, 81, 0.8);
+        }
+
+        .toc-actions button:hover {
+            color: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+        }
+
+        #toc-list {
+            list-style: none;
+            padding-left: 0;
+            margin: 0;
+        }
+
+        #toc-list li {
+            margin-bottom: 0.12rem;
+        }
+
+        #toc-list a {
+            display: block;
+            text-decoration: none;
+            font-size: 0.78rem;
+            padding: 0.22rem 0.35rem;
+            border-radius: 0.5rem;
+            color: var(--text-muted);
+            border: 1px solid transparent;
+        }
+
+        #toc-list a:hover {
+            border-color: rgba(56, 189, 248, 0.4);
+            background: radial-gradient(circle at left, rgba(8, 47, 73, 0.9), rgba(15, 23, 42, 0.9));
+            color: var(--accent-cyan);
+        }
+
+        #toc-list a span.section-index {
+            display: inline-block;
+            min-width: 1.4rem;
+            font-weight: 600;
+            color: var(--accent-amber);
+        }
+
+        #toc-list a small {
+            font-size: 0.71rem;
+        }
+
+        /* Right panel (content) */
+        .content-panel {
+            position: absolute;
+            left: 320px;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            overflow-y: auto;
+            padding: 1.4rem 2.2rem 3rem 2.2rem;
+        }
+
+        @media (max-width: 991.98px) {
+            #sidebar {
+                position: static;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border-soft);
+            }
+
+            .content-panel {
+                position: static;
+                left: 0;
+                right: 0;
+                overflow-y: visible;
+                padding: 1.2rem 1rem 2.2rem 1rem;
+            }
+        }
+
+        .section-chip-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            margin-top: 0.1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .chip {
+            border-radius: 999px;
+            border: 1px solid rgba(75, 85, 99, 0.85);
+            padding: 0.2rem 0.6rem;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        h2.section-title {
+            font-size: 1.1rem;
+            margin-top: 1.5rem;
+            margin-bottom: 0.4rem;
+            font-weight: 650;
+            color: var(--accent-cyan);
+        }
+
+        h3.subheading {
+            font-size: 0.98rem;
+            margin-top: 1.1rem;
+            margin-bottom: 0.3rem;
+            color: var(--accent-amber);
+        }
+
+        p {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text-main);
+        }
+
+        .lead-paragraph {
+            font-size: 0.95rem;
+            color: #f9fafb;
+        }
+
+        .note-box,
+        .info-box,
+        .warning-box {
+            border-radius: 0.75rem;
+            padding: 0.7rem 0.9rem;
+            font-size: 0.9rem;
+            margin: 0.65rem 0;
+        }
+
+        .note-box {
+            background: rgba(8, 47, 73, 0.9);
+            border: 1px solid rgba(56, 189, 248, 0.6);
+        }
+
+        .info-box {
+            background: rgba(30, 64, 175, 0.75);
+            border: 1px solid rgba(129, 140, 248, 0.9);
+        }
+
+        .warning-box {
+            background: rgba(120, 53, 15, 0.85);
+            border: 1px solid rgba(251, 191, 36, 0.9);
+        }
+
+        .note-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            opacity: 0.85;
+        }
+
+        .note-label-amber {
+            color: var(--accent-amber);
+        }
+
+        .note-label-cyan {
+            color: var(--accent-cyan);
+        }
+
+        /* details/summary styling */
+        details {
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 0.8rem;
+            border: 1px solid rgba(30, 64, 175, 0.8);
+            margin: 0.55rem 0;
+            padding: 0.45rem 0.7rem 0.55rem 0.7rem;
+        }
+
+        details summary {
+            list-style: none;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: var(--accent-cyan);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        details summary::-webkit-details-marker {
+            display: none;
+        }
+
+        details summary .twist {
+            width: 0.7rem;
+            height: 0.7rem;
+            border-radius: 999px;
+            border: 1px solid rgba(56, 189, 248, 0.8);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            color: var(--accent-cyan);
+        }
+
+        details[open] summary .twist {
+            background: rgba(56, 189, 248, 0.1);
+        }
+
+        details .details-body {
+            margin-top: 0.35rem;
+            font-size: 0.88rem;
+            color: var(--text-main);
+        }
+
+        /* Code blocks */
+        pre {
+            background: var(--code-bg);
+            border-radius: 0.75rem;
+            border: 1px solid var(--code-border);
+            padding: 0.6rem 0.8rem;
+            font-size: 0.8rem;
+            overflow-x: auto;
+            margin: 0.6rem 0;
+        }
+
+        pre code {
+            font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            white-space: pre;
+        }
+
+        .code-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: 0.15rem;
+        }
+
+        .code-meta {
+            font-size: 0.72rem;
+            color: var(--text-muted);
+            margin-top: 0.1rem;
+        }
+
+        /* Very simple syntax highlighting */
+        .token-keyword {
+            font-weight: 600;
+        }
+
+        .token-fn {
+            font-weight: 600;
+        }
+
+        .token-dom {
+            font-style: italic;
+        }
+
+        .token-comment {
+            opacity: 0.7;
+        }
+
+        .token-string {
+            opacity: 0.9;
+        }
+
+        /* Tables / diagrams */
+        .phase-table {
+            border-radius: 0.75rem;
+            overflow: hidden;
+            border: 1px solid rgba(55, 65, 81, 0.95);
+            margin: 0.6rem 0;
+            font-size: 0.85rem;
+        }
+
+        .phase-table thead {
+            background: rgba(15, 23, 42, 0.95);
+        }
+
+        .phase-table th,
+        .phase-table td {
+            padding: 0.4rem 0.6rem;
+            border-bottom: 1px solid rgba(31, 41, 55, 0.9);
+        }
+
+        .phase-table tbody tr:nth-child(odd) {
+            background: rgba(15, 23, 42, 0.8);
+        }
+
+        .phase-table tbody tr:nth-child(even) {
+            background: rgba(12, 20, 38, 0.95);
+        }
+
+        .pill {
+            display: inline-block;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.6);
+            padding: 0.12rem 0.5rem;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .pill-cyan {
+            border-color: rgba(56, 189, 248, 0.9);
+            color: var(--accent-cyan);
+        }
+
+        .pill-amber {
+            border-color: rgba(251, 191, 36, 0.9);
+            color: var(--accent-amber);
+        }
+
+        .exercise-box {
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 0.9rem;
+            border: 1px dashed rgba(56, 189, 248, 0.7);
+            padding: 0.8rem 1rem;
+            margin-top: 0.8rem;
+        }
+
+        .exercise-box ol {
+            padding-left: 1.1rem;
+            font-size: 0.9rem;
+        }
+
+        .exercise-box li {
+            margin-bottom: 0.2rem;
+        }
+
+        /* Utility */
+        .small-caps {
+            font-variant: small-caps;
+            letter-spacing: 0.06em;
+        }
+
+        .text-soft {
+            color: var(--text-muted);
+        }
+
+        .gradient-bar {
+            height: 3px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-amber));
+            margin: 0.4rem 0 0.7rem 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="page-wrapper container-fluid">
+        <div class="row">
+            <!-- LEFT: Sidebar / TOC -->
+            <nav id="sidebar" class="col-lg-3 col-md-4">
+                <div class="d-flex align-items-center justify-content-between mb-1">
+                    <div>
+                        <span class="badge-topic">Modern DOM – JS</span>
+                    </div>
+                    <span class="text-soft" style="font-size:0.68rem;">Module 17.2</span>
+                </div>
+                <h1>Event Flow &amp; Propagation</h1>
+                <h2>Capturing · Bubbling · Delegation · Custom Events</h2>
+                <div class="gradient-bar"></div>
+
+                <div class="author-box">
+                    <small>Prepared for</small><br>
+                    <strong>College → Master / PhD learners</strong>
+                    <br>
+                    <small>Focus: Deep understanding + practical patterns in real-world UIs
+                    </small>
+                </div>
+
+                <div class="mt-3">
+                    <div class="toc-header">Contents &amp; Navigator</div>
+                    <div class="search-box">
+                        <input id="toc-search" type="text" class="form-control form-control-sm"
+                            placeholder="Search sections (e.g., delegation, bubbling)">
+                        <span class="search-icon">⌕</span>
+                    </div>
+                    <div class="toc-actions">
+                        <button id="btn-expand-all" type="button" class="btn btn-sm btn-outline-light">Expand all
+                            details</button>
+                        <button id="btn-collapse-all" type="button"
+                            class="btn btn-sm btn-outline-light">Collapse
+                            all</button>
+                    </div>
+                    <ul id="toc-list">
+                        <li><a href="#sec-intro" data-scroll><span class="section-index">1.</span> <small>Motivation &amp;
+                                    mental
+                                    model</small></a></li>
+                        <li><a href="#sec-flow-overview" data-scroll><span class="section-index">2.</span> <small>What is
+                                    event flow?</small></a></li>
+                        <li><a href="#sec-phases" data-scroll><span class="section-index">3.</span> <small>Phases:
+                                    capturing, target, bubbling</small></a></li>
+                        <li><a href="#sec-bubbling" data-scroll><span class="section-index">4.</span> <small>Event
+                                    bubbling (default behaviour)</small></a></li>
+                        <li><a href="#sec-capturing" data-scroll><span class="section-index">5.</span> <small>Event
+                                    capturing (rarely used, but powerful)</small></a></li>
+                        <li><a href="#sec-stop-prevent" data-scroll><span class="section-index">6.</span> <small>
+                                    stopPropagation(), preventDefault(), stopImmediatePropagation()</small></a></li>
+                        <li><a href="#sec-delegation" data-scroll><span class="section-index">7.</span> <small>Event
+                                    delegation patterns</small></a></li>
+                        <li><a href="#sec-custom-events" data-scroll><span class="section-index">8.</span> <small>Custom
+                                    events &amp; dispatchEvent()</small></a></li>
+                        <li><a href="#sec-patterns" data-scroll><span class="section-index">9.</span> <small>Design
+                                    patterns, gotchas &amp; best practices</small></a></li>
+                        <li><a href="#sec-exercises" data-scroll><span class="section-index">10.</span>
+                                <small>Exercises &amp; mental checkpoints</small></a></li>
+                    </ul>
+                </div>
+            </nav>
+
+            <!-- RIGHT: Content -->
+            <main class="content-panel col-lg-9 col-md-8">
+                <!-- 1. Intro / Motivation -->
+                <section id="sec-intro">
+                    <h2 class="section-title">1. Why care about event flow &amp; propagation?</h2>
+                    <p class="lead-paragraph">
+                        When you click on a button inside a card, inside a panel, inside the page,
+                        <strong>which event listener actually runs, in which order, and why</strong>? Event flow
+                        and propagation answer that question. Understanding this is the key to writing bug-free
+                        UI code, building advanced patterns like <span class="pill pill-cyan">event delegation</span>,
+                        and avoiding mysterious behaviour where handlers fire multiple times or not at all.
+                    </p>
+
+                    <details open>
+                        <summary><span class="twist">▶</span> Executive summary (for quick revision)</summary>
+                        <div class="details-body">
+                            <ul class="mb-1">
+                                <li>Every DOM event (like <code>click</code>) travels in <strong>phases</strong>:
+                                    capturing → target → bubbling.</li>
+                                <li><strong>Event bubbling</strong>: the event moves from the deepest element (target)
+                                    up towards <code>document</code>, triggering bubbling listeners on the way.</li>
+                                <li><strong>Event capturing</strong>: the event moves from <code>window</code> /
+                                    <code>document</code> down towards the target, triggering capturing listeners.</li>
+                                <li><code>stopPropagation()</code> stops the event from continuing to other elements;
+                                    <code>preventDefault()</code> stops the browser’s default action
+                                    (e.g., following a link).</li>
+                                <li><strong>Event delegation</strong>: attach a single listener on a parent and handle
+                                    actions from many child elements efficiently.
+                                </li>
+                                <li><strong>Custom events</strong> let you define your own domain-specific signals
+                                    (e.g., <code>"cart:itemAdded"</code>) and dispatch them using
+                                    <code>dispatchEvent()</code>.
+                                </li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary><span class="twist">▶</span> Mental model with a real-world analogy</summary>
+                        <div class="details-body">
+                            <p>
+                                Imagine a complaint in a university: a student complains to the Class Representative,
+                                who tells the Faculty, who informs the Head of Department, and finally the Director.
+                                The information flows through multiple levels. At each level someone may
+                                <em>handle</em> or <em>stop</em> the complaint.
+                            </p>
+                            <p>
+                                In the DOM:
+                            </p>
+                            <ul>
+                                <li>The <strong>student</strong> is the <strong>target element</strong> you clicked.
+                                </li>
+                                <li>The <strong>hierarchy of people</strong> is like the DOM tree:
+                                    <code>button &lt; div.card &lt; main &lt; body &lt; html</code>.</li>
+                                <li>The <strong>complaint travelling upwards</strong> is like
+                                    <span class="pill pill-cyan">event bubbling</span>.
+                                </li>
+                                <li>An authority deciding to handle and stop it corresponds to
+                                    <code>event.stopPropagation()</code>.
+                                </li>
+                            </ul>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 2. Event flow overview -->
+                <section id="sec-flow-overview">
+                    <h2 class="section-title">2. High-level view: how does event flow work in the DOM?</h2>
+                    <div class="section-chip-row">
+                        <span class="chip">DOM tree</span>
+                        <span class="chip">Top → down → up</span>
+                        <span class="chip">Listeners &amp; phases</span>
+                    </div>
+
+                    <p>
+                        When you interact with the page (click, key press, focus, scroll, etc.), the browser creates
+                        an <strong>event object</strong> like <code>MouseEvent</code> or <code>KeyboardEvent</code>.
+                        This event is associated with the element you interacted with (the <strong>target</strong>),
+                        but it does not just stay there. It travels through the tree in a predictable order:
+                    </p>
+
+                    <ol>
+                        <li><strong>Capturing phase</strong>: from <code>window</code> / <code>document</code> down
+                            through ancestors towards the target.
+                        </li>
+                        <li><strong>Target phase</strong>: listeners on the exact target element itself.</li>
+                        <li><strong>Bubbling phase</strong>: from the target back up through ancestors to
+                            <code>document</code> and <code>window</code>.
+                        </li>
+                    </ol>
+
+                    <div class="note-box">
+                        <div class="note-label note-label-cyan">Key point</div>
+                        <p class="mb-0">
+                            In practice, most of the time we only use the <strong>bubbling phase</strong> because it is
+                            the default when you call
+                            <code>element.addEventListener("click", handler)</code>. Capturing is optional and enabled
+                            via the third parameter / options.
+                        </p>
+                    </div>
+                </section>
+
+                <!-- 3. Phases table -->
+                <section id="sec-phases">
+                    <h2 class="section-title">3. Event phases: capturing, target, bubbling</h2>
+                    <p>
+                        The W3C DOM events specification defines these phases using numeric constants on the event
+                        object:
+                        <code>event.eventPhase</code> can be <code>1</code> (capturing), <code>2</code> (at target),
+                        or <code>3</code> (bubbling).
+                    </p>
+
+                    <table class="phase-table w-100">
+                        <thead>
+                            <tr>
+                                <th style="width: 12%;">Phase</th>
+                                <th style="width: 25%;">event.eventPhase</th>
+                                <th>Description</th>
+                                <th style="width: 24%;">Typical usage</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Capturing</td>
+                                <td><span class="pill pill-cyan">1 – CAPTURING_PHASE</span></td>
+                                <td>Event moves from top (<code>window / document</code>) down towards the target.
+                                    Listeners that were added with <code>capture: true</code> are triggered.</td>
+                                <td>Rare: global shortcuts, security filters, logging, preventing some interactions
+                                    before they reach the target.</td>
+                            </tr>
+                            <tr>
+                                <td>Target</td>
+                                <td><span class="pill">2 – AT_TARGET</span></td>
+                                <td>The event is on the element you actually interacted with.</td>
+                                <td>Normal element-specific behaviour: button click handler, input validation, etc.</td>
+                            </tr>
+                            <tr>
+                                <td>Bubbling</td>
+                                <td><span class="pill pill-amber">3 – BUBBLING_PHASE</span></td>
+                                <td>Event moves from the target up through ancestors to <code>document</code>.</td>
+                                <td>Most common: event delegation, layout-level behaviour (e.g., closing dialogs).</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <details>
+                        <summary><span class="twist">▶</span> Code: logging event phases in nested elements</summary>
+                        <div class="details-body">
+                            <div class="code-title">Example: see capturing vs bubbling in the console</div>
+                            <pre><code class="language-js">
+// HTML (simplified structure):
+// &lt;div id="outer"&gt;
+//   &lt;div id="middle"&gt;
+//     &lt;button id="inner"&gt;Click me&lt;/button&gt;
+//   &lt;/div&gt;
+// &lt;/div&gt;
+
+const outer  = document.getElementById("outer");
+const middle = document.getElementById("middle");
+const inner  = document.getElementById("inner");
+
+function log(label) {
+    return function (event) {
+        console.log(
+            label,
+            "phase =", event.eventPhase,     // 1, 2, or 3
+            "target =", event.target.id,     // where the event started
+            "currentTarget =", event.currentTarget.id  // which element is running this handler
+        );
+    };
+}
+
+// Capturing listeners
+outer.addEventListener("click",  log("outer capture"),  { capture: true });
+middle.addEventListener("click", log("middle capture"), { capture: true });
+inner.addEventListener("click",  log("inner capture"),  { capture: true });
+
+// Bubbling listeners (default)
+outer.addEventListener("click",  log("outer bubble"));
+middle.addEventListener("click", log("middle bubble"));
+inner.addEventListener("click",  log("inner bubble"));
+                            </code></pre>
+                            <p class="code-meta">
+                                If you click on <code>#inner</code>, open DevTools console and observe the order:
+                                capturing phase logs from <code>outer → middle → inner</code>, then target/bubbling logs
+                                from <code>inner → middle → outer</code>.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 4. Event bubbling -->
+                <section id="sec-bubbling">
+                    <h2 class="section-title">4. Event bubbling (default model in JS)</h2>
+                    <div class="section-chip-row">
+                        <span class="chip">Default phase</span>
+                        <span class="chip">Most handlers use this</span>
+                        <span class="chip">Enables delegation</span>
+                    </div>
+
+                    <p>
+                        <strong>Event bubbling</strong> is the default propagation model used in everyday development.
+                        When you add a listener using:
+                    </p>
+
+                    <pre><code class="language-js">
+button.addEventListener("click", handleClick);   // bubbling by default
+                    </code></pre>
+
+                    <p>
+                        the event will be delivered to <code>button</code> during the target phase, and then
+                        <em>continue</em> bubbling up to its ancestors. If those ancestors also have bubbling listeners
+                        for <code>"click"</code>, they will be executed too.
+                    </p>
+
+                    <details>
+                        <summary><span class="twist">▶</span> Step-by-step timeline of a bubbling click</summary>
+                        <div class="details-body">
+                            <p>Assume this DOM structure and you click on the button:</p>
+                            <pre><code class="language-html">
+&lt;main id="page"&gt;
+  &lt;section id="panel"&gt;
+    &lt;div id="card"&gt;
+      &lt;button id="saveBtn"&gt;Save&lt;/button&gt;
+    &lt;/div&gt;
+  &lt;/section&gt;
+&lt;/main&gt;
+                            </code></pre>
+                            <p>The event sequence is:</p>
+                            <ol>
+                                <li>Event created at the browser level for the click.</li>
+                                <li>Capturing phase: <code>document → html → body → main#page → section#panel → div#card → button#saveBtn</code>.
+                                    Only listeners added with <code>capture: true</code> would trigger here.
+                                </li>
+                                <li>Target phase: listeners on <code>#saveBtn</code> execute.</li>
+                                <li>Bubbling phase: event travels back up:
+                                    <code>button#saveBtn → div#card → section#panel → main#page → body → html → document</code>.
+                                </li>
+                            </ol>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary><span class="twist">▶</span> Code: bubbling across card hierarchy</summary>
+                        <div class="details-body">
+                            <div class="code-title">Observe bubbling without capturing</div>
+                            <pre><code class="language-js">
+const page   = document.getElementById("page");
+const panel  = document.getElementById("panel");
+const card   = document.getElementById("card");
+const button = document.getElementById("saveBtn");
+
+for (const el of [page, panel, card, button]) {
+    el.addEventListener("click", function (event) {
+        console.log("[bubble]", "handler on =", this.id, 
+                    "target =", event.target.id);
+    });
+}
+                            </code></pre>
+                            <p class="code-meta">
+                                Click the button: log lines appear for handlers on
+                                <code>saveBtn</code>, <code>card</code>, <code>panel</code>, and <code>page</code>, in
+                                that order. <code>event.target</code> remains
+                                <code>"saveBtn"</code> for all of them.
+                            </p>
+                        </div>
+                    </details>
+
+                    <div class="info-box">
+                        <div class="note-label note-label-cyan">Why bubbling is useful</div>
+                        <p class="mb-0">
+                            Bubbling allows <strong>higher-level components</strong> (cards, lists, layout containers)
+                            to react to low-level interactions (button clicks, item changes) without having to attach
+                            listeners to every single child element. This is the foundation of event delegation.
+                        </p>
+                    </div>
+                </section>
+
+                <!-- 5. Event capturing -->
+                <section id="sec-capturing">
+                    <h2 class="section-title">5. Event capturing (top-down interception)</h2>
+                    <p>
+                        <strong>Event capturing</strong> (a.k.a. trickling) is the opposite direction of bubbling:
+                        the event travels from the outermost ancestor down to the target. You need to explicitly ask
+                        for capturing when adding a listener:
+                    </p>
+
+                    <pre><code class="language-js">
+document.addEventListener("click", handler, { capture: true });
+// or the older boolean form:
+document.addEventListener("click", handler, true);
+                    </code></pre>
+
+                    <details>
+                        <summary><span class="twist">▶</span> When is capturing actually useful?</summary>
+                        <div class="details-body">
+                            <ul>
+                                <li><strong>Security / validation gates</strong>:
+                                    intercept clicks before they reach sensitive components.
+                                </li>
+                                <li><strong>Global logging, analytics</strong>:
+                                    want to see all clicks but not interfere with lower-level handlers.
+                                </li>
+                                <li><strong>Preventing some interactions globally</strong>:
+                                    e.g., disabling all clicks on the page during a critical modal or transaction step.
+                                </li>
+                                <li><strong>Framework internals</strong>:
+                                    libraries sometimes use capturing to implement synthetic event systems.
+                                </li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary><span class="twist">▶</span> Code: using capturing to temporarily “freeze” clicks</summary>
+                        <div class="details-body">
+                            <pre><code class="language-js">
+let freezeInteractions = false;
+
+// Intercept every click before it reaches any element
+document.addEventListener("click", function (event) {
+    if (!freezeInteractions) return;
+
+    console.log("Click blocked during critical operation:",
+                "target =", event.target);
+
+    // Stop the event before other listeners see it
+    event.stopPropagation();
+    event.preventDefault();
+}, { capture: true });
+
+// Somewhere else in your code:
+async function performCriticalOperation() {
+    freezeInteractions = true;
+    try {
+        // ... do async work, show loading overlay, etc.
+    } finally {
+        freezeInteractions = false;
+    }
+}
+                            </code></pre>
+                            <p class="code-meta">
+                                Because this handler runs in the <strong>capturing phase</strong>, it sees the click
+                                before bubbling listeners and can block them if needed.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 6. stopPropagation / preventDefault -->
+                <section id="sec-stop-prevent">
+                    <h2 class="section-title">6. Controlling propagation &amp; default behaviour</h2>
+                    <div class="section-chip-row">
+                        <span class="chip">event.stopPropagation()</span>
+                        <span class="chip">event.stopImmediatePropagation()</span>
+                        <span class="chip">event.preventDefault()</span>
+                    </div>
+
+                    <p>
+                        Once an event starts travelling, you can control how far it goes and whether the browser
+                        performs its usual default action (such as following a link or submitting a form).
+                        These methods live on the <code>event</code> object:
+                    </p>
+
+                    <ul>
+                        <li><code>event.stopPropagation()</code> – stop going to other elements (no more bubbling /
+                            capturing beyond the current one).
+                        </li>
+                        <li><code>event.stopImmediatePropagation()</code> – same as above, but also prevents any
+                            <em>other handlers on the same element</em> from running.
+                        </li>
+                        <li><code>event.preventDefault()</code> – stop the browser’s default behaviour
+                            (e.g., open link, submit form, focus input).
+                        </li>
+                    </ul>
+
+                    <details>
+                        <summary><span class="twist">▶</span> Example: stop propagation but allow default behaviour</summary>
+                        <div class="details-body">
+                            <div class="code-title">Scenario: card captures click but link still works</div>
+                            <pre><code class="language-js">
+// HTML:
+// &lt;div class="card" id="productCard"&gt;
+//   &lt;a href="/product/42" id="productLink"&gt;View details&lt;/a&gt;
+// &lt;/div&gt;
+
+const card  = document.getElementById("productCard");
+const link  = document.getElementById("productLink");
+
+// Higher-level analytics on the card
+card.addEventListener("click", function (event) {
+    console.log("Card clicked, target =", event.target.id);
+
+    // We do NOT want this click to bubble further up (to layout, document, ...)
+    event.stopPropagation();
+});
+
+// Link default behaviour still happens (navigation)
+link.addEventListener("click", function (event) {
+    console.log("Link click, navigating to", this.href);
+});
+                            </code></pre>
+                            <p class="code-meta">
+                                Here, <code>stopPropagation()</code> only prevents the click from reaching outer
+                                ancestors (e.g., a global document click), but navigation still happens because we did
+                                <em>not</em> call <code>preventDefault()</code>.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary><span class="twist">▶</span> Example: cancel default behaviour but allow bubbling</summary>
+                        <div class="details-body">
+                            <pre><code class="language-js">
+// HTML:
+// &lt;a href="https://example.com" id="externalLink"&gt;External site&lt;/a&gt;
+
+const externalLink = document.getElementById("externalLink");
+
+externalLink.addEventListener("click", function (event) {
+    event.preventDefault(); // browser will NOT navigate
+
+    console.log("Custom navigation handling", this.href);
+
+    // We still allow bubbling so higher-level listeners can see this event
+    // (e.g., analytics at document level)
+});
+                            </code></pre>
+                            <p class="code-meta">
+                                This is common in single-page applications: you prevent the browser’s navigation and
+                                instead use your own router, while still letting other listeners know a “navigation”
+                                attempt happened.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary><span class="twist">▶</span> Example: stopImmediatePropagation()</summary>
+                        <div class="details-body">
+                            <pre><code class="language-js">
+const button = document.getElementById("btnDanger");
+
+button.addEventListener("click", function (event) {
+    console.log("First handler");
+    event.stopImmediatePropagation();
+});
+
+button.addEventListener("click", function () {
+    console.log("Second handler (will NOT run)");
+});
+                            </code></pre>
+                            <p class="code-meta">
+                                With <code>stopImmediatePropagation()</code>, once the first handler runs, no other
+                                handlers on <code>button</code> are executed. With just
+                                <code>stopPropagation()</code>, other handlers on the same element would still run.
+                            </p>
+                        </div>
+                    </details>
+
+                    <div class="warning-box">
+                        <div class="note-label note-label-amber">Warning</div>
+                        <p class="mb-0">
+                            Overusing <code>stopPropagation()</code> can make the system very hard to reason about.
+                            Prefer using it in clearly documented places (e.g., specific components) and avoid sprinkling
+                            it randomly in many handlers.
+                        </p>
+                    </div>
+                </section>
+
+                <!-- 7. Event delegation -->
+                <section id="sec-delegation">
+                    <h2 class="section-title">7. Event delegation patterns</h2>
+                    <div class="section-chip-row">
+                        <span class="chip">Performance</span>
+                        <span class="chip">Dynamic lists</span>
+                        <span class="chip">Scalable listeners</span>
+                    </div>
+
+                    <p>
+                        <strong>Event delegation</strong> is a pattern where you attach a single listener on a common
+                        ancestor instead of attaching separate listeners to each child. Because of bubbling, the
+                        ancestor receives events from all its descendants and can decide what to do based on
+                        <code>event.target</code> or <code>event.currentTarget</code>.
+                    </p>
+
+                    <details open>
+                        <summary><span class="twist">▶</span> Why delegation is powerful (core idea)</summary>
+                        <div class="details-body">
+                            <ul>
+                                <li><strong>Performance</strong>: one listener vs. thousands of listeners in large
+                                    lists or grids.
+                                </li>
+                                <li><strong>Dynamic content</strong>: newly added elements automatically work without
+                                    re-binding events.
+                                </li>
+                                <li><strong>Centralised logic</strong>: easier to keep all click behaviour for a list /
+                                    table in a single place.
+                                </li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary><span class="twist">▶</span> Basic delegation example: single list click handler</summary>
+                        <div class="details-body">
+                            <div class="code-title">Scenario: to-do list with dynamic items</div>
+                            <pre><code class="language-js">
+// HTML:
+// &lt;ul id="todoList"&gt;
+//   &lt;li data-id="1"&gt;&lt;button class="btn-complete"&gt;Done&lt;/button&gt; Task 1&lt;/li&gt;
+//   &lt;li data-id="2"&gt;&lt;button class="btn-complete"&gt;Done&lt;/button&gt; Task 2&lt;/li&gt;
+//   ...
+// &lt;/ul&gt;
+
+const todoList = document.getElementById("todoList");
+
+todoList.addEventListener("click", function (event) {
+    // 1. Find the closest button with the .btn-complete class
+    const button = event.target.closest(".btn-complete");
+
+    if (!button) {
+        // Click happened somewhere else in the list; ignore
+        return;
+    }
+
+    // 2. Find the corresponding &lt;li&gt; (task item)
+    const item = button.closest("li");
+    const id   = item.dataset.id;
+
+    console.log("Completed todo item with id =", id);
+
+    // 3. Mark visually as done
+    item.classList.add("is-completed");
+});
+                            </code></pre>
+                            <p class="code-meta">
+                                Regardless of how many list items you add or remove, you only have one listener on
+                                <code>#todoList</code>. This scales well and is idiomatic modern JS.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary><span class="twist">▶</span> Delegation with multiple actions in a table</summary>
+                        <div class="details-body">
+                            <pre><code class="language-js">
+// HTML (simplified):
+// &lt;table id="userTable"&gt;
+//   &lt;tr data-user-id="101"&gt;
+//     &lt;td&gt;&lt;button data-action="view"&gt;View&lt;/button&gt;&lt;/td&gt;
+//     &lt;td&gt;&lt;button data-action="block"&gt;Block&lt;/button&gt;&lt;/td&gt;
+//   &lt;/tr&gt;
+//   ...
+// &lt;/table&gt;
+
+const userTable = document.getElementById("userTable");
+
+userTable.addEventListener("click", function (event) {
+    const btn = event.target.closest("button[data-action]");
+    if (!btn) return;
+
+    const row      = btn.closest("tr");
+    const userId   = row.dataset.userId;
+    const action   = btn.dataset.action;
+
+    if (action === "view") {
+        console.log("Viewing user", userId);
+        // ... open profile ...
+    } else if (action === "block") {
+        console.log("Blocking user", userId);
+        // ... call API ...
+    }
+});
+                            </code></pre>
+                            <p class="code-meta">
+                                New rows added via JS are automatically handled. You do not need to re-attach listeners
+                                to each new button.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary><span class="twist">▶</span> Pitfalls &amp; anti-patterns with delegation</summary>
+                        <div class="details-body">
+                            <ul>
+                                <li><strong>Too generic ancestor</strong> (e.g., <code>document</code> for everything)
+                                    may make it hard to reason about where a behaviour is coming from.
+                                </li>
+                                <li><strong>Missing event.target check</strong>: always verify you are handling the
+                                    intended element using <code>matches()</code> / <code>closest()</code>.
+                                </li>
+                                <li><strong>stopPropagation()</strong> at child elements can break delegation if not
+                                    carefully documented.
+                                </li>
+                            </ul>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 8. Custom events -->
+                <section id="sec-custom-events">
+                    <h2 class="section-title">8. Custom events &amp; dispatchEvent()</h2>
+                    <p>
+                        So far we used built-in events like <code>click</code>, <code>input</code>, and
+                        <code>submit</code>. Sometimes you want to express domain-specific actions:
+                        <span class="pill pill-cyan">"cart:itemAdded"</span>,
+                        <span class="pill pill-cyan">"modal:opened"</span>, etc.
+                        For this, the DOM provides <code>CustomEvent</code> and <code>dispatchEvent()</code>.
+                    </p>
+
+                    <details open>
+                        <summary><span class="twist">▶</span> Creating and listening to a custom event</summary>
+                        <div class="details-body">
+                            <pre><code class="language-js">
+// 1. Component: cart manager element
+const cartElement = document.getElementById("cart");
+
+// 2. Somewhere, when item is added:
+function addItemToCart(item) {
+    // ... internal logic ...
+
+    // Create a CustomEvent with extra data in "detail"
+    const event = new CustomEvent("cart:itemAdded", {
+        bubbles: true,    // event will bubble up the DOM
+        detail: {
+            id: item.id,
+            name: item.name,
+            price: item.price
+        }
+    });
+
+    // Dispatch from the component root
+    cartElement.dispatchEvent(event);
+}
+
+// 3. Higher-level listener elsewhere:
+document.addEventListener("cart:itemAdded", function (event) {
+    console.log("Cart item added:", event.detail);
+
+    // Update header badge, analytics, etc.
+});
+                            </code></pre>
+                            <p class="code-meta">
+                                Because we used <code>bubbles: true</code>, the custom event behaves like a normal
+                                bubbling event: it can be handled by ancestors including <code>document</code>.
+                            </p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary><span class="twist">▶</span> decoupling components using custom events</summary>
+                        <div class="details-body">
+                            <p>
+                                Custom events help you design loosely-coupled architecture:
+                            </p>
+                            <ul>
+                                <li>The cart component does <em>not</em> directly know about header, sidebar, or
+                                    analytics.
+                                </li>
+                                <li>It only dispatches an event that expresses <strong>what happened</strong>:
+                                    <code>"cart:itemAdded"</code>.
+                                </li>
+                                <li>Other parts of the app subscribe and react independently.</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary><span class="twist">▶</span> Real-world example: modal open / close events</summary>
+                        <div class="details-body">
+                            <pre><code class="language-js">
+const modal = document.getElementById("settingsModal");
+
+// API to open the modal
+function openSettingsModal() {
+    modal.classList.add("is-open");
+
+    modal.dispatchEvent(new CustomEvent("modal:opened", {
+        bubbles: true
+    }));
+}
+
+// API to close the modal
+function closeSettingsModal() {
+    modal.classList.remove("is-open");
+
+    modal.dispatchEvent(new CustomEvent("modal:closed", {
+        bubbles: true
+    }));
+}
+
+// Elsewhere: track modals globally
+document.addEventListener("modal:opened", function (event) {
+    console.log("Some modal opened:", event.target.id);
+});
+
+document.addEventListener("modal:closed", function (event) {
+    console.log("Some modal closed:", event.target.id);
+});
+                            </code></pre>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 9. Patterns & best practices -->
+                <section id="sec-patterns">
+                    <h2 class="section-title">9. Patterns, design decisions &amp; common pitfalls</h2>
+                    <p>
+                        When building complex interactive interfaces (dashboards, editors, multi-step forms), you will
+                        often make design choices about where to attach listeners, how much to rely on bubbling, and
+                        when to stop propagation. Some guidelines:
+                    </p>
+
+                    <details open>
+                        <summary><span class="twist">▶</span> Checklist: designing event flow consciously</summary>
+                        <div class="details-body">
+                            <ul>
+                                <li><strong>Where is the “owner” of the behaviour?</strong>
+                                    Attach the listener on the component that actually owns the logic.
+                                </li>
+                                <li><strong>Can I handle this with delegation?</strong>
+                                    For lists / tables / menus, prefer delegation from the container instead of per-item
+                                    listeners.
+                                </li>
+                                <li><strong>Do I really need capturing?</strong>
+                                    Use capturing for rare cross-cutting behaviour (logging, security, freeze logic).
+                                </li>
+                                <li><strong>Is stopPropagation() documented?</strong>
+                                    If you must stop propagation, add a small comment explaining why; this saves hours
+                                    of debugging later.
+                                </li>
+                                <li><strong>Can a custom event express intent better?</strong>
+                                    Instead of calling functions directly across modules, emit a domain-specific
+                                    custom event.
+                                </li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary><span class="twist">▶</span> Anti-patterns and bugs to watch out for</summary>
+                        <div class="details-body">
+                            <ul>
+                                <li><strong>“Nothing happens when I click”</strong> – often caused by a parent somewhere
+                                    calling <code>stopPropagation()</code> or a capturing handler that preventsDefault().
+                                </li>
+                                <li><strong>Handlers firing twice</strong> – two listeners attached at different levels
+                                    both reacting to the same bubbling event without checking <code>event.target</code>.
+                                </li>
+                                <li><strong>Memory leaks</strong> – attaching many listeners to items in a list and
+                                    forgetting to remove them when items are removed.
+                                </li>
+                                <li><strong>Re-creating listeners unnecessarily</strong> – when dynamic content uses
+                                    delegation, you generally do not need to re-attach listeners every time.
+                                </li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary><span class="twist">▶</span> Pattern: outer click to close a dropdown</summary>
+                        <div class="details-body">
+                            <pre><code class="language-js">
+const dropdown = document.getElementById("dropdown");
+const toggle   = document.getElementById("dropdownToggle");
+
+// 1. Toggle dropdown when user clicks on the toggle button
+toggle.addEventListener("click", function (event) {
+    event.stopPropagation(); // do NOT treat this as an "outside" click
+    dropdown.classList.toggle("is-open");
+});
+
+// 2. Close dropdown when clicking anywhere else on the document
+document.addEventListener("click", function () {
+    dropdown.classList.remove("is-open");
+});
+
+// 3. Prevent clicks inside dropdown from closing it via document listener
+dropdown.addEventListener("click", function (event) {
+    event.stopPropagation();
+});
+                            </code></pre>
+                            <p class="code-meta">
+                                Here, <code>stopPropagation()</code> is intentionally used to distinguish between
+                                <em>inside</em> and <em>outside</em> clicks, a very common UI pattern.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 10. Exercises -->
+                <section id="sec-exercises">
+                    <h2 class="section-title">10. Exercises &amp; mental checkpoints</h2>
+                    <p>
+                        Use these to test whether you really understand event flow, not just memorised terms.
+                    </p>
+
+                    <div class="exercise-box">
+                        <div class="note-label note-label-cyan mb-1">Short conceptual questions</div>
+                        <ol>
+                            <li>
+                                In which phase does a normal
+                                <code>element.addEventListener("click", handler)</code> listener run?
+                                How can you make it run in the other phase?
+                            </li>
+                            <li>
+                                Explain the difference between <code>event.target</code> and
+                                <code>event.currentTarget</code> for a delegated listener on a list.
+                            </li>
+                            <li>
+                                Why might you choose <code>event.preventDefault()</code> but <em>not</em>
+                                <code>event.stopPropagation()</code> in a single-page application router?
+                            </li>
+                            <li>
+                                Describe a real UI in your life that could be implemented using event delegation.
+                                (Hint: menu bars, sidebars, file lists, etc.)
+                            </li>
+                        </ol>
+                    </div>
+
+                    <div class="exercise-box mt-3">
+                        <div class="note-label note-label-amber mb-1">Implementation sketches</div>
+                        <ol>
+                            <li>
+                                Implement a <strong>notification center</strong> list where each notification item
+                                has “Mark as read” and “Delete” buttons. Use <strong>only one</strong> click listener
+                                on the container and handle both actions using <code>data-action</code> attributes.
+                            </li>
+                            <li>
+                                Create a <strong>global shield</strong> that, when active, prevents all clicks
+                                on the page (except on a “Cancel” button in the center). Use capturing and
+                                <code>stopPropagation()</code>.
+                            </li>
+                            <li>
+                                Design a pair of custom events: <code>"editor:contentChanged"</code> and
+                                <code>"editor:saved"</code> for a text editor widget. Decide from which element
+                                they should bubble and who should listen to them.
+                            </li>
+                        </ol>
+                    </div>
+
+                    <p class="mt-3 text-soft">
+                        If you can comfortably explain the flow of a click through capturing, target, and bubbling,
+                        and you can design delegated handlers without confusion, you have a strong, research-level
+                        grasp of JavaScript event propagation.
+                    </p>
+                </section>
+
+                <p class="mt-4 mb-0 text-center text-soft" style="font-size:0.75rem;">
+                    17.2 – Event Flow &amp; Propagation · Modern DOM JavaScript Notes · Dark theme, cyan+amber for
+                    research-friendly reading.
+                </p>
+            </main>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Inline JS utilities: smooth scroll, expand/collapse details, simple syntax highlighting, TOC search -->
+    <script>
+        // Smooth scrolling for sidebar links
+        document.querySelectorAll('#toc-list a[data-scroll]').forEach(function (link) {
+            link.addEventListener('click', function (event) {
+                event.preventDefault();
+                const targetId = this.getAttribute('href');
+                const el = document.querySelector(targetId);
+                if (!el) return;
+                el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            });
+        });
+
+        // Expand / collapse all <details>
+        const btnExpandAll = document.getElementById('btn-expand-all');
+        const btnCollapseAll = document.getElementById('btn-collapse-all');
+
+        if (btnExpandAll && btnCollapseAll) {
+            btnExpandAll.addEventListener('click', function () {
+                document.querySelectorAll('details').forEach(function (d) {
+                    d.open = true;
+                });
+            });
+
+            btnCollapseAll.addEventListener('click', function () {
+                document.querySelectorAll('details').forEach(function (d) {
+                    d.open = false;
+                });
+            });
+        }
+
+        // Simple TOC search filter
+        const tocSearch = document.getElementById('toc-search');
+        const tocList = document.getElementById('toc-list');
+
+        if (tocSearch && tocList) {
+            tocSearch.addEventListener('input', function () {
+                const query = this.value.toLowerCase();
+                tocList.querySelectorAll('li').forEach(function (li) {
+                    const text = li.textContent.toLowerCase();
+                    li.style.display = text.includes(query) ? '' : 'none';
+                });
+            });
+        }
+
+        // Very simple syntax highlighting for <pre><code>
+        (function simpleHighlight() {
+            const codeBlocks = document.querySelectorAll('pre code');
+
+            function escapeSpanSafe(html) {
+                // Avoid double-wrapping; extremely minimal safety
+                return html.replace(/&lt;span class="token-/g, '&lt;span data-token="');
+            }
+
+            codeBlocks.forEach(function (code) {
+                let html = code.innerHTML;
+
+                // prevent accidental re-processing of spans
+                html = escapeSpanSafe(html);
+
+                // Keywords
+                html = html.replace(/\b(const|let|var|function|if|else|for|while|break|continue|return|class|extends|new|try|catch|finally|throw|async|await)\b/g,
+                    '<span class="token-keyword">$1</span>');
+
+                // DOM / event related words
+                html = html.replace(/\b(document|window|addEventListener|removeEventListener|dispatchEvent|CustomEvent|event|target|currentTarget|preventDefault|stopPropagation|stopImmediatePropagation)\b/g,
+                    '<span class="token-dom">$1</span>');
+
+                // Strings (very naive)
+                html = html.replace(/("[^"]*"|'[^']*')/g,
+                    '<span class="token-string">$1</span>');
+
+                // Comments (//...)
+                html = html.replace(/(\/\/[^\n]*)/g,
+                    '<span class="token-comment">$1</span>');
+
+                // restore any spans we protected (data-token → class)
+                html = html.replace(/&lt;span data-token="([^"]*)"/g, '&lt;span class="token-$1"');
+
+                code.innerHTML = html;
+            });
+        })();
+    </script>
+</body>
+
+</html>

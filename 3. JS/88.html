@@ -1,0 +1,422 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>25.3 Vue.js Fundamentals — Deep Learning Note</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
+
+  <style>
+    :root{
+      --bg:#0b0f11;
+      --surface:#121416;
+      --accent-cyan:#06b6d4;
+      --accent-amber:#f59e0b;
+      --muted:#9aa6a6;
+      --panel-width:320px;
+      --radius:14px;
+    }
+    html,body{height:100%;background:var(--bg);color:#e6f3f3;font-family:Inter, ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;}
+    .app{display:grid;grid-template-columns:var(--panel-width) 1fr;gap:18px;padding:20px;height:100vh;box-sizing:border-box}
+    .left-panel{background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);border-radius:var(--radius);padding:18px;position:relative;overflow:auto;border:1px solid rgba(255,255,255,0.03)}
+    .right-panel{background:var(--surface);border-radius:var(--radius);padding:28px;overflow:auto;height:calc(100vh - 40px);box-shadow: 0 6px 30px rgba(2,6,23,0.6);border:1px solid rgba(255,255,255,0.03)}
+    .left-fixed{position:sticky;top:20px}
+    .title{font-size:18px;font-weight:700;color:white}
+    .subtitle{color:var(--muted);font-size:13px;margin-top:6px}
+    .meta{margin-top:12px;font-size:13px}
+    .toc-search{display:flex;gap:8px;margin-top:12px}
+    .toc-list{margin-top:12px}
+    .toc-item{padding:8px;border-radius:10px;margin-bottom:6px}
+    .toc-item:hover{background:rgba(255,255,255,0.02)}
+    .controls{display:flex;gap:8px;margin-top:12px}
+    h1,h2,h3{color:#fff}
+    h1{font-size:24px} h2{font-size:20px} h3{font-size:16px}
+    p{line-height:1.6;color:#dbeaea}
+    details{background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);padding:12px;border-radius:10px;margin-bottom:12px;border:1px solid rgba(255,255,255,0.02)}
+    summary{cursor:pointer;font-weight:600}
+    pre{background:rgba(0,0,0,0.6);padding:12px;border-radius:10px;overflow:auto;border:1px solid rgba(255,255,255,0.03)}
+    code{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, 'Roboto Mono', 'Courier New', monospace;font-size:13px}
+    .section{scroll-margin-top:48px}
+    .muted{color:var(--muted)}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;background:linear-gradient(90deg, rgba(6,182,212,0.08), rgba(245,158,11,0.06));font-size:13px}
+    @media (max-width:900px){.app{grid-template-columns:1fr}.left-panel{order:2}.right-panel{order:1;height:auto}}
+  </style>
+</head>
+<body>
+  <div class="app container-fluid">
+    <aside class="left-panel left-fixed" aria-labelledby="toc-title">
+      <div class="title">25.3 Vue.js Fundamentals</div>
+      <div class="subtitle">Template syntax, Components, Reactivity, CLI, SFCs</div>
+      <div class="meta">
+        <div><span class="pill">Author:</span> Deep Tutor</div>
+        <div class="muted" style="margin-top:6px">Designed for college → PhD level: deep and details details details</div>
+      </div>
+
+      <div class="toc-search">
+        <input id="tocFilter" class="form-control form-control-sm" placeholder="Search TOC, e.g. v-model" aria-label="search toc">
+        <button id="expandAllBtn" class="btn btn-sm btn-outline-light" title="Expand all TOC">Expand</button>
+      </div>
+
+      <div class="controls">
+        <button id="collapseAllBtn" class="btn btn-sm btn-outline-light">Collapse</button>
+        <button id="topBtn" class="btn btn-sm btn-outline-light" onclick="document.querySelector('.right-panel').scrollTo({top:0, behavior:'smooth'})">Top</button>
+      </div>
+
+      <nav class="toc-list" id="tocList">
+        <details class="toc-item open"><summary>Overview & Executive Summary</summary>
+          <ul>
+            <li><a href="#overview">What is Vue?</a></li>
+            <li><a href="#template">Template Syntax & Directives</a></li>
+            <li><a href="#components">Component Composition</a></li>
+            <li><a href="#reactivity">Reactive Data Binding</a></li>
+            <li><a href="#cli">Vue CLI & Ecosystem</a></li>
+            <li><a href="#sfc">Single File Components (SFC)</a></li>
+          </ul>
+        </details>
+
+        <details class="toc-item"><summary>25.3 Vue.js Fundamentals — Sections</summary>
+          <ul>
+            <li><a href="#template">Template Syntax & Directives</a></li>
+            <li><a href="#components">Component Composition</a></li>
+            <li><a href="#reactivity">Reactive Data Binding</a></li>
+            <li><a href="#cli">Vue CLI & Ecosystem</a></li>
+            <li><a href="#sfc">Single File Components</a></li>
+          </ul>
+        </details>
+
+        <details class="toc-item"><summary>Examples & Code Snippets</summary>
+          <ul>
+            <li><a href="#example-template">Template Example</a></li>
+            <li><a href="#example-props">Props & Emits</a></li>
+            <li><a href="#example-reactivity">Reactivity Example</a></li>
+            <li><a href="#example-sfc">SFC Example</a></li>
+          </ul>
+        </details>
+
+        <details class="toc-item"><summary>Further Reading & Resources</summary>
+          <ul>
+            <li><a href="#further">Notes & Links</a></li>
+          </ul>
+        </details>
+      </nav>
+
+      <div style="position:absolute;left:18px;bottom:18px;font-size:12px;color:var(--muted)">Tip: use search to filter headings</div>
+    </aside>
+
+    <main class="right-panel" role="main">
+      <article>
+        <header class="section" id="overview">
+          <h1>25.3 Vue.js Fundamentals — Deep Note</h1>
+          <p class="muted">Layered explanations using &lt;details&gt;: executive summary, deep dive, syntax, example, real world use-cases. Code blocks use HTML entities so code shows correctly. Highlight.js enabled for readability.</p>
+        </header>
+
+        <section class="section" id="template">
+          <h2>Template Syntax and Directives</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>Vue templates are declarative HTML enhanced with directives (v-bind, v-model, v-if, v-for, v-on). They provide readable, compact UI code and compile to render functions under the hood. Directives are prefixed with <code>v-</code> and can accept expressions.</p>
+          </details>
+
+          <details>
+            <summary>Deep explanation</summary>
+            <p>Templates are parsed by the Vue compiler and transformed into Virtual DOM render functions. Directives like <code>v-for</code> and <code>v-if</code> have different compilation behaviors — e.g., <code>v-for</code> creates a list of nodes, while <code>v-if</code> toggles their presence. Use <code>:prop</code> shorthand for <code>v-bind</code> and <code>@event</code> for <code>v-on</code>. Expressions in templates are sandboxed JavaScript limited to the component instance for predictability.</p>
+          </details>
+
+          <details>
+            <summary>Syntax & pseudocode</summary>
+            <pre><code>&lt;!-- Bind attribute --&gt;
+&lt;img :src="avatarUrl" alt="user avatar" /&gt;
+
+&lt;!-- Two-way binding --&gt;
+&lt;input v-model="name" /&gt;
+
+&lt;!-- Conditional rendering --&gt;
+&lt;div v-if="items.length &gt; 0"&gt;Has items&lt;/div&gt;
+
+&lt;!-- List rendering --&gt;
+&lt;li v-for="(item, index) in items" :key="item.id"&gt;{{ index }} - {{ item.text }}&lt;/li&gt;
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Readable example (Template)</summary>
+            <pre><code>&lt;template&gt;
+  &lt;div&gt;
+    &lt;h3&gt;Hello, {{ name }}&lt;/h3&gt;
+    &lt;input v-model="name" placeholder="Enter name" /&gt;
+    &lt;ul&gt;
+      &lt;li v-for="user in users" :key="user.id"&gt;{{ user.name }}&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Real use cases & caveats</summary>
+            <p>Use <code>v-show</code> when toggling visibility often (it toggles CSS display); use <code>v-if</code> when you need true conditional mounting. Avoid heavy logic in templates—move computations to computed properties or methods to keep templates declarative and fast.</p>
+          </details>
+        </section>
+
+        <section class="section" id="components">
+          <h2>Component Composition</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>Components are reusable UI pieces. Vue encourages composition via props, emits, slots, and provide/inject. Prefer small, focused components and compose them for complex UIs.</p>
+          </details>
+
+          <details>
+            <summary>Deep explanation</summary>
+            <p>Components in Vue can be defined as Options API or Composition API (with setup()). Composition API simplifies organizing logic by feature using reactive primitives. Slots allow parent-controlled template fragments; scoped slots (now v-slot) pass data from child to parent templates.</p>
+          </details>
+
+          <details>
+            <summary>Syntax & pseudocode</summary>
+            <pre><code>// Parent passes prop and listens for event
+&lt;UserCard :user="u" @select="onSelect" /&gt;
+
+// Child component emits events
+this.$emit('select', user.id);
+
+// Slot example
+&lt;Modal&gt;
+  &lt;template v-slot:header&gt;Title&lt;/template&gt;
+&lt;/Modal&gt;
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Readable example (Composition API)</summary>
+            <pre><code>&lt;script setup&gt;
+import { ref } from 'vue';
+const count = ref(0);
+function inc(){ count.value++; }
+&lt;/script&gt;
+
+&lt;template&gt;
+  &lt;div&gt;
+    &lt;p&gt;Count: {{ count }}&lt;/p&gt;
+    &lt;button @click="inc"&gt;Increment&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Real use cases & best practices</summary>
+            <p>Use props for data down, events (emits) for communication up. Use composables (reusable functions using Composition API) to share logic across components. Use keys on lists and avoid mutating props directly—emit changes to parent.</p>
+          </details>
+        </section>
+
+        <section class="section" id="reactivity">
+          <h2>Reactive Data Binding</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>Vue's reactivity system tracks dependencies and automatically updates the DOM when reactive values change. In Vue 3, reactivity uses Proxies which handle deep reactivity and better performance.</p>
+          </details>
+
+          <details>
+            <summary>Deep explanation</summary>
+            <p>Reactive primitives include <code>ref()</code>, <code>reactive()</code>, <code>computed()</code>, and <code>watch()</code>. <code>ref</code> wraps primitive values with a <code>.value</code> accessor. <code>reactive</code> returns a reactive proxy for objects. <code>computed</code> creates memoized derived values based on reactive dependencies.</p>
+          </details>
+
+          <details>
+            <summary>Syntax & pseudocode</summary>
+            <pre><code>import { ref, reactive, computed, watch } from 'vue';
+
+const count = ref(0);
+const state = reactive({ items: [] });
+const doubled = computed(() =&gt; count.value * 2);
+
+watch(() =&gt; state.items.length, (newLen, oldLen) =&gt; {
+  console.log('items changed', oldLen, '->', newLen);
+});
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Readable example (Reactivity)</summary>
+            <pre><code>&lt;script setup&gt;
+import { ref, computed } from 'vue';
+const name = ref('Irfan');
+const greeting = computed(() =&gt; `Hello, ${name.value}`);
+&lt;/script&gt;
+
+&lt;template&gt;
+  &lt;div&gt;{{ greeting }}&lt;/div&gt;
+&lt;/template&gt;
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Real use cases & caveats</summary>
+            <p>Use <code>watch</code> for side effects and <code>computed</code> for derived state. Be careful with reactive objects and nested properties—Vue's proxies handle deep reactivity but avoid replacing large objects unnecessarily for performance.</p>
+          </details>
+        </section>
+
+        <section class="section" id="cli">
+          <h2>Vue CLI and Ecosystem</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>Vue has a mature ecosystem: Vue CLI (deprecated in favor of Vite-based tooling), Vite, Vue Router, Pinia (modern store), Vue Test Utils, and Nuxt for SSR/SSG. Choose tools based on needs: Vite for dev speed, Nuxt for fullstack SSR.</p>
+          </details>
+
+          <details>
+            <summary>Deep explanation</summary>
+            <p>Vite offers lightning-fast cold starts and HMR. Pinia replaces Vuex as the recommended state store—it's simpler, modular, and uses the Composition API. Nuxt (v3) builds on Vue 3 for server-rendered apps and offers file-based routing, server routes, and more.</p>
+          </details>
+
+          <details>
+            <summary>Commands & typical workflow</summary>
+            <pre><code>// Create project with Vite + Vue
+npm create vite@latest my-vue-app -- --template vue
+cd my-vue-app
+npm install
+npm run dev
+
+// Install Pinia
+npm install pinia
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Real world uses</summary>
+            <p>Use Vite for single-page apps; use Nuxt for SEO-sensitive or server-rendered applications. Use Pinia for app-wide state with modular stores and better TypeScript support.</p>
+          </details>
+        </section>
+
+        <section class="section" id="sfc">
+          <h2>Single File Components (SFC)</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>SFCs (.vue files) contain <code>&lt;template&gt;</code>, <code>&lt;script&gt;</code>, and <code>&lt;style&gt;</code> blocks. They enable co-locating markup, logic, and styles and support features like scoped styles and custom blocks.</p>
+          </details>
+
+          <details>
+            <summary>Deep explanation</summary>
+            <p>SFCs are processed by the Vue compiler (via Vite or build tools) into render functions and CSS modules. The <code>&lt;script setup&gt;</code> syntax simplifies Composition API usage. Scoped styles limit CSS to the component; CSS variables and modules can be used for advanced styling.</p>
+          </details>
+
+          <details>
+            <summary>SFC Example</summary>
+            <pre><code>&lt;!-- HelloWorld.vue --&gt;
+&lt;template&gt;
+  &lt;div class="hello"&gt;Hello {{ msg }}&lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script setup&gt;
+import { defineProps } from 'vue';
+const props = defineProps({ msg: String });
+&lt;/script&gt;
+
+&lt;style scoped&gt;
+.hello { font-weight:600; }
+&lt;/style&gt;
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Best practices</summary>
+            <ul>
+              <li>Keep SFCs focused and reasonably sized.</li>
+              <li>Use &lt;script setup&gt; for concise Composition API code.</li>
+              <li>Use scoped styles or CSS modules for component isolation.</li>
+            </ul>
+          </details>
+        </section>
+
+        <section class="section" id="example-template">
+          <h2>Examples & Code Snippets</h2>
+
+          <details open>
+            <summary>Template Example</summary>
+            <pre><code>&lt;template&gt;
+  &lt;div&gt;
+    &lt;input v-model="query" placeholder="Search" /&gt;
+    &lt;ul&gt;
+      &lt;li v-for="item in filtered" :key="item.id"&gt;{{ item.text }}&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+
+&lt;script setup&gt;
+import { ref, computed } from 'vue';
+const query = ref('');
+const items = ref([{id:1,text:'apple'},{id:2,text:'banana'}]);
+const filtered = computed(() =&gt; items.value.filter(i =&gt; i.text.includes(query.value)));
+&lt;/script&gt;
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Props & Emits Example</summary>
+            <pre><code>// Parent
+&lt;Counter :initial="3" @update="onUpdate" /&gt;
+
+// Child (Counter.vue)
+&lt;script setup&gt;
+import { defineEmits, defineProps, ref } from 'vue';
+const props = defineProps({ initial: Number });
+const emit = defineEmits(['update']);
+const count = ref(props.initial || 0);
+function inc(){ count.value++; emit('update', count.value); }
+&lt;/script&gt;
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Reactivity Example</summary>
+            <pre><code>// Using reactive object
+&lt;script setup&gt;
+import { reactive } from 'vue';
+const state = reactive({ todos: [] });
+function add(text){ state.todos.push({ id: Date.now(), text }); }
+&lt;/script&gt;
+</code></pre>
+          </details>
+        </section>
+
+        <section class="section" id="further">
+          <h2>Further Reading & Resources</h2>
+          <ul>
+            <li>Official Vue docs — in-depth guides and API reference.</li>
+            <li>Vite, Nuxt, Pinia docs for ecosystem tools.</li>
+            <li>Vue Test Utils + Vitest for testing components.</li>
+          </ul>
+        </section>
+
+        <footer style="margin-top:24px;color:var(--muted)">
+          <small>Generated learning note — deep and detailed, single-file HTML for Vue fundamentals. Ask to expand any subsection or add TypeScript, testing, or advanced patterns.</small>
+        </footer>
+      </article>
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded',() =&gt; {
+      document.querySelectorAll('pre code').forEach((el) =&gt; { try{ hljs.highlightElement(el); }catch(e){} });
+      const filter = document.getElementById('tocFilter');
+      filter.addEventListener('input', (e) =&gt; {
+        const q = e.target.value.toLowerCase();
+        document.querySelectorAll('#tocList details').forEach(d =&gt; { const text = d.textContent.toLowerCase(); d.style.display = text.includes(q) ? '' : 'none'; });
+      });
+      document.getElementById('expandAllBtn').addEventListener('click', () =&gt; { document.querySelectorAll('#tocList details').forEach(d =&gt; d.open = true); });
+      document.getElementById('collapseAllBtn').addEventListener('click', () =&gt; { document.querySelectorAll('#tocList details').forEach(d =&gt; d.open = false); });
+      document.querySelectorAll('a[href^="#"]').forEach(a =&gt; { a.addEventListener('click', (e) =&gt; { const href = a.getAttribute('href'); const target = document.querySelector(href); if(target){ e.preventDefault(); document.querySelector('.right-panel').scrollTo({top: target.offsetTop - 12, behavior:'smooth'}); } }); });
+      const rp = document.querySelector('.right-panel'); rp.tabIndex = 0;
+      const obs = new MutationObserver(() =&gt; { document.querySelectorAll('pre code').forEach((el) =&gt; { try { hljs.highlightElement(el); } catch(e){} }); });
+      obs.observe(document.body, {childList:true, subtree:true});
+    });
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

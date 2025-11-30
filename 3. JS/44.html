@@ -1,0 +1,1002 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>14.2 – Proxies and Reflection in JavaScript</title>
+
+<!-- Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+:root{
+    --bg-main:#050816;
+    --bg-sidebar:#060b18;
+    --accent-cyan:#22d3ee;
+    --accent-amber:#fbbf24;
+    --text-main:#e5e7eb;
+    --text-muted:#9ca3af;
+    --border-subtle:#1f2937;
+    --code-bg:#020617;
+}
+
+/* Base */
+*{box-sizing:border-box;}
+html,body{
+    margin:0;
+    padding:0;
+    height:100%;
+    background:var(--bg-main);
+    color:var(--text-main);
+    font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    scroll-behavior:smooth;
+}
+body{overflow:hidden;}
+
+/* Layout */
+.app-wrapper{height:100vh;}
+.sidebar{
+    background:radial-gradient(circle at top left,#0f172a,var(--bg-sidebar));
+    border-right:1px solid var(--border-subtle);
+    height:100vh;
+    position:sticky;top:0;
+    overflow-y:auto;
+    padding:1.2rem 1rem;
+}
+.content-panel{
+    height:100vh;
+    overflow-y:auto;
+    padding:1.5rem 2rem;
+    background:radial-gradient(circle at top right,#020617,var(--bg-main));
+}
+
+/* Scrollbars */
+.sidebar::-webkit-scrollbar,
+.content-panel::-webkit-scrollbar{width:8px;}
+.sidebar::-webkit-scrollbar-thumb,
+.content-panel::-webkit-scrollbar-thumb{
+    background:#1f2937;border-radius:999px;
+}
+
+/* Sidebar text */
+.course-tag{
+    font-size:0.75rem;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--accent-amber);
+}
+.main-title{
+    font-size:1.4rem;
+    font-weight:700;
+    color:var(--accent-cyan);
+}
+.subtitle{
+    font-size:0.9rem;
+    color:var(--text-muted);
+}
+.meta-text{
+    font-size:0.8rem;
+    color:var(--text-muted);
+}
+.pill{
+    display:inline-flex;
+    align-items:center;
+    border-radius:999px;
+    padding:0.15rem 0.55rem;
+    font-size:0.72rem;
+    border:1px solid rgba(148,163,184,0.6);
+    color:var(--text-muted);
+    margin:0.15rem 0.25rem 0.15rem 0;
+}
+.pill span.bullet{
+    width:6px;height:6px;border-radius:999px;
+    background:var(--accent-cyan);
+    margin-right:0.25rem;
+}
+
+/* TOC */
+.toc-card{
+    margin-top:1rem;
+    background:rgba(15,23,42,0.95);
+    border-radius:0.75rem;
+    border:1px solid rgba(148,163,184,0.3);
+    padding:0.9rem;
+}
+.toc-title{
+    font-size:0.9rem;
+    font-weight:600;
+    color:var(--accent-amber);
+}
+.toc-search input{
+    width:100%;
+    border-radius:999px;
+    border:1px solid #111827;
+    background:#020617;
+    color:var(--text-main);
+    font-size:0.78rem;
+    padding:0.2rem 0.6rem;
+}
+.toc-list{
+    list-style:none;
+    padding-left:0;
+    margin:0.4rem 0 0 0;
+}
+.toc-link{
+    display:flex;
+    align-items:center;
+    gap:0.4rem;
+    font-size:0.8rem;
+    padding:0.18rem 0.4rem;
+    border-radius:0.4rem;
+    text-decoration:none;
+    color:var(--text-muted);
+}
+.toc-link-dot{
+    width:6px;height:6px;border-radius:999px;
+    background:rgba(148,163,184,0.7);
+}
+.toc-link:hover{
+    background:rgba(15,23,42,0.9);
+    color:var(--accent-cyan);
+}
+.toc-link.active{
+    background:rgba(8,47,73,0.85);
+    color:var(--accent-cyan);
+}
+.toc-link.active .toc-link-dot{background:var(--accent-cyan);}
+.toc-actions button{
+    border-radius:999px;
+    border:1px solid rgba(148,163,184,0.45);
+    background:rgba(15,23,42,0.9);
+    color:var(--text-muted);
+    font-size:0.72rem;
+    padding:0.12rem 0.6rem;
+}
+
+/* Content */
+.content-heading h1{
+    font-size:1.6rem;
+    color:var(--accent-cyan);
+}
+.content-heading p{
+    font-size:0.9rem;
+    color:var(--text-muted);
+}
+.badge-level,.badge-topic{
+    font-size:0.75rem;
+    border-radius:999px;
+    padding:0.12rem 0.6rem;
+}
+.badge-level{
+    border:1px solid rgba(56,189,248,0.6);
+    color:var(--accent-cyan);
+}
+.badge-topic{
+    border:1px dashed rgba(251,191,36,0.6);
+    color:var(--accent-amber);
+}
+.summary-strip{
+    background:radial-gradient(circle at left,rgba(56,189,248,0.2),transparent);
+    border-radius:0.8rem;
+    border:1px solid rgba(148,163,184,0.5);
+    padding:0.8rem 1rem;
+    font-size:0.86rem;
+    margin-bottom:1.1rem;
+}
+.summary-strip strong{color:var(--accent-amber);}
+.section-label{
+    font-size:0.7rem;
+    text-transform:uppercase;
+    letter-spacing:0.16em;
+    color:#9ca3af;
+}
+.section-title{
+    font-size:1.05rem;
+    font-weight:600;
+    color:var(--accent-amber);
+}
+.section-subtitle{
+    font-size:0.85rem;
+    color:var(--text-muted);
+    margin-bottom:0.6rem;
+}
+
+/* Details blocks */
+details{
+    background:rgba(15,23,42,0.9);
+    border-radius:0.8rem;
+    border:1px solid rgba(30,64,175,0.8);
+    padding:0.25rem 0.85rem 0.6rem;
+    margin-bottom:0.8rem;
+}
+details[open]{border-color:rgba(56,189,248,0.85);}
+summary{
+    list-style:none;
+    cursor:pointer;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:0.35rem 0;
+    font-size:0.92rem;
+    font-weight:600;
+}
+summary::-webkit-details-marker{display:none;}
+.summary-label{display:flex;align-items:center;gap:0.4rem;}
+.summary-label .dot{
+    width:7px;height:7px;border-radius:999px;
+    background:var(--accent-cyan);
+}
+.summary-tag{
+    font-size:0.75rem;
+    color:var(--accent-amber);
+}
+details .inner{
+    font-size:0.84rem;
+    color:var(--text-muted);
+}
+details .inner ul{padding-left:1.1rem;}
+details .inner li{margin-bottom:0.2rem;}
+.hint{
+    border-left:3px solid var(--accent-cyan);
+    padding-left:0.6rem;
+    margin:0.4rem 0;
+    font-size:0.8rem;
+}
+
+/* Code */
+pre{
+    background:var(--code-bg);
+    border-radius:0.7rem;
+    border:1px solid rgba(15,118,110,0.7);
+    padding:0.7rem 0.9rem;
+    overflow-x:auto;
+    margin:0.4rem 0;
+}
+code{
+    font-family:"JetBrains Mono","Fira Code",ui-monospace,monospace;
+    font-size:0.8rem;
+}
+.token-comment{color:#6b7280;font-style:italic;}
+.token-string{color:#fb923c;}
+.token-number{color:#a855f7;}
+.token-keyword{color:#22c55e;font-weight:600;}
+.token-builtins{color:#facc15;}
+.token-function{color:#38bdf8;}
+
+/* Responsive */
+@media (max-width:991.98px){
+    body{overflow:auto;}
+    .app-wrapper{height:auto;}
+    .sidebar{
+        height:auto;
+        position:static;
+        border-right:none;
+        border-bottom:1px solid var(--border-subtle);
+    }
+    .content-panel{height:auto;}
+}
+</style>
+</head>
+
+<body>
+<div class="container-fluid app-wrapper">
+  <div class="row flex-nowrap">
+    <!-- SIDEBAR -->
+    <aside class="col-12 col-md-4 col-lg-3 sidebar">
+      <div>
+        <div class="course-tag">Modern JavaScript Deep Dive</div>
+        <div class="main-title">14.2 – Proxies &amp; Reflection</div>
+        <div class="subtitle">Meta-programming, virtual objects &amp; traps</div>
+        <div class="meta-text">
+          Prepared for: College → Master / PhD level<br>
+          Focus: Behaviour interception &amp; reflective APIs
+        </div>
+      </div>
+
+      <div class="mt-2">
+        <span class="pill"><span class="bullet"></span>Proxy creation</span>
+        <span class="pill"><span class="bullet"></span>Traps</span>
+        <span class="pill"><span class="bullet"></span>Reflect API</span>
+        <span class="pill"><span class="bullet"></span>Virtual props</span>
+        <span class="pill"><span class="bullet"></span>Meta-programming</span>
+      </div>
+
+      <div class="toc-card mt-2">
+        <div class="toc-title mb-1">On this page</div>
+        <div class="mb-2">
+          <input id="tocSearch" type="text" placeholder="Search sections…">
+        </div>
+        <ul id="tocList" class="toc-list">
+          <li data-label="proxy object creation">
+            <a href="#sec-proxy-create" class="toc-link">
+              <span class="toc-link-dot"></span>
+              <span>14.2.1 Proxy object creation</span>
+            </a>
+          </li>
+          <li data-label="handler methods traps">
+            <a href="#sec-traps" class="toc-link">
+              <span class="toc-link-dot"></span>
+              <span>14.2.2 Handler methods (traps)</span>
+            </a>
+          </li>
+          <li data-label="reflect api">
+            <a href="#sec-reflect" class="toc-link">
+              <span class="toc-link-dot"></span>
+              <span>14.2.3 Reflect API</span>
+            </a>
+          </li>
+          <li data-label="virtual properties">
+            <a href="#sec-virtual" class="toc-link">
+              <span class="toc-link-dot"></span>
+              <span>14.2.4 Virtual properties with proxies</span>
+            </a>
+          </li>
+          <li data-label="metaprogramming with proxies">
+            <a href="#sec-meta" class="toc-link">
+              <span class="toc-link-dot"></span>
+              <span>14.2.5 Meta-programming patterns</span>
+            </a>
+          </li>
+        </ul>
+        <div class="toc-actions mt-2">
+          <button id="btnExpandAll" type="button">Expand all</button>
+          <button id="btnCollapseAll" type="button">Collapse all</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="col content-panel">
+      <section class="content-heading">
+        <div class="d-flex flex-wrap align-items-center mb-2">
+          <span class="badge-level">Level: Advanced</span>
+          <span class="badge-topic ms-1">Topic: Proxies, traps &amp; reflection</span>
+        </div>
+        <h1>14.2 – Proxies and Reflection in JavaScript</h1>
+        <p>
+          Proxies let you intercept and redefine fundamental operations on objects: property access,
+          assignment, enumeration, function calls, and more. The <code>Reflect</code> API complements
+          them with low-level operations that mirror the language’s internal behaviour. Together, they
+          form JavaScript’s core meta-programming toolkit, allowing you to build virtual objects,
+          transparent decorators, validation layers, and domain-specific languages on top of plain
+          objects and functions.
+        </p>
+      </section>
+
+      <section>
+        <div class="summary-strip">
+          <strong>Executive intuition:</strong>
+          A proxy is like placing a “smart membrane” around an object. Any interaction—reading a
+          property, setting a value, calling it as a function—passes through your custom handler
+          first. The <code>Reflect</code> object then gives you precise tools to forward those
+          interactions to the original target in a controlled way.
+        </div>
+      </section>
+
+      <!-- 14.2.1 Proxy object creation -->
+      <section id="sec-proxy-create" class="mb-4">
+        <div class="section-label">14.2.1</div>
+        <div class="section-title">Proxy object creation</div>
+        <div class="section-subtitle">Wrapping a target object with a behavioural layer.</div>
+
+        <details open>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Basic syntax of Proxy</span>
+            <span class="summary-tag">syntax</span>
+          </summary>
+          <div class="inner">
+            <p>
+              Canonical form:
+            </p>
+            <pre><code>
+const proxy = new Proxy(target, handler);
+            </code></pre>
+            <ul>
+              <li><code>target</code> – the underlying object (or function) you are wrapping.</li>
+              <li><code>handler</code> – an object with trap methods (like <code>get</code>, <code>set</code>, etc.).</li>
+            </ul>
+
+            <pre><code>
+const user = { name: "Irfan", role: "user" };
+
+const userProxy = new Proxy(user, {
+    get(target, prop, receiver) {
+        console.log("GET", String(prop));
+        return Reflect.get(target, prop, receiver);
+    }
+});
+
+console.log(userProxy.name); // logs: GET name, then "Irfan"
+            </code></pre>
+
+            <p class="hint">
+              You almost always use <code>Reflect</code> inside traps to delegate to default behaviour
+              after applying your custom logic.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Proxying functions</span>
+            <span class="summary-tag">functions</span>
+          </summary>
+          <div class="inner">
+            <p>
+              The target can also be a function. Then you can intercept calls using the
+              <code>apply</code> trap.
+            </p>
+            <pre><code>
+function sum(a, b) {
+    return a + b;
+}
+
+const loggedSum = new Proxy(sum, {
+    apply(target, thisArg, argsList) {
+        console.log("Calling sum with", argsList);
+        const result = Reflect.apply(target, thisArg, argsList);
+        console.log("Result:", result);
+        return result;
+    }
+});
+
+loggedSum(2, 3); // logs call and result
+            </code></pre>
+          </div>
+        </details>
+      </section>
+
+      <!-- 14.2.2 Handler methods (traps) -->
+      <section id="sec-traps" class="mb-4">
+        <div class="section-label">14.2.2</div>
+        <div class="section-title">Handler methods (traps)</div>
+        <div class="section-subtitle">Intercepting core operations.</div>
+
+        <details open>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Commonly used traps overview</span>
+            <span class="summary-tag">overview</span>
+          </summary>
+          <div class="inner">
+            <ul>
+              <li><code>get(target, prop, receiver)</code> – property read.</li>
+              <li><code>set(target, prop, value, receiver)</code> – property write.</li>
+              <li><code>has(target, prop)</code> – <code>prop in proxy</code>.</li>
+              <li><code>ownKeys(target)</code> – <code>Object.keys</code>, <code>for...in</code>, <code>Reflect.ownKeys</code>.</li>
+              <li><code>deleteProperty(target, prop)</code> – <code>delete proxy[prop]</code>.</li>
+              <li><code>apply(target, thisArg, argsList)</code> – function call.</li>
+              <li><code>construct(target, argsList, newTarget)</code> – <code>new proxy(...)</code>.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Validation with get/set traps</span>
+            <span class="summary-tag">example</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+const person = {
+    name: "Irfan",
+    age: 25
+};
+
+const validatedPerson = new Proxy(person, {
+    set(target, prop, value, receiver) {
+        if (prop === "age" &amp;&amp; (typeof value !== "number" || value &lt; 0)) {
+            throw new TypeError("Age must be a non-negative number");
+        }
+        return Reflect.set(target, prop, value, receiver);
+    },
+    get(target, prop, receiver) {
+        console.log("Reading", String(prop));
+        return Reflect.get(target, prop, receiver);
+    }
+});
+
+validatedPerson.age = 30; // OK
+console.log(validatedPerson.age);
+
+validatedPerson.age = -10; // throws TypeError
+            </code></pre>
+
+            <p class="hint">
+              This pattern is powerful for enforcing runtime invariants on configuration objects,
+              environment variables, etc.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Transparent logging for any object</span>
+            <span class="summary-tag">utility</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+function createLoggingProxy(obj, label = "obj") {
+    return new Proxy(obj, {
+        get(target, prop, receiver) {
+            const value = Reflect.get(target, prop, receiver);
+            console.log(`[${label}] GET`, String(prop), "=&gt;", value);
+            return value;
+        },
+        set(target, prop, value, receiver) {
+            console.log(`[${label}] SET`, String(prop), "=&gt;", value);
+            return Reflect.set(target, prop, value, receiver);
+        }
+    });
+}
+
+const state = createLoggingProxy({ count: 0 }, "state");
+state.count++;
+state.newProp = 123;
+console.log(state.count);
+            </code></pre>
+
+            <p>
+              Note that even adding new properties is logged; proxies are ideal for instrumenting
+              existing code without changing call sites.
+            </p>
+          </div>
+        </details>
+      </section>
+
+      <!-- 14.2.3 Reflect API -->
+      <section id="sec-reflect" class="mb-4">
+        <div class="section-label">14.2.3</div>
+        <div class="section-title">Reflect API</div>
+        <div class="section-subtitle">The “standard library” of object meta-operations.</div>
+
+        <details open>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Why Reflect exists</span>
+            <span class="summary-tag">motivation</span>
+          </summary>
+          <div class="inner">
+            <p>
+              The <code>Reflect</code> object:
+            </p>
+            <ul>
+              <li>Provides functions that mirror many internal operations.</li>
+              <li>Standardizes things that were previously scattered (<code>Function.prototype.apply</code>, <code>delete</code>, etc.).</li>
+              <li>Pairs naturally with proxies: most traps correspond to a <code>Reflect.*</code> method.</li>
+            </ul>
+
+            <p>Examples:</p>
+            <pre><code>
+const obj = { x: 1 };
+
+// Instead of: obj.x = 2;
+Reflect.set(obj, "x", 2);
+
+// Instead of: "x" in obj;
+console.log(Reflect.has(obj, "x"));
+
+// Instead of: delete obj.x;
+Reflect.deleteProperty(obj, "x");
+
+console.log(obj); // {}
+            </code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Traps &amp; their Reflect counterparts</span>
+            <span class="summary-tag">pairing</span>
+          </summary>
+          <div class="inner">
+            <p>
+              Typical mapping:
+            </p>
+            <pre><code>
+get           &lt;=&gt; Reflect.get
+set           &lt;=&gt; Reflect.set
+has           &lt;=&gt; Reflect.has
+deleteProperty&lt;=&gt; Reflect.deleteProperty
+ownKeys       &lt;=&gt; Reflect.ownKeys
+apply         &lt;=&gt; Reflect.apply
+construct     &lt;=&gt; Reflect.construct
+defineProperty&lt;=&gt; Reflect.defineProperty
+getPrototypeOf&lt;=&gt; Reflect.getPrototypeOf
+setPrototypeOf&lt;=&gt; Reflect.setPrototypeOf
+            </code></pre>
+
+            <pre><code>
+const target = { x: 1 };
+
+const proxy = new Proxy(target, {
+    get(t, prop, receiver) {
+        console.log("Proxy GET", String(prop));
+        return Reflect.get(t, prop, receiver);
+    },
+    set(t, prop, value, receiver) {
+        console.log("Proxy SET", String(prop), "=&gt;", value);
+        return Reflect.set(t, prop, value, receiver);
+    }
+});
+
+proxy.x;      // wrap Reflect.get
+proxy.y = 42; // wrap Reflect.set
+            </code></pre>
+          </div>
+        </details>
+      </section>
+
+      <!-- 14.2.4 Virtual properties -->
+      <section id="sec-virtual" class="mb-4">
+        <div class="section-label">14.2.4</div>
+        <div class="section-title">Virtual properties with proxies</div>
+        <div class="section-subtitle">Exposing data that doesn't exist physically on the object.</div>
+
+        <details open>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Computed / virtual fields</span>
+            <span class="summary-tag">virtual</span>
+          </summary>
+          <div class="inner">
+            <p>
+              You can expose properties that are not stored but computed on-demand.
+            </p>
+
+            <pre><code>
+const user = {
+    firstName: "Irfan",
+    lastName: "Ali"
+};
+
+const virtualUser = new Proxy(user, {
+    get(target, prop, receiver) {
+        if (prop === "fullName") {
+            return target.firstName + " " + target.lastName;
+        }
+        return Reflect.get(target, prop, receiver);
+    },
+    has(target, prop) {
+        if (prop === "fullName") {
+            return true;
+        }
+        return Reflect.has(target, prop);
+    },
+    ownKeys(target) {
+        const keys = Reflect.ownKeys(target);
+        return keys.concat("fullName");
+    },
+    getOwnPropertyDescriptor(target, prop) {
+        if (prop === "fullName") {
+            return {
+                configurable: true,
+                enumerable: true,
+                get() {
+                    return target.firstName + " " + target.lastName;
+                }
+            };
+        }
+        return Reflect.getOwnPropertyDescriptor(target, prop);
+    }
+});
+
+console.log(virtualUser.fullName);          // "Irfan Ali"
+console.log("fullName" in virtualUser);     // true
+console.log(Object.keys(virtualUser));      // ["firstName","lastName","fullName"]
+            </code></pre>
+
+            <p class="hint">
+              This pattern is useful for building ORM-like models, view models, or calculated stats without storing duplicates.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Array-like views and ranges</span>
+            <span class="summary-tag">example</span>
+          </summary>
+          <div class="inner">
+            <p>
+              You can emulate structures like Python’s <code>range</code>:
+            </p>
+
+            <pre><code>
+function createRange(start, end) {
+    return new Proxy({}, {
+        get(target, prop) {
+            if (prop === "length") {
+                return Math.max(0, end - start);
+            }
+            const index = Number(prop);
+            if (!Number.isNaN(index) &amp;&amp; index &gt;= 0 &amp;&amp; index &lt; end - start) {
+                return start + index;
+            }
+            return undefined;
+        },
+        has(target, prop) {
+            const index = Number(prop);
+            return !Number.isNaN(index) &amp;&amp; index &gt;= 0 &amp;&amp; index &lt; end - start;
+        },
+        ownKeys(target) {
+            const keys = [];
+            for (let i = 0; i &lt; end - start; i++) {
+                keys.push(String(i));
+            }
+            return keys;
+        },
+        getOwnPropertyDescriptor(target, prop) {
+            const index = Number(prop);
+            if (!Number.isNaN(index) &amp;&amp; index &gt;= 0 &amp;&amp; index &lt; end - start) {
+                return {
+                    configurable: true,
+                    enumerable: true,
+                    writable: false,
+                    value: start + index
+                };
+            }
+        }
+    });
+}
+
+const r = createRange(5, 10);
+console.log(r[0], r[4]);           // 5 9
+console.log(r.length);             // 5
+console.log(Object.keys(r));       // ["0","1","2","3","4"]
+            </code></pre>
+          </div>
+        </details>
+      </section>
+
+      <!-- 14.2.5 Meta-programming patterns -->
+      <section id="sec-meta" class="mb-4">
+        <div class="section-label">14.2.5</div>
+        <div class="section-title">Meta-programming with proxies</div>
+        <div class="section-subtitle">Dynamic wrappers, access control &amp; domain-specific tools.</div>
+
+        <details open>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Auto-binding &quot;this&quot; for methods</span>
+            <span class="summary-tag">pattern</span>
+          </summary>
+          <div class="inner">
+            <p>
+              In OOP code, you often need to bind methods to their instance. A proxy can do this transparently.
+            </p>
+
+            <pre><code>
+function autobind(obj) {
+    return new Proxy(obj, {
+        get(target, prop, receiver) {
+            const value = Reflect.get(target, prop, receiver);
+            if (typeof value === "function") {
+                return value.bind(target);
+            }
+            return value;
+        }
+    });
+}
+
+class Counter {
+    constructor() {
+        this.value = 0;
+    }
+    inc() {
+        this.value++;
+    }
+}
+
+const c = autobind(new Counter());
+const { inc } = c;
+inc(); // still increments c.value
+console.log(c.value); // 1
+            </code></pre>
+
+            <p class="hint">
+              Common use-case: event handlers in UI frameworks, avoiding repetitive <code>.bind(this)</code>.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Access control / read-only views</span>
+            <span class="summary-tag">security-ish</span>
+          </summary>
+          <div class="inner">
+            <pre><code>
+function readOnlyView(obj) {
+    return new Proxy(obj, {
+        set(target, prop, value) {
+            throw new Error("Attempt to modify read-only view: " + String(prop));
+        },
+        deleteProperty(target, prop) {
+            throw new Error("Attempt to delete from read-only view: " + String(prop));
+        }
+    });
+}
+
+const secretConfig = { token: "abc123", endpoint: "/api" };
+const publicConfig = readOnlyView(secretConfig);
+
+console.log(publicConfig.endpoint); // "/api"
+publicConfig.endpoint = "/hacked";  // throws
+            </code></pre>
+
+            <p>
+              Note: this prevents modifications through the proxy reference; it does not magically make
+              the underlying object immutable if you still hold direct references elsewhere.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Fluent domain-specific API (DSL-like)</span>
+            <span class="summary-tag">DSL</span>
+          </summary>
+          <div class="inner">
+            <p>
+              You can interpret chained property accesses as commands, not as real fields:
+            </p>
+
+            <pre><code>
+function createQueryBuilder() {
+    const steps = [];
+
+    const handler = {
+        get(target, prop, receiver) {
+            if (prop === "run") {
+                return () =&gt; {
+                    console.log("Executing query with steps:", steps);
+                    // Imagine: translate steps into SQL / MongoDB / etc.
+                };
+            }
+            steps.push({ type: "field", name: prop });
+            return new Proxy(() =&gt; {}, handler);
+        },
+        apply(target, thisArg, args) {
+            steps.push({ type: "call", args });
+            return new Proxy(() =&gt; {}, handler);
+        }
+    };
+
+    return new Proxy(() =&gt; {}, handler);
+}
+
+const q = createQueryBuilder();
+
+q.users.where("active").equals(true).orderBy("createdAt").run();
+            </code></pre>
+
+            <p class="hint">
+              This kind of meta-programming lets you design APIs that “look like code” but are actually
+              constructing an abstract syntax tree behind the scenes.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>
+            <span class="summary-label"><span class="dot"></span>Considerations &amp; pitfalls</span>
+            <span class="summary-tag">caveats</span>
+          </summary>
+          <div class="inner">
+            <ul>
+              <li>Proxies can affect performance if used in very hot loops or over huge object graphs.</li>
+              <li>Debugging can be trickier: stack traces may point to proxy handlers instead of original code.</li>
+              <li>Certain invariants enforced by the spec must be respected; traps cannot violate them (e.g. ownKeys must include non-configurable properties).</li>
+              <li>Some older or low-level libraries might not interact perfectly with proxies.</li>
+            </ul>
+            <p>
+              Use proxies for clear, high-value meta-programming needs (logging, validation, virtualization),
+              not as a default for every object.
+            </p>
+          </div>
+        </details>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script>
+// Smooth scrolling + active TOC + search + expand/collapse + simple highlighting
+document.addEventListener("DOMContentLoaded", () => {
+  const contentPanel = document.querySelector(".content-panel");
+  const tocLinks = Array.from(document.querySelectorAll(".toc-link"));
+  const sections = tocLinks.map(link => {
+    const id = link.getAttribute("href");
+    return { link, target: document.querySelector(id) };
+  });
+
+  // Smooth scroll
+  tocLinks.forEach(link => {
+    link.addEventListener("click", e => {
+      e.preventDefault();
+      const id = link.getAttribute("href");
+      const target = document.querySelector(id);
+      if (target) {
+        target.scrollIntoView({ behavior: "smooth", block: "start" });
+        history.replaceState(null, "", id);
+      }
+    });
+  });
+
+  // Active TOC highlight
+  function updateActive() {
+    const y = contentPanel.scrollTop;
+    let current = null;
+    sections.forEach(({ link, target }) => {
+      if (!target) return;
+      const top = target.offsetTop;
+      if (top - 80 <= y) current = link;
+    });
+    tocLinks.forEach(l => l.classList.remove("active"));
+    if (current) current.classList.add("active");
+  }
+  contentPanel.addEventListener("scroll", updateActive);
+  updateActive();
+
+  // TOC search
+  const tocSearch = document.getElementById("tocSearch");
+  const tocItems = Array.from(document.querySelectorAll("#tocList li"));
+  tocSearch.addEventListener("input", () => {
+    const q = tocSearch.value.toLowerCase();
+    tocItems.forEach(li => {
+      const text = li.textContent.toLowerCase() || "";
+      li.style.display = text.includes(q) ? "" : "none";
+    });
+  });
+
+  // Expand / collapse all
+  document.getElementById("btnExpandAll").onclick =
+    () => document.querySelectorAll("details").forEach(d => d.open = true);
+  document.getElementById("btnCollapseAll").onclick =
+    () => document.querySelectorAll("details").forEach(d => d.open = false);
+
+  // Simple syntax highlighting
+  function escapeHtml(str){
+    return str.replace(/&/g,"&amp;")
+              .replace(/</g,"&lt;")
+              .replace(/>/g,"&gt;");
+  }
+  const keywords = [
+    "class","extends","constructor","super",
+    "function","return","const","let","var",
+    "if","else","while","for","new","async","await",
+    "try","catch","throw","in","instanceof"
+  ];
+  const builtins = [
+    "Object","Array","Map","Set","Date","Promise",
+    "console","Math","JSON","fetch","Reflect","Proxy","WeakSet"
+  ];
+
+  document.querySelectorAll("pre code").forEach(codeEl => {
+    const raw = codeEl.textContent;
+    let html = escapeHtml(raw);
+
+    // comments
+    html = html.replace(/(\/\/.*?$)/gm,"<span class='token-comment'>$1</span>");
+    // strings
+    html = html.replace(/(&quot;.*?&quot;|'.*?'|`.*?`)/g,
+      "<span class='token-string'>$1</span>");
+    // numbers
+    html = html.replace(/\b(\d+(\.\d+)?)\b/g,
+      "<span class='token-number'>$1</span>");
+    // builtins
+    builtins.forEach(b => {
+      const re = new RegExp("\\b"+b+"\\b","g");
+      html = html.replace(re,"<span class='token-builtins'>"+b+"</span>");
+    });
+    // keywords
+    keywords.forEach(k => {
+      const re = new RegExp("\\b"+k+"\\b","g");
+      html = html.replace(re,"<span class='token-keyword'>"+k+"</span>");
+    });
+    // functions (simple heuristic)
+    html = html.replace(/([a-zA-Z_$][\w$]*)\s*(?=\()/g,
+      "<span class='token-function'>$1</span>");
+
+    codeEl.innerHTML = html;
+  });
+});
+</script>
+</body>
+</html>

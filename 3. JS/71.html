@@ -1,0 +1,737 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>20.4 Web Performance Metrics — Deep Learning Note</title>
+
+  <!-- Bootstrap CSS (CDN) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Highlight.js (for syntax highlighting) -->
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+
+  <style>
+    :root{
+      --bg: #0b0f10;
+      --surface: #121416;
+      --muted: #9aa7ad;
+      --accent-cyan: #06b6d4;
+      --accent-amber: #f59e0b;
+      --card: #111316;
+      --glass: rgba(255,255,255,0.02);
+      --radius: 12px;
+      --toc-width: 320px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
+    }
+
+    html,body{
+      height:100%;
+      background: linear-gradient(180deg,var(--bg),#050606);
+      color: #e6eef2;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      margin:0;
+      padding:0;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    /* Layout */
+    .app {
+      display: grid;
+      grid-template-columns: var(--toc-width) 1fr;
+      gap: 20px;
+      height: 100vh;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+.details{
+    color: white;
+}
+    /* Left panel (fixed width, sticky) */
+    .panel-left {
+      width: var(--toc-width);
+      background: linear-gradient(180deg,var(--card), rgba(10,12,13,0.7));
+      border-radius: var(--radius);
+      padding: 18px;
+      box-shadow: 0 6px 30px rgba(2,6,8,0.6), inset 0 1px 0 rgba(255,255,255,0.02);
+      position: sticky;
+      top: 20px;
+      height: calc(100vh - 40px);
+      overflow: auto;
+    }
+
+    .left-header h1{font-size:1.05rem;margin:0;color:var(--accent-cyan);}
+    .left-header p{margin:4px 0 10px;color:var(--muted);font-size:0.85rem}
+    .author {font-size:0.82rem;color:var(--muted)}
+    .meta-badge {display:inline-block;padding:4px 8px;border-radius:999px;background:rgba(255,255,255,0.02);font-size:0.78rem;margin-right:6px}
+
+    /* TOC and search */
+    .toc-search {display:flex;gap:8px;margin-top:12px}
+    .toc-search input {
+      background: transparent;border:1px solid rgba(255,255,255,0.04);padding:8px;border-radius:8px;color:inherit;
+      width:100%;
+    }
+    .toc {margin-top:12px}
+    .toc ul {list-style:none;padding:0;margin:0}
+    .toc li{padding:6px 6px;border-radius:8px;cursor:pointer}
+    .toc li:hover{background:linear-gradient(90deg, rgba(6,182,212,0.06), rgba(245,158,11,0.03));}
+    .toc .toc-sub{font-size:0.9rem;color:var(--muted);padding-left:12px}
+
+    /* Right panel (scrollable content) */
+    .panel-right {
+      background: transparent;
+      border-radius: var(--radius);
+      padding: 18px;
+      height: calc(100vh - 40px);
+      overflow: auto;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius: 12px;
+      padding: 18px;
+      margin-bottom: 14px;
+      box-shadow: 0 6px 18px rgba(2,6,8,0.6);
+      border: 1px solid rgba(255,255,255,0.02);
+    }
+
+    h2,h3{color:#eaf7fb}
+    h2{font-size:1.15rem;display:flex;align-items:center;gap:10px}
+    .tag {font-size:0.75rem;padding:6px 8px;border-radius:8px;background:rgba(255,255,255,0.02);color:var(--muted);margin-left:auto}
+
+    /* details/summary styling */
+    details {
+      background: rgba(255,255,255,0.01);
+      border-radius:8px;
+      padding:10px;
+      margin:8px 0;
+      border:1px solid rgba(255,255,255,0.02);
+      color: white;
+    }
+    summary {
+      cursor:pointer;
+      font-weight:600;
+      outline:none;
+    }
+    details[open] summary { color: var(--accent-cyan) }
+
+    /* Code blocks */
+    pre {
+      background: #0b0f10;
+      border-left: 4px solid rgba(6,182,212,0.14);
+      padding: 12px;
+      border-radius:8px;
+      overflow:auto;
+      font-family: var(--mono);
+      font-size:0.88rem;
+      line-height:1.4;
+      margin:10px 0;
+    }
+    code { font-family: var(--mono); font-size:0.88rem; color:#d7f0f4 }
+
+    /* buttons & controls */
+    .controls {display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .btn-ghost {
+      background:transparent;border:1px solid rgba(255,255,255,0.04);padding:8px 10px;border-radius:8px;color:var(--muted);
+      cursor:pointer;
+    }
+    .btn-primary {
+      background:linear-gradient(90deg,var(--accent-cyan), #06b6d4); color:#031016;border: none;padding:8px 12px;border-radius:8px;
+      cursor:pointer;font-weight:600;
+    }
+
+    /* small responsive tweaks */
+    @media (max-width: 900px){
+      .app { grid-template-columns: 1fr; padding:12px; gap:12px; }
+      .panel-left { position: relative; width:100%; height:auto; top:0; }
+    }
+
+    /* TOC active marker */
+    .toc-active { border-left:4px solid var(--accent-cyan); padding-left:8px; }
+
+    /* sticky nav inside right panel for quick actions */
+    .sticky-actions {
+      position: sticky; top: 12px; display:flex;gap:8px; align-items:center; z-index:5;
+      margin-bottom:12px;
+    }
+
+    .muted { color:var(--muted); font-size:0.9rem }
+    .accent-amber { color: var(--accent-amber); font-weight:700 }
+  </style>
+</head>
+<body>
+  <div class="app container-fluid">
+    <!-- LEFT PANEL -->
+    <aside class="panel-left" aria-label="Table of contents">
+      <div class="left-header">
+        <h1>20.4 — Web Performance Metrics</h1>
+        <p class="muted">Deep, layered learning note — Core Web Vitals, APIs, RUM, Synthetic testing, Budgets</p>
+        <div class="author">
+          <span class="meta-badge">Author: Performance Tutor</span>
+          <span class="meta-badge">Level: College → PhD</span>
+        </div>
+      </div>
+
+      <div class="controls" style="margin-top:12px;">
+        <button id="expandAll" class="btn-ghost" title="Expand all sections">Expand all</button>
+        <button id="collapseAll" class="btn-ghost" title="Collapse all sections">Collapse all</button>
+        <button id="copySummary" class="btn-primary" title="Copy executive summary">Copy exec summary</button>
+      </div>
+
+      <div class="toc-search">
+        <input id="tocSearch" placeholder="Search TOC / headings..." aria-label="Search table of contents" />
+      </div>
+
+      <nav class="toc" id="tocArea" aria-label="contents">
+        <ul id="tocList">
+          <li data-target="section-cwv"><strong>Core Web Vitals</strong><div class="toc-sub">LCP, FID/INP, CLS</div></li>
+          <li data-target="section-api"><strong>Performance measurement APIs</strong><div class="toc-sub">PerformanceObserver, Paint Timing, Long Tasks</div></li>
+          <li data-target="section-rum"><strong>Real User Monitoring (RUM)</strong><div class="toc-sub">collection, privacy, sampling</div></li>
+          <li data-target="section-synth"><strong>Synthetic testing strategies</strong><div class="toc-sub">Lighthouse, Puppeteer, WebPageTest</div></li>
+          <li data-target="section-budget"><strong>Performance budgets</strong><div class="toc-sub">config, enforcement, CI</div></li>
+        </ul>
+      </nav>
+
+      <div style="margin-top:16px" class="muted">
+        <p><strong>Quick tips</strong></p>
+        <ol style="padding-left:16px">
+          <li>Start with RUM to find high-impact pages.</li>
+          <li>Use synthetic for regression testing and CI gating.</li>
+          <li>Track budgets in commits — fail builds early.</li>
+        </ol>
+      </div>
+
+      <footer style="margin-top:18px" class="muted">
+        <small>Note: use the search box to jump to sections. Click a TOC item to smooth-scroll.</small>
+      </footer>
+    </aside>
+
+    <!-- RIGHT PANEL -->
+    <main class="panel-right" id="content" tabindex="0">
+      <div class="card">
+        <div class="sticky-actions">
+          <div class="tag">Topic: Web Performance Metrics</div>
+          <div class="muted">Comprehensive walkthrough with actionable code samples</div>
+        </div>
+
+        <h2 id="section-intro">Executive summary <span class="tag">Executive</span></h2>
+        <p class="muted">
+          This chapter explains how to measure, analyze, and enforce web performance using both real user telemetry (RUM) and synthetic testing. We cover the Core Web Vitals—Largest Contentful Paint (LCP), INP/FID, and Cumulative Layout Shift (CLS)—explain the browser Performance APIs used to capture metrics, walk through RUM collection with privacy-aware instrumentation, describe synthetic testing strategies (Lighthouse, Puppeteer, WebPageTest), and show how to design and enforce performance budgets in CI/CD. Practical, production-ready examples are included in JavaScript.
+        </p>
+
+        <details open>
+          <summary>Learning outcomes</summary>
+          <ul>
+            <li>Understand what each Core Web Vital measures, how it's calculated, and typical failure modes.</li>
+            <li>Instrument measurements using standard browser APIs and third-party RUM approaches.</li>
+            <li>Implement synthetic tests for regression detection and CI gating.</li>
+            <li>Define, measure, and enforce performance budgets as part of a build pipeline.</li>
+          </ul>
+        </details>
+      </div>
+
+      <!-- Core Web Vitals -->
+      <section class="card" id="section-cwv">
+        <h2>Core Web Vitals — deep dive</h2>
+
+        <details open>
+          <summary>Executive summary</summary>
+          <p class="muted">Core Web Vitals are three user-centric metrics: LCP (perceived load speed), INP/FID (responsiveness), and CLS (visual stability). Together they approximate user experience for loading, interactivity, and visual stability.</p>
+        </details>
+
+        <details>
+          <summary>Definitions, calculations, and interpretations</summary>
+          <div>
+            <h3>Largest Contentful Paint (LCP)</h3>
+            <p>
+              <strong>What it is:</strong> timestamp at which the largest text block or image element visible in the viewport is rendered. It targets perceived load speed.
+            </p>
+            <p><strong>Calculated as:</strong> the maximum render time of eligible elements within the page load window (commonly within first 2-3s but up to 4s depending on user interactions and network).</p>
+            <pre><code>&lt;!-- Example: why server timing &amp; TTFB matter for LCP --&gt;
+&lt;img src=&quot;/hero.jpg&quot; alt=&quot;hero&quot; width=&quot;1200&quot; height=&quot;700&quot;&gt;
+&lt;!-- If this image is lazy-loaded incorrectly, LCP will be pushed late; ensure LCP-critical images are not deferred --&gt;
+</code></pre>
+
+            <h3>Interaction to Next Paint (INP) and First Input Delay (FID)</h3>
+            <p>
+              Historically FID measured delay for the first interaction only. INP is a replacement measuring distribution of latencies across interactions — it is the 98th percentile of the latency of all interactions on a page (approx.), providing a more holistic responsiveness metric.
+            </p>
+
+            <h3>Cumulative Layout Shift (CLS)</h3>
+            <p>
+              CLS sums unexpected layout shifts over the page lifecycle. Each shift is scored: <code>impactFraction × distanceFraction</code>. Layout shifts from user-initiated actions are not counted. The cumulative sum across the page is CLS.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Common failure modes and diagnostics</summary>
+          <ul>
+            <li><strong>LCP:</strong> slow server/TFFB, large unoptimized hero images, render-blocking CSS, heavy main-thread tasks delaying paint.</li>
+            <li><strong>INP:</strong> long JavaScript tasks, synchronous XHRs, expensive event handlers, third-party widgets.</li>
+            <li><strong>CLS:</strong> images without dimensions, web font swaps, injected ads, dynamic content insertion.</li>
+          </ul>
+        </details>
+
+        <details>
+          <summary>JS example — reading LCP via PerformanceObserver</summary>
+          <p class="muted">This snippet records the LCP and logs it. For production, send these to your RUM backend.</p>
+          <pre><code>&lt;script&gt;
+// Measure LCP using PerformanceObserver
+if ('PerformanceObserver' in window) {
+  const po = new PerformanceObserver((list) =&gt; {
+    for (const entry of list.getEntries()) {
+      // entry.renderTime or entry.loadTime are approximate LCP timestamps
+      console.log('LCP candidate:', entry);
+      // send to backend (example)
+      // sendMetric('lcp', {value: entry.renderTime || entry.loadTime});
+    }
+  });
+  try {
+    po.observe({type: 'largest-contentful-paint', buffered: true});
+    // Disconnect after pagehide/visibilitychange to get final LCP
+    document.addEventListener('visibilitychange', () =&gt; po.disconnect(), {once:true});
+    window.addEventListener('pagehide', () =&gt; po.disconnect(), {once:true});
+  } catch (e) {
+    console.warn('LCP observer failed', e);
+  }
+}
+&lt;/script&gt;
+</code></pre>
+        </details>
+
+      </section>
+
+      <!-- Performance Measurement APIs -->
+      <section class="card" id="section-api">
+        <h2>Performance measurement APIs</h2>
+
+        <details open>
+          <summary>Executive summary</summary>
+          <p class="muted">Browser Performance APIs (Performance, PerformanceObserver, Paint Timing, Long Tasks, Resource Timing, Navigation Timing) give precise low-level telemetry for constructing higher-level metrics and diagnosing issues.</p>
+        </details>
+
+        <details>
+          <summary>Key APIs and how to use them</summary>
+          <ul>
+            <li><strong>Performance API</strong> — <code>performance.now()</code>, <code>performance.getEntries()</code>, <code>performance.mark()</code> and <code>performance.measure()</code>.</li>
+            <li><strong>PerformanceObserver</strong> — subscribe to entry types like <code>'paint'</code>, <code>'resource'</code>, <code>'longtask'</code>, <code>'largest-contentful-paint'</code>.</li>
+            <li><strong>Long Tasks API</strong> — detect JS tasks &gt; 50ms using entry type <code>'longtask'</code>.</li>
+            <li><strong>Resource Timing</strong> — detailed timings for network resources (DNS, connect, TTFB, response).</li>
+          </ul>
+        </details>
+
+        <details>
+          <summary>Practical example — building a small measurement harness</summary>
+          <p class="muted">The harness uses marks &amp; measures to approximate application-critical milestones (appReady, hydrationComplete) and exports them in a JSON payload.</p>
+
+          <pre><code>&lt;script&gt;
+// Example measurement harness using marks and measures
+function mark(name){ performance.mark(name); }
+function measure(name, start, end){ performance.measure(name, start, end); }
+
+// Mark points in your app lifecycle
+mark('app-start');
+// ... app bootstrap
+mark('app-ready');
+// after hydration:
+mark('hydration-complete');
+
+// Create measures
+measure('time-to-ready','app-start','app-ready');
+measure('time-to-hydration','app-start','hydration-complete');
+
+// Extract and send measures
+const measures = performance.getEntriesByType('measure').map(m =&gt; ({
+  name: m.name, duration: m.duration, start: m.start
+}));
+// send to backend
+// navigator.sendBeacon('/rum', JSON.stringify({measures, url:location.href}));
+console.log(measures);
+&lt;/script&gt;
+</code></pre>
+        </details>
+
+        <details>
+          <summary>Long Tasks observer — finding main-thread blockers</summary>
+          <pre><code>&lt;script&gt;
+if ('PerformanceObserver' in window) {
+  const longTaskObserver = new PerformanceObserver(list =&gt; {
+    for (const entry of list.getEntries()) {
+      // entry.duration is the task duration in ms
+      console.warn('Long task detected:', entry);
+      // attach stack/attribution (if supported) for deeper debugging
+    }
+  });
+  longTaskObserver.observe({type:'longtask', buffered:true});
+}
+&lt;/script&gt;
+</code></pre>
+        </details>
+
+      </section>
+
+      <!-- RUM -->
+      <section class="card" id="section-rum">
+        <h2>Real User Monitoring (RUM)</h2>
+
+        <details open>
+          <summary>Executive summary</summary>
+          <p class="muted">RUM captures real-world performance from actual users — it's essential for prioritization because synthetic tests can't capture device &amp; network variability at scale.</p>
+        </details>
+
+        <details>
+          <summary>Design considerations &amp; telemetry model</summary>
+          <ul>
+            <li>Collect essential metrics: LCP, INP, CLS, TTFB, First Contentful Paint (FCP), and custom marks.</li>
+            <li>Sampling: sample at scale (1–10%) to avoid overload — use adaptive sampling (higher for problematic pages).</li>
+            <li>Privacy: avoid PII, hash/sanitize URLs, and respect Do Not Track / GDPR/CCPA rules.</li>
+            <li>Context: attach user-agent, connection type (<code>navigator.connection</code>), device memory, and a stable page identifier.</li>
+          </ul>
+        </details>
+
+        <details>
+          <summary>Minimal production-ready RUM snippet (privacy-aware)</summary>
+          <p class="muted">This example demonstrates capturing Core Web Vitals and sending via <code>navigator.sendBeacon</code> for reliability.</p>
+          <pre><code>&lt;script&gt;
+// Minimal RUM collector: captures LCP, CLS, INP (approx), FCP
+(function(){
+  const rum = {metrics:{}, tags:{}};
+  // Common telemetry
+  rum.tags.url = location.pathname; // consider hashing for privacy
+  rum.tags.ua = navigator.userAgent;
+  rum.tags.connection = (navigator.connection && navigator.connection.effectiveType) || 'unknown';
+
+  // LCP
+  if ('PerformanceObserver' in window) {
+    const poLCP = new PerformanceObserver(list =&gt; {
+      for (const entry of list.getEntries()) {
+        rum.metrics.lcp = entry.renderTime || entry.loadTime || entry.startTime;
+      }
+    });
+    try { poLCP.observe({type:'largest-contentful-paint', buffered:true}); } catch(e){}
+    // CLS
+    let clsValue = 0;
+    const poCLS = new PerformanceObserver(list =&gt; {
+      for (const entry of list.getEntries()) {
+        if (!entry) continue;
+        clsValue += entry.value;
+      }
+      rum.metrics.cls = clsValue;
+    });
+    try { poCLS.observe({type:'layout-shift', buffered:true}); } catch(e){}
+    // INP approximation: capture longtasks and compute 98th percentile later in backend
+    const longTasks = [];
+    const poLT = new PerformanceObserver(list =&gt; {
+      for (const entry of list.getEntries()) {
+        longTasks.push(entry.duration);
+      }
+    });
+    try { poLT.observe({type:'longtask', buffered:true}); } catch(e){}
+    // Send on pagehide
+    function sendRum(){
+      // derive INP approx from longTasks (simple heuristic)
+      if (longTasks.length) {
+        const sorted = longTasks.slice().sort((a,b)=&gt;a-b);
+        const idx = Math.floor(sorted.length * 0.98);
+        rum.metrics.inp_approx = sorted[Math.max(0, idx-1)] || sorted[sorted.length-1];
+      }
+      // send with beacon
+      const body = JSON.stringify(rum);
+      navigator.sendBeacon('/rum-endpoint', body);
+    }
+    addEventListener('pagehide', sendRum);
+    // or send on visibilitychange
+    document.addEventListener('visibilitychange', () =&gt; {
+      if (document.visibilityState === 'hidden') sendRum();
+    });
+  }
+})();
+&lt;/script&gt;
+</code></pre>
+          <p class="muted">Note: A production RUM system should include batching, retry/backoff, and server-side aggregation to compute real percentiles per page segment.</p>
+        </details>
+
+        <details>
+          <summary>Aggregation &amp; analysis best practices</summary>
+          <ol>
+            <li>Group by meaningful buckets: device class (low/med/high), network (2g/3g/4g/wifi), geography, and page type (article, product, checkout).</li>
+            <li>Compute percentiles (p50, p75, p90, p95, p98) and evaluate trends — medians hide tail problems.</li>
+            <li>Instrument release metadata to correlate regressions with deploys.</li>
+          </ol>
+        </details>
+      </section>
+
+      <!-- Synthetic Testing -->
+      <section class="card" id="section-synth">
+        <h2>Synthetic testing strategies</h2>
+
+        <details open>
+          <summary>Executive summary</summary>
+          <p class="muted">Synthetic tests provide deterministic, repeatable measurements and are essential for regression detection and CI gating. Use Lighthouse for UX-level audits, Puppeteer for orchestrated scenarios, and WebPageTest for network-aware traces and filmstrips.</p>
+        </details>
+
+        <details>
+          <summary>Lighthouse (CLI) example</summary>
+          <p class="muted">Run Lighthouse in CI to detect regressions and extract Core Web Vitals.</p>
+          <pre><code>#!/bin/bash
+# Run headless lighthouse and output JSON
+lighthouse https://example.com --output=json --output-path=./lhreport.json --chrome-flags="--no-sandbox --headless"
+# Parse relevant values (example using jq)
+cat ./lhreport.json | jq '.audits | {lcp:.largest-contentful-paint.displayValue, cls:.cumulative-layout-shift.displayValue, ttfb:.server-response-time.displayValue}'
+</code></pre>
+        </details>
+
+        <details>
+          <summary>Puppeteer snippet for custom user flows</summary>
+          <pre><code>const puppeteer = require('puppeteer');
+
+(async () =&gt; {
+  const browser = await puppeteer.launch({args:['--no-sandbox'], headless:true});
+  const page = await browser.newPage();
+  await page.setViewport({width:1366,height:768});
+  await page.goto('https://example.com', {waitUntil:'networkidle2'});
+  // interact: click a nav item
+  await page.click('#nav-products');
+  await page.waitForSelector('#product-list');
+  // collect performance entries
+  const perfEntries = await page.evaluate(() =&gt; JSON.stringify(performance.getEntries()));
+  console.log(perfEntries);
+  await browser.close();
+})();
+</code></pre>
+        </details>
+
+        <details>
+          <summary>WebPageTest &amp; filmstrip</summary>
+          <p class="muted">Use WebPageTest to simulate real networks and devices, extract HAR, filmstrip images, and waterfall timings. Automate with WebPageTest API to archive runs.</p>
+        </details>
+
+        <details>
+          <summary>Regression detection &amp; CI integration</summary>
+          <ol>
+            <li>Define baseline runs and acceptable deltas (absolute and relative).</li>
+            <li>Store historical results and compare percentiles rather than point estimates.</li>
+            <li>Fail builds when budgets (LCP, INP, CLS, or total transfer size) are exceeded.</li>
+          </ol>
+        </details>
+      </section>
+
+      <!-- Performance Budgets -->
+      <section class="card" id="section-budget">
+        <h2>Performance budgets</h2>
+
+        <details open>
+          <summary>Executive summary</summary>
+          <p class="muted">Budgets quantify acceptable thresholds (e.g., LCP &lt; 2.5s, CLS &lt; 0.10, JS bundle &lt; 150KB). They are policies enforced at development time to prevent gradual bloat.</p>
+        </details>
+
+        <details>
+          <summary>Types of budgets</summary>
+          <ul>
+            <li><strong>Metric budgets</strong>: LCP, INP, CLS percentile thresholds.</li>
+            <li><strong>Resource budgets</strong>: total JS, CSS, images bytes, number of requests.</li>
+            <li><strong>Time budgets</strong>: First meaningful paint, TTFB or Time to Interactive (TTI).</li>
+          </ul>
+        </details>
+
+        <details>
+          <summary>Example: a budget definition (JSON)</summary>
+          <pre><code>{
+  "budgets": [
+    {
+      "name": "default",
+      "resourceSizes": [
+        {"resource": "script", "budget": 150000},
+        {"resource": "image", "budget": 300000}
+      ],
+      "timings": [
+        {"metric": "lcp", "budget": 2500},
+        {"metric": "cls", "budget": 0.10},
+        {"metric": "inp", "budget": 200}
+      ]
+    }
+  ]
+}
+</code></pre>
+        </details>
+
+        <details>
+          <summary>Enforcement in CI (example using Lighthouse and budgets)</summary>
+          <p class="muted">Use Lighthouse programmatically to run and fail builds if budgets exceed thresholds.</p>
+          <pre><code>const lighthouse = require('lighthouse');
+const chromeLauncher = require('chrome-launcher');
+
+(async () =&gt; {
+  const chrome = await chromeLauncher.launch({chromeFlags:['--headless']});
+  const resp = await lighthouse('https://example.com', {port: chrome.port}, null);
+  const report = resp.lhr;
+  // evaluate budget conditions
+  const lcp = report.audits['largest-contentful-paint'].numericValue;
+  const cls = report.audits['cumulative-layout-shift'].numericValue;
+  if (lcp &gt; 2500 || cls &gt; 0.10) {
+    console.error('Budget exceeded', {lcp, cls});
+    process.exit(2); // failing the CI job
+  } else {
+    console.log('Budgets OK', {lcp, cls});
+    process.exit(0);
+  }
+  await chrome.kill();
+})();
+</code></pre>
+        </details>
+
+        <details>
+          <summary>Operationalizing budgets</summary>
+          <ol>
+            <li>Set conservative budgets for core pages (home, product, checkout).</li>
+            <li>Automate budgets to run on PRs and fail when violated.</li>
+            <li>Alert and route to the owning team — don't let violations be silent.</li>
+            <li>Track budget drift over time and use dashboards to visualize regressions.</li>
+          </ol>
+        </details>
+
+      </section>
+
+      <!-- Appendix: advanced topics -->
+      <section class="card" id="section-advanced">
+        <h2>Advanced topics &amp; closing notes</h2>
+
+        <details>
+          <summary>Attribution and linking metrics to code</summary>
+          <p class="muted">Attach trace IDs, git commit hashes, and rollouts to RUM events so you can attribute regressions precisely to a change set. Use Sentry-style instrumentation or OpenTelemetry for correlated traces.</p>
+        </details>
+
+        <details>
+          <summary>Statistical considerations</summary>
+          <p class="muted">When analyzing metrics, prefer percentiles over means. Use p75/p90/p95 for high-level dashboards and p98/p99 to catch tail regressions. Beware of sample bias in RUM and ensure sampling is stratified by device/network.</p>
+        </details>
+
+        <details>
+          <summary>Resources &amp; references</summary>
+          <ul>
+            <li>W3C Performance Timeline / Navigation Timing / Resource Timing specs</li>
+            <li>Web Vitals documentation (web.dev)</li>
+            <li>Lighthouse and WebPageTest docs</li>
+            <li>OpenTelemetry for web and distributed tracing</li>
+          </ul>
+        </details>
+
+        <hr />
+        <p class="muted"><strong>Author notes:</strong> Use this document as a template — replace the RUM endpoint with your collector and adjust budgets to your product's user distribution. For production, collect more context (browser, device memory, CPU class) and compute cohorts server-side.</p>
+      </section>
+
+      <div class="card" aria-hidden="false">
+        <h3>Quick reference snippets</h3>
+        <details>
+          <summary>Simple FCP measurement (paint timing)</summary>
+          <pre><code>&lt;script&gt;
+new PerformanceObserver(list =&gt; {
+  for (const entry of list.getEntries()) {
+    if (entry.name === 'first-contentful-paint') {
+      console.log('FCP:', entry.startTime);
+    }
+  }
+}).observe({type: 'paint', buffered: true});
+&lt;/script&gt;
+</code></pre>
+        </details>
+
+        <details>
+          <summary>Send metrics with navigator.sendBeacon (reliable)</summary>
+          <pre><code>&lt;script&gt;
+function sendMetric(url, payload){
+  const blob = new Blob([JSON.stringify(payload)], {type:'application/json'});
+  navigator.sendBeacon(url, blob);
+}
+&lt;/script&gt;
+</code></pre>
+        </details>
+      </div>
+
+      <footer style="padding:14px 6px;color:var(--muted);font-size:0.9rem">
+        <div>© Performance Tutor · Generated: <span id="generatedDate"></span></div>
+        <div style="margin-top:6px">If you'd like this exported as a printable PDF or integrated into your project's docs, ask and I'll generate a build-ready script.</div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- Inline JS: smooth scrolling, TOC, expand/collapse, search, copy summary, highlight.js init -->
+  <script>
+    // UI utilities
+    (function(){
+      // smooth scroll for TOC items
+      const tocList = document.getElementById('tocList');
+      tocList.addEventListener('click', (e) =&gt; {
+        const li = e.target.closest('li[data-target]');
+        if (!li) return;
+        const id = li.getAttribute('data-target');
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.scrollIntoView({behavior:'smooth', block:'start'});
+        // highlight active
+        document.querySelectorAll('#tocList li').forEach(n =&gt; n.classList.remove('toc-active'));
+        li.classList.add('toc-active');
+      });
+
+      // Expand/collapse all
+      const expandAllBtn = document.getElementById('expandAll');
+      const collapseAllBtn = document.getElementById('collapseAll');
+      expandAllBtn.addEventListener('click', () =&gt; {
+        document.querySelectorAll('details').forEach(d =&gt; d.open = true);
+      });
+      collapseAllBtn.addEventListener('click', () =&gt; {
+        document.querySelectorAll('details').forEach(d =&gt; d.open = false);
+      });
+
+      // Copy executive summary (first card's paragraph)
+      document.getElementById('copySummary').addEventListener('click', async () =&gt; {
+        const exec = document.querySelector('.panel-right .card p.muted');
+        if (exec) {
+          try {
+            await navigator.clipboard.writeText(exec.innerText.trim());
+            const original = document.getElementById('copySummary').innerText;
+            document.getElementById('copySummary').innerText = 'Copied!';
+            setTimeout(()=> document.getElementById('copySummary').innerText = original, 1200);
+          } catch (e){ alert('Clipboard copy failed'); }
+        }
+      });
+
+      // TOC search
+      const tocSearch = document.getElementById('tocSearch');
+      tocSearch.addEventListener('input', (e) =&gt; {
+        const q = e.target.value.trim().toLowerCase();
+        document.querySelectorAll('#tocList li').forEach(li =&gt; {
+          const txt = li.innerText.toLowerCase();
+          li.style.display = q ? (txt.includes(q) ? '' : 'none') : '';
+        });
+      });
+
+      // dynamic generated date
+      document.getElementById('generatedDate').textContent = (new Date()).toLocaleString();
+
+      // keyboard shortcut: press 'e' to expand all, 'c' to collapse all
+      document.addEventListener('keydown', (e) =&gt; {
+        if (e.key === 'e') document.querySelectorAll('details').forEach(d =&gt; d.open = true);
+        if (e.key === 'c') document.querySelectorAll('details').forEach(d =&gt; d.open = false);
+      });
+
+      // Initialize highlight.js (deferred)
+      document.addEventListener('DOMContentLoaded', () =&gt; {
+        try {
+          hljs.highlightAll();
+        } catch (e) { console.warn('Highlight failed', e); }
+      });
+
+      // Accessibility: focus main on load for screen readers
+      document.getElementById('content').focus();
+    })();
+  </script>
+
+  <!-- Bootstrap JS (optional for components) -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

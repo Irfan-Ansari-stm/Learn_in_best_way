@@ -1,0 +1,678 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>6.1 Understanding Scope</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00f5ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --accent: #00f5ff;
+            --card-bg: #112240;
+            --border-color: #007a99;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            position: fixed;
+            width: 300px;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            box-shadow: 2px 0 10px rgba(0, 245, 255, 0.1);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--amber);
+        }
+
+        .toc-item {
+            margin: 8px 0;
+            padding-left: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .toc-item a {
+            color: var(--cyan);
+            text-decoration: none;
+            display: block;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .toc-item a:hover {
+            color: var(--amber);
+            padding-left: 20px;
+        }
+
+        .toc-subitem {
+            margin-left: 20px;
+            font-size: 0.9rem;
+            color: #b0c4de;
+        }
+
+        details {
+            margin: 15px 0;
+            border-left: 3px solid var(--amber);
+            padding-left: 15px;
+            background-color: rgba(17, 34, 64, 0.5);
+            border-radius: 0 5px 5px 0;
+        }
+
+        summary {
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--amber);
+            list-style: none;
+            padding: 10px;
+            background-color: rgba(0, 245, 255, 0.08);
+            border-radius: 5px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        summary::before {
+            content: "▶";
+            margin-right: 10px;
+            font-size: 0.8rem;
+            transition: transform 0.3s;
+        }
+
+        details[open] summary::before {
+            transform: rotate(90deg);
+        }
+
+        pre code {
+            display: block;
+            padding: 15px;
+            background-color: #0d1b2a;
+            color: var(--cyan);
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            border-left: 3px solid var(--amber);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.2);
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+
+        .formula {
+            background-color: rgba(0, 245, 255, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 3px solid var(--cyan);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.1rem;
+        }
+
+        .definition {
+            color: var(--amber);
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .detail {
+            margin: 12px 0;
+            line-height: 1.6;
+        }
+
+        .syntax {
+            margin: 15px 0;
+        }
+
+        .example {
+            margin: 15px 0;
+        }
+
+        .use-case {
+            color: var(--cyan);
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
+        .code-comment {
+            color: #7f8c8d;
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: #0a192f;
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-left: 8px;
+        }
+
+        .scope-diagram {
+            background-color: rgba(0, 245, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px dashed var(--cyan);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            white-space: pre;
+        }
+
+        @media (max-width: 991px) {
+            .left-panel {
+                position: relative;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .right-panel {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid p-0">
+    <div class="row g-0">
+        <!-- Left Panel -->
+        <div class="col-md-3 left-panel">
+            <h2>6.1 Understanding Scope</h2>
+            <p class="text-muted small">Mastering Variable Visibility and Access Rules</p>
+            <p class="text-secondary small">Author: AI Tutor • Updated: 2024</p>
+
+            <div class="mb-3 d-flex gap-2">
+                <button id="expandAll" class="btn btn-control">Expand All</button>
+                <button id="collapseAll" class="btn btn-control">Collapse All</button>
+            </div>
+
+            <div class="search-box mb-4">
+                <input type="text" id="searchToc" class="form-control bg-dark border-cyan" placeholder="Search topics..." style="color: var(--cyan); background-color: #112240; border-color: var(--amber);">
+            </div>
+
+            <h5 class="text-uppercase text-muted fw-bold mb-3">Table of Contents</h5>
+            <ul class="list-unstyled">
+                <li class="toc-item">
+                    <a href="#global-scope">Global Scope</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#global-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#global-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#global-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#global-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#global-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#function-scope">Function Scope</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#func-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#func-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#func-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#func-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#func-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#block-scope">Block Scope (let/const)</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#block-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#block-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#block-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#block-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#block-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#lexical-scoping">Lexical Scoping Rules</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#lex-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#lex-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#lex-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#lex-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#lex-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#scope-chain">Scope Chain & Variable Lookup</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#chain-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#chain-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#chain-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#chain-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#chain-uses">Uses</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="col-md-9 right-panel">
+            <section id="global-scope">
+                <details>
+                    <summary>Global Scope</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">Global scope</span> refers to variables declared outside all functions and blocks. These variables are accessible from anywhere in the program.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>Variables in global scope exist for the entire lifetime of the program. They become properties of the global object (<code>window</code> in browsers, <code>global</code> in Node.js). While convenient, overusing global variables leads to naming conflicts, unintended side effects, and harder-to-debug code. Modern best practices discourage excessive global declarations.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// JavaScript
+var globalVar = "I'm global";  // Function-scoped variable in global context
+let globalLet = "Also global"; // Block-scoped but in global scope
+const GLOBAL_CONST = "Never changes";
+
+// Python
+global_var = "I'm global"</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// Global scope
+let userName = "Alice";
+
+function greet() {
+    console.log("Hello, " + userName); // Can access global variable
+}
+
+function changeName() {
+    userName = "Bob"; // Modifies global variable
+}
+
+greet();     // Output: Hello, Alice
+changeName();
+greet();     // Output: Hello, Bob
+
+console.log(userName); // Output: Bob</code></pre>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Configuration constants (API keys, app settings)</li>
+                        <li>Utility functions used everywhere</li>
+                        <li>Legacy codebases (though discouraged)</li>
+                        <li>Shared state in single-page applications (with caution)</li>
+                    </ul>
+                    <p class="text-warning mt-2"><strong>⚠️ Warning:</strong> Too many globals = "polluted namespace". Use modules or closures instead!</p>
+                </details>
+            </section>
+
+            <section id="function-scope">
+                <details>
+                    <summary>Function Scope</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">Function scope</span> means variables declared inside a function are only visible within that function and its nested functions.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>Before ES6, JavaScript only had function scope and global scope. Variables declared with <code>var</code> are hoisted to the top of their containing function. This means they exist throughout the entire function, even before declaration. Function scope creates a natural boundary — variables inside don't leak out, protecting external code from interference.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>function myFunction() {
+    var localVar = "I'm local";
+    if (true) {
+        var anotherVar = "Still function-scoped!"; // Not block-scoped!
+    }
+    console.log(anotherVar); // Works! Because var is function-scoped
+}</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">function calculateTax(income) {
+    var taxRate = 0.2;           // Function-scoped
+    var taxAmount = income * taxRate;
+
+    function applyDiscount() {   // Nested function
+        var discount = 0.1;      // Also function-scoped (to outer function)
+        return taxAmount * discount;
+    }
+
+    return taxAmount - applyDiscount();
+}
+
+console.log(calculateTax(1000)); // Output: 180
+
+// These will cause ReferenceError:
+// console.log(taxRate);         // ❌ Uncaught ReferenceError
+// console.log(taxAmount);       // ❌ Uncaught ReferenceError</code></pre>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Encapsulating temporary calculations</li>
+                        <li>Preventing variable leakage between functions</li>
+                        <li>Creating private variables in older JavaScript</li>
+                        <li>Supporting closures and inner functions</li>
+                    </ul>
+                    <p class="text-info mt-2">💡 Note: With <code>let</code> and <code>const</code>, we now have block scope — making function scope less dominant in modern JS.</p>
+                </details>
+            </section>
+
+            <section id="block-scope">
+                <details>
+                    <summary>Block Scope (let/const)</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">Block scope</span> restricts variable visibility to the nearest enclosing curly braces <code>{}</code> — such as those in <code>if</code>, <code>for</code>, <code>while</code>, or any code block.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>Introduced in ES6, <code>let</code> and <code>const</code> create block-scoped variables. Unlike <code>var</code>, they are not hoisted to the top of the function — they're hoisted to the top of the block. This prevents bugs caused by accidental re-use of variable names and makes code behavior more predictable. Block scoping is essential for writing clean, maintainable code.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>if (true) {
+    let blockVar = "I'm block-scoped";
+    const BLOCK_CONST = "I'm also block-scoped";
+}
+console.log(blockVar); // ❌ ReferenceError: blockVar is not defined</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">function demonstrateBlockScope() {
+    if (true) {
+        let x = 10;
+        const y = 20;
+        var z = 30; // var still has function scope
+    }
+    
+    console.log(z);  // ✅ Output: 30
+    console.log(x);  // ❌ ReferenceError: x is not defined
+    console.log(y);  // ❌ ReferenceError: y is not defined
+    
+    // Loop example:
+    for (let i = 0; i &lt; 3; i++) {
+        console.log(i); // 0, 1, 2
+    }
+    console.log(i); // ❌ ReferenceError: i is not defined
+
+    // But with var:
+    for (var j = 0; j &lt; 3; j++) {}
+    console.log(j); // ✅ Output: 3 (j exists after loop!)
+}</code></pre>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Loop counters (<code>let i</code> in for loops)</li>
+                        <li>Temporary variables in conditionals</li>
+                        <li>Preventing accidental variable reuse</li>
+                        <li>Creating truly private variables in modules</li>
+                    </ul>
+                    <p class="text-success mt-2">✅ Best Practice: Always use <code>let</code> or <code>const</code> instead of <code>var</code>. Prefer <code>const</code> unless you need to reassign.</p>
+                </details>
+            </section>
+
+            <section id="lexical-scoping">
+                <details>
+                    <summary>Lexical Scoping Rules</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">Lexical scoping</span> (also called static scoping) means a function's access to variables is determined by where it is written in the source code, not where it is called.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>This is one of the most powerful concepts in programming languages. Lexical scoping means your code's structure defines variable access — not runtime execution flow. When a function is defined, it captures the environment (variables) around it at that moment. This enables closures, modular design, and predictable behavior regardless of how or when the function is invoked.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>function outer() {
+    let x = "outer";
+    
+    function inner() {
+        console.log(x); // ← inner accesses x from outer's scope
+    }
+    
+    return inner;
+}
+
+const fn = outer();
+fn(); // Output: "outer" — even though called outside outer()</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">let color = "red";
+
+function paint() {
+    let color = "blue"; // This shadows the outer color
+    
+    function brush() {
+        console.log(color); // Uses the nearest enclosing scope: "blue"
+    }
+    
+    brush();
+}
+
+paint(); // Output: "blue"
+
+function printColor() {
+    console.log(color); // Uses global scope: "red"
+}
+
+printColor(); // Output: "red"
+
+// Another example:
+function makeCounter() {
+    let count = 0;
+    return function() {
+        count++;
+        return count;
+    };
+}
+
+const counter = makeCounter();
+console.log(counter()); // 1
+console.log(counter()); // 2
+console.log(counter()); // 3</code></pre>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Creating closures and private state</li>
+                        <li>Implementing factories and modules</li>
+                        <li>Callbacks that remember context (event handlers, timers)</li>
+                        <li>Functional programming patterns like currying</li>
+                    </ul>
+                    <p class="formula">Lexical Scope Rule: “Look where the function was defined, not where it’s called.”</p>
+                </details>
+            </section>
+
+            <section id="scope-chain">
+                <details>
+                    <summary>Scope Chain and Variable Lookup</summary>
+                    <div class="definition">Definition:</div>
+                    <p>The <span class="highlight">scope chain</span> is the hierarchical sequence of scopes that JavaScript searches through to resolve variable references.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>When a variable is referenced, JavaScript starts looking in the current scope. If not found, it moves up to the parent scope, then grandparent, until reaching the global scope. If still not found, a <code>ReferenceError</code> is thrown. This chain is built at function definition time, not execution time — reinforcing lexical scoping.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// Variable lookup order:
+// 1. Local scope (current function/block)
+// 2. Outer function scope
+// 3. ... (up the nesting chain)
+// 4. Global scope
+// 5. Error if not found</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">let globalVar = "I'm global";
+
+function outer() {
+    let outerVar = "I'm outer";
+    
+    function middle() {
+        let middleVar = "I'm middle";
+        
+        function inner() {
+            let innerVar = "I'm inner";
+            
+            // Variable lookup order:
+            console.log(innerVar);  // ✅ Found in inner scope
+            console.log(middleVar); // ✅ Found in middle scope
+            console.log(outerVar);  // ✅ Found in outer scope
+            console.log(globalVar); // ✅ Found in global scope
+            console.log(notDefined); // ❌ ReferenceError: notDefined is not defined
+        }
+        
+        inner();
+    }
+    
+    middle();
+}
+
+outer();
+
+// Scope Chain Visualization:
+// inner → middle → outer → global</code></pre>
+
+                    <div class="scope-diagram">
+// Scope Chain Diagram:
+// [inner] → [middle] → [outer] → [global]
+//   |          |          |         |
+// innerVar  middleVar  outerVar  globalVar
+//             ↑          ↑         ↑
+//         Look here first → then up → then up → finally global
+                    </div>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Understanding why variables are accessible in nested functions</li>
+                        <li>Debugging "undefined" errors and variable shadowing</li>
+                        <li>Optimizing performance (shorter scope chains = faster lookups)</li>
+                        <li>Designing encapsulated modules with controlled access</li>
+                    </ul>
+                    <p class="text-warning mt-2"><strong>⚠️ Shadowing Alert:</strong> If a variable in an inner scope has the same name as one in an outer scope, the inner one hides (shadows) the outer one. This can be intentional — or a bug!</p>
+                    <pre><code class="language-javascript">let x = 10;
+
+function test() {
+    let x = 20; // Shadows global x
+    console.log(x); // 20 — NOT 10!
+}
+
+test();
+console.log(x); // 10 — unchanged</code></pre>
+                </details>
+            </section>
+
+            <hr class="my-5">
+
+            <div class="alert alert-info">
+                <h5>Key Takeaways</h5>
+                <ul>
+                    <li><strong>Global scope</strong>: Accessible everywhere, but avoid overuse.</li>
+                    <li><strong>Function scope</strong>: <code>var</code>-declared variables live in the whole function.</li>
+                    <li><strong>Block scope</strong>: <code>let</code> and <code>const</code> are confined to <code>{}</code> blocks — use them always!</li>
+                    <li><strong>Lexical scoping</strong>: Functions remember the environment where they were created — not where they’re called.</li>
+                    <li><strong>Scope chain</strong>: JavaScript looks up variables from inner → outer → global. Understand this chain to debug effectively.</li>
+                    <li>Always prefer <code>const</code> > <code>let</code> > <code>var</code> for safety and clarity.</li>
+                </ul>
+            </div>
+
+            <div class="alert alert-warning">
+                <h5>Common Pitfalls</h5>
+                <ul>
+                    <li>Accidentally creating globals by forgetting <code>var/let/const</code></li>
+                    <li>Using <code>var</code> in loops and expecting block scoping</li>
+                    <li>Shadowing variables unintentionally</li>
+                    <li>Assuming functions can access variables from other functions without closure</li>
+                </ul>
+            </div>
+
+            <div class="text-center mt-4">
+                <small class="text-muted">© 2024 AI Tutor — Mastering Programming Fundamentals One Concept at a Time</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript Utilities -->
+<script>
+    // Expand/Collapse All
+    document.getElementById('expandAll').addEventListener('click', () => {
+        document.querySelectorAll('details').forEach(detail => {
+            detail.open = true;
+        });
+    });
+
+    document.getElementById('collapseAll').addEventListener('click', () => {
+        document.querySelectorAll('details').forEach(detail => {
+            detail.open = false;
+        });
+    });
+
+    // Smooth scrolling for TOC links
+    document.querySelectorAll('.toc-item a, .toc-subitem a').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+            
+            if (targetElement) {
+                window.scrollTo({
+                    top: targetElement.offsetTop - 100,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+
+    // Search functionality for TOC
+    document.getElementById('searchToc').addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
+        
+        tocItems.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            if (query === '' || text.includes(query)) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+
+    // Syntax Highlighting (basic)
+    document.querySelectorAll('pre code').forEach(block => {
+        hljs.highlightBlock(block);
+    });
+
+    // Add highlight.js if not present (fallback)
+    if (typeof hljs === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js';
+        script.onload = () => {
+            document.querySelectorAll('pre code').forEach(block => {
+                hljs.highlightBlock(block);
+            });
+        };
+        document.head.appendChild(script);
+    }
+</script>
+
+<!-- Optional: Add highlight.js for better syntax highlighting -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+
+</body>
+</html>
+```

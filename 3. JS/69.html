@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>20.2 Performance Optimization — Code splitting, Minification, Tree shaking, Critical Rendering Path, Bundle Analysis</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
+  <style>
+    :root{--bg:#0d1117;--surface:#0f1724;--muted:#9ca3af;--cyan:#06b6d4;--amber:#f59e0b;--panel-width:360px;--radius:12px;--mono:ui-monospace,SFMono-Regular,Menlo,Monaco,'Roboto Mono','Courier New',monospace}
+    html,body{height:100%;background:var(--bg);color:#e6eef6;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial;margin:0}
+    .app{display:flex;height:100vh;gap:20px;padding:20px;box-sizing:border-box}
+    .left{width:var(--panel-width);min-width:260px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);border-radius:var(--radius);padding:18px;box-shadow:0 6px 18px rgba(2,6,23,0.7);position:sticky;top:20px;height:calc(100vh - 40px);overflow:auto}
+    .right{flex:1;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);border-radius:var(--radius);padding:28px;box-shadow:0 6px 18px rgba(2,6,23,0.7);height:calc(100vh - 40px);overflow:auto}
+    h1,h2,h3{color:#fff}
+    .muted{color:var(--muted)}
+    .toc-search{display:flex;gap:8px;margin-bottom:12px}
+    .toc-list{list-style:none;padding:0;margin:0}
+    .toc-item{padding:8px 10px;border-radius:8px;cursor:pointer}
+    .toc-item:hover{background:rgba(255,255,255,0.02)}
+    pre{background:rgba(255,255,255,0.02);padding:14px;border-radius:10px;overflow:auto;font-family:var(--mono);font-size:13px}
+    code{font-family:var(--mono);font-size:13px}
+    details{background:rgba(255,255,255,0.01);margin:10px 0;padding:10px;border-radius:8px}
+    details[open]{box-shadow:0 8px 24px rgba(2,6,23,0.7)}
+    summary{cursor:pointer;outline:none;padding:6px 8px;border-radius:6px}
+    summary::-webkit-details-marker{display:none}
+    .summary-title{display:flex;align-items:center;gap:10px}
+    .pill{padding:2px 8px;border-radius:999px;background:rgba(245,158,11,0.12);color:var(--amber);font-size:12px}
+    .section{padding-top:8px;margin-top:8px;border-top:1px dashed rgba(255,255,255,0.03)}
+    .highlight{background:linear-gradient(90deg, rgba(6,182,212,0.06), transparent);}
+    .controls{display:flex;gap:8px;margin-bottom:12px}
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+    .note{background:rgba(6,182,212,0.04);padding:8px;border-radius:8px;color:var(--cyan)}
+    @media (max-width:900px){.app{flex-direction:column;padding:12px}.left{width:100%;position:relative;height:auto}.right{height:auto}}
+  </style>
+</head>
+<body>
+  <div class="app container-fluid">
+    <aside class="left">
+      <div class="d-flex align-items-start mb-3">
+        <div>
+          <h4 class="mb-0">20.2 Performance Optimization</h4>
+          <div class="muted">Code splitting, Minification, Tree shaking, Critical Rendering Path, Bundle Analysis — JavaScript</div>
+          <div class="mt-2"><small class="muted">Author: Advanced JS Tutor • Updated: Nov 28, 2025</small></div>
+        </div>
+      </div>
+
+      <div class="toc-search">
+        <input id="tocSearch" class="form-control form-control-sm" placeholder="Search TOC..." aria-label="Search table of contents"/>
+        <button id="tocClear" class="btn btn-sm btn-outline-secondary">Clear</button>
+      </div>
+
+      <div class="controls">
+        <button id="expandAll" class="btn btn-sm btn-primary">Expand all</button>
+        <button id="collapseAll" class="btn btn-sm btn-ghost">Collapse all</button>
+        <button id="tocCollapse" class="btn btn-sm btn-ghost">Collapse TOC</button>
+      </div>
+
+      <nav>
+        <ul id="tocList" class="toc-list">
+          <li class="toc-item" data-target="intro">Introduction &amp; Exec Summary</li>
+          <li class="toc-item" data-target="splitting">Code Splitting &amp; Lazy Loading</li>
+          <li class="toc-item" data-target="minify">Minification &amp; Compression</li>
+          <li class="toc-item" data-target="tree">Tree Shaking &amp; Dead Code Elim</li>
+          <li class="toc-item" data-target="critical">Critical Rendering Path Optimization</li>
+          <li class="toc-item" data-target="bundle">Bundle Analysis &amp; Optimization</li>
+          <li class="toc-item" data-target="workflow">Build &amp; Deployment Workflow</li>
+          <li class="toc-item" data-target="examples">Examples &amp; Cheatsheet</li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="right" id="content">
+      <section id="intro" class="section">
+        <h2>Introduction &amp; Executive Summary <span class="pill">Quick</span></h2>
+        <details open>
+          <summary><div class="summary-title"><strong>Executive summary</strong><span class="muted">(short)</span></div></summary>
+          <div class="mt-2 muted">Optimization is about delivering the right bytes at the right time. We'll cover splitting code to reduce initial payload, minifying and compressing assets, removing dead code with tree-shaking, optimizing the critical rendering path (CRP), and using bundle analysis to guide practical improvements.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Why this matters</strong></div></summary>
+          <div class="mt-2">Faster loads increase engagement and reduce bounce. Optimizations improve Time to First Byte (TTFB), First Contentful Paint (FCP), Largest Contentful Paint (LCP), and overall UX. Measure before optimizing and prioritize changes with the biggest user impact.</div>
+        </details>
+      </section>
+
+      <section id="splitting" class="section">
+        <h3>Code Splitting &amp; Lazy Loading</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Concepts</strong></div></summary>
+          <div class="mt-2">Code splitting breaks a monolithic bundle into smaller chunks that can be loaded on demand — reducing initial bundle size. Lazy loading loads parts of the app when needed (routes, components, heavy libraries).</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Static vs Dynamic splitting</strong></div></summary>
+          <div class="mt-2">Static: define split points at build time (entry points). Dynamic: use dynamic import() to create chunks loaded at runtime.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Webpack dynamic import example</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>// dynamic import in JS
+// Loads component only when needed
+button.addEventListener('click', async () =&gt; {
+  const { Chart } = await import('./heavy-chart.js');
+  new Chart(document.getElementById('root'));
+});
+</code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Route-based splitting (React example)</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>// React + lazy
+import React, { lazy, Suspense } from 'react';
+const Dashboard = lazy(() =&gt; import('./Dashboard'));
+
+function App(){
+  return (
+    &lt;Suspense fallback={'Loading...'}&gt;
+      &lt;Dashboard /&gt;
+    &lt;/Suspense&gt;
+  );
+}
+</code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Best practices</strong></div></summary>
+          <div class="mt-2">
+            <ul>
+              <li>Keep initial bundle small (core app shell).</li>
+              <li>Preload high-priority chunks with <code>&lt;link rel="preload" as="script" href="/path/chunk.js"&gt;</code>.</li>
+              <li>Avoid tiny chunks that increase network overhead; group logically related modules.</li>
+              <li>Use route-level splitting and component-level for very heavy libs (charts, maps).</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
+      <section id="minify" class="section">
+        <h3>Minification &amp; Compression</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Minification</strong></div></summary>
+          <div class="mt-2">Minifiers remove whitespace, shorten identifier names, and perform simple transforms to reduce JS/CSS size. Common tools: Terser for JS, cssnano for CSS. Use source maps for debugging.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Example: Terser config (webpack)</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>// webpack.config.js (production)
+const TerserPlugin = require('terser-webpack-plugin');
+module.exports = {
+  mode: 'production',
+  optimization: {
+    minimize: true,
+    minimizer: [new TerserPlugin({ terserOptions: { compress: { drop_console: true } } })]
+  }
+};
+</code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Compression at transport</strong></div></summary>
+          <div class="mt-2">Enable gzip or Brotli (preferred) on the server or CDN. Brotli provides better compression ratios for text assets. Configure compression thresholds and pre-compress assets if using CDNs.</div>
+          <pre><code>// Nginx example for Brotli + gzip (snippet)
+# enable brotli and gzip; serve pre-compressed files if present
+
+gzip on;
+# brotli module config ...
+</code></pre>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Cache headers</strong></div></summary>
+          <div class="mt-2">Use long cache lifetimes for immutable assets (content-hash filenames) and short lifetimes for HTML. Use Cache-Control: public, max-age=31536000, immutable for hashed bundles.</div>
+        </details>
+      </section>
+
+      <section id="tree" class="section">
+        <h3>Tree Shaking &amp; Dead Code Elimination</h3>
+        <details>
+          <summary><div class="summary-title"><strong>How it works</strong></div></summary>
+          <div class="mt-2">Tree shaking statically analyzes ES module imports/exports to remove unused exports. It requires static ES module syntax (import/export) and side-effect-free modules or proper package sideEffects metadata.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Make code tree-shakable</strong></div></summary>
+          <div class="mt-2">
+            <ul>
+              <li>Prefer ES modules (import/export) not CommonJS in libraries.</li>
+              <li>Mark packages with "sideEffects": false in package.json when safe.</li>
+              <li>Avoid module-level side effects (top-level code that does work).</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Rollup &amp; Webpack notes</strong></div></summary>
+          <div class="mt-2">Rollup is designed for tree-shaking with ES modules; Webpack also supports tree-shaking when in production mode and modules are ES modules. Use module concatenation and sideEffects hints to improve results.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Example: package.json sideEffects</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>{
+  "name": "my-lib",
+  "main": "dist/index.cjs.js",
+  "module": "dist/index.esm.js",
+  "sideEffects": false
+}
+</code></pre>
+          </div>
+        </details>
+      </section>
+
+      <section id="critical" class="section">
+        <h3>Critical Rendering Path Optimization</h3>
+        <details>
+          <summary><div class="summary-title"><strong>CRP fundamentals</strong></div></summary>
+          <div class="mt-2">CRP is the sequence the browser follows to convert HTML, CSS, and JS into pixels. Minimize render-blocking resources, inline critical CSS, defer non-critical scripts, and preload important resources to speed FCP and LCP.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Eliminate render-blocking CSS/JS</strong></div></summary>
+          <div class="mt-2">Place critical CSS inline in the &lt;head&gt; and load rest asynchronously. Use <code>rel="preload"</code> for fonts and critical assets. Add <code>defer</code> or <code>async</code> to scripts depending on dependency needs.</div>
+          <pre><code>&lt;link rel="preload" href="/fonts/inter.woff2" as="font" type="font/woff2" crossorigin&gt;
+&lt;script src="/bundle.js" defer&gt;&lt;/script&gt;
+</code></pre>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Critical CSS workflow</strong></div></summary>
+          <div class="mt-2">Use tools (critical, penthouse) to extract above-the-fold CSS at build time and inline it into HTML for first render, then load full CSS async with <code>rel="stylesheet" onload="this.rel='stylesheet'"</code> pattern.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Font loading</strong></div></summary>
+          <div class="mt-2">Preload fonts and use font-display: swap to avoid FOIT. Limit number of webfont variants and subset fonts for language-specific pages.</div>
+        </details>
+      </section>
+
+      <section id="bundle" class="section">
+        <h3>Bundle Analysis &amp; Optimization</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Tools</strong></div></summary>
+          <div class="mt-2">
+            <ul>
+              <li>Webpack Bundle Analyzer — interactive treemap.</li>
+              <li>Source Map Explorer — inspect what files contribute to bundle size.</li>
+              <li>Rollup plugin visualizer.</li>
+              <li>esbuild/rome for extremely fast builds; Parcel for zero-config.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Interpreting treemaps</strong></div></summary>
+          <div class="mt-2">Identify large dependencies and duplicated code. Look for multiple copies of lodash or moment — dedupe or replace with smaller alternatives. Consider importing submodules (lodash-es) instead of whole libraries.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Fix strategies</strong></div></summary>
+          <div class="mt-2">
+            <ul>
+              <li>Replace heavy libraries with lightweight alternatives (date-fns instead of moment, dayjs, or Intl).</li>
+              <li>Switch to ES module builds that allow tree-shaking.</li>
+              <li>Use dynamic import for rare code paths.</li>
+              <li>Remove polyfills for modern browsers or ship them conditionally.</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
+      <section id="workflow" class="section">
+        <h3>Build &amp; Deployment Workflow</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Recommended pipeline</strong></div></summary>
+          <div class="mt-2">
+            <ol>
+              <li>Develop with source maps and fast dev build (esbuild/webpack dev server).</li>
+              <li>Run production build: tree-shaking, minification, hashed filenames.</li>
+              <li>Analyze bundles and iterate.</li>
+              <li>Pre-compress assets or configure CDN to compress on the fly.</li>
+              <li>Deploy with proper cache headers and monitor real-user metrics (RUM).</li>
+            </ol>
+          </div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Monitoring &amp; measurement</strong></div></summary>
+          <div class="mt-2">Use Lighthouse, WebPageTest, and RUM (Web Vitals) to measure impact. Track FCP/LCP/CLS and bundle sizes over time, set alerts for regressions.</div>
+        </details>
+      </section>
+
+      <section id="examples" class="section">
+        <h3>Examples &amp; Cheatsheet</h3>
+
+        <details>
+          <summary><div class="summary-title"><strong>Example: webpack config for splitting &amp; optimization</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>// webpack.prod.js (excerpt)
+module.exports = {
+  mode: 'production',
+  output: { filename: '[name].[contenthash].js', chunkFilename: '[name].[contenthash].chunk.js' },
+  optimization: {
+    splitChunks: { chunks: 'all', maxInitialRequests: 5, minSize: 20000 },
+    runtimeChunk: { name: 'runtime' }
+  },
+  plugins: [ new TerserPlugin(), new CssMinimizerPlugin() ]
+};
+</code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Example: preloading important chunk</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>&lt;!-- in head of HTML --&gt;
+&lt;link rel="preload" href="/static/js/dashboard.chunk.js" as="script" crossorigin&gt;
+</code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Checklist before optimizing</strong></div></summary>
+          <div class="mt-2">
+            <ul>
+              <li>Measure baseline (Lighthouse, RUM).</li>
+              <li>Identify top contributors with bundle analyzer.</li>
+              <li>Apply highest-impact changes first (remove large deps, lazy load heavy libs).</li>
+              <li>Re-run measurements and ensure no regressions.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Quick cheat sheet</strong></div></summary>
+          <div class="mt-2">
+            <ul>
+              <li>Use <code>import()</code> for lazy loading.</li>
+              <li>Set <code>sideEffects: false</code> in package.json when safe.</li>
+              <li>Prefer Brotli over gzip when supported by CDN.</li>
+              <li>Inline critical CSS and defer the rest.</li>
+              <li>Analyze bundles regularly and track sizes in CI.</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
+      <footer class="mt-4 muted"><small>Designed for students from college to PhD. Want sample repo, CI integration for size checks, or a tutorial to implement these steps in a React/Vue/Next app — tell me and I will add it. — Advanced JS Tutor</small></footer>
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+  <script>
+    // TOC interactions, search, expand/collapse, smooth scroll
+    document.querySelectorAll('.toc-item').forEach(item =&gt; {
+      item.addEventListener('click', () =&gt; {
+        const target = document.getElementById(item.dataset.target);
+        if(target){
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          document.querySelectorAll('.section').forEach(s =&gt; s.classList.remove('highlight'));
+          target.classList.add('highlight');
+          setTimeout(() =&gt; target.classList.remove('highlight'), 1400);
+        }
+      });
+    });
+
+    const tocSearch = document.getElementById('tocSearch');
+    const tocList = document.getElementById('tocList');
+    tocSearch.addEventListener('input', (e) =&gt; {
+      const q = e.target.value.trim().toLowerCase();
+      Array.from(tocList.children).forEach(li =&gt; {
+        const text = li.textContent.trim().toLowerCase();
+        li.style.display = text.includes(q) ? '' : 'none';
+      });
+    });
+    document.getElementById('tocClear').addEventListener('click', () =&gt; { tocSearch.value=''; tocSearch.dispatchEvent(new Event('input')); });
+
+    function setAll(open){ document.querySelectorAll('main details').forEach(d =&gt; { d.open = open; }); }
+    document.getElementById('expandAll').addEventListener('click', () =&gt; setAll(true));
+    document.getElementById('collapseAll').addEventListener('click', () =&gt; setAll(false));
+
+    document.getElementById('tocCollapse').addEventListener('click', () =&gt; {
+      const left = document.querySelector('.left');
+      if(left.style.width === '64px'){ left.style.width = getComputedStyle(document.documentElement).getPropertyValue('--panel-width'); }
+      else { left.style.width = '64px'; }
+    });
+
+    document.addEventListener('DOMContentLoaded', (ev) =&gt; {
+      if(window.hljs) hljs.highlightAll();
+    });
+  </script>
+</body>
+</html>

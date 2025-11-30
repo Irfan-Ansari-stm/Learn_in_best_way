@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>15.2 – Debugging Techniques in JavaScript</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<style>
+:root{
+  --bg-main:#050816;
+  --bg-sidebar:#060b18;
+  --accent-cyan:#22d3ee;
+  --accent-amber:#fbbf24;
+  --text-main:#e5e7eb;
+  --text-muted:#9ca3af;
+  --border-subtle:#1f2937;
+  --code-bg:#020617;
+}
+
+/* Base */
+*{box-sizing:border-box;}
+html,body{
+  margin:0;
+  padding:0;
+  height:100%;
+  background:var(--bg-main);
+  color:var(--text-main);
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  scroll-behavior:smooth;
+}
+body{overflow:hidden;}
+
+/* Layout */
+.app-wrapper{height:100vh;}
+.sidebar{
+  background:radial-gradient(circle at top left,#0f172a,var(--bg-sidebar));
+  border-right:1px solid var(--border-subtle);
+  height:100vh;
+  overflow-y:auto;
+  padding:1.2rem 1rem;
+}
+.content-panel{
+  height:100vh;
+  overflow-y:auto;
+  padding:1.6rem 2rem;
+  background:radial-gradient(circle at top right,#020617,var(--bg-main));
+}
+
+/* Scrollbars */
+.sidebar::-webkit-scrollbar,
+.content-panel::-webkit-scrollbar{width:8px;}
+.sidebar::-webkit-scrollbar-thumb,
+.content-panel::-webkit-scrollbar-thumb{
+  background:#1f2937;
+  border-radius:10px;
+}
+
+/* Sidebar text */
+.main-title{
+  font-size:1.5rem;
+  font-weight:700;
+  color:var(--accent-cyan);
+}
+.subtitle{
+  font-size:0.9rem;
+  color:var(--text-muted);
+}
+.meta{
+  font-size:0.78rem;
+  color:var(--text-muted);
+}
+
+/* TOC */
+.toc-card{
+  margin-top:1rem;
+  background:rgba(15,23,42,0.95);
+  border-radius:0.7rem;
+  border:1px solid #1f2937;
+  padding:0.9rem;
+}
+.toc-title{
+  font-size:0.9rem;
+  font-weight:600;
+  color:var(--accent-amber);
+}
+.toc-search input{
+  width:100%;
+  border-radius:999px;
+  border:1px solid #111827;
+  background:#020617;
+  color:var(--text-main);
+  font-size:0.78rem;
+  padding:0.2rem 0.6rem;
+}
+.toc-list{
+  list-style:none;
+  margin:0.4rem 0 0 0;
+  padding-left:0;
+}
+.toc-link{
+  display:flex;
+  align-items:center;
+  gap:0.4rem;
+  font-size:0.8rem;
+  padding:0.2rem 0.4rem;
+  border-radius:0.4rem;
+  text-decoration:none;
+  color:var(--text-muted);
+}
+.toc-link-dot{
+  width:6px;
+  height:6px;
+  border-radius:999px;
+  background:#64748b;
+}
+.toc-link:hover{
+  background:#0f172a;
+  color:var(--accent-cyan);
+}
+.toc-link.active{
+  background:#082f49;
+  color:var(--accent-cyan);
+}
+.toc-link.active .toc-link-dot{
+  background:var(--accent-cyan);
+}
+.toc-actions button{
+  border-radius:999px;
+  border:1px solid var(--border-subtle);
+  background:transparent;
+  color:var(--text-muted);
+  font-size:0.75rem;
+  padding:0.1rem 0.7rem;
+}
+
+/* Content */
+h1{
+  font-size:1.6rem;
+  color:var(--accent-cyan);
+}
+h2{
+  font-size:1.1rem;
+  color:var(--accent-amber);
+  margin-top:1.4rem;
+}
+.section-label{
+  font-size:0.72rem;
+  text-transform:uppercase;
+  letter-spacing:0.18em;
+  color:#9ca3af;
+}
+.summary-strip{
+  background:rgba(56,189,248,0.15);
+  border-radius:0.8rem;
+  border:1px solid rgba(148,163,184,0.45);
+  padding:0.9rem 1rem;
+  font-size:0.86rem;
+  margin-bottom:1rem;
+}
+
+/* details / summary */
+details{
+  background:#0f172a;
+  border-radius:0.7rem;
+  border:1px solid #1e3a8a;
+  padding:0.4rem 0.75rem 0.6rem;
+  margin-bottom:0.9rem;
+}
+details[open]{border-color:#38bdf8;}
+summary{
+  list-style:none;
+  cursor:pointer;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:0.3rem 0;
+  font-size:0.93rem;
+  font-weight:600;
+  color:var(--accent-amber);
+}
+summary::-webkit-details-marker{display:none;}
+.inner{
+  font-size:0.84rem;
+  color:var(--text-muted);
+}
+.inner ul{padding-left:1.1rem;}
+.inner li{margin-bottom:0.25rem;}
+.hint{
+  border-left:3px solid var(--accent-cyan);
+  padding-left:0.6rem;
+  margin:0.35rem 0;
+  font-size:0.8rem;
+}
+
+/* code */
+pre{
+  background:var(--code-bg);
+  border-radius:0.7rem;
+  border:1px solid #0e7e7e;
+  padding:0.75rem 0.9rem;
+  overflow-x:auto;
+  margin:0.5rem 0;
+}
+code{
+  font-family:"JetBrains Mono","Fira Code",ui-monospace,monospace;
+  font-size:0.82rem;
+}
+.token-comment{color:#6b7280;font-style:italic;}
+.token-string{color:#fb923c;}
+.token-number{color:#a855f7;}
+.token-keyword{color:#22c55e;font-weight:600;}
+.token-builtin{color:#facc15;}
+.token-fn{color:#38bdf8;}
+
+/* Responsive */
+@media (max-width:991.98px){
+  body{overflow:auto;}
+  .app-wrapper{height:auto;}
+  .sidebar{
+    height:auto;
+    border-right:none;
+    border-bottom:1px solid var(--border-subtle);
+  }
+  .content-panel{height:auto;}
+}
+</style>
+</head>
+
+<body>
+<div class="container-fluid app-wrapper">
+  <div class="row flex-nowrap">
+    <!-- SIDEBAR -->
+    <aside class="col-12 col-md-4 col-lg-3 sidebar">
+      <div class="main-title">15.2 – Debugging Techniques</div>
+      <div class="subtitle">DevTools mastery, breakpoints, console, source maps, profiling</div>
+      <div class="meta">College → Master → PhD level • Practical + deep</div>
+
+      <div class="toc-card">
+        <div class="toc-title">On this page</div>
+        <div class="toc-search mt-1">
+          <input id="tocSearch" type="text" placeholder="Search sections…">
+        </div>
+        <ul id="tocList" class="toc-list mt-1">
+          <li><a href="#devtools" class="toc-link"><span class="toc-link-dot"></span><span>15.2.1 Browser DevTools mastery</span></a></li>
+          <li><a href="#breakpoints" class="toc-link"><span class="toc-link-dot"></span><span>15.2.2 Breakpoints &amp; stepping</span></a></li>
+          <li><a href="#console" class="toc-link"><span class="toc-link-dot"></span><span>15.2.3 Console methods &amp; utilities</span></a></li>
+          <li><a href="#sourcemaps" class="toc-link"><span class="toc-link-dot"></span><span>15.2.4 Source maps &amp; debugging</span></a></li>
+          <li><a href="#profiling" class="toc-link"><span class="toc-link-dot"></span><span>15.2.5 Performance profiling</span></a></li>
+        </ul>
+        <div class="toc-actions mt-2">
+          <button id="btnExpandAll" type="button">Expand all</button>
+          <button id="btnCollapseAll" type="button">Collapse all</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- CONTENT -->
+    <main class="col content-panel">
+      <header>
+        <h1>15.2 – Debugging Techniques in JavaScript</h1>
+        <div class="summary-strip">
+          <strong>Executive intuition:</strong> Debugging is not “adding <code>console.log</code> randomly” –
+          it is a systematic process of observing program state, controlling time (stepping), correlating
+          errors to source locations (via stack traces &amp; source maps), and measuring performance
+          using profiles. Mastering DevTools turns your browser into a full research lab for your code.
+        </div>
+      </header>
+
+      <!-- 15.2.1 DevTools -->
+      <section id="devtools">
+        <div class="section-label">15.2.1</div>
+        <h2>Browser DevTools mastery</h2>
+
+        <details open>
+          <summary>Core DevTools panels you must know</summary>
+          <div class="inner">
+            <ul>
+              <li><strong>Elements</strong> – inspect and edit DOM + CSS.</li>
+              <li><strong>Console</strong> – execute JS, inspect logs and errors.</li>
+              <li><strong>Sources</strong> – view files, set breakpoints, step through code.</li>
+              <li><strong>Network</strong> – observe HTTP requests, timings, payloads.</li>
+              <li><strong>Performance</strong> – record CPU / rendering profiles.</li>
+              <li><strong>Memory</strong> – heap snapshots, leak detection.</li>
+            </ul>
+            <p class="hint">
+              Keyboard habit: <code>F12</code> or <code>Ctrl+Shift+I</code> / <code>Cmd+Opt+I</code> to open DevTools.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Live editing &amp; experimenting in Console</summary>
+          <div class="inner">
+            <p>
+              You can use the Console as a REPL connected to the current page:
+            </p>
+            <pre><code>
+// Read DOM elements
+document.querySelectorAll("button");
+
+// Inject quick helper
+function debugUser(u) {
+  console.log("User:", u.name, "age:", u.age);
+}
+            </code></pre>
+            <p>
+              Many browsers remember console history per origin, which is great when iterating on
+              debugging helpers.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Blackboxing libraries for cleaner stack traces</summary>
+          <div class="inner">
+            <p>
+              If your stack traces are full of framework code (React, Vue, etc.), you can “blackbox”
+              those files in the <strong>Sources</strong> panel so they are skipped when stepping and
+              hidden from top-level stack frames. This helps you focus on <em>your</em> code.
+            </p>
+          </div>
+        </details>
+      </section>
+
+      <!-- 15.2.2 Breakpoints -->
+      <section id="breakpoints">
+        <div class="section-label">15.2.2</div>
+        <h2>Breakpoints and stepping</h2>
+
+        <details open>
+          <summary>Line breakpoints &amp; the debugger statement</summary>
+          <div class="inner">
+            <p>
+              Classic ways to pause execution:
+            </p>
+            <ul>
+              <li>Click on line numbers in the <strong>Sources</strong> panel to set breakpoints.</li>
+              <li>Use the <code>debugger;</code> statement in code:</li>
+            </ul>
+            <pre><code>
+function calculateTotal(items) {
+  let sum = 0;
+  for (const item of items) {
+    debugger; // opens DevTools and pauses when reached
+    sum += item.price;
+  }
+  return sum;
+}
+            </code></pre>
+            <p>
+              When execution pauses, you can inspect local variables, closure scope, and the call stack.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Conditional breakpoints (super important)</summary>
+          <div class="inner">
+            <p>
+              Instead of breaking on every iteration, pause only when a condition is true:
+            </p>
+            <ul>
+              <li>Right-click a breakpoint &rarr; “Edit breakpoint…”</li>
+              <li>Enter a JS condition such as <code>item.price &lt; 0</code></li>
+            </ul>
+            <pre><code>
+// Example: we only want to stop when there's a negative price
+for (const item of items) {
+  // Put conditional breakpoint here: item.price &lt; 0
+  total += item.price;
+}
+            </code></pre>
+            <p class="hint">
+              This is much faster than adding <code>if</code> checks and temporary <code>console.log</code>
+              calls everywhere.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>XHR / Fetch / event breakpoints</summary>
+          <div class="inner">
+            <p>
+              Modern DevTools support specialized breakpoints:
+            </p>
+            <ul>
+              <li><strong>XHR / Fetch</strong> – pause when a network request is sent.</li>
+              <li><strong>Event listener breakpoints</strong> – pause when DOM events (click, keydown, etc.) fire.</li>
+              <li><strong>Exception breakpoints</strong> – pause on all exceptions or only uncaught ones.</li>
+            </ul>
+            <p>
+              This is perfect when you have no idea which code path triggers a given API call or UI event.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Stepping: into, over, out, and resume</summary>
+          <div class="inner">
+            <p>
+              When paused, you control execution with the “play” buttons:
+            </p>
+            <ul>
+              <li><strong>Step over</strong> – execute the current line, but don’t go inside called functions.</li>
+              <li><strong>Step into</strong> – enter the function being called on the current line.</li>
+              <li><strong>Step out</strong> – finish the current function and pause when returning.</li>
+              <li><strong>Resume</strong> – continue until next breakpoint / exception.</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
+      <!-- 15.2.3 Console -->
+      <section id="console">
+        <div class="section-label">15.2.3</div>
+        <h2>Console methods and utilities</h2>
+
+        <details open>
+          <summary>Going beyond console.log</summary>
+          <div class="inner">
+            <pre><code>
+const user = { name: "Irfan", age: 25, active: true };
+
+console.log("User:", user);
+console.dir(user);          // shows as expandable object
+console.table([user]);      // tabular representation
+            </code></pre>
+            <p>
+              Use different console utilities depending on what kind of structure you inspect:
+              hierarchical (<code>console.dir</code>) vs tabular (<code>console.table</code>).
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>console.group, time, assert</summary>
+          <div class="inner">
+            <pre><code>
+console.group("User debug");
+console.log("name:", user.name);
+console.log("age:", user.age);
+console.groupEnd();
+
+console.time("expensive");
+// ... some heavy code ...
+console.timeEnd("expensive");
+
+console.assert(user.age &gt;= 0, "Age must be non-negative");
+            </code></pre>
+            <p>
+              <code>console.assert(condition, message)</code> logs only if the condition is false – ideal
+              for cheap runtime checks in dev builds.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Logging DOM elements and styling output</summary>
+          <div class="inner">
+            <pre><code>
+const btn = document.querySelector("button");
+console.log(btn);           // clickable DOM preview
+
+console.log("%cDebug:", "color:#22d3ee;font-weight:bold;", "something happened");
+            </code></pre>
+            <p>
+              Styled console output is useful for visually separating different subsystems in logs.
+            </p>
+          </div>
+        </details>
+      </section>
+
+      <!-- 15.2.4 Source maps -->
+      <section id="sourcemaps">
+        <div class="section-label">15.2.4</div>
+        <h2>Source maps and debugging</h2>
+
+        <details open>
+          <summary>Why source maps matter</summary>
+          <div class="inner">
+            <p>
+              In real projects you rarely debug “raw” JavaScript:
+            </p>
+            <ul>
+              <li>Bundlers minify and combine files.</li>
+              <li>Transpilers compile from TypeScript, JSX, etc.</li>
+              <li>Frameworks generate code.</li>
+            </ul>
+            <p>
+              A source map is a mapping between generated code positions and original source positions,
+              so DevTools can show breakpoints, stack traces, and previews in your original files.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Enabling source maps in build tools (conceptual)</summary>
+          <div class="inner">
+            <p>Typical patterns (pseudo-configs):</p>
+            <pre><code>
+// Webpack (conceptual)
+module.exports = {
+  devtool: "source-map"
+};
+
+// TypeScript CLI
+// tsc --sourceMap
+            </code></pre>
+            <p>
+              Once source maps are enabled, DevTools will show TypeScript / JSX lines when you debug,
+              but still execute the compiled JS in the browser.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Stack traces with source maps</summary>
+          <div class="inner">
+            <p>
+              When an error occurs in bundled code, the engine knows only the minified file positions.
+              With a source map loaded, DevTools rewrites the stack trace to point back to your original files.
+            </p>
+            <pre><code>
+try {
+  // compiled from original.ts
+  somethingRisky();
+} catch (err) {
+  console.error(err); // DevTools maps stack back to original.ts:line
+}
+            </code></pre>
+          </div>
+        </details>
+      </section>
+
+      <!-- 15.2.5 Profiling -->
+      <section id="profiling">
+        <div class="section-label">15.2.5</div>
+        <h2>Performance profiling</h2>
+
+        <details open>
+          <summary>Micro benchmarking with performance.now()</summary>
+          <div class="inner">
+            <pre><code>
+function heavyTask() {
+  // ... expensive operations ...
+}
+
+const t1 = performance.now();
+heavyTask();
+const t2 = performance.now();
+
+console.log("heavyTask took", (t2 - t1).toFixed(2), "ms");
+            </code></pre>
+            <p>
+              This is good for focused micro-benchmarks. For full-app performance, use the Performance panel.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Using the Performance panel</summary>
+          <div class="inner">
+            <ul>
+              <li>Open DevTools &rarr; Performance.</li>
+              <li>Click “Record”, interact with your page, then stop.</li>
+              <li>Inspect the flame chart: which functions take the most time, which events dominate.</li>
+              <li>Look at FPS, layout, script, and paint timings.</li>
+            </ul>
+            <p>
+              You can jump from a frame in the flame chart to the corresponding source line to inspect the code.
+            </p>
+          </div>
+        </details>
+
+        <details>
+          <summary>Profiling async and event-driven code</summary>
+          <div class="inner">
+            <p>
+              Complex apps spend time in callbacks, timers, and event handlers rather than in one big function.
+              The Performance panel shows:
+            </p>
+            <ul>
+              <li>Timers (setTimeout / setInterval).</li>
+              <li>Promise continuations (microtasks).</li>
+              <li>Event callbacks (click, scroll, etc.).</li>
+            </ul>
+            <p class="hint">
+              Use this to answer: “<em>Which user interaction or async branch is responsible for this slowdown?</em>”
+            </p>
+          </div>
+        </details>
+      </section>
+    </main>
+  </div>
+</div>
+
+<script>
+// Expand / collapse all details
+document.getElementById("btnExpandAll").onclick =
+  () => document.querySelectorAll("details").forEach(d => d.open = true);
+document.getElementById("btnCollapseAll").onclick =
+  () => document.querySelectorAll("details").forEach(d => d.open = false);
+
+// TOC active highlight + search + smooth section mapping
+document.addEventListener("DOMContentLoaded", () => {
+  const contentPanel = document.querySelector(".content-panel");
+  const tocLinks = Array.from(document.querySelectorAll(".toc-link"));
+  const sections = tocLinks.map(link => {
+    const id = link.getAttribute("href");
+    return { link, target: document.querySelector(id) };
+  });
+
+  // Active highlight on scroll
+  function updateActive() {
+    const y = contentPanel.scrollTop;
+    let current = null;
+    sections.forEach(({ link, target }) => {
+      if (!target) return;
+      const top = target.offsetTop;
+      if (top - 90 <= y) current = link;
+    });
+    tocLinks.forEach(l => l.classList.remove("active"));
+    if (current) current.classList.add("active");
+  }
+  contentPanel.addEventListener("scroll", updateActive);
+  updateActive();
+
+  // TOC search
+  const tocSearch = document.getElementById("tocSearch");
+  const tocItems = Array.from(document.querySelectorAll("#tocList li"));
+  tocSearch.addEventListener("input", () => {
+    const q = tocSearch.value.toLowerCase();
+    tocItems.forEach(li => {
+      const text = li.textContent.toLowerCase();
+      li.style.display = text.includes(q) ? "" : "none";
+    });
+  });
+
+  // Simple syntax highlighting
+  function esc(str){
+    return str.replace(/&/g,"&amp;")
+              .replace(/</g,"&lt;")
+              .replace(/>/g,"&gt;");
+  }
+  const keywords = [
+    "class","extends","constructor","super","function","return",
+    "const","let","var","if","else","while","for","new","try","catch","throw"
+  ];
+  const builtins = [
+    "Object","Array","Map","Set","Date","Promise","console",
+    "document","window","performance"
+  ];
+
+  document.querySelectorAll("pre code").forEach(codeEl => {
+    const raw = codeEl.textContent;
+    let html = esc(raw);
+
+    // comments
+    html = html.replace(/(\/\/.*?$)/gm,"<span class='token-comment'>$1</span>");
+    // strings
+    html = html.replace(/(&quot;.*?&quot;|'.*?'|`.*?`)/g,
+      "<span class='token-string'>$1</span>");
+    // numbers
+    html = html.replace(/\b(\d+(\.\d+)?)\b/g,
+      "<span class='token-number'>$1</span>");
+    // builtins
+    builtins.forEach(b => {
+      const re = new RegExp("\\b"+b+"\\b","g");
+      html = html.replace(re,"<span class='token-builtin'>"+b+"</span>");
+    });
+    // keywords
+    keywords.forEach(k => {
+      const re = new RegExp("\\b"+k+"\\b","g");
+      html = html.replace(re,"<span class='token-keyword'>"+k+"</span>");
+    });
+    // functions heuristic
+    html = html.replace(/([a-zA-Z_$][\w$]*)\s*(?=\()/g,
+      "<span class='token-fn'>$1</span>");
+
+    codeEl.innerHTML = html;
+  });
+});
+</script>
+</body>
+</html>

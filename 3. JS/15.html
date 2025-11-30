@@ -1,0 +1,853 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7.1 Object Fundamentals</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00f5ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --accent: #00f5ff;
+            --card-bg: #112240;
+            --border-color: #007a99;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            position: fixed;
+            width: 300px;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            box-shadow: 2px 0 10px rgba(0, 245, 255, 0.1);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--amber);
+        }
+
+        .toc-item {
+            margin: 8px 0;
+            padding-left: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .toc-item a {
+            color: var(--cyan);
+            text-decoration: none;
+            display: block;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .toc-item a:hover {
+            color: var(--amber);
+            padding-left: 20px;
+        }
+
+        .toc-subitem {
+            margin-left: 20px;
+            font-size: 0.9rem;
+            color: #b0c4de;
+        }
+
+        details {
+            margin: 15px 0;
+            border-left: 3px solid var(--amber);
+            padding-left: 15px;
+            background-color: rgba(17, 34, 64, 0.5);
+            border-radius: 0 5px 5px 0;
+        }
+
+        summary {
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--amber);
+            list-style: none;
+            padding: 10px;
+            background-color: rgba(0, 245, 255, 0.08);
+            border-radius: 5px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        summary::before {
+            content: "▶";
+            margin-right: 10px;
+            font-size: 0.8rem;
+            transition: transform 0.3s;
+        }
+
+        details[open] summary::before {
+            transform: rotate(90deg);
+        }
+
+        pre code {
+            display: block;
+            padding: 15px;
+            background-color: #0d1b2a;
+            color: var(--cyan);
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            border-left: 3px solid var(--amber);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.2);
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+
+        .formula {
+            background-color: rgba(0, 245, 255, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 3px solid var(--cyan);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.1rem;
+        }
+
+        .definition {
+            color: var(--amber);
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .detail {
+            margin: 12px 0;
+            line-height: 1.6;
+        }
+
+        .syntax {
+            margin: 15px 0;
+        }
+
+        .example {
+            margin: 15px 0;
+        }
+
+        .use-case {
+            color: var(--cyan);
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
+        .code-comment {
+            color: #7f8c8d;
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: #0a192f;
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-left: 8px;
+        }
+
+        .object-diagram {
+            background-color: rgba(0, 245, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px dashed var(--cyan);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            white-space: pre;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .reference-diagram {
+            background-color: rgba(17, 34, 64, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid var(--amber);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .memory-box {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 5px;
+            border: 1px solid var(--cyan);
+            border-radius: 5px;
+            background-color: rgba(0, 245, 255, 0.1);
+        }
+
+        .primitive-box {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 5px;
+            border: 1px solid var(--amber);
+            border-radius: 5px;
+            background-color: rgba(255, 183, 77, 0.2);
+        }
+
+        @media (max-width: 991px) {
+            .left-panel {
+                position: relative;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .right-panel {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid p-0">
+    <div class="row g-0">
+        <!-- Left Panel -->
+        <div class="col-md-3 left-panel">
+            <h2>7.1 Object Fundamentals</h2>
+            <p class="text-muted small">Mastering JavaScript Objects - The Core Building Block</p>
+            <p class="text-secondary small">Author: AI Tutor • Updated: 2024</p>
+
+            <div class="mb-3 d-flex gap-2">
+                <button id="expandAll" class="btn btn-control">Expand All</button>
+                <button id="collapseAll" class="btn btn-control">Collapse All</button>
+            </div>
+
+            <div class="search-box mb-4">
+                <input type="text" id="searchToc" class="form-control bg-dark border-cyan" placeholder="Search topics..." style="color: var(--cyan); background-color: #112240; border-color: var(--amber);">
+            </div>
+
+            <h5 class="text-uppercase text-muted fw-bold mb-3">Table of Contents</h5>
+            <ul class="list-unstyled">
+                <li class="toc-item">
+                    <a href="#object-literal">Object Literal Syntax</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#literal-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#literal-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#literal-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#literal-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#literal-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#property-access">Property Access (dot vs bracket notation)</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#access-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#access-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#access-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#access-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#access-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#adding-deleting">Adding and Deleting Properties</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#add-delete-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#add-delete-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#add-delete-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#add-delete-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#add-delete-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#property-existence">Property Existence Checking</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#existence-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#existence-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#existence-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#existence-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#existence-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#references-vs-primitives">Object References vs Primitives</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#ref-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#ref-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#ref-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#ref-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#ref-uses">Uses</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="col-md-9 right-panel">
+            <section id="object-literal">
+                <details>
+                    <summary>Object Literal Syntax</summary>
+                    <div class="definition">Definition:</div>
+                    <p>An <span class="highlight">object literal</span> is a comma-separated list of key-value pairs enclosed in curly braces <code>{}</code> that defines an object directly in your code.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>Object literals are the most common way to create objects in JavaScript. They're perfect for representing real-world entities like users, products, configurations, or any data structure with named properties. Each property consists of a key (string) and a value (any data type), separated by a colon. Keys can be identifiers (without quotes) if they're valid JavaScript names, or strings with quotes if they contain special characters or spaces.</p>
+                    <p>Objects created this way inherit from <code>Object.prototype</code> and are mutable (can be changed after creation).</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// Basic syntax
+const objectName = {
+    key1: value1,
+    key2: value2,
+    key3: value3,
+    // ... more properties
+};
+
+// With different data types
+const person = {
+    name: "Alice",
+    age: 30,
+    isActive: true,
+    hobbies: ["reading", "swimming"],
+    address: {
+        street: "123 Main St",
+        city: "New York"
+    },
+    greet() {  // Method (function as property)
+        return "Hello!";
+    }
+};</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// Simple product object
+const laptop = {
+    brand: "Apple",
+    model: "MacBook Pro",
+    price: 1299,
+    specs: {
+        cpu: "M2 Chip",
+        ram: "16GB",
+        storage: "512GB SSD"
+    },
+    isAvailable: true,
+    displayInfo() {
+        return `${this.brand} ${this.model} - $${this.price}`;
+    }
+};
+
+console.log(laptop.brand);           // "Apple"
+console.log(laptop.specs.cpu);       // "M2 Chip"
+console.log(laptop.displayInfo());   // "Apple MacBook Pro - $1299"
+
+// Complex configuration object
+const appConfig = {
+    theme: "dark",
+    language: "en",
+    features: ["auth", "analytics", "notifications"],
+    limits: {
+        maxUsers: 1000,
+        maxFiles: 50,
+        fileSizeMB: 100
+    },
+    endpoints: {
+        api: "https://api.example.com/v1",
+        auth: "https://auth.example.com"
+    }
+};
+
+console.log(appConfig.features[0]);  // "auth"
+console.log(appConfig.endpoints.api); // "https://api.example.com/v1"</code></pre>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Representing data structures (users, products, settings)</li>
+                        <li>Configuration objects for libraries and frameworks</li>
+                        <li>JSON data interchange format (objects are JSON-compatible)</li>
+                        <li>Creating simple data models without classes</li>
+                        <li>Passing multiple parameters to functions as single object</li>
+                    </ul>
+                    <p class="text-info mt-2">💡 Tip: Object literals are the foundation of JSON (JavaScript Object Notation), which is used for data exchange between servers and web applications.</p>
+                </details>
+            </section>
+
+            <section id="property-access">
+                <details>
+                    <summary>Property Access (dot vs bracket notation)</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">Dot notation</span> (<code>obj.property</code>) and <span class="highlight">bracket notation</span> (<code>obj["property"]</code>) are two ways to access object properties in JavaScript.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>Both notations access the same property, but they have different use cases. Dot notation is cleaner and preferred when property names are known at coding time and follow JavaScript identifier rules (no spaces, don't start with numbers). Bracket notation is required when property names are dynamic, contain special characters, or are stored in variables.</p>
+                    <p>Under the hood, both convert property names to strings. Dot notation is syntactic sugar for bracket notation when the property name is a valid identifier.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// Dot notation - for known, valid identifiers
+object.propertyName
+
+// Bracket notation - for dynamic, complex, or reserved words
+object["property name"]
+object[variableName]
+object["123number"]  // starts with number
+object["class"]      // reserved keyword</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">const user = {
+    firstName: "John",
+    lastName: "Doe",
+    "user-id": 12345,
+    "full name": "John Doe",
+    1stPlace: "Winner",
+    email: "john@example.com"
+};
+
+// DOT NOTATION - works only with valid identifiers
+console.log(user.firstName);     // "John"
+console.log(user.lastName);      // "Doe"
+console.log(user.email);         // "john@example.com"
+// console.log(user.user-id);     // ❌ SyntaxError! Minus is operator
+// console.log(user.full name);   // ❌ SyntaxError! Space not allowed
+
+// BRACKET NOTATION - works with everything
+console.log(user["firstName"]);  // "John"
+console.log(user["lastName"]);   // "Doe"
+console.log(user["user-id"]);    // 12345
+console.log(user["full name"]);  // "John Doe"
+console.log(user["1stPlace"]);   // "Winner"
+
+// Dynamic property access using variables
+const propName = "email";
+console.log(user[propName]);     // "john@example.com"
+
+// Using computed property names
+const suffix = "Address";
+const addressKey = "home" + suffix;
+user[addressKey] = "123 Main St";
+console.log(user["homeAddress"]); // "123 Main St"
+
+// Array-like property access (numeric keys)
+const numbers = {
+    "0": "zero",
+    "1": "one",
+    "2": "two"
+};
+console.log(numbers["0"]);       // "zero"
+console.log(numbers[0]);         // "zero" (number coerced to string)</code></pre>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li><strong>Dot notation:</strong> Standard access for known, clean property names</li>
+                        <li><strong>Bracket notation:</strong> Dynamic property names, special characters, numeric keys, reserved words</li>
+                        <li><strong>Bracket notation:</strong> When property names come from variables or user input</li>
+                        <li><strong>Bracket notation:</strong> Iterating over object properties with unknown keys</li>
+                    </ul>
+                    <p class="text-success mt-2">✅ Best Practice: Use dot notation for readability when possible. Use bracket notation when you need flexibility or dynamic access.</p>
+                </details>
+            </section>
+
+            <section id="adding-deleting">
+                <details>
+                    <summary>Adding and Deleting Properties</summary>
+                    <div class="definition">Definition:</div>
+                    <p>JavaScript objects are dynamic — you can add new properties at any time and delete existing ones using assignment and the <code>delete</code> operator.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>Unlike languages with static types, JavaScript objects can change their structure during runtime. Adding a property is as simple as assigning a value to a new key. Deleting removes a property entirely from the object, making it inaccessible. Note that deleting doesn't free memory immediately — it just removes the reference from the object.</p>
+                    <p>When you add a property to an object that already exists, you're modifying the original object (not creating a copy). This is crucial for understanding object references.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// Adding properties
+object.newProperty = value;
+object["newProperty"] = value;
+
+// Deleting properties
+delete object.propertyName;
+delete object["propertyName"];</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// Creating an empty object
+const car = {};
+
+// Adding properties dynamically
+car.make = "Toyota";
+car["model"] = "Camry";
+car.year = 2023;
+car["engine size"] = "2.5L"; // Special character requires bracket notation
+
+console.log(car);
+// Output: { make: "Toyota", model: "Camry", year: 2023, "engine size": "2.5L" }
+
+// Adding methods
+car.start = function() {
+    return "Engine started!";
+};
+car["stop"] = function() {
+    return "Engine stopped!";
+};
+
+console.log(car.start()); // "Engine started!"
+
+// Deleting properties
+delete car.year;
+delete car["engine size"];
+
+console.log(car);
+// Output: { make: "Toyota", model: "Camry", start: [Function], stop: [Function] }
+
+// Check what was deleted
+console.log("year" in car);     // false
+console.log(car.year);         // undefined
+
+// Important: You cannot delete non-configurable properties
+const obj = {};
+Object.defineProperty(obj, 'permanent', {
+    value: 'cannot delete',
+    configurable: false
+});
+delete obj.permanent; // Returns false, property remains
+console.log(obj.permanent); // "cannot delete"</code></pre>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Building objects incrementally based on conditions</li>
+                        <li>Dynamic API responses where fields vary</li>
+                        <li>Removing sensitive data from objects before logging</li>
+                        <li>Implementing cache systems with TTL (time-to-live)</li>
+                        <li>Feature toggling by adding/removing functionality</li>
+                    </ul>
+                    <p class="text-warning mt-2"><strong>⚠️ Warning:</strong> Avoid using <code>delete</code> on arrays — it leaves holes. Use array methods like <code>splice()</code> instead.</p>
+                </details>
+            </section>
+
+            <section id="property-existence">
+                <details>
+                    <summary>Property Existence Checking</summary>
+                    <div class="definition">Definition:</div>
+                    <p>Checking whether an object has a specific property is essential for safe programming. JavaScript provides several methods to determine property existence.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>There are three main ways to check for property existence, each with different behavior:</p>
+                    <ol>
+                        <li><strong><code>in</code> operator</strong>: Checks if property exists in object or its prototype chain</li>
+                        <li><strong><code>hasOwnProperty()</strong>: Checks if property exists directly on the object (not inherited)</li>
+                        <li><strong>Strict comparison with <code>undefined</code></strong>: Checks if property value is not <code>undefined</code> (but fails if value is actually <code>undefined</code>)</li>
+                    </ol>
+                    <p>The <code>in</code> operator is most reliable for general existence checking, while <code>hasOwnProperty()</code> is better when you want to avoid inherited properties.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// Method 1: in operator
+"propertyName" in object
+
+// Method 2: hasOwnProperty()
+object.hasOwnProperty("propertyName")
+
+// Method 3: Direct comparison (risky!)
+object.propertyName !== undefined</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">const person = {
+    name: "Alice",
+    age: 30
+};
+
+// Inherited property from Object.prototype
+console.log("toString" in person); // true (inherited method)
+
+// Own properties
+console.log("name" in person);     // true
+console.log("age" in person);      // true
+console.log("city" in person);     // false
+
+// hasOwnProperty() - checks only own properties
+console.log(person.hasOwnProperty("name"));  // true
+console.log(person.hasOwnProperty("age"));   // true
+console.log(person.hasOwnProperty("city"));  // false
+console.log(person.hasOwnProperty("toString")); // false (inherited)
+
+// Risky: comparing to undefined
+person.age = undefined; // Explicitly set to undefined
+console.log(person.age !== undefined); // false (even though property exists!)
+console.log("age" in person);          // true (correct!)
+
+// Safe pattern for optional properties
+function processUser(user) {
+    if ("name" in user &amp;&amp; user.name) {
+        console.log("Processing:", user.name);
+    } else {
+        console.log("No valid name provided");
+    }
+    
+    // Better: use hasOwnProperty for strict ownership
+    if (user.hasOwnProperty("email")) {
+        sendEmail(user.email);
+    }
+}
+
+processUser({ name: "Bob", age: 25 }); // "Processing: Bob"
+processUser({}); // "No valid name provided"</code></pre>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Safe access to potentially missing properties</li>
+                        <li>Handling API responses with optional fields</li>
+                        <li>Feature detection in libraries</li>
+                        <li>Validating configuration objects</li>
+                        <li>Preventing errors when accessing nested objects</li>
+                    </ul>
+                    <p class="text-info mt-2">💡 Rule of Thumb: Always use <code>"property" in object</code> to check existence. Use <code>hasOwnProperty()</code> when you specifically need to exclude inherited properties.</p>
+                </details>
+            </section>
+
+            <section id="references-vs-primitives">
+                <details>
+                    <summary>Object References vs Primitives</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">Primitives</span> (numbers, strings, booleans, null, undefined, symbols, bigints) are stored by value, while <span class="highlight">objects</span> (including arrays and functions) are stored by reference.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>This fundamental distinction affects how variables work in JavaScript. Primitives are copied by value — when you assign a primitive to a new variable, you get an independent copy. Objects are copied by reference — when you assign an object to a new variable, both variables point to the same underlying object in memory. Changing one affects the other.</p>
+                    <p>This explains why objects behave differently than primitives when passed to functions or assigned to variables.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// Primitives - copied by value
+let a = 5;
+let b = a; // Copy of value
+b = 10;
+console.log(a); // 5 (unchanged)
+
+// Objects - copied by reference
+let obj1 = { value: 5 };
+let obj2 = obj1; // Reference to same object
+obj2.value = 10;
+console.log(obj1.value); // 10 (changed through obj2!)</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// PRIMITIVES - Independent copies
+let num1 = 42;
+let num2 = num1; // Value copied
+num2 = 99;
+console.log(num1); // 42
+console.log(num2); // 99
+
+let str1 = "hello";
+let str2 = str1; // Value copied
+str2 = "world";
+console.log(str1); // "hello"
+console.log(str2); // "world"
+
+// OBJECTS - Shared reference
+let person1 = { name: "Alice", age: 30 };
+let person2 = person1; // Reference to same object
+person2.age = 31;
+console.log(person1.age); // 31 (changed via person2!)
+console.log(person2.age); // 31
+
+// Both variables point to same memory location
+console.log(person1 === person2); // true
+
+// Arrays are also objects
+let arr1 = [1, 2, 3];
+let arr2 = arr1; // Reference
+arr2.push(4);
+console.log(arr1); // [1, 2, 3, 4]
+
+// To create independent copies:
+let original = { name: "Bob", scores: [85, 90] };
+
+// Shallow copy (only top-level properties)
+let shallowCopy = { ...original };
+shallowCopy.name = "Charlie";
+shallowCopy.scores.push(95);
+console.log(original.scores); // [85, 90, 95] - still shared!
+
+// Deep copy (all levels)
+let deepCopy = JSON.parse(JSON.stringify(original));
+deepCopy.scores.push(100);
+console.log(original.scores); // [85, 90, 95] - unchanged!
+console.log(deepCopy.scores); // [85, 90, 95, 100]</code></pre>
+
+                    <div class="reference-diagram">
+// MEMORY DIAGRAM:
+
+// PRIMITIVES:
+// ┌─────────────┐       ┌─────────────┐
+// │ num1        │       │ num2        │
+// │ value: 42   │       │ value: 99   │
+// └─────────────┘       └─────────────┘
+//       ▲                     ▲
+//       │                     │
+//     Separate memory locations
+
+// OBJECTS:
+// ┌─────────────┐       ┌─────────────┐
+// │ person1     │       │ person2     │
+// │ reference───┼───────┼───reference │
+// └─────────────┘       └─────────────┘
+//               ▼
+//        ┌─────────────────┐
+//        │ Object in Memory│
+//        │ name: "Alice"   │
+//        │ age: 31         │
+//        └─────────────────┘</div>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Understanding why changing an object in a function affects the original</li>
+                        <li>Debugging unexpected behavior when objects appear to change magically</li>
+                        <li>Creating efficient code by sharing large data structures</li>
+                        <li>Knowing when to create copies vs use references</li>
+                        <li>Implementing state management patterns (Redux, React useState)</li>
+                    </ul>
+                    <p class="text-warning mt-2"><strong>⚠️ Critical Insight:</strong> If you need to modify an object without affecting the original, you must create a copy. For simple objects, use spread operator <code>{...obj}</code>. For complex nested objects, use libraries like Lodash or JSON methods.</p>
+                    <p class="text-success mt-2">✅ Memory Tip: Think of primitives as physical items you hand someone (they get their own copy), and objects as keys to a house (both people have the same key to the same house).</p>
+                </details>
+            </section>
+
+            <hr class="my-5">
+
+            <div class="alert alert-info">
+                <h5>Key Takeaways</h5>
+                <ul>
+                    <li>Object literals <code>{}</code> are the primary way to create objects in JavaScript.</li>
+                    <li>Use dot notation for clean property names, bracket notation for dynamic/special cases.</li>
+                    <li>Objects are dynamic — add/remove properties anytime with assignment and <code>delete</code>.</li>
+                    <li>Always use <code>"property" in object</code> to check if a property exists.</li>
+                    <li>Primitives are copied by value; objects are copied by reference — this changes everything!</li>
+                    <li>Modifying an object through one reference affects all other references to the same object.</li>
+                </ul>
+            </div>
+
+            <div class="alert alert-warning">
+                <h5>Common Pitfalls</h5>
+                <ul>
+                    <li>Expecting objects to behave like primitives when copying/assigning</li>
+                    <li>Using <code>=== undefined</code> to check property existence (fails when value is undefined)</li>
+                    <li>Trying to delete non-configurable properties</li>
+                    <li>Assuming object properties maintain order (they mostly do, but spec doesn't guarantee)</li>
+                    <li>Forgetting that array methods mutate the original object</li>
+                </ul>
+            </div>
+
+            <div class="alert alert-success">
+                <h5>Interview Question Prep</h5>
+                <p><strong>Q: What's the difference between dot notation and bracket notation?</strong></p>
+                <p><strong>A:</strong> Dot notation is cleaner and used for known, valid identifier property names. Bracket notation allows dynamic property names, special characters, spaces, and property names stored in variables. Both access the same property — bracket notation is more flexible.</p>
+                
+                <p><strong>Q: Why does this happen?</strong></p>
+                <pre><code>let obj1 = { x: 1 };
+let obj2 = obj1;
+obj2.x = 2;
+console.log(obj1.x); // 2</code></pre>
+                <p><strong>A:</strong> Because <code>obj1</code> and <code>obj2</code> both reference the same object in memory. Assigning <code>obj2 = obj1</code> copies the reference, not the object itself. So modifying <code>obj2.x</code> modifies the shared object, which is visible through <code>obj1</code>.</p>
+                
+                <p><strong>Q: How would you check if an object has a property called "name"?</strong></p>
+                <p><strong>A:</strong> Use <code>"name" in obj</code> to check existence including inherited properties, or <code>obj.hasOwnProperty("name")</code> to check only own properties. Avoid <code>obj.name !== undefined</code> because it fails if the property exists but has value <code>undefined</code>.</p>
+            </div>
+
+            <div class="text-center mt-4">
+                <small class="text-muted">© 2024 AI Tutor — Mastering Programming Fundamentals One Concept at a Time</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript Utilities -->
+<script>
+    // Expand/Collapse All
+    document.getElementById('expandAll').addEventListener('click', () => {
+        document.querySelectorAll('details').forEach(detail => {
+            detail.open = true;
+        });
+    });
+
+    document.getElementById('collapseAll').addEventListener('click', () => {
+        document.querySelectorAll('details').forEach(detail => {
+            detail.open = false;
+        });
+    });
+
+    // Smooth scrolling for TOC links
+    document.querySelectorAll('.toc-item a, .toc-subitem a').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+            
+            if (targetElement) {
+                window.scrollTo({
+                    top: targetElement.offsetTop - 100,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+
+    // Search functionality for TOC
+    document.getElementById('searchToc').addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
+        
+        tocItems.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            if (query === '' || text.includes(query)) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+
+    // Syntax Highlighting (basic)
+    document.querySelectorAll('pre code').forEach(block => {
+        hljs.highlightBlock(block);
+    });
+
+    // Add highlight.js if not present (fallback)
+    if (typeof hljs === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js';
+        script.onload = () => {
+            document.querySelectorAll('pre code').forEach(block => {
+                hljs.highlightBlock(block);
+            });
+        };
+        document.head.appendChild(script);
+    }
+</script>
+
+<!-- Optional: Add highlight.js for better syntax highlighting -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+
+</body>
+</html>
+```

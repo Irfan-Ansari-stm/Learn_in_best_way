@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>11.2 – Promises in JavaScript</title>
+    <!-- Bootstrap CDN -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+    </script>
+
+    <style>
+        :root {
+            --bg-main: #050816;
+            --bg-sidebar: #050b14;
+            --bg-card: #06111f;
+            --accent-cyan: #22d3ee;
+            --accent-amber: #fbbf24;
+            --text-main: #e5e7eb;
+            --text-muted: #9ca3af;
+            --border-subtle: #1f2933;
+            --code-bg: #020617;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            overflow: hidden;
+        }
+
+        .app-wrapper {
+            height: 100vh;
+        }
+
+        /* Layout */
+        .sidebar {
+            background: radial-gradient(circle at top left, #0f172a, var(--bg-sidebar));
+            border-right: 1px solid var(--border-subtle);
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 1.25rem 1rem;
+        }
+
+        .content-panel {
+            max-height: 100vh;
+            overflow-y: auto;
+            padding: 1.5rem 2rem;
+            background: radial-gradient(circle at top right, #0b1120, var(--bg-main));
+        }
+
+        /* Scrollbars */
+        .sidebar::-webkit-scrollbar,
+        .content-panel::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .sidebar::-webkit-scrollbar-track,
+        .content-panel::-webkit-scrollbar-track {
+            background: #020617;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb,
+        .content-panel::-webkit-scrollbar-thumb {
+            background: #1f2937;
+            border-radius: 999px;
+        }
+
+        .sidebar::-webkit-scrollbar-thumb:hover,
+        .content-panel::-webkit-scrollbar-thumb:hover {
+            background: #4b5563;
+        }
+
+        /* Sidebar content */
+        .course-tag {
+            font-size: 0.75rem;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: var(--accent-amber);
+        }
+
+        .main-title {
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            margin-bottom: 0.25rem;
+        }
+
+        .subtitle {
+            font-size: 0.92rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+        }
+
+        .meta-text {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 0.15rem 0.55rem;
+            font-size: 0.7rem;
+            border: 1px solid rgba(148, 163, 184, 0.6);
+            color: var(--text-muted);
+            margin-right: 0.3rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .pill span.bullet {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            margin-right: 0.25rem;
+            background: var(--accent-cyan);
+        }
+
+        .toc-card {
+            margin-top: 1rem;
+            background: rgba(15, 23, 42, 0.9);
+            border-radius: 0.75rem;
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            padding: 0.9rem 0.85rem;
+        }
+
+        .toc-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.65rem;
+        }
+
+        .toc-title {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--accent-amber);
+        }
+
+        .toc-search {
+            font-size: 0.8rem;
+        }
+
+        .toc-search input {
+            background: #020617;
+            border: 1px solid #111827;
+            border-radius: 999px;
+            padding: 0.18rem 0.65rem;
+            color: var(--text-main);
+            width: 100%;
+            font-size: 0.78rem;
+        }
+
+        .toc-search input::placeholder {
+            color: #64748b;
+        }
+
+        .toc-list {
+            list-style: none;
+            padding-left: 0;
+            margin-bottom: 0;
+            margin-top: 0.4rem;
+        }
+
+        .toc-list li {
+            margin-bottom: 0.28rem;
+        }
+
+        .toc-link {
+            font-size: 0.8rem;
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.4rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            text-decoration: none;
+            color: var(--text-muted);
+            transition: all 0.15s ease;
+        }
+
+        .toc-link-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.7);
+        }
+
+        .toc-link:hover {
+            background: rgba(15, 23, 42, 0.85);
+            color: var(--accent-cyan);
+        }
+
+        .toc-link.active {
+            background: rgba(8, 47, 73, 0.8);
+            color: var(--accent-cyan);
+        }
+
+        .toc-link.active .toc-link-dot {
+            background: var(--accent-cyan);
+        }
+
+        .toc-actions {
+            display: flex;
+            gap: 0.25rem;
+            margin-top: 0.5rem;
+        }
+
+        .toc-actions button {
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            background: rgba(15, 23, 42, 0.85);
+            color: var(--text-muted);
+            font-size: 0.72rem;
+            padding: 0.12rem 0.6rem;
+        }
+
+        .toc-actions button:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        /* Content area */
+        .content-heading {
+            margin-bottom: 1rem;
+        }
+
+        .content-heading h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--accent-cyan);
+        }
+
+        .content-heading p {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .badge-level {
+            font-size: 0.75rem;
+            border-radius: 999px;
+            padding: 0.16rem 0.6rem;
+            border: 1px solid rgba(56, 189, 248, 0.6);
+            color: var(--accent-cyan);
+            margin-right: 0.35rem;
+        }
+
+        .badge-topic {
+            font-size: 0.75rem;
+            border-radius: 999px;
+            padding: 0.16rem 0.6rem;
+            border: 1px dashed rgba(251, 191, 36, 0.6);
+            color: var(--accent-amber);
+        }
+
+        .summary-strip {
+            background: radial-gradient(circle at left, rgba(56, 189, 248, 0.18), transparent);
+            border-radius: 0.9rem;
+            border: 1px solid rgba(148, 163, 184, 0.45);
+            padding: 0.9rem 1rem;
+            font-size: 0.85rem;
+            margin-bottom: 1.1rem;
+        }
+
+        .summary-strip strong {
+            color: var(--accent-amber);
+        }
+
+        details {
+            background: rgba(15, 23, 42, 0.85);
+            border-radius: 0.9rem;
+            border: 1px solid rgba(30, 64, 175, 0.8);
+            margin-bottom: 0.9rem;
+            padding: 0.25rem 0.9rem 0.7rem 0.9rem;
+        }
+
+        details summary {
+            cursor: pointer;
+            list-style: none;
+            font-weight: 600;
+            font-size: 0.95rem;
+            padding: 0.35rem 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #e5e7eb;
+        }
+
+        details summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .summary-label {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .summary-label .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 999px;
+            background: var(--accent-cyan);
+        }
+
+        .summary-tag {
+            font-size: 0.75rem;
+            color: var(--accent-amber);
+        }
+
+        details[open] {
+            border-color: rgba(56, 189, 248, 0.85);
+            box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.08);
+        }
+
+        details .inner {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .inner p {
+            margin-bottom: 0.45rem;
+        }
+
+        .inner ul {
+            padding-left: 1.2rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .inner li {
+            margin-bottom: 0.25rem;
+        }
+
+        /* Code blocks */
+        pre {
+            background: var(--code-bg);
+            border-radius: 0.7rem;
+            padding: 0.75rem 0.9rem;
+            overflow-x: auto;
+            border: 1px solid rgba(15, 118, 110, 0.65);
+            margin-bottom: 0.55rem;
+        }
+
+        code {
+            font-family: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.8rem;
+        }
+
+        .token-keyword {
+            color: #22c55e;
+            font-weight: 600;
+        }
+
+        .token-function {
+            color: #38bdf8;
+        }
+
+        .token-builtins {
+            color: #facc15;
+        }
+
+        .token-comment {
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        .token-string {
+            color: #f97316;
+        }
+
+        .token-number {
+            color: #a855f7;
+        }
+
+        .section-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.16em;
+            color: #9ca3af;
+            margin-bottom: 0.35rem;
+        }
+
+        .section-title {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--accent-amber);
+            margin-bottom: 0.2rem;
+        }
+
+        .section-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.55rem;
+        }
+
+        .hint {
+            border-left: 3px solid var(--accent-cyan);
+            padding-left: 0.6rem;
+            margin: 0.45rem 0;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .pill-inline {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            border: 1px solid rgba(148, 163, 184, 0.55);
+            padding: 0.05rem 0.4rem;
+            font-size: 0.7rem;
+            margin-left: 0.25rem;
+            color: #cbd5f5;
+        }
+
+        @media (max-width: 991.98px) {
+            body {
+                overflow: auto;
+            }
+
+            .app-wrapper {
+                height: auto;
+            }
+
+            .sidebar {
+                position: static;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border-subtle);
+            }
+
+            .content-panel {
+                max-height: none;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container-fluid app-wrapper">
+        <div class="row flex-nowrap">
+            <!-- LEFT SIDEBAR -->
+            <aside class="col-12 col-md-4 col-lg-3 sidebar">
+                <div class="mb-2">
+                    <div class="course-tag">Modern JavaScript Deep Dive</div>
+                    <div class="main-title">11.2 – Promises in JavaScript</div>
+                    <div class="subtitle">From callbacks to composable async flows</div>
+                    <div class="meta-text mb-2">
+                        Prepared for: College → Master / PhD level understanding<br>
+                        Style: Deep, detailed, example-driven, research-friendly
+                    </div>
+                </div>
+
+                <div class="mb-2">
+                    <span class="pill">
+                        <span class="bullet"></span>
+                        Promises Core
+                    </span>
+                    <span class="pill">
+                        <span class="bullet"></span>
+                        resolve &amp; reject
+                    </span>
+                    <span class="pill">
+                        <span class="bullet"></span>
+                        then / catch / finally
+                    </span>
+                    <span class="pill">
+                        <span class="bullet"></span>
+                        Chaining &amp; Combinators
+                    </span>
+                </div>
+
+                <div class="toc-card">
+                    <div class="toc-header">
+                        <span class="toc-title">On this page</span>
+                    </div>
+
+                    <div class="toc-search mb-2">
+                        <input type="text" id="tocSearch" placeholder="Search sections…">
+                    </div>
+
+                    <ul class="toc-list" id="tocList">
+                        <li data-label="promise creation syntax">
+                            <a href="#sec-promise-creation" class="toc-link">
+                                <span class="toc-link-dot"></span>
+                                <span>11.2.1 Promise Creation &amp; Syntax</span>
+                            </a>
+                        </li>
+                        <li data-label="resolve reject">
+                            <a href="#sec-resolve-reject" class="toc-link">
+                                <span class="toc-link-dot"></span>
+                                <span>11.2.2 resolve() &amp; reject()</span>
+                            </a>
+                        </li>
+                        <li data-label="then catch finally">
+                            <a href="#sec-then-catch-finally" class="toc-link">
+                                <span class="toc-link-dot"></span>
+                                <span>11.2.3 then(), catch(), finally()</span>
+                            </a>
+                        </li>
+                        <li data-label="promise chaining">
+                            <a href="#sec-chaining" class="toc-link">
+                                <span class="toc-link-dot"></span>
+                                <span>11.2.4 Promise Chaining</span>
+                            </a>
+                        </li>
+                        <li data-label="promise all race allsettled combinators">
+                            <a href="#sec-combinators" class="toc-link">
+                                <span class="toc-link-dot"></span>
+                                <span>11.2.5 Promise.all / race / allSettled</span>
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="toc-actions">
+                        <button id="btnExpandAll" type="button">Expand all</button>
+                        <button id="btnCollapseAll" type="button">Collapse all</button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- RIGHT CONTENT PANEL -->
+            <main class="col content-panel">
+                <section class="content-heading">
+                    <div class="d-flex flex-wrap align-items-center mb-2">
+                        <span class="badge-level">Level: Intermediate → Advanced</span>
+                        <span class="badge-topic">Topic: Promises &amp; Modern Async Patterns</span>
+                    </div>
+                    <h1>11.2 – Promises in JavaScript</h1>
+                    <p>
+                        In this module we move from conceptual async (event loop, queues) to the core abstraction that powers
+                        modern JavaScript asynchronous code: <strong>Promises</strong>. We will build a mental model of how a
+                        Promise moves through states, how <code>resolve</code> / <code>reject</code> work, how
+                        <code>then</code> / <code>catch</code> / <code>finally</code> attach reactions, how chaining flattens
+                        complex flows, and how combinators like <code>Promise.all</code> and <code>Promise.race</code>
+                        orchestrate multiple concurrent operations in a predictable way.
+                    </p>
+                </section>
+
+                <section>
+                    <div class="summary-strip">
+                        <strong>Executive intuition:</strong>
+                        A <code>Promise</code> is a container for a value that is not available yet but will be resolved in
+                        the future (or fail). It has three states (pending → fulfilled / rejected), and you attach
+                        <strong>reactions</strong> to it using <code>then</code>, <code>catch</code>, and
+                        <code>finally</code>. These reactions are scheduled as <strong>microtasks</strong>, giving you a clean,
+                        composable way to work with asynchronous operations without deeply nested callbacks.
+                    </div>
+                </section>
+
+                <!-- 11.2.1 – Promise Creation & Syntax -->
+                <section id="sec-promise-creation" class="mb-4">
+                    <div class="section-label">11.2.1</div>
+                    <div class="section-title">Promise Creation and Syntax</div>
+                    <div class="section-subtitle">
+                        Building the async “contract”: pending → fulfilled / rejected.
+                    </div>
+
+                    <!-- Overview -->
+                    <details open>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                High-level overview &amp; states
+                            </span>
+                            <span class="summary-tag">concept</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                A <strong>Promise</strong> represents the eventual completion (or failure) of an asynchronous
+                                operation and its resulting value. It has:
+                            </p>
+                            <ul>
+                                <li><strong>States:</strong> <code>pending</code> → <code>fulfilled</code> or <code>rejected</code>.</li>
+                                <li><strong>Value:</strong> a success value if fulfilled, or a reason (usually an <code>Error</code>) if rejected.</li>
+                                <li><strong>Reactions:</strong> functions attached via <code>then</code>, <code>catch</code>, <code>finally</code> that run when the state settles.</li>
+                            </ul>
+                            <p>
+                                Once a Promise settles (fulfilled or rejected), it is <strong>immutable</strong>: its state and
+                                value never change again. Any <code>then</code>/<code>catch</code> attached later will still
+                                see the final state.
+                            </p>
+                            <p class="hint">
+                                Informal definition: A Promise is a read-only, single-assignment variable that becomes available
+                                in the future, with built-in subscription (then/catch) and composition operators.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Syntax basics -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Basic syntax: new Promise(executor)
+                            </span>
+                            <span class="summary-tag">syntax</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                You create a Promise using the <code>Promise</code> constructor. It takes an
+                                <strong>executor</strong> function, called immediately with two arguments:
+                                <code>resolve</code> and <code>reject</code>.
+                            </p>
+
+                            <pre><code>
+// Basic Promise creation
+const p = new Promise(function (resolve, reject) {
+    // Do some work (sync or async)...
+
+    const success = true; // example condition
+
+    if (success) {
+        resolve("OK");       // move to fulfilled state with value "OK"
+    } else {
+        reject(new Error("Something went wrong")); // move to rejected state
+    }
+});
+                            </code></pre>
+
+                            <ul>
+                                <li><code>resolve(value)</code> &rarr; transitions from <code>pending</code> to <code>fulfilled</code>.</li>
+                                <li><code>reject(reason)</code> &rarr; transitions from <code>pending</code> to <code>rejected</code>.</li>
+                                <li>Only the <em>first</em> call to <code>resolve</code> or <code>reject</code> matters; later calls are ignored.</li>
+                            </ul>
+
+                            <p class="hint">
+                                The executor should be <strong>purely responsible for starting work</strong>, not for
+                                consuming the result. Consumption happens via <code>then</code>/<code>catch</code> outside.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Async executor example -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Example: wrapping setTimeout in a Promise
+                            </span>
+                            <span class="summary-tag">example</span>
+                        </summary>
+                        <div class="inner">
+                            <pre><code>
+// Helper: returns a Promise that resolves after "ms" milliseconds
+function delay(ms) {
+    return new Promise(function (resolve, reject) {
+        const id = setTimeout(function () {
+            resolve("Finished after " + ms + " ms");
+        }, ms);
+
+        // (Optional) you could add logic to clearTimeout / reject on cancellation
+    });
+}
+
+// Usage
+delay(1000).then(function (message) {
+    console.log(message); // "Finished after 1000 ms"
+});
+                            </code></pre>
+
+                            <p>
+                                Here, the Promise represents the completion of the timer. The executor initiates the timer
+                                immediately; when the timer fires, <code>resolve</code> is called, transitioning the promise
+                                to fulfilled, which in turn triggers any <code>then</code> handlers.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Mental model -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Mental model vs callback-style
+                            </span>
+                            <span class="summary-tag">deep dive</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                With callbacks, you pass a function into an API and hope it is called exactly once, at the
+                                right time, with the right convention (<code>err, data</code> or just <code>data</code>?).
+                                There is no standard contract.
+                            </p>
+                            <p>
+                                With Promises:
+                            </p>
+                            <ul>
+                                <li>The success value and error are clearly separated.</li>
+                                <li>The state transitions are well-defined and enforced by the spec.</li>
+                                <li>You can easily compose multiple async operations (chaining, combinators).</li>
+                                <li>Handlers are always called asynchronously (via microtask queue), not synchronously.</li>
+                            </ul>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 11.2.2 – resolve() and reject() -->
+                <section id="sec-resolve-reject" class="mb-4">
+                    <div class="section-label">11.2.2</div>
+                    <div class="section-title">resolve() and reject()</div>
+                    <div class="section-subtitle">
+                        Settling a Promise with a value or a reason.
+                    </div>
+
+                    <!-- Overview -->
+                    <details open>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                States &amp; transitions with resolve/reject
+                            </span>
+                            <span class="summary-tag">core</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                Within the executor, you control the lifecycle of the Promise by calling
+                                <code>resolve</code> or <code>reject</code> <strong>at most once</strong>.
+                            </p>
+                            <ul>
+                                <li>Initially: state = <code>pending</code>, value = <code>undefined</code>.</li>
+                                <li>Call <code>resolve(v)</code> &rarr; state = <code>fulfilled</code>, value = <code>v</code>.</li>
+                                <li>Call <code>reject(err)</code> &rarr; state = <code>rejected</code>, value = <code>err</code>.</li>
+                            </ul>
+                            <p>
+                                After the state is no longer <code>pending</code>, the Promise is said to be
+                                <strong>settled</strong>. Any further calls to <code>resolve</code> or <code>reject</code>
+                                are ignored.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Examples of resolve & reject -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Examples of resolve() and reject()
+                            </span>
+                            <span class="summary-tag">examples</span>
+                        </summary>
+                        <div class="inner">
+                            <pre><code>
+// Example 1: resolve with a simple value
+const p1 = new Promise(function (resolve, reject) {
+    resolve(42);
+});
+
+p1.then(function (value) {
+    console.log("Resolved with:", value); // 42
+});
+
+// Example 2: reject with an Error
+const p2 = new Promise(function (resolve, reject) {
+    reject(new Error("Network failure"));
+});
+
+p2.catch(function (err) {
+    console.error("Promise rejected:", err.message); // "Network failure"
+});
+                            </code></pre>
+
+                            <p class="hint">
+                                Best practice: reject with an <code>Error</code> (or subclass), not with strings or numbers, to
+                                preserve stack traces and semantics.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Promise.resolve / Promise.reject helpers -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Promise.resolve() and Promise.reject()
+                            </span>
+                            <span class="summary-tag">helpers</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                You rarely call <code>new Promise</code> directly just to wrap a known value. Instead, use the
+                                static helpers:
+                            </p>
+
+                            <pre><code>
+// Create an already-fulfilled Promise
+const fulfilled = Promise.resolve(123);
+fulfilled.then(function (v) {
+    console.log("v =", v);
+});
+
+// Create an already-rejected Promise
+const rejected = Promise.reject(new Error("Boom"));
+rejected.catch(function (e) {
+    console.log("Error message =", e.message);
+});
+                            </code></pre>
+
+                            <ul>
+                                <li>
+                                    <code>Promise.resolve(value)</code>:
+                                    <ul>
+                                        <li>If <code>value</code> is a Promise, it is returned as-is (or wrapped).</li>
+                                        <li>If <code>value</code> is a thenable (has a <code>then</code> method), JS will assimilate it: call its <code>then</code> and adopt its state.</li>
+                                        <li>Otherwise, creates a fulfilled Promise with that value.</li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <code>Promise.reject(reason)</code> always returns a rejected Promise with
+                                    <code>reason</code>.
+                                </li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <!-- Subtle behaviour -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Subtleties &amp; gotchas with resolve/reject
+                            </span>
+                            <span class="summary-tag">pitfalls</span>
+                        </summary>
+                        <div class="inner">
+                            <pre><code>
+// Only the first call matters
+const p = new Promise(function (resolve, reject) {
+    resolve("First");      // this wins
+    resolve("Second");     // ignored
+    reject(new Error("X")); // ignored
+});
+
+p.then(function (v) {
+    console.log(v); // "First"
+});
+                            </code></pre>
+
+                            <p>
+                                Another subtlety: if the executor throws an error, the Promise is automatically rejected:
+                            </p>
+
+                            <pre><code>
+const p3 = new Promise(function (resolve, reject) {
+    // Any synchronous throw is converted to rejection
+    throw new Error("Crash!");
+});
+
+p3.catch(function (err) {
+    console.log("Caught:", err.message); // "Crash!"
+});
+                            </code></pre>
+
+                            <p class="hint">
+                                Rule of thumb: inside the executor, you either <strong>resolve</strong> or
+                                <strong>reject</strong> exactly once; any synchronous exception automatically becomes
+                                <code>reject</code>.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 11.2.3 – then(), catch(), finally() -->
+                <section id="sec-then-catch-finally" class="mb-4">
+                    <div class="section-label">11.2.3</div>
+                    <div class="section-title">then(), catch(), and finally()</div>
+                    <div class="section-subtitle">
+                        Attaching reactions and transforming async values.
+                    </div>
+
+                    <!-- Overview -->
+                    <details open>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                What do these handlers do?
+                            </span>
+                            <span class="summary-tag">handlers</span>
+                        </summary>
+                        <div class="inner">
+                            <ul>
+                                <li>
+                                    <code>then(onFulfilled, onRejected?)</code>:
+                                    attach callbacks for success and (optionally) failure.
+                                </li>
+                                <li>
+                                    <code>catch(onRejected)</code>:
+                                    shorthand for <code>then(null, onRejected)</code>.
+                                </li>
+                                <li>
+                                    <code>finally(onFinally)</code>:
+                                    attach a callback that runs in both success and failure cases, without changing the original value/reason (unless it throws).
+                                </li>
+                            </ul>
+                            <p>
+                                Crucially, <code>then</code>, <code>catch</code>, and <code>finally</code> all return
+                                <strong>new Promises</strong>, enabling chaining and transformation.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Basic examples -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Basic usage examples
+                            </span>
+                            <span class="summary-tag">examples</span>
+                        </summary>
+                        <div class="inner">
+                            <pre><code>
+const p = Promise.resolve(10);
+
+// then(): handle success
+p.then(function (value) {
+    console.log("Success:", value); // 10
+});
+
+// catch(): handle error
+Promise.reject(new Error("Oops"))
+    .catch(function (err) {
+        console.error("Error:", err.message);
+    });
+
+// finally(): clean-up
+fetch("/api/data")
+    .then(function (response) {
+        return response.json();
+    })
+    .then(function (json) {
+        console.log("Data:", json);
+    })
+    .catch(function (err) {
+        console.error("Network error:", err);
+    })
+    .finally(function () {
+        console.log("Request completed (success or failure).");
+    });
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <!-- then() as transformer -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                then() as a transformer function
+                            </span>
+                            <span class="summary-tag">deep</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                The real power of <code>then</code> is not just "run this when done", but
+                                <strong>"transform the result and return a new Promise"</strong>. The return value of
+                                <code>onFulfilled</code> determines the next Promise:
+                            </p>
+                            <ul>
+                                <li>If you return a <strong>value</strong>, the next Promise is fulfilled with that value.</li>
+                                <li>If you return a <strong>Promise</strong>, the next Promise adopts its state (fulfilled/rejected).</li>
+                                <li>If you <strong>throw</strong> an error, the next Promise becomes rejected with that error.</li>
+                            </ul>
+
+                            <pre><code>
+Promise.resolve(5)
+    .then(function (x) {
+        return x * 2; // returns 10
+    })
+    .then(function (y) {
+        console.log("y =", y); // 10
+        return Promise.resolve(y + 1); // returns a Promise
+    })
+    .then(function (z) {
+        console.log("z =", z); // 11
+        throw new Error("Boom");
+    })
+    .catch(function (err) {
+        console.log("Caught error:", err.message); // "Boom"
+    });
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <!-- finally() details -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                finally() semantics &amp; gotchas
+                            </span>
+                            <span class="summary-tag">finally</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                <code>finally</code> is special: it runs regardless of success or failure, but it
+                                <strong>passes through</strong> the original value or error, unless it throws or returns a
+                                rejected Promise itself.
+                            </p>
+
+                            <pre><code>
+Promise.resolve("OK")
+    .finally(function () {
+        console.log("Cleaning up...");
+    })
+    .then(function (value) {
+        console.log("Value is still:", value); // "OK"
+    });
+
+Promise.reject(new Error("X"))
+    .finally(function () {
+        console.log("Also cleaning up on error...");
+    })
+    .catch(function (err) {
+        console.log("Still rejected:", err.message); // "X"
+    });
+                            </code></pre>
+
+                            <p>
+                                If the <code>finally</code> callback throws or returns a rejected Promise, it will override
+                                the previous state:
+                            </p>
+
+                            <pre><code>
+Promise.resolve("OK")
+    .finally(function () {
+        throw new Error("Error in finally");
+    })
+    .then(function (v) {
+        // This will NOT run
+    })
+    .catch(function (err) {
+        console.log(err.message); // "Error in finally"
+    });
+                            </code></pre>
+
+                            <p class="hint">
+                                Use <code>finally</code> for <em>side effects</em> like logging, releasing resources,
+                                hiding spinners &mdash; not for transforming values.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 11.2.4 – Promise Chaining -->
+                <section id="sec-chaining" class="mb-4">
+                    <div class="section-label">11.2.4</div>
+                    <div class="section-title">Promise Chaining</div>
+                    <div class="section-subtitle">
+                        Linearizing asynchronous workflows without callback hell.
+                    </div>
+
+                    <!-- Overview -->
+                    <details open>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Concept: flattening async sequences
+                            </span>
+                            <span class="summary-tag">chaining</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                Promise chaining lets you express <strong>sequential asynchronous steps</strong> in a flat,
+                                readable way:
+                            </p>
+                            <ol>
+                                <li>Start with a Promise (<code>fetch</code>, custom, etc.).</li>
+                                <li>Use <code>then</code> to transform the result and return a new Promise.</li>
+                                <li>Repeat, building a chain where each step depends on the previous one.</li>
+                                <li>Handle errors once at the end with <code>catch</code>.</li>
+                            </ol>
+                            <p>
+                                The key design is that each <code>then</code> / <code>catch</code> returns a new Promise
+                                whose state depends on what you return or throw.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Example: nested callbacks vs promise chain -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Example: callback hell vs Promise chaining
+                            </span>
+                            <span class="summary-tag">example</span>
+                        </summary>
+                        <div class="inner">
+                            <p><strong>Callback hell style:</strong></p>
+                            <pre><code>
+// Assume we have functions that take callbacks:
+// getUser(id, callback)
+// getOrders(userId, callback)
+// getOrderDetails(orderId, callback)
+
+getUser(1, function (err, user) {
+    if (err) return handleError(err);
+    getOrders(user.id, function (err, orders) {
+        if (err) return handleError(err);
+        getOrderDetails(orders[0].id, function (err, details) {
+            if (err) return handleError(err);
+            console.log("First order details:", details);
+        });
+    });
+});
+                            </code></pre>
+
+                            <p><strong>Promise-based chaining:</strong></p>
+                            <pre><code>
+// Promise-based versions:
+// getUser(id)        &rarr; Promise&lt;User&gt;
+// getOrders(userId)  &rarr; Promise&lt;Order[]&gt;
+// getOrderDetails(id)&rarr; Promise&lt;OrderDetail&gt;
+
+getUser(1)
+    .then(function (user) {
+        return getOrders(user.id);
+    })
+    .then(function (orders) {
+        return getOrderDetails(orders[0].id);
+    })
+    .then(function (details) {
+        console.log("First order details:", details);
+    })
+    .catch(function (err) {
+        console.error("Something failed:", err);
+    });
+                            </code></pre>
+
+                            <p class="hint">
+                                Observe the left-to-right, top-to-bottom flow. Each <code>then</code> either returns a value
+                                (which wraps in a resolved Promise) or returns another Promise.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Parallel vs sequential with chain -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Sequential vs parallel with Promises
+                            </span>
+                            <span class="summary-tag">patterns</span>
+                        </summary>
+                        <div class="inner">
+                            <p><strong>Sequential (one after another, dependent):</strong></p>
+                            <pre><code>
+doStep1()
+    .then(function (result1) {
+        return doStep2(result1);
+    })
+    .then(function (result2) {
+        return doStep3(result2);
+    })
+    .then(function (result3) {
+        console.log("Final:", result3);
+    })
+    .catch(function (err) {
+        console.error("Error:", err);
+    });
+                            </code></pre>
+
+                            <p><strong>Parallel (independent), then combine:</strong></p>
+                            <pre><code>
+const pA = fetch("/api/a");
+const pB = fetch("/api/b");
+
+Promise.all([pA, pB])
+    .then(function ([responseA, responseB]) {
+        // Both fetches finished
+        return Promise.all([responseA.json(), responseB.json()]);
+    })
+    .then(function ([dataA, dataB]) {
+        console.log("A:", dataA);
+        console.log("B:", dataB);
+    })
+    .catch(function (err) {
+        console.error("At least one request failed:", err);
+    });
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <!-- Error propagation in chains -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Error propagation in chains
+                            </span>
+                            <span class="summary-tag">errors</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                If any <code>then</code> callback throws or returns a rejected Promise, the chain jumps to the
+                                nearest <code>catch</code> <em>downstream</em>.
+                            </p>
+
+                            <pre><code>
+Promise.resolve(1)
+    .then(function (x) {
+        console.log("Step 1:", x);
+        return x + 1;
+    })
+    .then(function (x) {
+        console.log("Step 2:", x);
+        throw new Error("Failure at step 2");
+    })
+    .then(function (x) {
+        // This will be skipped because of the error above
+        console.log("Step 3:", x);
+    })
+    .catch(function (err) {
+        console.log("Caught error:", err.message);
+        return 42; // recover with a default value
+    })
+    .then(function (x) {
+        console.log("Recovered value:", x); // 42
+    });
+                            </code></pre>
+
+                            <p class="hint">
+                                This behaviour is exactly what makes <code>async</code>/<code>await</code> clean: it is
+                                syntactic sugar for Promise chains with automatic error propagation using <code>try</code> /
+                                <code>catch</code>.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 11.2.5 – Promise.all / Promise.race / Promise.allSettled -->
+                <section id="sec-combinators" class="mb-4">
+                    <div class="section-label">11.2.5</div>
+                    <div class="section-title">Promise.all(), Promise.race(), Promise.allSettled()</div>
+                    <div class="section-subtitle">
+                        Coordinating multiple Promises concurrently.
+                    </div>
+
+                    <!-- Overview -->
+                    <details open>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Big picture of combinators
+                            </span>
+                            <span class="summary-tag">combinators</span>
+                        </summary>
+                        <div class="inner">
+                            <ul>
+                                <li>
+                                    <code>Promise.all(iterable)</code>:
+                                    wait for <em>all</em> Promises to fulfill; fail fast if <em>any</em> rejects.
+                                </li>
+                                <li>
+                                    <code>Promise.race(iterable)</code>:
+                                    settle as soon as the <em>first</em> Promise settles (fulfill or reject).
+                                </li>
+                                <li>
+                                    <code>Promise.allSettled(iterable)</code>:
+                                    wait for all Promises to settle and get a full report of statuses.
+                                </li>
+                            </ul>
+                            <p>
+                                These combinators let you treat multiple async operations as a single higher-level Promise.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Promise.all -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Promise.all(): all-or-nothing
+                            </span>
+                            <span class="summary-tag">all()</span>
+                        </summary>
+                        <div class="inner">
+                            <pre><code>
+// Example: load three resources in parallel
+const p1 = fetch("/api/user");
+const p2 = fetch("/api/settings");
+const p3 = fetch("/api/notifications");
+
+Promise.all([p1, p2, p3])
+    .then(function ([resUser, resSettings, resNotifications]) {
+        // All succeeded
+        return Promise.all([
+            resUser.json(),
+            resSettings.json(),
+            resNotifications.json()
+        ]);
+    })
+    .then(function ([user, settings, notifications]) {
+        console.log("User:", user);
+        console.log("Settings:", settings);
+        console.log("Notifications:", notifications);
+    })
+    .catch(function (err) {
+        // If ANY fetch or ANY .json() fails, we land here
+        console.error("At least one request failed:", err);
+    });
+                            </code></pre>
+
+                            <p>
+                                Characteristics:
+                            </p>
+                            <ul>
+                                <li>Order of the result array matches the order of the input array.</li>
+                                <li>Rejects as soon as one Promise rejects (&ldquo;fail fast&rdquo;).</li>
+                                <li>If the iterable is empty, returns a fulfilled Promise with <code>[]</code>.</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <!-- Promise.race -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Promise.race(): first to settle wins
+                            </span>
+                            <span class="summary-tag">race()</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                <code>Promise.race</code> is useful for implementing timeouts or picking the fastest response.
+                            </p>
+
+                            <pre><code>
+// Helper that rejects if operation does not finish in time
+function withTimeout(promise, ms) {
+    const timeoutPromise = new Promise(function (resolve, reject) {
+        setTimeout(function () {
+            reject(new Error("Timeout after " + ms + " ms"));
+        }, ms);
+    });
+
+    return Promise.race([promise, timeoutPromise]);
+}
+
+// Usage
+withTimeout(fetch("/api/slow"), 3000)
+    .then(function (response) {
+        console.log("Got response before timeout");
+    })
+    .catch(function (err) {
+        console.error("Failed:", err.message);
+    });
+                            </code></pre>
+
+                            <p>
+                                The returned Promise settles as soon as <em>any</em> of the input Promises settles: if the
+                                timeout rejects first, the combination rejects; if the fetch fulfills first, it fulfills.
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Promise.allSettled -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Promise.allSettled(): full status report
+                            </span>
+                            <span class="summary-tag">allSettled()</span>
+                        </summary>
+                        <div class="inner">
+                            <p>
+                                <code>Promise.allSettled</code> waits for all Promises to settle and returns an array of
+                                objects describing the outcome of each:
+                            </p>
+                            <ul>
+                                <li>For fulfillment: <code>{ status: "fulfilled", value: ... }</code></li>
+                                <li>For rejection: <code>{ status: "rejected", reason: ... }</code></li>
+                            </ul>
+
+                            <pre><code>
+const tasks = [
+    Promise.resolve(1),
+    Promise.reject(new Error("Fail A")),
+    Promise.resolve(3)
+];
+
+Promise.allSettled(tasks)
+    .then(function (results) {
+        results.forEach(function (result, index) {
+            if (result.status === "fulfilled") {
+                console.log("Task", index, "fulfilled with", result.value);
+            } else {
+                console.log("Task", index, "rejected with", result.reason);
+            }
+        });
+    });
+                            </code></pre>
+
+                            <p class="hint">
+                                Use <code>allSettled</code> when you want to run many tasks and collect their outcomes
+                                without short-circuiting on the first failure (e.g., bulk operations, dashboards, background
+                                sync).
+                            </p>
+                        </div>
+                    </details>
+
+                    <!-- Section summary -->
+                    <details>
+                        <summary>
+                            <span class="summary-label">
+                                <span class="dot"></span>
+                                Section summary &amp; exam checklist
+                            </span>
+                            <span class="summary-tag">summary</span>
+                        </summary>
+                        <div class="inner">
+                            <ul>
+                                <li>Understand Promise states: <code>pending</code> → <code>fulfilled</code> / <code>rejected</code>.</li>
+                                <li>Know how <code>resolve</code> / <code>reject</code> and <code>Promise.resolve</code> / <code>Promise.reject</code> work.</li>
+                                <li>Fluently use <code>then</code> / <code>catch</code> / <code>finally</code> and know that they return new Promises.</li>
+                                <li>Explain Promise chaining and error propagation down the chain.</li>
+                                <li>Use <code>Promise.all</code>, <code>Promise.race</code>, and <code>Promise.allSettled</code> for concurrent orchestration.</li>
+                            </ul>
+                            <p>
+                                If you can derive the exact order of logs for Promise examples and explain the behaviour of
+                                these combinators, you have a solid command over Promises
+                                <span class="pill-inline">Module 11.2</span>.
+                            </p>
+                        </div>
+                    </details>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        // Smooth scrolling + active TOC highlight + search + details expand/collapse + simple syntax highlighting
+        document.addEventListener("DOMContentLoaded", function () {
+            const tocLinks = Array.from(document.querySelectorAll(".toc-link"));
+            const sections = tocLinks.map(link => {
+                const hash = link.getAttribute("href");
+                const target = document.querySelector(hash);
+                return { link, target };
+            });
+
+            // Smooth scrolling
+            tocLinks.forEach(link => {
+                link.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute("href");
+                    const target = document.querySelector(targetId);
+                    if (target) {
+                        target.scrollIntoView({ behavior: "smooth", block: "start" });
+                        history.replaceState(null, "", targetId);
+                    }
+                });
+            });
+
+            // Active TOC highlighting on scroll
+            const contentPanel = document.querySelector(".content-panel");
+            function updateActiveToc() {
+                const scrollY = contentPanel.scrollTop;
+                let current = null;
+                sections.forEach(({ link, target }) => {
+                    if (!target) return;
+                    const offsetTop = target.offsetTop;
+                    if (offsetTop - 80 <= scrollY) current = link;
+                });
+            tocLinks.forEach(l => l.classList.remove("active"));
+                if (current) current.classList.add("active");
+            }
+
+            contentPanel.addEventListener("scroll", updateActiveToc);
+            updateActiveToc();
+
+            // TOC search filter
+            const tocSearch = document.getElementById("tocSearch");
+            const tocListItems = Array.from(document.querySelectorAll("#tocList li"));
+
+            tocSearch.addEventListener("input", function () {
+                const q = this.value.toLowerCase();
+                tocListItems.forEach(li => {
+                    const label = (li.getAttribute("data-label") || "").toLowerCase();
+                    const text = li.textContent.toLowerCase();
+                    const match = label.includes(q) || text.includes(q);
+                    li.style.display = match ? "" : "none";
+                });
+            });
+
+            // Expand / collapse all details
+            const btnExpandAll = document.getElementById("btnExpandAll");
+            const btnCollapseAll = document.getElementById("btnCollapseAll");
+
+            btnExpandAll.addEventListener("click", function () {
+                document.querySelectorAll("details").forEach(d => d.open = true);
+            });
+
+            btnCollapseAll.addEventListener("click", function () {
+                document.querySelectorAll("details").forEach(d => d.open = false);
+            });
+
+            // Simple syntax highlighting for JS in <code> blocks
+            function escapeHtml(str) {
+                return str
+                    .replace(/&/g, "&amp;")
+                    .replace(/</g, "&lt;")
+                    .replace(/>/g, "&gt;");
+            }
+
+            const jsKeywords = [
+                "function", "return", "const", "let", "var", "if", "else",
+                "while", "for", "async", "await", "new", "throw", "try", "catch"
+            ];
+            const builtins = [
+                "setTimeout", "setInterval", "clearTimeout", "clearInterval",
+                "Promise", "console", "fetch", "require"
+            ];
+
+            const codeBlocks = Array.from(document.querySelectorAll("pre code"));
+
+            codeBlocks.forEach(codeEl => {
+                const raw = codeEl.textContent;
+                let html = escapeHtml(raw);
+
+                // Comments
+                html = html.replace(/(\/\/.*?$)/gm, '<span class="token-comment">$1</span>');
+
+                // Strings
+                html = html.replace(/(".*?"|'.*?'|`.*?`)/g, '<span class="token-string">$1</span>');
+
+                // Numbers
+                html = html.replace(/\b(\d+(_\d+)*)\b/g, '<span class="token-number">$1</span>');
+
+                // Builtins
+                builtins.forEach(name => {
+                    const re = new RegExp("\\b" + name + "\\b", "g");
+                    html = html.replace(re, '<span class="token-builtins">' + name + "</span>");
+                });
+
+                // Keywords
+                jsKeywords.forEach(kw => {
+                    const re = new RegExp("\\b" + kw + "\\b", "g");
+                    html = html.replace(re, '<span class="token-keyword">' + kw + "</span>");
+                });
+
+                // Common function names
+                html = html.replace(/([a-zA-Z_$][\w$]*)\s*(?=\()/g, '<span class="token-function">$1</span>');
+
+                codeEl.innerHTML = html;
+            });
+        });
+    </script>
+</body>
+
+</html>

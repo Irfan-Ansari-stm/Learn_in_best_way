@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>20.1 JavaScript Memory Model — Heap, Stack, GC, Leaks, WeakRefs & Profiling</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
+  <style>
+    :root{--bg:#0d1117;--surface:#0f1724;--muted:#9ca3af;--cyan:#06b6d4;--amber:#f59e0b;--panel-width:360px;--radius:12px;--mono:ui-monospace,SFMono-Regular,Menlo,Monaco,'Roboto Mono','Courier New',monospace}
+    html,body{height:100%;background:var(--bg);color:#e6eef6;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial;margin:0}
+    .app{display:flex;height:100vh;gap:20px;padding:20px;box-sizing:border-box}
+    .left{width:var(--panel-width);min-width:260px;background:linear-gradient(180deg, rgba(255,255,255,0.02), transparent);border-radius:var(--radius);padding:18px;box-shadow:0 6px 18px rgba(2,6,23,0.7);position:sticky;top:20px;height:calc(100vh - 40px);overflow:auto}
+    .right{flex:1;background:linear-gradient(180deg, rgba(255,255,255,0.01), transparent);border-radius:var(--radius);padding:28px;box-shadow:0 6px 18px rgba(2,6,23,0.7);height:calc(100vh - 40px);overflow:auto}
+    h1,h2,h3{color:#fff}
+    .muted{color:var(--muted)}
+    .toc-search{display:flex;gap:8px;margin-bottom:12px}
+    .toc-list{list-style:none;padding:0;margin:0}
+    .toc-item{padding:8px 10px;border-radius:8px;cursor:pointer}
+    .toc-item:hover{background:rgba(255,255,255,0.02)}
+    pre{background:rgba(255,255,255,0.02);padding:14px;border-radius:10px;overflow:auto;font-family:var(--mono);font-size:13px}
+    code{font-family:var(--mono);font-size:13px}
+    details{background:rgba(255,255,255,0.01);margin:10px 0;padding:10px;border-radius:8px}
+    details[open]{box-shadow:0 8px 24px rgba(2,6,23,0.7)}
+    summary{cursor:pointer;outline:none;padding:6px 8px;border-radius:6px}
+    summary::-webkit-details-marker{display:none}
+    .summary-title{display:flex;align-items:center;gap:10px}
+    .pill{padding:2px 8px;border-radius:999px;background:rgba(245,158,11,0.12);color:var(--amber);font-size:12px}
+    .section{padding-top:8px;margin-top:8px;border-top:1px dashed rgba(255,255,255,0.03)}
+    .highlight{background:linear-gradient(90deg, rgba(6,182,212,0.06), transparent);}
+    .controls{display:flex;gap:8px;margin-bottom:12px}
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted)}
+    .note{background:rgba(6,182,212,0.04);padding:8px;border-radius:8px;color:var(--cyan)}
+    @media (max-width:900px){.app{flex-direction:column;padding:12px}.left{width:100%;position:relative;height:auto}.right{height:auto}}
+  </style>
+</head>
+<body>
+  <div class="app container-fluid">
+    <aside class="left">
+      <div class="d-flex align-items-start mb-3">
+        <div>
+          <h4 class="mb-0">20.1 JavaScript Memory Model</h4>
+          <div class="muted">Heap &amp; Stack, GC algorithms, leaks, WeakRefs, Profiling — JavaScript</div>
+          <div class="mt-2"><small class="muted">Author: Advanced JS Tutor • Updated: Nov 28, 2025</small></div>
+        </div>
+      </div>
+
+      <div class="toc-search">
+        <input id="tocSearch" class="form-control form-control-sm" placeholder="Search TOC..." aria-label="Search table of contents"/>
+        <button id="tocClear" class="btn btn-sm btn-outline-secondary">Clear</button>
+      </div>
+
+      <div class="controls">
+        <button id="expandAll" class="btn btn-sm btn-primary">Expand all</button>
+        <button id="collapseAll" class="btn btn-sm btn-ghost">Collapse all</button>
+        <button id="tocCollapse" class="btn btn-sm btn-ghost">Collapse TOC</button>
+      </div>
+
+      <nav>
+        <ul id="tocList" class="toc-list">
+          <li class="toc-item" data-target="intro">Introduction &amp; Exec Summary</li>
+          <li class="toc-item" data-target="heapstack">Heap vs Stack</li>
+          <li class="toc-item" data-target="gc">Garbage Collection Algorithms</li>
+          <li class="toc-item" data-target="leaks">Memory Leaks &amp; Identification</li>
+          <li class="toc-item" data-target="weakrefs">WeakRef &amp; FinalizationRegistry</li>
+          <li class="toc-item" data-target="profiling">Memory Profiling Tools &amp; Workflow</li>
+          <li class="toc-item" data-target="patterns">Patterns &amp; Mitigations</li>
+          <li class="toc-item" data-target="examples">Hands-on Examples</li>
+        </ul>
+      </nav>
+    </aside>
+
+    <main class="right" id="content">
+      <section id="intro" class="section">
+        <h2>Introduction &amp; Executive Summary <span class="pill">Quick</span></h2>
+        <details open>
+          <summary><div class="summary-title"><strong>Executive summary</strong><span class="muted">(short)</span></div></summary>
+          <div class="mt-2 muted">Understanding JavaScript memory model helps diagnose performance issues and memory leaks. We'll cover how values are stored (stack vs heap), how modern engines collect garbage (mark-and-sweep, generational, incremental), techniques to find leaks, using WeakRefs &amp; FinalizationRegistry responsibly, and profiling strategies with DevTools and node tools.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Why this matters</strong></div></summary>
+          <div class="mt-2">Memory issues cause increased GC pauses, high memory usage, crashes (OOM), and poor UX — especially on low-memory devices. Developers should measure, reproduce, and fix leaks rather than guess.</div>
+        </details>
+      </section>
+
+      <section id="heapstack" class="section">
+        <h3>Heap &amp; Stack</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Stack (call frames)</strong></div></summary>
+          <div class="mt-2">The stack stores function call frames, local primitives and references to heap objects. It's LIFO; small and fast. Large or long-lived objects are stored on the heap (referenced from stack or global scope).</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Heap (dynamic memory)</strong></div></summary>
+          <div class="mt-2">The heap stores objects, arrays, closures, and other reference types. Memory in the heap is managed by the garbage collector. Heap layout often includes generations (young/old) to optimize short-lived vs long-lived objects.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Value types vs reference types</strong></div></summary>
+          <div class="mt-2">Primitives (number, string, boolean, null, undefined, symbol, bigint) are stored by value (often on the stack). Objects and functions are stored on the heap and accessed via references.</div>
+        </details>
+      </section>
+
+      <section id="gc" class="section">
+        <h3>Garbage Collection Algorithms</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Mark-and-sweep</strong></div></summary>
+          <div class="mt-2">Most modern engines (V8, SpiderMonkey, JavaScriptCore) use mark-and-sweep: start at roots (global objects, stack), mark reachable objects, sweep unmarked objects as garbage. It's safe but can introduce pauses if done in large batches.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Generational GC</strong></div></summary>
+          <div class="mt-2">Generational collectors separate objects into young (nursery) and old generation. Since most objects die young, collecting the nursery frequently is fast. Surviving objects are promoted to the old generation and collected less often.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Incremental &amp; concurrent GC</strong></div></summary>
+          <div class="mt-2">To reduce pauses, engines perform GC incrementally or concurrently with application threads. This spreads work across multiple slices to avoid long stop-the-world pauses.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Reference counting (rare)</strong></div></summary>
+          <div class="mt-2">Some engines or older implementations use reference counting; it struggles with cycles. Modern JS engines primarily use tracing GC rather than pure reference counting.</div>
+        </details>
+      </section>
+
+      <section id="leaks" class="section">
+        <h3>Memory Leaks &amp; Identification</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Common leak patterns</strong></div></summary>
+          <div class="mt-2">
+            <ul>
+              <li><strong>Global leaks</strong>: unintentionally storing large data on <code>window</code> or module scope.</li>
+              <li><strong>Detached DOM nodes</strong>: DOM elements removed from document but still referenced by JS closures or caches.</li>
+              <li><strong>Closures</strong>: long-lived closures holding references to large objects.</li>
+              <li><strong>Timers &amp; listeners</strong>: <code>setInterval</code>, event listeners not removed.</li>
+              <li><strong>Caches without eviction</strong>: unbounded Maps/arrays growing indefinitely.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Identification workflow</strong></div></summary>
+          <div class="mt-2">
+            <ol>
+              <li>Reproduce in Chrome/Node with representative workload.</li>
+              <li>Use heap snapshots and compare snapshots over time to find growing retained size.</li>
+              <li>Inspect "Retainers" to see what references keep an object alive.</li>
+              <li>Use Allocation instrumentation (Record Allocation Timeline) to find allocation hotspots.</li>
+            </ol>
+          </div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Heap snapshot example (steps)</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>1. Open Chrome DevTools &gt; Memory
+2. Take 'Heap snapshot'
+3. Perform actions that cause suspected allocations
+4. Take another snapshot
+5. Compare: look for objects that increase in count or retained size
+6. Click an object and inspect 'Retainers' to find root references
+</code></pre>
+          </div>
+        </details>
+      </section>
+
+      <section id="weakrefs" class="section">
+        <h3>WeakRef &amp; FinalizationRegistry</h3>
+        <details>
+          <summary><div class="summary-title"><strong>When to use</strong></div></summary>
+          <div class="mt-2">WeakRef allows holding a weak reference to an object that does not prevent its GC. FinalizationRegistry allows running cleanup callbacks after an object is GC'd. Use them sparingly — they introduce complexity and non-determinism.</div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Example</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>// weakref-example.js
+const registry = new FinalizationRegistry((heldValue) =&gt; {
+  console.log('object was GCed, cleanup', heldValue);
+});
+
+(function(){
+  let obj = { large: new Array(1e6) };
+  const weak = new WeakRef(obj);
+  registry.register(obj, 'my-large-object');
+  // drop strong ref
+  obj = null;
+  // at some future GC, the FinalizationRegistry callback may run
+})();
+
+// caution: can't rely on timing; FinalizationRegistry callbacks run eventually
+</code></pre>
+          </div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Risks &amp; best practices</strong></div></summary>
+          <div class="mt-2">Do not use FinalizationRegistry for critical program logic. Avoid memory-sensitive control flow depending on finalizers. Prefer explicit cleanup patterns (dispose, close) when possible.</div>
+        </details>
+      </section>
+
+      <section id="profiling" class="section">
+        <h3>Memory Profiling Tools &amp; Workflow</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Browser: Chrome DevTools</strong></div></summary>
+          <div class="mt-2">
+            <ul>
+              <li>Performance &gt; Memory: Heap snapshots, Allocation instrumentation, and Allocation sampling.</li>
+              <li>Performance tab: look for GC events and long tasks.</li>
+              <li>Application tab: IndexedDB, Cache storage sizes.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Node.js tools</strong></div></summary>
+          <div class="mt-2">
+            <ul>
+              <li><code>--inspect</code> &amp; Chrome DevTools for Node processes.</li>
+              <li><code>node --trace-gc</code> for GC logging.</li>
+              <li><code>clinic doctor / flame / heap-profile</code> from nearform/clinic for diagnosis.</li>
+              <li><code>heapdump</code> package to capture heap snapshots programmatically.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Practical workflow</strong></div></summary>
+          <div class="mt-2">
+            <ol>
+              <li>Measure baseline memory usage and GC frequency.</li>
+              <li>Reproduce scenario that grows memory.</li>
+              <li>Take periodic heap snapshots; compare and find retained sets.</li>
+              <li>Fix suspected leaks and validate memory stabilizes.</li>
+              <li>Monitor in production with lightweight metrics (heap size, RSS, GC pause time).</li>
+            </ol>
+          </div>
+        </details>
+      </section>
+
+      <section id="patterns" class="section">
+        <h3>Patterns &amp; Mitigations</h3>
+        <details>
+          <summary><div class="summary-title"><strong>Best practices</strong></div></summary>
+          <div class="mt-2">
+            <ul>
+              <li>Prefer local scope and free references when objects are no longer needed set references to <code>null</code> (explicit cleanup).</li>
+              <li>Remove event listeners and timers when no longer needed.</li>
+              <li>Use WeakMap/WeakSet for caches keyed by objects to avoid preventing GC.</li>
+              <li>Limit cache sizes and implement eviction policies (LRU).</li>
+              <li>Batch DOM updates and avoid retaining detached nodes.</li>
+            </ul>
+          </div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Checklist before fix</strong></div></summary>
+          <div class="mt-2">
+            <ol>
+              <li>Confirm problem with profiling snapshots.</li>
+              <li>Identify retainer paths - what prevents GC.</li>
+              <li>Implement smallest change possible (cleanup listener, break closure, shrink cache).</li>
+              <li>Re-profile to verify fix.</li>
+            </ol>
+          </div>
+        </details>
+      </section>
+
+      <section id="examples" class="section">
+        <h3>Hands-on Examples</h3>
+
+        <details>
+          <summary><div class="summary-title"><strong>Example 1: listener leak</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>// leak example: creating and not removing listeners
+function createComponent(){
+  const el = document.createElement('div');
+  function onClick(){ console.log('clicked'); }
+  el.addEventListener('click', onClick);
+  document.body.appendChild(el);
+  // if we remove el from DOM later but forget el.removeEventListener(onClick), handler still holds reference
+}
+</code></pre>
+            <div class="note">Fix: ensure you call <code>el.removeEventListener('click', onClick)</code> before discarding <code>el</code>.</div>
+          </div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Example 2: using WeakMap for cache</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>// weakmap cache
+const cache = new WeakMap();
+function getExpensive(obj){
+  if(cache.has(obj)) return cache.get(obj);
+  const value = heavyCompute(obj);
+  cache.set(obj, value);
+  return value;
+}
+</code></pre>
+            <div class="note">WeakMap keys are held weakly — when <code>obj</code> becomes unreachable elsewhere, it can be GC'd and cache entry disappears.</div>
+          </div>
+        </details>
+
+        <details>
+          <summary><div class="summary-title"><strong>Example 3: take heap snapshot steps (Chrome)</strong></div></summary>
+          <div class="mt-2">
+            <pre><code>// steps
+1. Open DevTools &gt; Memory
+2. Select 'Heap snapshot'
+3. Click 'Take snapshot'
+4. Perform actions in the app (e.g., navigate, open modal)
+5. Take another snapshot and compare
+6. Use 'Comparison' view to find growth
+</code></pre>
+          </div>
+        </details>
+      </section>
+
+      <footer class="mt-4 muted"><small>Designed for students from college to PhD. Want runnable demos, Node.js heapdump samples, or a printable PDF of this note — tell me which and I'll add it. — Advanced JS Tutor</small></footer>
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+  <script>
+    // TOC interactions, search, expand/collapse, smooth scroll
+    document.querySelectorAll('.toc-item').forEach(item =&gt; {
+      item.addEventListener('click', () =&gt; {
+        const target = document.getElementById(item.dataset.target);
+        if(target){
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          document.querySelectorAll('.section').forEach(s =&gt; s.classList.remove('highlight'));
+          target.classList.add('highlight');
+          setTimeout(() =&gt; target.classList.remove('highlight'), 1400);
+        }
+      });
+    });
+
+    const tocSearch = document.getElementById('tocSearch');
+    const tocList = document.getElementById('tocList');
+    tocSearch.addEventListener('input', (e) =&gt; {
+      const q = e.target.value.trim().toLowerCase();
+      Array.from(tocList.children).forEach(li =&gt; {
+        const text = li.textContent.trim().toLowerCase();
+        li.style.display = text.includes(q) ? '' : 'none';
+      });
+    });
+    document.getElementById('tocClear').addEventListener('click', () =&gt; { tocSearch.value=''; tocSearch.dispatchEvent(new Event('input')); });
+
+    function setAll(open){ document.querySelectorAll('main details').forEach(d =&gt; { d.open = open; }); }
+    document.getElementById('expandAll').addEventListener('click', () =&gt; setAll(true));
+    document.getElementById('collapseAll').addEventListener('click', () =&gt; setAll(false));
+
+    document.getElementById('tocCollapse').addEventListener('click', () =&gt; {
+      const left = document.querySelector('.left');
+      if(left.style.width === '64px'){ left.style.width = getComputedStyle(document.documentElement).getPropertyValue('--panel-width'); }
+      else { left.style.width = '64px'; }
+    });
+
+    document.addEventListener('DOMContentLoaded', (ev) =&gt; {
+      if(window.hljs) hljs.highlightAll();
+    });
+  </script>
+</body>
+</html>

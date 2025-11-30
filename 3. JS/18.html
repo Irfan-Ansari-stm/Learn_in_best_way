@@ -1,0 +1,1399 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>7.4 Object Iteration and Inspection</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00f5ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --accent: #00f5ff;
+            --card-bg: #112240;
+            --border-color: #007a99;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            position: fixed;
+            width: 300px;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 20px;
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            box-shadow: 2px 0 10px rgba(0, 245, 255, 0.1);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            color: var(--amber);
+        }
+
+        .toc-item {
+            margin: 8px 0;
+            padding-left: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .toc-item a {
+            color: var(--cyan);
+            text-decoration: none;
+            display: block;
+            font-size: 0.95rem;
+            transition: color 0.2s;
+        }
+
+        .toc-item a:hover {
+            color: var(--amber);
+            padding-left: 20px;
+        }
+
+        .toc-subitem {
+            margin-left: 20px;
+            font-size: 0.9rem;
+            color: #b0c4de;
+        }
+
+        details {
+            margin: 15px 0;
+            border-left: 3px solid var(--amber);
+            padding-left: 15px;
+            background-color: rgba(17, 34, 64, 0.5);
+            border-radius: 0 5px 5px 0;
+        }
+
+        summary {
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--amber);
+            list-style: none;
+            padding: 10px;
+            background-color: rgba(0, 245, 255, 0.08);
+            border-radius: 5px;
+            margin-bottom: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        summary::before {
+            content: "▶";
+            margin-right: 10px;
+            font-size: 0.8rem;
+            transition: transform 0.3s;
+        }
+
+        details[open] summary::before {
+            transform: rotate(90deg);
+        }
+
+        pre code {
+            display: block;
+            padding: 15px;
+            background-color: #0d1b2a;
+            color: var(--cyan);
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+            border-left: 3px solid var(--amber);
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.2);
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+
+        .formula {
+            background-color: rgba(0, 245, 255, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 15px 0;
+            border-left: 3px solid var(--cyan);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1.1rem;
+        }
+
+        .definition {
+            color: var(--amber);
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .detail {
+            margin: 12px 0;
+            line-height: 1.6;
+        }
+
+        .syntax {
+            margin: 15px 0;
+        }
+
+        .example {
+            margin: 15px 0;
+        }
+
+        .use-case {
+            color: var(--cyan);
+            font-weight: 500;
+            margin-top: 10px;
+        }
+
+        .code-comment {
+            color: #7f8c8d;
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: #0a192f;
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            margin-left: 8px;
+        }
+
+        .comparison-table {
+            background-color: rgba(0, 245, 255, 0.05);
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+            border: 1px dashed var(--cyan);
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            border: 1px solid var(--border-color);
+            padding: 10px;
+            text-align: left;
+        }
+
+        .comparison-table th {
+            background-color: rgba(0, 245, 255, 0.1);
+            color: var(--amber);
+            font-weight: bold;
+        }
+
+        .comparison-table tr:nth-child(even) {
+            background-color: rgba(17, 34, 64, 0.3);
+        }
+
+        .comparison-table .true {
+            color: #00f5ff;
+            font-weight: bold;
+        }
+
+        .comparison-table .false {
+            color: #ffb74d;
+            font-weight: bold;
+        }
+
+        .json-diagram {
+            background-color: rgba(17, 34, 64, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid var(--amber);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .property-box {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 5px;
+            border: 1px solid var(--cyan);
+            border-radius: 5px;
+            background-color: rgba(0, 245, 255, 0.1);
+        }
+
+        .hidden-box {
+            display: inline-block;
+            padding: 8px 12px;
+            margin: 5px;
+            border: 1px solid var(--amber);
+            border-radius: 5px;
+            background-color: rgba(255, 183, 77, 0.2);
+        }
+
+        @media (max-width: 991px) {
+            .left-panel {
+                position: relative;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .right-panel {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid p-0">
+    <div class="row g-0">
+        <!-- Left Panel -->
+        <div class="col-md-3 left-panel">
+            <h2>7.4 Object Iteration and Inspection</h2>
+            <p class="text-muted small">Exploring, Enumerating, and Serializing Objects</p>
+            <p class="text-secondary small">Author: AI Tutor • Updated: 2024</p>
+
+            <div class="mb-3 d-flex gap-2">
+                <button id="expandAll" class="btn btn-control">Expand All</button>
+                <button id="collapseAll" class="btn btn-control">Collapse All</button>
+            </div>
+
+            <div class="search-box mb-4">
+                <input type="text" id="searchToc" class="form-control bg-dark border-cyan" placeholder="Search topics..." style="color: var(--cyan); background-color: #112240; border-color: var(--amber);">
+            </div>
+
+            <h5 class="text-uppercase text-muted fw-bold mb-3">Table of Contents</h5>
+            <ul class="list-unstyled">
+                <li class="toc-item">
+                    <a href="#for-in-loops">for...in Loops</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#forin-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#forin-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#forin-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#forin-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#forin-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#object-methods">Object.keys(), Object.values(), Object.entries()</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#objmethods-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#objmethods-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#objmethods-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#objmethods-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#objmethods-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#has-own-property">Object.hasOwnProperty()</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#hasdefinition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#hasdetail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#hassyntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#hasexample">Example</a></li>
+                        <li class="toc-subitem"><a href="#hasuses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#get-own-property-names">Object.getOwnPropertyNames()</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#getnames-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#getnames-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#getnames-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#getnames-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#getnames-uses">Uses</a></li>
+                    </ul>
+                </li>
+                <li class="toc-item">
+                    <a href="#json-serialization">JSON Serialization and Parsing</a>
+                    <ul class="list-unstyled">
+                        <li class="toc-subitem"><a href="#json-definition">Definition</a></li>
+                        <li class="toc-subitem"><a href="#json-detail">Detail</a></li>
+                        <li class="toc-subitem"><a href="#json-syntax">Syntax</a></li>
+                        <li class="toc-subitem"><a href="#json-example">Example</a></li>
+                        <li class="toc-subitem"><a href="#json-uses">Uses</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="col-md-9 right-panel">
+            <section id="for-in-loops">
+                <details>
+                    <summary>for...in Loops</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">for...in</span> is a loop that iterates over all enumerable string properties of an object, including inherited ones.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>The <code>for...in</code> loop is designed specifically for iterating over object properties. It loops through the keys (property names) of an object, not the values. Importantly, it includes properties from the prototype chain, which can lead to unexpected results if not handled properly.</p>
+                    <p>This loop works with any object, including arrays (though it's not recommended for arrays). The order of iteration is not guaranteed in older JavaScript engines, but modern engines follow a specific order based on property creation and type.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>for (key in object) {
+    // key is the property name
+    // object[key] is the property value
+}</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// Basic for...in usage
+const person = {
+    name: "Alice",
+    age: 30,
+    city: "New York"
+};
+
+// Iterate over own properties
+for (let key in person) {
+    console.log(key + ": " + person[key]);
+}
+// Output:
+// name: Alice
+// age: 30
+// city: New York
+
+// Adding a property to Object.prototype (inherited)
+Object.prototype.country = "USA";
+
+// Now for...in will include inherited properties!
+for (let key in person) {
+    console.log(key + ": " + person[key]);
+}
+// Output:
+// name: Alice
+// age: 30
+// city: New York
+// country: USA ← Inherited property!
+
+// To avoid inherited properties, use hasOwnProperty():
+for (let key in person) {
+    if (person.hasOwnProperty(key)) {
+        console.log(key + ": " + person[key]);
+    }
+}
+// Output:
+// name: Alice
+// age: 30
+// city: New York
+
+// for...in on arrays (not recommended!)
+const numbers = [10, 20, 30];
+numbers.extra = "hidden"; // Add non-index property
+
+for (let index in numbers) {
+    console.log(index + ": " + numbers[index]);
+}
+// Output:
+// 0: 10
+// 1: 20
+// 2: 30
+// extra: hidden ← Unexpected result!
+
+// Better: Use for...of or traditional for loop for arrays
+for (let value of numbers) {
+    console.log(value); // 10, 20, 30
+}
+
+// for...in on objects with mixed property types
+const complexObj = {
+    name: "Bob",
+    age: 25,
+    isActive: true,
+    scores: [85, 90, 95],
+    address: {
+        street: "123 Main St",
+        city: "Boston"
+    },
+    greet() {
+        return "Hello!";
+    }
+};
+
+for (let key in complexObj) {
+    console.log(`${key}: ${typeof complexObj[key]}`);
+}
+// Output:
+// name: string
+// age: number
+// isActive: boolean
+// scores: object
+// address: object
+// greet: function</code></pre>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Iterating over object properties when you need both key and value</li>
+                        <li>Debugging object structure during development</li>
+                        <li>Dynamic property access in libraries</li>
+                        <li>Working with configuration objects</li>
+                    </ul>
+                    <p class="text-warning mt-2"><strong>⚠️ Warning:</strong> Always use <code>hasOwnProperty()</code> with <code>for...in</code> to avoid inherited properties. Consider using <code>Object.keys()</code> instead for better control.</p>
+                    <p class="text-info mt-2">💡 Pro Tip: <code>for...in</code> is great for objects but avoid it for arrays — use <code>for...of</code>, <code>forEach()</code>, or traditional <code>for</code> loops instead.</p>
+                </details>
+            </section>
+
+            <section id="object-methods">
+                <details>
+                    <summary>Object.keys(), Object.values(), Object.entries()</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">Object.keys()</span>, <span class="highlight">Object.values()</span>, and <span class="highlight">Object.entries()</span> are static methods that return arrays of an object's properties, values, or key-value pairs respectively.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>These methods were introduced in ES5/ES2017 to provide clean, reliable ways to inspect object contents without the pitfalls of <code>for...in</code>. Unlike <code>for...in</code>, they only return own enumerable properties — ignoring inherited properties automatically.</p>
+                    <ul>
+                        <li><code>Object.keys(obj)</code>: Returns array of property names (keys)</li>
+                        <li><code>Object.values(obj)</code>: Returns array of property values</li>
+                        <li><code>Object.entries(obj)</code>: Returns array of [key, value] pairs</li>
+                    </ul>
+                    <p>All three methods respect the <code>enumerable</code> descriptor flag — non-enumerable properties are excluded.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// Object.keys()
+Object.keys(object) → Array&lt;string&gt;
+
+// Object.values()
+Object.values(object) → Array&lt;any&gt;
+
+// Object.entries()
+Object.entries(object) → Array&lt;[string, any]&gt;</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// Example object with different property types
+const student = {
+    name: "Alice",
+    age: 20,
+    grade: "A",
+    courses: ["Math", "Physics"],
+    isGraduated: false,
+    GPA: 3.8
+};
+
+// Object.keys() - get property names
+console.log(Object.keys(student));
+// Output: ["name", "age", "grade", "courses", "isGraduated", "GPA"]
+
+// Object.values() - get property values
+console.log(Object.values(student));
+// Output: ["Alice", 20, "A", ["Math", "Physics"], false, 3.8]
+
+// Object.entries() - get key-value pairs as arrays
+console.log(Object.entries(student));
+// Output: [
+//   ["name", "Alice"],
+//   ["age", 20],
+//   ["grade", "A"],
+//   ["courses", ["Math", "Physics"]],
+//   ["isGraduated", false],
+//   ["GPA", 3.8]
+// ]
+
+// Using these methods with array methods
+Object.keys(student).forEach(key => {
+    console.log(`${key}: ${student[key]}`);
+});
+
+// Map over entries to create new object
+const studentInfo = Object.entries(student)
+    .filter(([key, value]) => typeof value === 'string' || typeof value === 'number')
+    .reduce((acc, [key, value]) => {
+        acc[key] = value;
+        return acc;
+    }, {});
+
+console.log(studentInfo);
+// Output: { name: "Alice", age: 20, grade: "A", GPA: 3.8 }
+
+// Convert object to array of objects
+const studentArray = Object.entries(student).map(([key, value]) => ({
+    property: key,
+    value: value,
+    type: typeof value
+}));
+
+console.log(studentArray);
+// Output: [
+//   { property: "name", value: "Alice", type: "string" },
+//   { property: "age", value: 20, type: "number" },
+//   ...
+// ]
+
+// Working with non-enumerable properties
+const obj = {};
+Object.defineProperty(obj, 'hidden', {
+    value: 'secret',
+    enumerable: false,
+    writable: true,
+    configurable: true
+});
+obj.visible = 'public';
+
+console.log(Object.keys(obj)); // ["visible"] - hidden ignored!
+console.log(Object.values(obj)); // ["public"] - hidden ignored!
+console.log(Object.entries(obj)); // [["visible", "public"]] - hidden ignored!
+
+// Practical example: Data transformation
+const product = {
+    id: 123,
+    name: "Laptop",
+    price: 999,
+    category: "Electronics",
+    inStock: true
+};
+
+// Transform to API format
+const apiProduct = Object.fromEntries(
+    Object.entries(product)
+        .filter(([key]) => !key.startsWith('_'))
+        .map(([key, value]) => [key.toUpperCase(), value])
+);
+
+console.log(apiProduct);
+// Output: { ID: 123, NAME: "Laptop", PRICE: 999, CATEGORY: "Electronics", INSTOCK: true }
+
+// Creating a helper function to check if object is empty
+function isEmpty(obj) {
+    return Object.keys(obj).length === 0;
+}
+
+console.log(isEmpty({})); // true
+console.log(isEmpty({ name: "Alice" })); // false
+
+// Converting object to JSON-like structure for debugging
+function debugObject(obj) {
+    return Object.entries(obj).map(([key, value]) => 
+        `${key}: ${JSON.stringify(value)}`
+    ).join('\n');
+}
+
+console.log(debugObject(student));
+// Output:
+// name: "Alice"
+// age: 20
+// grade: "A"
+// courses: ["Math","Physics"]
+// isGraduated: false
+// GPA: 3.8</code></pre>
+
+                    <div class="comparison-table">
+<table>
+    <thead>
+        <tr>
+            <th>Method</th>
+            <th>Returns</th>
+            <th>Includes inherited?</th>
+            <th>Includes non-enumerable?</th>
+            <th>Use Case</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td><code>Object.keys()</code></td>
+            <td>Array of property names</td>
+            <td class="false">❌ No</td>
+            <td class="false">❌ No</td>
+            <td>Getting property names for iteration</td>
+        </tr>
+        <tr>
+            <td><code>Object.values()</code></td>
+            <td>Array of property values</td>
+            <td class="false">❌ No</td>
+            <td class="false">❌ No</td>
+            <td>Getting all values without keys</td>
+        </tr>
+        <tr>
+            <td><code>Object.entries()</code></td>
+            <td>Array of [key, value] pairs</td>
+            <td class="false">❌ No</td>
+            <td class="false">❌ No</td>
+            <td>Iterating over key-value pairs</td>
+        </tr>
+        <tr>
+            <td><code>for...in</code></td>
+            <td>Property names (one at a time)</td>
+            <td class="true">✅ Yes</td>
+            <td class="false">❌ No</td>
+            <td>Legacy iteration (requires hasOwnProperty)</td>
+        </tr>
+        <tr>
+            <td><code>Object.getOwnPropertyNames()</code></td>
+            <td>All property names</td>
+            <td class="false">❌ No</td>
+            <td class="true">✅ Yes</td>
+            <td>Getting all properties including non-enumerable</td>
+        </tr>
+    </tbody>
+</table>
+                    </div>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Safe iteration over object properties without inheritance issues</li>
+                        <li>Transforming objects into arrays for functional programming</li>
+                        <li>Creating dynamic APIs and data pipelines</li>
+                        <li>Debugging and logging object contents</li>
+                        <li>Converting between object formats</li>
+                    </ul>
+                    <p class="text-success mt-2">✅ Best Practice: Prefer <code>Object.keys()</code>, <code>Object.values()</code>, and <code>Object.entries()</code> over <code>for...in</code> for modern JavaScript development.</p>
+                </details>
+            </section>
+
+            <section id="has-own-property">
+                <details>
+                    <summary>Object.hasOwnProperty()</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">Object.hasOwnProperty()</span> is a method that returns true if the object has the specified property as its own property (not inherited).</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>This method checks whether a property exists directly on the object itself, rather than somewhere up the prototype chain. It's essential for safely using <code>for...in</code> loops and avoiding unintended behavior from inherited properties.</p>
+                    <p>Important note: <code>hasOwnProperty()</code> itself is inherited from <code>Object.prototype</code>, so if an object has a property named <code>hasOwnProperty</code>, calling it directly could cause errors. The safest approach is to use <code>Object.prototype.hasOwnProperty.call()</code>.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>object.hasOwnProperty(propertyName)
+
+// Safe version (recommended)
+Object.prototype.hasOwnProperty.call(object, propertyName)</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// Basic usage
+const person = {
+    name: "Alice",
+    age: 30
+};
+
+console.log(person.hasOwnProperty('name')); // true
+console.log(person.hasOwnProperty('age')); // true
+console.log(person.hasOwnProperty('city')); // false
+
+// Inheritance example
+Object.prototype.country = "USA";
+
+console.log(person.hasOwnProperty('country')); // false (inherited!)
+console.log('country' in person); // true (exists in prototype chain)
+
+// Common pattern with for...in
+for (let key in person) {
+    if (person.hasOwnProperty(key)) {
+        console.log(`${key}: ${person[key]}`);
+    }
+}
+// Output:
+// name: Alice
+// age: 30
+
+// Demonstrating the danger of shadowing hasOwnProperty
+const dangerousObj = {
+    hasOwnProperty: "I'm not a function!"
+};
+
+// This will throw an error!
+// dangerousObj.hasOwnProperty('name'); // ❌ TypeError: dangerousObj.hasOwnProperty is not a function
+
+// Safe approach using Object.prototype.hasOwnProperty.call()
+console.log(Object.prototype.hasOwnProperty.call(dangerousObj, 'hasOwnProperty')); // true
+console.log(Object.prototype.hasOwnProperty.call(dangerousObj, 'name')); // false
+
+// Real-world example: Configuration validation
+function validateConfig(config, requiredFields) {
+    const missing = [];
+    
+    for (let field of requiredFields) {
+        // Check if field exists AND is not undefined/null
+        if (!config.hasOwnProperty(field) || config[field] == null) {
+            missing.push(field);
+        }
+    }
+    
+    return missing;
+}
+
+const userConfig = {
+    username: "alice123",
+    email: "alice@example.com",
+    theme: "dark"
+};
+
+const required = ['username', 'email', 'password'];
+
+const missingFields = validateConfig(userConfig, required);
+console.log(missingFields); // ["password"]
+
+// Advanced example: Checking object shape
+function hasAllProperties(obj, properties) {
+    return properties.every(prop => Object.prototype.hasOwnProperty.call(obj, prop));
+}
+
+const user = {
+    id: 1,
+    name: "Bob",
+    role: "admin"
+};
+
+console.log(hasAllProperties(user, ['id', 'name'])); // true
+console.log(hasAllProperties(user, ['id', 'role', 'email'])); // false
+
+// Utility function to get own properties only
+function getOwnProperties(obj) {
+    const result = {};
+    for (let key in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) {
+            result[key] = obj[key];
+        }
+    }
+    return result;
+}
+
+const extendedObj = {
+    name: "Charlie",
+    age: 25
+};
+
+Object.prototype.hiddenProp = "should be ignored";
+
+console.log(getOwnProperties(extendedObj));
+// Output: { name: "Charlie", age: 25 } - hiddenProp excluded!</code></pre>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Filtering out inherited properties in loops</li>
+                        <li>Validating object structure and shape</li>
+                        <li>Implementing deep cloning functions</li>
+                        <li>Creating safe utility functions for object manipulation</li>
+                        <li>Debugging property sources in complex inheritance chains</li>
+                    </ul>
+                    <p class="text-warning mt-2"><strong>⚠️ Critical Safety Note:</strong> Always use <code>Object.prototype.hasOwnProperty.call(obj, prop)</code> rather than <code>obj.hasOwnProperty(prop)</code> to avoid breaking when objects have a property named <code>hasOwnProperty</code>.</p>
+                </details>
+            </section>
+
+            <section id="get-own-property-names">
+                <details>
+                    <summary>Object.getOwnPropertyNames()</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">Object.getOwnPropertyNames()</span> returns an array of all own property names (including non-enumerable ones) of an object.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>This method is similar to <code>Object.keys()</code> but includes non-enumerable properties. It's useful when you need to inspect the complete structure of an object, including hidden or internal properties.</p>
+                    <p>Unlike <code>Object.keys()</code> which only returns enumerable properties, <code>getOwnPropertyNames()</code> gives you the full picture of what properties exist on an object, regardless of their enumerability setting.</p>
+                    <p>Note: It only returns own properties — not inherited ones. For inherited properties, you'd need to traverse the prototype chain manually.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>Object.getOwnPropertyNames(object) → Array&lt;string&gt;</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// Basic usage
+const obj = {
+    visible: "public",
+    secret: "hidden"
+};
+
+// Make one property non-enumerable
+Object.defineProperty(obj, 'secret', {
+    value: 'this is hidden',
+    enumerable: false,
+    writable: true,
+    configurable: true
+});
+
+console.log(Object.keys(obj)); // ["visible"] - only enumerable
+console.log(Object.getOwnPropertyNames(obj)); // ["visible", "secret"] - all own properties
+
+// Real-world example: Inspecting built-in objects
+console.log(Object.getOwnPropertyNames(Array.prototype));
+// Output: [
+//   "length", "constructor", "toString", "toLocaleString", "pop", "push", "concat", "join", 
+//   "reverse", "shift", "unshift", "slice", "splice", "sort", "filter", "map", "forEach", 
+//   "some", "every", "indexOf", "lastIndexOf", "includes", "find", "findIndex", "copyWithin", 
+//   "fill", "entries", "keys", "values", Symbol(Symbol.iterator)
+// ]
+
+// Example: Deep inspection of an object
+const calculator = {
+    value: 0,
+    add(num) {
+        this.value += num;
+        return this;
+    }
+};
+
+// Define a non-enumerable method
+Object.defineProperty(calculator, 'multiply', {
+    value: function(num) {
+        this.value *= num;
+        return this;
+    },
+    enumerable: false, // Hidden from Object.keys()
+    writable: true,
+    configurable: true
+});
+
+console.log("Keys:", Object.keys(calculator)); // ["value"]
+console.log("All names:", Object.getOwnPropertyNames(calculator)); // ["value", "add", "multiply"]
+
+// Get all methods of an object
+function getAllMethods(obj) {
+    return Object.getOwnPropertyNames(obj)
+        .filter(key => typeof obj[key] === 'function' && key !== 'constructor');
+}
+
+console.log(getAllMethods(calculator)); // ["add", "multiply"]
+
+// Example: Debugging library internals
+function inspectObject(obj, includeNonEnumerable = false) {
+    const props = includeNonEnumerable 
+        ? Object.getOwnPropertyNames(obj) 
+        : Object.keys(obj);
+        
+    return props.map(key => ({
+        key,
+        value: obj[key],
+        type: typeof obj[key],
+        enumerable: Object.getOwnPropertyDescriptor(obj, key)?.enumerable
+    }));
+}
+
+const user = {
+    name: "David",
+    age: 30,
+    _privateId: "user_123"
+};
+
+Object.defineProperty(user, '_privateId', {
+    value: "user_123",
+    enumerable: false
+});
+
+console.log("Regular inspection:");
+console.log(inspectObject(user));
+// Output: [
+//   { key: "name", value: "David", type: "string", enumerable: true },
+//   { key: "age", value: 30, type: "number", enumerable: true }
+// ]
+
+console.log("Full inspection:");
+console.log(inspectObject(user, true));
+// Output: [
+//   { key: "name", value: "David", type: "string", enumerable: true },
+//   { key: "age", value: 30, type: "number", enumerable: true },
+//   { key: "_privateId", value: "user_123", type: "string", enumerable: false }
+// ]
+
+// Example: Creating a deep clone function
+function deepClone(obj) {
+    if (obj === null || typeof obj !== 'object') return obj;
+    
+    if (obj instanceof Date) return new Date(obj.getTime());
+    if (obj instanceof Array) return obj.map(item => deepClone(item));
+    
+    const clone = {};
+    Object.getOwnPropertyNames(obj).forEach(key => {
+        clone[key] = deepClone(obj[key]);
+    });
+    
+    return clone;
+}
+
+const original = {
+    name: "Eve",
+    createdAt: new Date(),
+    tags: ["important", "urgent"],
+    _internal: "secret"
+};
+
+Object.defineProperty(original, '_internal', {
+    value: "secret",
+    enumerable: false
+});
+
+const cloned = deepClone(original);
+console.log(cloned.name); // "Eve"
+console.log(cloned.createdAt instanceof Date); // true
+console.log(cloned.tags); // ["important", "urgent"]
+console.log(cloned._internal); // "secret" - even non-enumerable copied!
+console.log(Object.getOwnPropertyDescriptor(cloned, '_internal').enumerable); // false
+
+// Example: Getting all property descriptors
+function getAllDescriptors(obj) {
+    return Object.getOwnPropertyNames(obj).reduce((descs, key) => {
+        descs[key] = Object.getOwnPropertyDescriptor(obj, key);
+        return descs;
+    }, {});
+}
+
+const config = {
+    mode: "production"
+};
+
+Object.defineProperty(config, 'version', {
+    value: "1.0",
+    writable: false,
+    enumerable: false,
+    configurable: true
+});
+
+console.log(getAllDescriptors(config));
+// Output: {
+//   mode: { value: "production", writable: true, enumerable: true, configurable: true },
+//   version: { value: "1.0", writable: false, enumerable: false, configurable: true }
+// }</code></pre>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>Inspecting all properties of an object, including hidden ones</li>
+                        <li>Debugging and understanding object structure</li>
+                        <li>Creating comprehensive deep cloning functions</li>
+                        <li>Building developer tools and inspectors</li>
+                        <li>Implementing serialization/deserialization systems</li>
+                    </ul>
+                    <p class="text-info mt-2">💡 Pro Tip: Combine <code>Object.getOwnPropertyNames()</code> with <code>Object.getOwnPropertyDescriptor()</code> to get complete information about every property on an object.</p>
+                </details>
+            </section>
+
+            <section id="json-serialization">
+                <details>
+                    <summary>JSON Serialization and Parsing</summary>
+                    <div class="definition">Definition:</div>
+                    <p><span class="highlight">JSON (JavaScript Object Notation)</span> serialization converts JavaScript objects to JSON strings, while parsing converts JSON strings back to JavaScript objects.</p>
+
+                    <div class="detail">Detail:</div>
+                    <p>JSON is a lightweight data interchange format that's easy for humans to read and write and easy for machines to parse and generate. JavaScript provides two built-in methods for working with JSON:</p>
+                    <ul>
+                        <li><code>JSON.stringify(obj)</code>: Converts a JavaScript object to a JSON string</li>
+                        <li><code>JSON.parse(str)</code>: Converts a JSON string to a JavaScript object</li>
+                    </ul>
+                    <p>Not all JavaScript values can be serialized to JSON. Functions, undefined, symbols, and circular references are problematic. JSON only supports: objects, arrays, strings, numbers, booleans, and null.</p>
+                    <p>JSON serialization is essential for data storage, API communication, and client-server interactions.</p>
+
+                    <div class="syntax">Syntax:</div>
+                    <pre><code>// Serialization
+JSON.stringify(value, replacer, space)
+
+// Parsing
+JSON.parse(text, reviver)</code></pre>
+
+                    <div class="example">Example:</div>
+                    <pre><code class="language-javascript">// Basic serialization
+const person = {
+    name: "Alice",
+    age: 30,
+    city: "New York",
+    isActive: true,
+    hobbies: ["reading", "swimming"],
+    address: {
+        street: "123 Main St",
+        zip: "10001"
+    }
+};
+
+const jsonString = JSON.stringify(person);
+console.log(jsonString);
+// Output: {"name":"Alice","age":30,"city":"New York","isActive":true,"hobbies":["reading","swimming"],"address":{"street":"123 Main St","zip":"10001"}}
+
+// Basic parsing
+const parsedPerson = JSON.parse(jsonString);
+console.log(parsedPerson.name); // "Alice"
+console.log(parsedPerson.hobbies[0]); // "reading"
+
+// Handling special values
+const specialValues = {
+    name: "Bob",
+    age: undefined,           // Will be omitted
+    score: null,              // Will be preserved
+    createdAt: new Date(),    // Converted to ISO string
+    active: true,
+    preferences: Symbol('prefs'), // Will be omitted
+    calculate() { return 42; } // Will be omitted
+};
+
+const jsonSpecial = JSON.stringify(specialValues);
+console.log(jsonSpecial);
+// Output: {"name":"Bob","score":null,"createdAt":"2024-01-01T00:00:00.000Z","active":true}
+
+// Replacer function - customize serialization
+const user = {
+    id: 123,
+    name: "Charlie",
+    email: "charlie@example.com",
+    password: "secret123",
+    lastLogin: new Date()
+};
+
+const jsonUser = JSON.stringify(user, ['id', 'name', 'email'], 2);
+console.log(jsonUser);
+// Output:
+// {
+//   "id": 123,
+//   "name": "Charlie",
+//   "email": "charlie@example.com"
+// }
+
+// Replacer function with logic
+const jsonWithReplacer = JSON.stringify(user, (key, value) => {
+    if (key === 'password') return '[REDACTED]';
+    if (key === 'lastLogin') return value.toISOString();
+    return value;
+}, 2);
+
+console.log(jsonWithReplacer);
+// Output:
+// {
+//   "id": 123,
+//   "name": "Charlie",
+//   "email": "charlie@example.com",
+//   "password": "[REDACTED]",
+//   "lastLogin": "2024-01-01T00:00:00.000Z"
+// }
+
+// Reviver function - customize parsing
+const jsonText = '{"id":123,"name":"David","createdAt":"2024-01-01T00:00:00.000Z"}';
+
+const parsedWithReviver = JSON.parse(jsonText, (key, value) => {
+    if (key === 'createdAt') return new Date(value);
+    return value;
+});
+
+console.log(parsedWithReviver.createdAt instanceof Date); // true
+console.log(parsedWithReviver.createdAt.getFullYear()); // 2024
+
+// Circular reference handling
+const circular = {};
+circular.self = circular;
+
+try {
+    JSON.stringify(circular); // ❌ TypeError: Converting circular structure to JSON
+} catch (error) {
+    console.log("Circular reference error:", error.message);
+}
+
+// Fix circular references with replacer
+const obj = {
+    name: "Eve",
+    data: { value: 42 }
+};
+obj.parent = obj; // Create circular reference
+
+const jsonWithoutCircular = JSON.stringify(obj, (key, value) => {
+    if (value === obj) return '[Circular Reference]';
+    return value;
+});
+
+console.log(jsonWithoutCircular);
+// Output: {"name":"Eve","data":{"value":42},"parent":"[Circular Reference]"}
+
+// Complex example: Class instance serialization
+class Person {
+    constructor(name, age) {
+        this.name = name;
+        this.age = age;
+        this.id = Math.random().toString(36).substr(2, 9);
+    }
+    
+    greet() {
+        return `Hello, I'm ${this.name}`;
+    }
+    
+    toJSON() {
+        // Custom serialization method
+        return {
+            name: this.name,
+            age: this.age,
+            id: this.id,
+            __type: 'Person'
+        };
+    }
+}
+
+const alice = new Person("Alice", 30);
+const jsonPerson = JSON.stringify(alice);
+console.log(jsonPerson);
+// Output: {"name":"Alice","age":30,"id":"abc123xyz","__type":"Person"}
+
+// Parse back to object
+const parsedJson = JSON.parse(jsonPerson);
+const restoredPerson = new Person(parsedJson.name, parsedJson.age);
+restoredPerson.id = parsedJson.id;
+console.log(restoredPerson.greet()); // "Hello, I'm Alice"
+
+// Example: Saving to localStorage
+const settings = {
+    theme: 'dark',
+    language: 'en',
+    notifications: true,
+    lastUpdated: new Date()
+};
+
+// Save to localStorage
+localStorage.setItem('appSettings', JSON.stringify(settings));
+
+// Retrieve from localStorage
+const savedSettings = localStorage.getItem('appSettings');
+const parsedSettings = JSON.parse(savedSettings);
+
+console.log(parsedSettings.theme); // "dark"
+console.log(parsedSettings.lastUpdated); // String representation of date
+
+// Handle date restoration
+if (parsedSettings.lastUpdated) {
+    parsedSettings.lastUpdated = new Date(parsedSettings.lastUpdated);
+}
+
+// Example: Nested objects with functions
+const apiClient = {
+    baseUrl: 'https://api.example.com',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    request(endpoint, method = 'GET') {
+        return fetch(this.baseUrl + endpoint, {
+            method,
+            headers: this.headers
+        });
+    }
+};
+
+// Serialize (functions lost)
+const serialized = JSON.stringify(apiClient);
+console.log(serialized);
+// Output: {"baseUrl":"https://api.example.com","headers":{"Content-Type":"application/json"}}
+
+// Deserialize
+const deserialized = JSON.parse(serialized);
+console.log(deserialized.request); // undefined - function lost!
+
+// Example: JSON with invalid syntax
+try {
+    JSON.parse('{name: "Alice"}'); // ❌ SyntaxError: Unexpected token n
+} catch (error) {
+    console.log("Invalid JSON:", error.message);
+}
+
+try {
+    JSON.parse('{"name": "Alice",}'); // ❌ SyntaxError: Unexpected token }
+} catch (error) {
+    console.log("Invalid JSON:", error.message);
+}
+
+// Safe parsing with try-catch
+function safeParse(jsonString) {
+    try {
+        return JSON.parse(jsonString);
+    } catch (error) {
+        console.error("Failed to parse JSON:", error.message);
+        return null;
+    }
+}
+
+console.log(safeParse('{"valid": true}')); // { valid: true }
+console.log(safeParse('invalid json')); // null</code></pre>
+
+                    <div class="json-diagram">
+// JSON SERIALIZATION FLOW:
+
+// JavaScript Object
+//      │
+//      ▼
+// JSON.stringify() 
+//      │
+//      ▼
+// JSON String (text-based)
+//      │
+//      ▼
+// Network / Storage / Transmission
+//      │
+//      ▼
+// JSON.parse()
+//      │
+//      ▼
+// JavaScript Object
+
+// What survives serialization:
+// ✅ Objects {}
+// ✅ Arrays []
+// ✅ Strings ""
+// ✅ Numbers
+// ✅ Booleans true/false
+// ✅ null
+// ✅ Dates (converted to ISO string)
+
+// What doesn't survive:
+// ❌ Functions
+// ❌ undefined
+// ❌ Symbols
+// ❌ Map/Set
+// ❌ RegExp
+// ❌ Infinity/-Infinity
+// ❌ Circular references
+// ❌ Prototypes
+// ❌ Non-enumerable properties (unless custom toJSON used)
+// ❌ Methods</div>
+
+                    <div class="use-case">Uses:</div>
+                    <ul>
+                        <li>API communication between client and server</li>
+                        <li>Storing data in localStorage/sessionStorage</li>
+                        <li>Serializing application state</li>
+                        <li>Data exchange between different systems</li>
+                        <li>Configuration file formats</li>
+                        <li>Debugging and logging complex objects</li>
+                        <li>Message passing between web workers</li>
+                    </ul>
+                    <p class="text-warning mt-2"><strong>⚠️ Important Limitations:</strong></p>
+                    <ul>
+                        <li>Functions are lost during serialization</li>
+                        <li>undefined values are omitted</li>
+                        <li>Circular references cause errors</li>
+                        <li>Date objects become strings</li>
+                        <li>Maps and Sets are converted to objects</li>
+                        <li>Symbol properties are ignored</li>
+                    </ul>
+                    <p class="text-success mt-2">✅ Best Practices:</p>
+                    <ul>
+                        <li>Always use try-catch with JSON.parse()</li>
+                        <li>Use replacer functions to filter sensitive data</li>
+                        <li>Use reviver functions to restore complex types like Date</li>
+                        <li>Implement toJSON() methods on classes for custom serialization</li>
+                        <li>Validate JSON structure before processing</li>
+                    </ul>
+                </details>
+            </section>
+
+            <hr class="my-5">
+
+            <div class="alert alert-info">
+                <h5>Key Takeaways</h5>
+                <ul>
+                    <li>Use <code>Object.keys()</code>, <code>Object.values()</code>, and <code>Object.entries()</code> for safe object iteration</li>
+                    <li>Always use <code>hasOwnProperty()</code> with <code>for...in</code> loops to avoid inherited properties</li>
+                    <li><code>Object.getOwnPropertyNames()</code> reveals all own properties, including non-enumerable ones</li>
+                    <li>JSON serialization converts objects to strings for storage/transmission</li>
+                    <li>JSON.parse() converts strings back to objects</li>
+                    <li>JSON only supports basic data types — functions, undefined, and symbols are lost</li>
+                    <li>Use <code>toJSON()</code> methods and replacer/reviver functions for custom serialization behavior</li>
+                </ul>
+            </div>
+
+            <div class="alert alert-warning">
+                <h5>Common Pitfalls</h5>
+                <ul>
+                    <li>Using <code>for...in</code> on arrays instead of proper array iteration methods</li>
+                    <li>Forgetting to check <code>hasOwnProperty()</code> in loops</li>
+                    <li>Assuming JSON preserves functions and other non-serializable types</li>
+                    <li>Trying to serialize circular references without handling them</li>
+                    <li>Using <code>obj.hasOwnProperty()</code> directly instead of <code>Object.prototype.hasOwnProperty.call()</code></li>
+                    <li>Not validating JSON before parsing, leading to runtime errors</li>
+                </ul>
+            </div>
+
+            <div class="alert alert-success">
+                <h5>Interview Question Prep</h5>
+                <p><strong>Q: What's the difference between Object.keys() and Object.getOwnPropertyNames()?</strong></p>
+                <p><strong>A:</strong> <code>Object.keys()</code> returns only enumerable own properties, while <code>Object.getOwnPropertyNames()</code> returns all own properties including non-enumerable ones.</p>
+                
+                <p><strong>Q: Why does for...in include inherited properties and how do you avoid them?</strong></p>
+                <p><strong>A:</strong> <code>for...in</code> iterates over all enumerable properties in the prototype chain. Use <code>hasOwnProperty()</code> to filter: <code>if (obj.hasOwnProperty(key)) { ... }</code></p>
+                
+                <p><strong>Q: What happens when you try to JSON.stringify() a function?</strong></p>
+                <p><strong>A:</strong> Functions are omitted from the resulting JSON string. Only serializable data types (objects, arrays, strings, numbers, booleans, null) are preserved.</p>
+                
+                <p><strong>Q: How would you handle circular references in JSON serialization?</strong></p>
+                <p><strong>A:</strong> Use a replacer function that detects circular references by tracking visited objects and replacing them with a placeholder like "[Circular Reference]".</p>
+                
+                <p><strong>Q: When would you use Object.entries()?</strong></p>
+                <p><strong>A:</strong> When you need to iterate over both keys and values simultaneously, especially when transforming objects into arrays or using array methods like map, filter, or reduce.</p>
+            </div>
+
+            <div class="text-center mt-4">
+                <small class="text-muted">© 2024 AI Tutor — Mastering Programming Fundamentals One Concept at a Time</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript Utilities -->
+<script>
+    // Expand/Collapse All
+    document.getElementById('expandAll').addEventListener('click', () => {
+        document.querySelectorAll('details').forEach(detail => {
+            detail.open = true;
+        });
+    });
+
+    document.getElementById('collapseAll').addEventListener('click', () => {
+        document.querySelectorAll('details').forEach(detail => {
+            detail.open = false;
+        });
+    });
+
+    // Smooth scrolling for TOC links
+    document.querySelectorAll('.toc-item a, .toc-subitem a').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+            
+            if (targetElement) {
+                window.scrollTo({
+                    top: targetElement.offsetTop - 100,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+
+    // Search functionality for TOC
+    document.getElementById('searchToc').addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
+        
+        tocItems.forEach(item => {
+            const text = item.textContent.toLowerCase();
+            if (query === '' || text.includes(query)) {
+                item.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    });
+
+    // Syntax Highlighting (basic)
+    document.querySelectorAll('pre code').forEach(block => {
+        hljs.highlightBlock(block);
+    });
+
+    // Add highlight.js if not present (fallback)
+    if (typeof hljs === 'undefined') {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js';
+        script.onload = () => {
+            document.querySelectorAll('pre code').forEach(block => {
+                hljs.highlightBlock(block);
+            });
+        };
+        document.head.appendChild(script);
+    }
+</script>
+
+<!-- Optional: Add highlight.js for better syntax highlighting -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+
+</body>
+</html>
+```

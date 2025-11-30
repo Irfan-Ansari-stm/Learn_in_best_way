@@ -1,0 +1,1016 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>10.3 Function Methods and Context - Deep Learning Notes</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00f5ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --border-color: #1a3b60;
+        }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .left-panel {
+            background-color: #0c213d;
+            border-right: 1px solid var(--border-color);
+            height: 100vh;
+            position: fixed;
+            width: 300px;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5);
+        }
+        
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--amber);
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+        
+        .toc-item {
+            margin: 8px 0;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .toc-item:hover {
+            background-color: rgba(0, 245, 255, 0.1);
+            color: var(--amber);
+        }
+        
+        .toc-subitem {
+            margin-left: 20px;
+            margin-top: 5px;
+            padding: 5px 8px;
+            border-radius: 3px;
+            color: #b8daff;
+        }
+        
+        .toc-subitem:hover {
+            background-color: rgba(0, 245, 255, 0.1);
+            color: var(--amber);
+        }
+        
+        .search-input {
+            background-color: #1a3b60;
+            border: 1px solid var(--amber);
+            color: var(--text-light);
+            margin-bottom: 20px;
+        }
+        
+        .btn-control {
+            background-color: transparent;
+            border: 1px solid var(--amber);
+            color: var(--amber);
+            margin: 10px 0;
+            padding: 6px 12px;
+            font-size: 0.9rem;
+        }
+        
+        .btn-control:hover {
+            background-color: rgba(255, 183, 77, 0.2);
+        }
+        
+        pre code {
+            display: block;
+            padding: 16px;
+            overflow-x: auto;
+            background-color: #0f2a45 !important;
+            border-left: 4px solid var(--amber);
+            border-radius: 6px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--cyan);
+        }
+        
+        code {
+            background-color: #1a3b60;
+            color: var(--amber);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        
+        .details-summary {
+            cursor: pointer;
+            padding: 12px;
+            background-color: #0f2a45;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 8px;
+            color: var(--cyan);
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .details-summary:hover {
+            background-color: #13375e;
+            color: var(--amber);
+        }
+        
+        .details-content {
+            background-color: #0f2a45;
+            padding: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--cyan);
+        }
+        
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.15);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+        
+        .definition {
+            border-left: 4px solid var(--cyan);
+        }
+        
+        .detail {
+            border-left: 4px solid var(--amber);
+        }
+        
+        .syntax {
+            border-left: 4px solid #a0f;
+        }
+        
+        .example {
+            border-left: 4px solid #00ff99;
+        }
+        
+        .uses {
+            border-left: 4px solid #ff6b6b;
+        }
+        
+        .table-of-contents h4 {
+            color: var(--amber);
+            margin-top: 20px;
+            border-bottom: 1px dashed var(--amber);
+            padding-bottom: 5px;
+        }
+        
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #0a192f;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--amber);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #ffcc80;
+        }
+        
+        .badge {
+            background-color: var(--amber);
+            color: #000;
+            font-weight: bold;
+            font-size: 0.8rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+        }
+        
+        .note-box {
+            background-color: rgba(0, 245, 255, 0.1);
+            border-left: 4px solid var(--cyan);
+            padding: 12px;
+            margin: 15px 0;
+            border-radius: 0 6px 6px 0;
+        }
+        
+        .code-inline {
+            font-family: 'Courier New', Courier, monospace;
+            background-color: #1a3b60;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: var(--amber);
+        }
+        
+        .context-diagram {
+            background-color: #0f2a45;
+            padding: 15px;
+            border: 1px solid #1a3b60;
+            border-radius: 6px;
+            margin: 20px 0;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre;
+            text-align: left;
+        }
+        
+        .method-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 20px 0;
+        }
+        
+        .method-table th, .method-table td {
+            border: 1px solid #1a3b60;
+            padding: 10px;
+            text-align: left;
+        }
+        
+        .method-table th {
+            background-color: #1a3b60;
+            color: var(--amber);
+        }
+        
+        .method-table tr:nth-child(even) {
+            background-color: #0f2a45;
+        }
+        
+        .method-table tr:hover {
+            background-color: #13375e;
+        }
+    </style>
+</head>
+<body>
+    <!-- Left Panel -->
+    <div class="left-panel">
+        <h1 class="text-center">Function Methods & Context</h1>
+        <p class="text-muted text-center">Mastering call(), apply(), bind()</p>
+        <hr style="border-color: var(--border-color);">
+        
+        <div class="mb-3">
+            <input type="text" class="form-control search-input" id="searchToc" placeholder="Search topics...">
+        </div>
+        
+        <div class="d-grid gap-2 mb-3">
+            <button class="btn btn-control" id="expandAll">Expand All</button>
+            <button class="btn btn-control" id="collapseAll">Collapse All</button>
+        </div>
+        
+        <div class="table-of-contents">
+            <h4>Table of Contents</h4>
+            <div class="toc-item" data-target="call-method">
+                • 10.3 Function Methods and Context
+            </div>
+            <div class="toc-subitem" data-target="call-method">○ call() method detailed</div>
+            <div class="toc-subitem" data-target="apply-method">○ apply() method detailed</div>
+            <div class="toc-subitem" data-target="bind-method">○ bind() method and partial application</div>
+            <div class="toc-subitem" data-target="prototype-methods">○ Function.prototype methods</div>
+            <div class="toc-subitem" data-target="method-chaining">○ Method chaining patterns</div>
+        </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="right-panel">
+        <!-- Section: call() method -->
+        <details id="call-method" open>
+            <summary class="details-summary">call() method detailed</summary>
+            <div class="details-content">
+                <h5>Definition</h5>
+                <p>The <span class="highlight">call()</span> method invokes a function with a specified <code>this</code> value and arguments provided individually.</p>
+                
+                <h5>Detail</h5>
+                <p>JavaScript functions have an implicit <code>this</code> context that determines what object the function is operating on. The <code>call()</code> method allows you to explicitly set this context when invoking a function, even if it's not originally bound to that object.</p>
+                
+                <h5>Syntax</h5>
+                <pre><code>function.call(thisArg, arg1, arg2, ..., argN)</code></pre>
+                <ul>
+                    <li><code>thisArg</code>: The value to be used as <code>this</code> when executing the function</li>
+                    <li><code>arg1, arg2, ..., argN</code>: Arguments to be passed to the function</li>
+                </ul>
+                
+                <h5>Example</h5>
+                <pre><code>// Basic example: Borrowing methods
+const person1 = {
+    name: 'Alice',
+    greet: function(greeting, punctuation) {
+        return greeting + ', ' + this.name + punctuation;
+    }
+};
+
+const person2 = {
+    name: 'Bob'
+};
+
+// Use call() to invoke person1.greet with person2 as this
+console.log(person1.greet.call(person2, 'Hello', '!')); 
+// Output: "Hello, Bob!"
+
+// Another example: Array-like objects
+function sum() {
+    let total = 0;
+    for (let i = 0; i &lt; arguments.length; i++) {
+        total += arguments[i];
+    }
+    return total;
+}
+
+// arguments is array-like, not a real array
+console.log(sum.call(null, 1, 2, 3, 4, 5)); // Output: 15
+
+// Real-world use case: Inheriting constructor properties
+function Vehicle(type, brand) {
+    this.type = type;
+    this.brand = brand;
+}
+
+function Car(brand, model) {
+    Vehicle.call(this, 'car', brand); // Borrow Vehicle constructor
+    this.model = model;
+}
+
+const myCar = new Car('Toyota', 'Camry');
+console.log(myCar); // {type: 'car', brand: 'Toyota', model: 'Camry'}</code></pre>
+                
+                <h5>Uses</h5>
+                <ul>
+                    <li>Method borrowing between objects</li>
+                    <li>Constructor inheritance</li>
+                    <li>Explicitly setting <code>this</code> context in callbacks</li>
+                    <li>Working with array-like objects (arguments, NodeList)</li>
+                    <li>Implementing mixins and composition patterns</li>
+                </ul>
+                
+                <div class="note-box">
+                    <strong>Key Insight:</strong> <code>call()</code> executes the function immediately. It's perfect when you need to borrow a method once or pass specific arguments.
+                </div>
+            </div>
+        </details>
+
+        <!-- Section: apply() method -->
+        <details id="apply-method">
+            <summary class="details-summary">apply() method detailed</summary>
+            <div class="details-content">
+                <h5>Definition</h5>
+                <p>The <span class="highlight">apply()</span> method invokes a function with a specified <code>this</code> value and arguments provided as an array (or array-like object).</p>
+                
+                <h5>Detail</h5>
+                <p><code>apply()</code> is nearly identical to <code>call()</code>, but instead of listing arguments individually, you pass them as an array. This makes it ideal when you have an array of values to pass as parameters.</p>
+                
+                <h5>Syntax</h5>
+                <pre><code>function.apply(thisArg, [argsArray])</code></pre>
+                <ul>
+                    <li><code>thisArg</code>: The value to be used as <code>this</code> when executing the function</li>
+                    <li><code>argsArray</code>: An array or array-like object containing the arguments</li>
+                </ul>
+                
+                <h5>Example</h5>
+                <pre><code>// Basic example: Passing array of arguments
+const numbers = [5, 6, 3, 8, 1];
+const max = Math.max.apply(null, numbers);
+console.log(max); // Output: 8
+
+// Compare with call() - would require manual listing:
+// Math.max.call(null, 5, 6, 3, 8, 1)
+
+// Practical example: Finding maximum from dynamic data
+function findMax(arr) {
+    return Math.max.apply(null, arr);
+}
+
+console.log(findMax([10, 20, 5, 40, 15])); // Output: 40
+
+// Example with custom context
+const calculator = {
+    multiply: function(a, b) {
+        return this.prefix + ' ' + (a * b);
+    },
+    prefix: 'Result:'
+};
+
+const args = [7, 6];
+console.log(calculator.multiply.apply(calculator, args)); 
+// Output: "Result: 42"
+
+// Advanced example: Using apply with built-in methods
+function logArguments() {
+    console.log('Received:', Array.prototype.slice.apply(arguments));
+}
+
+logArguments(1, 2, 3, 4, 5); 
+// Output: Received: [1, 2, 3, 4, 5]
+
+// Modern alternative using spread operator (ES6+)
+console.log(Math.max(...numbers)); // Modern equivalent to Math.max.apply(null, numbers)</code></pre>
+                
+                <h5>Uses</h5>
+                <ul>
+                    <li>Applying functions to arrays (Math.max, Math.min)</li>
+                    <li>Converting array-like objects to real arrays</li>
+                    <li>Dynamic argument passing when number of arguments isn't known</li>
+                    <li>Function composition with variable parameters</li>
+                    <li>Workarounds for browser limitations before ES6</li>
+                </ul>
+                
+                <div class="note-box">
+                    <strong>Pro Tip:</strong> While <code>apply()</code> was essential before ES6, modern JavaScript prefers the spread operator (<code>...</code>) for most use cases. However, understanding <code>apply()</code> helps you understand how functions handle arrays of arguments internally.
+                </div>
+            </div>
+        </details>
+
+        <!-- Section: bind() method -->
+        <details id="bind-method">
+            <summary class="details-summary">bind() method and partial application</summary>
+            <div class="details-content">
+                <h5>Definition</h5>
+                <p>The <span class="highlight">bind()</span> method creates a new function that, when called, has its <code>this</code> keyword set to a provided value, with a given sequence of arguments preceding any provided when the new function is called.</p>
+                
+                <h5>Detail</h5>
+                <p>Unlike <code>call()</code> and <code>apply()</code> which execute immediately, <code>bind()</code> returns a <em>new function</em> with permanently bound context and arguments. This is crucial for maintaining context in asynchronous operations and event handlers.</p>
+                
+                <h5>Syntax</h5>
+                <pre><code>function.bind(thisArg, arg1, arg2, ..., argN)</code></pre>
+                <ul>
+                    <li><code>thisArg</code>: Value to be used as <code>this</code> when the bound function is called</li>
+                    <li><code>arg1, arg2, ..., argN</code>: Arguments to prepend to the function call</li>
+                </ul>
+                
+                <h5>Example</h5>
+                <pre><code>// Basic binding example
+const person = {
+    name: 'Charlie',
+    introduce: function(greeting, punctuation) {
+        return greeting + ', I\'m ' + this.name + punctuation;
+    }
+};
+
+const boundIntroduce = person.introduce.bind(person, 'Hello');
+console.log(boundIntroduce('!')); // Output: "Hello, I'm Charlie!"
+console.log(boundIntroduce('.')); // Output: "Hello, I'm Charlie."
+
+// Critical example: Event handlers
+const button = document.createElement('button');
+button.textContent = 'Click me';
+
+const counter = {
+    count: 0,
+    increment: function() {
+        this.count++;
+        console.log('Count:', this.count);
+    }
+};
+
+// WRONG: Without bind(), 'this' refers to button, not counter
+// button.addEventListener('click', counter.increment); // undefined error
+
+// CORRECT: With bind(), 'this' is permanently set to counter
+button.addEventListener('click', counter.increment.bind(counter));
+
+// Partial application example
+function multiply(a, b) {
+    return a * b;
+}
+
+const double = multiply.bind(null, 2); // Pre-set first argument as 2
+const triple = multiply.bind(null, 3);
+
+console.log(double(5)); // Output: 10
+console.log(triple(4)); // Output: 12
+
+// Real-world scenario: React component method binding
+class Counter extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = { count: 0 };
+        
+        // Bind methods in constructor to preserve context
+        this.handleClick = this.handleClick.bind(this);
+    }
+    
+    handleClick() {
+        this.setState({ count: this.state.count + 1 });
+    }
+    
+    render() {
+        return &lt;button onClick={this.handleClick}&gt;{this.state.count}&lt;/button&gt;;
+    }
+}</code></pre>
+                
+                <h5>Uses</h5>
+                <ul>
+                    <li>Preserving <code>this</code> context in event listeners and callbacks</li>
+                    <li>Creating specialized versions of functions (partial application)</li>
+                    <li>Functional programming patterns (currying)</li>
+                    <li>Class methods in React and other frameworks</li>
+                    <li>Passing methods as callbacks without losing context</li>
+                </ul>
+                
+                <div class="note-box">
+                    <strong>Important Distinction:</strong> 
+                    <ul>
+                        <li><code>call()</code> and <code>apply()</code>: Execute immediately</li>
+                        <li><code>bind()</code>: Returns a new function for later execution</li>
+                    </ul>
+                    Use <code>bind()</code> when you need to store a function reference for future use (like event handlers).
+                </div>
+            </div>
+        </details>
+
+        <!-- Section: Function.prototype methods -->
+        <details id="prototype-methods">
+            <summary class="details-summary">Function.prototype methods</summary>
+            <div class="details-content">
+                <h5>Definition</h5>
+                <p><span class="highlight">Function.prototype</span> contains the core methods that all JavaScript functions inherit: <code>call()</code>, <code>apply()</code>, and <code>bind()</code>.</p>
+                
+                <h5>Detail</h5>
+                <p>All functions in JavaScript are instances of the <code>Function</code> constructor. This means they automatically inherit these three powerful methods from <code>Function.prototype</code>. Understanding this prototype chain is key to mastering function manipulation.</p>
+                
+                <h5>Context Diagram</h5>
+                <div class="context-diagram">
+// JavaScript Function Prototype Chain
+Function.prototype → call()
+                 → apply()
+                 → bind()
+
+All Functions (including user-defined ones) inherit these methods:
+
+function myFunc() {}
+myFunc.call()     // ✅ Available
+myFunc.apply()    // ✅ Available  
+myFunc.bind()     // ✅ Available
+
+// Even arrow functions inherit these methods (though 'this' binding works differently)
+const arrowFunc = () => {};
+arrowFunc.call();  // ✅ Still available (but doesn't change 'this')
+                </div>
+                
+                <h5>Example: Demonstrating inheritance</h5>
+                <pre><code>// Every function has access to these methods
+function greet() {
+    return 'Hello!';
+}
+
+// These work because greet inherits from Function.prototype
+console.log(greet.call());           // "Hello!"
+console.log(greet.apply());          // "Hello!"
+console.log(typeof greet.bind);      // "function"
+
+// Even anonymous functions
+const anon = function() { return 'Anonymous!'; };
+console.log(anon.call());            // "Anonymous!"
+
+// Arrow functions behave differently with 'this'
+const arrow = () =&gt; {
+    return this.name || 'No context';
+};
+
+const obj = { name: 'David' };
+
+// bind() still works, but 'this' inside arrow function is lexical
+const boundArrow = arrow.bind(obj);
+console.log(boundArrow()); // "No context" (not 'David') - because arrow functions don't bind 'this'
+
+// Regular function with bind() works as expected
+const regular = function() { return this.name; };
+const boundRegular = regular.bind(obj);
+console.log(boundRegular()); // "David"</code></pre>
+                
+                <h5>Comparison Table</h5>
+                <table class="method-table">
+                    <thead>
+                        <tr>
+                            <th>Method</th>
+                            <th>Executes Immediately?</th>
+                            <th>Arguments Format</th>
+                            <th>Return Value</th>
+                            <th>Use Case</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>call()</code></td>
+                            <td>Yes</td>
+                            <td>Individual arguments</td>
+                            <td>Result of function execution</td>
+                            <td>Borrowing methods, one-time context override</td>
+                        </tr>
+                        <tr>
+                            <td><code>apply()</code></td>
+                            <td>Yes</td>
+                            <td>Array of arguments</td>
+                            <td>Result of function execution</td>
+                            <td>Working with arrays as parameters</td>
+                        </tr>
+                        <tr>
+                            <td><code>bind()</code></td>
+                            <td>No</td>
+                            <td>Individual arguments</td>
+                            <td>New function with bound context</td>
+                            <td>Event handlers, creating specialized functions</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h5>Uses</h5>
+                <ul>
+                    <li>Understanding JavaScript's prototype-based inheritance</li>
+                    <li>Debugging function context issues</li>
+                    <li>Extending functionality through functional composition</li>
+                    <li>Building higher-order functions and libraries</li>
+                    <li>Interview preparation for advanced JavaScript concepts</li>
+                </ul>
+                
+                <div class="note-box">
+                    <strong>Deep Insight:</strong> The fact that <code>call()</code>, <code>apply()</code>, and <code>bind()</code> exist on <code>Function.prototype</code> means that every function in JavaScript — including those created by arrow functions — has access to these methods. This design enables consistent function manipulation across the language.
+                </div>
+            </div>
+        </details>
+
+        <!-- Section: Method chaining patterns -->
+        <details id="method-chaining">
+            <summary class="details-summary">Method chaining patterns</summary>
+            <div class="details-content">
+                <h5>Definition</h5>
+                <p><span class="highlight">Method chaining</span> is a pattern where multiple methods are called sequentially on the same object, with each method returning the object itself (or a new instance), enabling fluent API design.</p>
+                
+                <h5>Detail</h5>
+                <p>Method chaining relies on returning <code>this</code> from each method to allow subsequent method calls. When combined with <code>call()</code>, <code>apply()</code>, and <code>bind()</code>, you can create powerful, readable, and reusable functional patterns.</p>
+                
+                <h5>Syntax</h5>
+                <pre><code>object.method1().method2().method3();</code></pre>
+                <p>Each method must return the object (typically <code>this</code>) to continue the chain.</p>
+                
+                <h5>Example</h5>
+                <pre><code>// Basic chaining example
+const calculator = {
+    value: 0,
+    
+    add: function(num) {
+        this.value += num;
+        return this; // Return 'this' to enable chaining
+    },
+    
+    subtract: function(num) {
+        this.value -= num;
+        return this;
+    },
+    
+    multiply: function(num) {
+        this.value *= num;
+        return this;
+    },
+    
+    divide: function(num) {
+        if (num === 0) throw new Error('Cannot divide by zero');
+        this.value /= num;
+        return this;
+    },
+    
+    getResult: function() {
+        return this.value;
+    }
+};
+
+// Method chaining in action
+const result = calculator.add(10).multiply(2).subtract(5).divide(3).getResult();
+console.log(result); // ((10 * 2) - 5) / 3 = 5
+
+// Chaining with bind() for context preservation
+const mathOperations = {
+    base: 10,
+    
+    add: function(num) {
+        this.base += num;
+        return this;
+    },
+    
+    multiply: function(num) {
+        this.base *= num;
+        return this;
+    },
+    
+    getBase: function() {
+        return this.base;
+    }
+};
+
+// Create a specialized calculator with bind()
+const calc10 = mathOperations.add.bind(mathOperations, 10);
+const calc20 = calc10.multiply.bind(mathOperations, 2);
+
+// Now we can chain with bound context
+const result2 = calc20.getBase(); // Not direct chaining, but demonstrates bind usage
+
+// More complex example: Builder pattern with chaining
+const personBuilder = {
+    person: {},
+    
+    setName: function(name) {
+        this.person.name = name;
+        return this;
+    },
+    
+    setAge: function(age) {
+        this.person.age = age;
+        return this;
+    },
+    
+    setEmail: function(email) {
+        this.person.email = email;
+        return this;
+    },
+    
+    setAddress: function(address) {
+        this.person.address = address;
+        return this;
+    },
+    
+    build: function() {
+        return this.person;
+    }
+};
+
+// Usage - clean, readable, fluent API
+const john = personBuilder
+    .setName('John Doe')
+    .setAge(30)
+    .setEmail('john@example.com')
+    .setAddress('123 Main St')
+    .build();
+
+console.log(john); 
+// {name: 'John Doe', age: 30, email: 'john@example.com', address: '123 Main St'}
+
+// Real-world example: jQuery-style chaining
+// $(selector)
+//   .addClass('active')
+//   .fadeIn()
+//   .on('click', handler)
+//   .hide();
+
+// Creating a chainable utility library
+const arrayUtils = {
+    array: [],
+    
+    from: function(arr) {
+        this.array = [...arr];
+        return this;
+    },
+    
+    filter: function(callback) {
+        this.array = this.array.filter(callback);
+        return this;
+    },
+    
+    map: function(callback) {
+        this.array = this.array.map(callback);
+        return this;
+    },
+    
+    reduce: function(callback, initialValue) {
+        this.array = [this.array.reduce(callback, initialValue)];
+        return this;
+    },
+    
+    toArray: function() {
+        return this.array;
+    }
+};
+
+// Usage
+const doubledEvens = arrayUtils
+    .from([1, 2, 3, 4, 5, 6])
+    .filter(x =&gt; x % 2 === 0)
+    .map(x =&gt; x * 2)
+    .toArray();
+
+console.log(doubledEvens); // [4, 8, 12]</code></pre>
+                
+                <h5>Uses</h5>
+                <ul>
+                    <li>Creating fluent APIs (jQuery, Lodash, D3.js)</li>
+                    <li>Builder patterns for object construction</li>
+                    <li>Data processing pipelines</li>
+                    <li>Improving code readability and reducing temporary variables</li>
+                    <li>Domain-specific languages (DSLs)</li>
+                </ul>
+                
+                <div class="note-box">
+                    <strong>Best Practice:</strong> Always return <code>this</code> from methods intended for chaining. Consider returning a new instance instead of modifying the original if you want immutable operations.
+                </div>
+                
+                <h5>Advanced Pattern: Chaining with bind() and call()</h5>
+                <pre><code>// Combining all concepts: A chainable context manager
+const ContextManager = function(initialContext) {
+    this.context = initialContext || {};
+};
+
+ContextManager.prototype.set = function(key, value) {
+    this.context[key] = value;
+    return this; // Enable chaining
+};
+
+ContextManager.prototype.get = function(key) {
+    return this.context[key];
+};
+
+ContextManager.prototype.execute = function(fn) {
+    return fn.call(this.context); // Use call() to execute with our context!
+};
+
+// Usage
+const cm = new ContextManager();
+
+const result = cm
+    .set('name', 'Alice')
+    .set('role', 'Developer')
+    .execute(function() {
+        return `Hi, I'm ${this.name}, a ${this.role}`;
+    });
+
+console.log(result); // "Hi, I'm Alice, a Developer"</code></pre>
+            </div>
+        </details>
+
+        <!-- Summary Section -->
+        <details>
+            <summary class="details-summary">Summary & Best Practices</summary>
+            <div class="details-content">
+                <h5>Key Takeaways</h5>
+                <ol>
+                    <li><strong>call()</strong>: Invoke function immediately with explicit <code>this</code> and individual arguments</li>
+                    <li><strong>apply()</strong>: Invoke function immediately with explicit <code>this</code> and array of arguments</li>
+                    <li><strong>bind()</strong>: Create a new function with permanently bound <code>this</code> and optional arguments</li>
+                    <li>These methods are inherited from <code>Function.prototype</code> and available on all functions</li>
+                    <li>Method chaining requires returning <code>this</code> from each method to enable fluent syntax</li>
+                </ol>
+                
+                <h5>When to Use What?</h5>
+                <table class="method-table">
+                    <thead>
+                        <tr>
+                            <th>Scenario</th>
+                            <th>Recommended Approach</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>One-time method borrowing</td>
+                            <td><code>call()</code></td>
+                        </tr>
+                        <tr>
+                            <td>Passing array as arguments</td>
+                            <td><code>apply()</code></td>
+                        </tr>
+                        <tr>
+                            <td>Event handlers or async callbacks</td>
+                            <td><code>bind()</code></td>
+                        </tr>
+                        <tr>
+                            <td>Creating specialized functions</td>
+                            <td><code>bind()</code> with partial application</td>
+                        </tr>
+                        <tr>
+                            <td>Fluent APIs and builder patterns</td>
+                            <td>Method chaining with <code>return this</code></td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h5>Modern Alternatives</h5>
+                <ul>
+                    <li>For <code>apply()</code>: Use the spread operator <code>fn(...array)</code></li>
+                    <li>For <code>bind()</code>: Use arrow functions when possible (lexical <code>this</code>)</li>
+                    <li>For chaining: Consider functional libraries like Lodash or Ramda</li>
+                </ul>
+                
+                <h5>Common Pitfalls</h5>
+                <ul>
+                    <li>Forgetting to return <code>this</code> in chained methods</li>
+                    <li>Using <code>bind()</code> with arrow functions expecting <code>this</code> binding (doesn't work)</li>
+                    <li>Confusing <code>call()</code> and <code>apply()</code> argument formats</li>
+                    <li>Assuming <code>bind()</code> changes the original function (it creates a new one)</li>
+                </ul>
+                
+                <h5>Final Advice</h5>
+                <p>Mastering these three methods transforms your ability to control JavaScript's execution context. They're fundamental to:</p>
+                <ul>
+                    <li>Writing reusable, modular code</li>
+                    <li>Understanding framework internals (React, Vue, Angular)</li>
+                    <li>Debugging complex context issues</li>
+                    <li>Designing elegant APIs</li>
+                </ul>
+                <p><strong>Mastery Tip:</strong> Practice by rewriting common code patterns using each method. For example, take a simple utility function and implement it four ways: as a standalone function, using <code>call()</code>, using <code>apply()</code>, and using <code>bind()</code>. This will cement your understanding.</p>
+                
+                <div class="note-box">
+                    <strong>Remember:</strong> <code>this</code> is determined at runtime, not at definition time. That's why we need <code>call()</code>, <code>apply()</code>, and <code>bind()</code> — to exert control over what <code>this</code> refers to when a function executes.
+                </div>
+            </div>
+        </details>
+    </div>
+
+    <!-- JavaScript Utilities -->
+    <script>
+        // Expand/Collapse All
+        document.getElementById('expandAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.setAttribute('open', '');
+            });
+        });
+
+        document.getElementById('collapseAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.removeAttribute('open');
+            });
+        });
+
+        // Smooth scrolling to TOC items
+        document.querySelectorAll('.toc-item, .toc-subitem').forEach(item => {
+            item.addEventListener('click', () => {
+                const targetId = item.getAttribute('data-target');
+                const targetElement = document.getElementById(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 100,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Highlight clicked item
+                    document.querySelectorAll('.toc-item, .toc-subitem').forEach(el => {
+                        el.style.backgroundColor = '';
+                    });
+                    item.style.backgroundColor = 'rgba(0, 245, 255, 0.2)';
+                }
+            });
+        });
+
+        // Search functionality
+        document.getElementById('searchToc').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
+            
+            tocItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        // Syntax highlighting enhancement (basic)
+        document.querySelectorAll('pre code').forEach(block => {
+            const code = block.textContent;
+            // Simple keyword highlighting
+            block.innerHTML = code
+                .replace(/(&lt;|&gt;|&amp;)/g, '<span class="highlight">$1</span>')
+                .replace(/\b(function|return|if|else|for|while|new|this|const|let|var|true|false|null|undefined|call|apply|bind)\b/g, '<span style="color: #ffcc80;">$1</span>')
+                .replace(/\/\/.*$/gm, '<span style="color: #666;">$&</span>')
+                .replace(/\/\*[\s\S]*?\*\//g, '<span style="color: #666;">$&</span>');
+        });
+
+        // Add smooth scrolling to headings
+        document.querySelectorAll('h1, h2, h3, h4, h5, h6').forEach(heading => {
+            heading.addEventListener('click', () => {
+                window.scrollTo({
+                    top: heading.offsetTop - 80,
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            // Ensure TOC items are visible on load
+            const currentHash = window.location.hash;
+            if (currentHash) {
+                const target = document.querySelector(currentHash);
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            }
+        });
+    </script>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+```

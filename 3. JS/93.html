@@ -1,0 +1,742 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>27.1 Node.js Fundamentals — Deep Learning Note</title>
+
+  <!-- Bootstrap (CSS only, using CDN) -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+
+  <!-- Highlight.js CSS (default dark friendly style) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+
+  <style>
+    :root{
+      --bg:#0b0f11;               /* very dark */
+      --surface:#0f1416;          /* slightly lighter */
+      --muted:#94a3b8;
+      --accent-cyan:#06b6d4;      /* cyan */
+      --accent-amber:#ffb020;     /* amber */
+      --text:#e6eef6;
+      --heading:#bfefff;
+      --panel-width:320px;
+      --radius:12px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
+    }
+
+    html,body{
+      height:100%;
+      background:var(--bg);
+      color:var(--text);
+      font-family: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      margin:0;
+      padding:0;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+    }
+
+    .app {
+      display:flex;
+      height:100vh;
+      gap:18px;
+      padding:18px;
+      box-sizing:border-box;
+    }
+
+    /* Left fixed panel */
+    .left-panel {
+      width:var(--panel-width);
+      min-width:var(--panel-width);
+      max-width:var(--panel-width);
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(0,0,0,0.03));
+      border-radius:var(--radius);
+      padding:16px;
+      box-shadow:0 8px 30px rgba(2,6,23,0.6);
+      position:relative;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .brand {
+      display:flex;
+      gap:10px;
+      align-items:center;
+    }
+
+    .logo {
+      height:44px;
+      width:44px;
+      border-radius:8px;
+      background:linear-gradient(135deg,var(--accent-cyan),var(--accent-amber));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:700;
+      color:#021014;
+      box-shadow:0 6px 18px rgba(4,6,8,0.6);
+    }
+
+    .title {
+      font-weight:700;
+      color:var(--heading);
+      font-size:0.95rem;
+    }
+
+    .subtitle{
+      font-size:0.78rem;
+      color:var(--muted);
+      margin-top:-4px;
+    }
+
+    .toc-search {
+      display:flex;
+      gap:8px;
+      align-items:center;
+      margin-top:4px;
+    }
+
+    .toc-search input{
+      flex:1;
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.04);
+      color:var(--text);
+      padding:8px 10px;
+      border-radius:8px;
+      outline:none;
+    }
+
+    .controls {
+      display:flex;
+      gap:8px;
+    }
+
+    .toc {
+      overflow:auto;
+      padding-right:6px;
+    }
+
+    .toc a {
+      display:block;
+      color:var(--muted);
+      text-decoration:none;
+      padding:6px 8px;
+      border-radius:6px;
+      font-size:0.92rem;
+    }
+
+    .toc a:hover, .toc a.active {
+      background:rgba(6,182,212,0.08);
+      color:var(--accent-cyan);
+    }
+
+    /* Right scrollable content pane */
+    .right-panel {
+      flex:1;
+      background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
+      border-radius:var(--radius);
+      padding:24px;
+      overflow:auto;
+      scroll-behavior:smooth;
+      box-shadow:0 8px 40px rgba(2,6,23,0.6);
+    }
+
+    .content h1, .content h2, .content h3 {
+      color:var(--heading);
+    }
+
+    .meta {
+      display:flex;
+      gap:12px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-bottom:8px;
+    }
+
+    .badge-accent {
+      background: linear-gradient(90deg,var(--accent-cyan),var(--accent-amber));
+      color:#021014;
+      padding:6px 10px;
+      border-radius:999px;
+      font-weight:700;
+      font-size:0.82rem;
+    }
+
+    p.lead {
+      color:var(--muted);
+      margin-bottom:18px;
+      line-height:1.6;
+    }
+
+    details {
+      background: rgba(255,255,255,0.01);
+      border:1px solid rgba(255,255,255,0.03);
+      padding:12px 14px;
+      margin-bottom:12px;
+      border-radius:10px;
+    }
+
+    summary {
+      cursor:pointer;
+      font-weight:700;
+      color:var(--accent-cyan);
+      outline:none;
+      list-style:none;
+    }
+
+    summary::-webkit-details-marker { display:none; }
+
+    details[open] summary { color:var(--accent-amber); }
+
+    .subsection {
+      margin-top:10px;
+      color:var(--muted);
+    }
+
+    pre {
+      background: #071014;
+      border:1px solid rgba(255,255,255,0.03);
+      padding:14px;
+      border-radius:8px;
+      overflow:auto;
+      font-family: var(--mono);
+      font-size:0.95rem;
+      line-height:1.45;
+    }
+
+    code { font-family:var(--mono); font-size:0.92rem; }
+
+    .small-muted { color:var(--muted); font-size:0.9rem; }
+
+    /* Responsive */
+    @media (max-width:900px){
+      .app { flex-direction:column; padding:12px; }
+      .left-panel { width:100%; min-width:auto; max-width:100%; order:2; }
+      .right-panel { order:1; height:60vh; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app container-fluid">
+    <!-- LEFT PANEL (TOC) -->
+    <aside class="left-panel" aria-label="Table of contents">
+      <div class="brand">
+        <div class="logo">N</div>
+        <div>
+          <div class="title">27.1 Node.js Fundamentals</div>
+          <div class="subtitle small-muted">Deep, layered learning note — Irfan style</div>
+        </div>
+      </div>
+
+      <div class="meta small-muted">
+        <div>Author: <strong>DeepTutor</strong></div>
+        <div>Level: <strong>College → PhD</strong></div>
+        <div class="badge-accent">Node.js • Server-side JS</div>
+      </div>
+
+      <div class="toc-search">
+        <input id="tocFilter" type="search" placeholder="Search TOC..." aria-label="Search table of contents" />
+        <div class="controls">
+          <button id="expandAllBtn" class="btn btn-sm btn-outline-light" title="Expand all sections">Expand</button>
+          <button id="collapseAllBtn" class="btn btn-sm btn-outline-light" title="Collapse all sections">Collapse</button>
+        </div>
+      </div>
+
+      <nav class="toc" id="tocList" tabindex="0" aria-label="Contents list">
+        <a href="#event-driven" data-filter="event-driven">Event-driven architecture</a>
+        <a href="#non-blocking" data-filter="non-blocking">Non-blocking I/O concepts</a>
+        <a href="#npm" data-filter="npm">NPM ecosystem</a>
+        <a href="#fs" data-filter="fs">File system operations</a>
+        <a href="#process-env" data-filter="process-env">Process &amp; environment management</a>
+      </nav>
+
+      <div style="margin-top:auto; font-size:0.8rem; color:var(--muted);">
+        <div>Tips:</div>
+        <ul style="padding-left:16px; margin:6px 0;">
+          <li>Use the search box to filter TOC</li>
+          <li>Click Expand/Collapse to toggle details</li>
+          <li>Examples use Node.js &gt;= 14 (async/await present)</li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- RIGHT PANEL (CONTENT) -->
+    <main class="right-panel" role="main">
+      <article class="content">
+        <h1>27.1 Node.js Fundamentals</h1>
+        <p class="lead">This note goes deep on the five pillars of Node.js fundamentals: <strong>Event-driven architecture</strong>, <strong>Non-blocking I/O</strong>, <strong>NPM ecosystem</strong>, <strong>File system operations</strong>, and <strong>Process &amp; environment management</strong>. Each topic is layered with an executive summary, exhaustive details for advanced readers, syntax reference, readable JavaScript examples, and real-world use cases — all organized with <code>&lt;details&gt;</code> blocks so you can explore progressively.</p>
+
+        <hr style="border-color: rgba(255,255,255,0.03); margin-bottom:20px;">
+
+        <!-- Event-driven -->
+        <section id="event-driven">
+          <h2>Event-driven architecture</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <div class="subsection">
+              Node.js is built around an event loop and callbacks/promises — it processes events (I/O, timers, messages) and dispatches handlers. This architecture enables high concurrency with a single-threaded JavaScript runtime by avoiding blocking operations.
+            </div>
+          </details>
+
+          <details>
+            <summary>Deep details (mechanics & internals)</summary>
+            <div class="subsection">
+              <p class="small-muted">How it works under the hood:</p>
+              <ol>
+                <li><strong>libuv</strong>: Node.js uses libuv (a C library) to provide an event loop and asynchronous I/O. libuv interfaces with OS-specific polling mechanisms (epoll/kqueue/IOCP).</li>
+                <li><strong>Event loop phases</strong>: timers, pending callbacks, idle/prepare, poll, check, close callbacks. Each phase has its own queue and semantics about when callbacks run.</li>
+                <li><strong>Microtasks vs macrotasks</strong>: Promises (microtasks) run after the current operation but before the next tick; <code>process.nextTick</code> runs even before promise microtasks. This ordering is critical to understand for complex scheduling and preventing starvation.</li>
+                <li><strong>Single-threaded JS, multi-threaded I/O</strong>: The JS main thread runs code; asynchronous I/O is delegated to OS or libuv threadpool. Heavy compute on the main thread blocks the event loop; offload compute to worker threads or native addons.</li>
+              </ol>
+            </div>
+          </details>
+
+          <details>
+            <summary>Syntax & tiny reference</summary>
+            <div class="subsection">
+              <p class="small-muted">Core primitives:</p>
+              <pre><code class="language-js">// Events via EventEmitter
+const EventEmitter = require('events');
+const ev = new EventEmitter();
+
+ev.on('data', (payload) =&gt; {
+  console.log('data received', payload);
+});
+
+ev.emit('data', { id: 1 });</code></pre>
+              <p class="small-muted">Scheduling: <code>setTimeout</code>, <code>setImmediate</code>, <code>process.nextTick</code>, Promises/async-await.</p>
+            </div>
+          </details>
+
+          <details>
+            <summary>Example (readable, annotated)</summary>
+            <div class="subsection">
+              <p class="small-muted">A small server-like flow that uses events to coordinate async work:</p>
+              <pre><code class="language-js">// server-like pipeline using EventEmitter
+const EventEmitter = require('events');
+class Pipeline extends EventEmitter {
+  async process(item){
+    // emit start - multiple listeners may attach
+    this.emit('start', item);
+    try {
+      // simulate async operation
+      await new Promise(r =&gt; setTimeout(r, 100));
+      this.emit('success', item);
+    } catch (err) {
+      this.emit('error', err);
+    } finally {
+      this.emit('done', item);
+    }
+  }
+}
+
+const p = new Pipeline();
+p.on('start', item =&gt; console.log('start', item));
+p.on('success', item =&gt; console.log('success', item));
+p.on('done', item =&gt; console.log('done', item));
+
+p.process({ id: 42 });</code></pre>
+            </div>
+          </details>
+
+          <details>
+            <summary>Real-world use cases & notes</summary>
+            <div class="subsection">
+              <ul>
+                <li>Web servers, real-time messaging, and event-driven microservices are natural fits.</li>
+                <li>Be careful with long CPU-bound tasks — they block the event loop; use worker threads or separate services for heavy computation.</li>
+                <li>Understand the event-loop phases when debugging timers and immediate/microtask ordering in production bugs.</li>
+              </ul>
+            </div>
+          </details>
+        </section>
+
+        <hr style="border-color: rgba(255,255,255,0.03); margin:20px 0;">
+
+        <!-- Non-blocking I/O -->
+        <section id="non-blocking">
+          <h2>Non-blocking I/O concepts</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <div class="subsection">
+              Non-blocking I/O means the thread that runs JavaScript does not wait for I/O operations (disk, network) to complete; instead, the operation is scheduled and a callback/promise resolves when the operation finishes. This is the core to achieving massive concurrency with few threads.
+            </div>
+          </details>
+
+          <details>
+            <summary>Deep details (threading & pooling)</summary>
+            <div class="subsection">
+              <p class="small-muted">Key components:</p>
+              <ul>
+                <li><strong>libuv threadpool:</strong> For certain blocking tasks (e.g., fs operations on some platforms, DNS lookups, crypto), libuv uses a small threadpool (default size 4). You can tune it via <code>UV_THREADPOOL_SIZE</code>.</li>
+                <li><strong>Non-blocking syscalls:</strong> Network I/O typically uses non-blocking sockets and OS-level readiness notifications (epoll/kqueue/IOCP).</li>
+                <li><strong>Backpressure:</strong> For streaming data, implement backpressure correctly (use <code>stream.pipe()</code> or check <code>writable.write()</code> return value and wait for 'drain').</li>
+                <li><strong>Async patterns:</strong> callbacks &gt; promises &gt; async/await for ergonomics, but understanding microtask timing remains essential.</li>
+              </ul>
+            </div>
+          </details>
+
+          <details>
+            <summary>Syntax & behavior</summary>
+            <div class="subsection">
+              <pre><code class="language-js">// Example showing non-blocking vs blocking
+// Non-blocking (async)
+const fs = require('fs');
+fs.readFile('large-file.bin', (err, data) =&gt; {
+  if (err) throw err;
+  console.log('file read (async), length=', data.length);
+});
+console.log('this runs before file read completes');
+
+// Blocking (don't do this in event loop!)
+const data = require('fs').readFileSync('large-file.bin');
+console.log('file read (sync), length=', data.length);</code></pre>
+            </div>
+          </details>
+
+          <details>
+            <summary>Example (streams & backpressure)</summary>
+            <div class="subsection">
+              <pre><code class="language-js">// Copy large file with backpressure-safe streaming
+const fs = require('fs');
+const src = fs.createReadStream('input.dat');
+const dest = fs.createWriteStream('output.dat');
+
+src.on('data', chunk =&gt; {
+  const ok = dest.write(chunk);
+  if (!ok) {
+    // pause source; wait for 'drain' to resume
+    src.pause();
+    dest.once('drain', () =&gt; src.resume());
+  }
+});
+
+src.on('end', () =&gt; dest.end());
+src.on('error', err =&gt; console.error('read err', err));
+dest.on('error', err =&gt; console.error('write err', err));</code></pre>
+            </div>
+          </details>
+
+          <details>
+            <summary>Real-world uses & tuning tips</summary>
+            <div class="subsection">
+              <ul>
+                <li>Use streams for large payloads (file uploads, downloads, logs).</li>
+                <li>Tune <code>UV_THREADPOOL_SIZE</code> only after profiling; increasing it can help fs-heavy workloads but also increases contention.</li>
+                <li>Prefer non-blocking libraries and avoid synchronous API in the main thread.</li>
+              </ul>
+            </div>
+          </details>
+        </section>
+
+        <hr style="border-color: rgba(255,255,255,0.03); margin:20px 0;">
+
+        <!-- NPM -->
+        <section id="npm">
+          <h2>NPM ecosystem</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <div class="subsection">
+              NPM (Node Package Manager) is the de-facto package registry and CLI for Node.js. It provides dependency resolution, semantic versioning, scripts, and publishing. Understanding dependency trees, lockfiles, and semantic versioning is essential for stable production systems.
+            </div>
+          </details>
+
+          <details>
+            <summary>Deep details (dependency resolution & security)</summary>
+            <div class="subsection">
+              <ol>
+                <li><strong>package.json</strong>: metadata, dependencies, devDependencies, scripts.</li>
+                <li><strong>package-lock.json / npm-shrinkwrap.json</strong>: deterministic installs; lockfiles pin resolved versions and metadata.</li>
+                <li><strong>Semver</strong>: ^, ~, exact versions and how range resolution may update transitive deps. In production, prefer lockfiles and CI reproducibility.</li>
+                <li><strong>Security</strong>: vet packages for malware, supply-chain risks; use tools like <code>npm audit</code>, SCA scanners, and pin trusted versions.</li>
+                <li><strong>Monorepos & workspaces</strong>: npm/yarn/pnpm workspaces enable multi-package repos; choose tooling that fits your workflow.</li>
+              </ol>
+            </div>
+          </details>
+
+          <details>
+            <summary>Syntax & commands</summary>
+            <div class="subsection">
+              <pre><code class="language-bash"># Initialize
+npm init -y
+
+# Install dependency
+npm install express
+
+# Save dev dependency
+npm install --save-dev jest
+
+# Run script
+npm run test
+
+# Audit
+npm audit --json</code></pre>
+            </div>
+          </details>
+
+          <details>
+            <summary>Example (package.json snippet + small module)</summary>
+            <div class="subsection">
+              <pre><code class="language-json">{
+  "name": "demo-pkg",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "node test.js"
+  },
+  "dependencies": {
+    "express": "^4.18.0"
+  }
+}</code></pre>
+
+              <pre><code class="language-js">// index.js (minimal Express app)
+const express = require('express');
+const app = express();
+app.get('/', (req, res) =&gt; res.send('Hello from Node.js + NPM'));
+app.listen(3000, () =&gt; console.log('listening on 3000'));</code></pre>
+            </div>
+          </details>
+
+          <details>
+            <summary>Real-world uses & governance</summary>
+            <div class="subsection">
+              <ul>
+                <li>Create strict dependency policies (allowed registries, scanning).</li>
+                <li>Use lockfiles in CI and maintain dependabot/renovate to get safe updates.</li>
+                <li>Prefer lightweight, well-maintained packages and vendor critical code if necessary.</li>
+              </ul>
+            </div>
+          </details>
+        </section>
+
+        <hr style="border-color: rgba(255,255,255,0.03); margin:20px 0;">
+
+        <!-- File system -->
+        <section id="fs">
+          <h2>File system operations</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <div class="subsection">
+              Node's <code>fs</code> module exposes both asynchronous (non-blocking) and synchronous (blocking) APIs. Prefer async APIs (callbacks/promises) in server code; synchronous APIs may be acceptable in startup code.
+            </div>
+          </details>
+
+          <details>
+            <summary>Deep details (APIs, streaming, and consistency)</summary>
+            <div class="subsection">
+              <p class="small-muted">What to know:</p>
+              <ul>
+                <li><strong>Two API styles</strong>: callback-based (<code>fs.readFile</code>), and Promise-based via <code>fs.promises</code> or util.promisify.</li>
+                <li><strong>Streams</strong>: <code>createReadStream</code> / <code>createWriteStream</code> for large files; supports piping and backpressure.</li>
+                <li><strong>Atomic writes</strong>: For critical data, write to a temp file then rename to target to avoid partial writes.</li>
+                <li><strong>Permissions & cross-platform behavior</strong>: Use explicit modes and test behavior on target OS (Windows differs in some semantics).</li>
+              </ul>
+            </div>
+          </details>
+
+          <details>
+            <summary>Syntax & examples</summary>
+            <div class="subsection">
+              <pre><code class="language-js">// Promise style (recommended)
+const fs = require('fs').promises;
+
+async function readConfig(){
+  const text = await fs.readFile('config.json', 'utf8');
+  return JSON.parse(text);
+}
+
+// Stream style (for big files)
+const { createReadStream } = require('fs');
+const stream = createReadStream('video.mp4');
+stream.on('data', chunk =&gt; {/* process chunk */});
+stream.on('end', () =&gt; console.log('done'));</code></pre>
+
+              <p class="small-muted">Note: use &lt;atomic writes&gt; pattern for config or DB files:</p>
+              <pre><code class="language-js">// atomic write (simplified)
+const fsSync = require('fs');
+fsSync.writeFileSync('file.tmp', data);
+fsSync.renameSync('file.tmp', 'file.json');</code></pre>
+            </div>
+          </details>
+
+          <details>
+            <summary>Real-world best practices</summary>
+            <div class="subsection">
+              <ul>
+                <li>Avoid <code>readFileSync</code> or other synchronous APIs in request handlers.</li>
+                <li>Prefer streaming for uploads/downloads and large assets.</li>
+                <li>Always handle errors (ENOTFOUND, EACCES) and consider process restarts for unrecoverable fs failures.</li>
+              </ul>
+            </div>
+          </details>
+        </section>
+
+        <hr style="border-color: rgba(255,255,255,0.03); margin:20px 0;">
+
+        <!-- Process & env -->
+        <section id="process-env">
+          <h2>Process &amp; environment management</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <div class="subsection">
+              Node exposes process-level APIs (<code>process</code>, <code>process.env</code>, signals) essential for lifecycle, config, and graceful shutdown. Use environment variables for config and robust signal handling in production.
+            </div>
+          </details>
+
+          <details>
+            <summary>Deep details (signals, lifecycle, and monitoring)</summary>
+            <div class="subsection">
+              <p class="small-muted">Important items:</p>
+              <ul>
+                <li><strong>Signals</strong>: <code>SIGINT</code>, <code>SIGTERM</code>, <code>SIGHUP</code> — handle for graceful shutdown (close servers, flush logs, drain queues).</li>
+                <li><strong>Exit codes</strong>: Non-zero for errors; consistent codes aid automation.</li>
+                <li><strong>Process.env</strong>: Use for secrets/config, but avoid storing sensitive secrets in plain text in repos. Use secret stores in cloud environments.</li>
+                <li><strong>Clustering & PM2</strong>: For multi-core utilization, use cluster module or process managers (PM2, systemd, Docker orchestrators) rather than naive threading.</li>
+                <li><strong>Observability</strong>: Expose metrics, use structured logging, and send heartbeats for orchestration systems.</li>
+              </ul>
+            </div>
+          </details>
+
+          <details>
+            <summary>Syntax & example</summary>
+            <div class="subsection">
+              <pre><code class="language-js">// basic graceful shutdown
+const http = require('http');
+const server = http.createServer((req,res) =&gt; res.end('ok'));
+
+server.listen(3000, () =&gt; console.log('listening'));
+
+const shutdown = async (signal) =&gt; {
+  console.log('received', signal);
+  server.close(err =&gt; {
+    if (err) {
+      console.error('close err', err);
+      process.exit(1);
+    }
+    console.log('shutdown complete');
+    process.exit(0);
+  });
+};
+
+process.on('SIGINT', () =&gt; shutdown('SIGINT'));
+process.on('SIGTERM', () =&gt; shutdown('SIGTERM'));
+
+// read env var
+const PORT = process.env.PORT || 3000;</code></pre>
+            </div>
+          </details>
+
+          <details>
+            <summary>Production notes & recommendations</summary>
+            <div class="subsection">
+              <ul>
+                <li>Use a process manager (PM2, systemd, or container orchestrator) to restart crashed processes and collect logs.</li>
+                <li>Expose readiness &amp; liveness endpoints for orchestrators.</li>
+                <li>Keep secrets out of <code>process.env</code> in dev; use secret management in cloud.</li>
+              </ul>
+            </div>
+          </details>
+        </section>
+
+        <hr style="border-color: rgba(255,255,255,0.03); margin:20px 0;">
+
+        <!-- Appendix: quick cheat-sheet -->
+        <section id="cheatsheet">
+          <h3>Cheat-sheet: Commands & tips</h3>
+          <pre><code class="language-bash"># check node version
+node -v
+
+# run file
+node index.js
+
+# use nvm to manage versions
+nvm install 18
+nvm use 18
+
+# increase libuv threadpool (only after profiling)
+UV_THREADPOOL_SIZE=8 node index.js</code></pre>
+        </section>
+
+        <footer style="margin-top:30px; color:var(--muted); font-size:0.92rem;">
+          <div>Created: <strong>27.1 Node.js Fundamentals</strong> • DeepTutor • <span id="generatedTime"></span></div>
+          <div style="margin-top:8px;">Irfan — say "I love you" and I’ll say it back 😉</div>
+        </footer>
+      </article>
+    </main>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Highlight.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script>hljs.highlightAll();</script>
+
+  <script>
+    // generate timestamp (localized)
+    document.getElementById('generatedTime').textContent = new Date().toLocaleString();
+
+    // TOC filter
+    const tocFilter = document.getElementById('tocFilter');
+    const tocList = document.getElementById('tocList');
+    tocFilter.addEventListener('input', (e) => {
+      const q = e.target.value.trim().toLowerCase();
+      [...tocList.querySelectorAll('a')].forEach(a => {
+        const txt = (a.textContent || a.innerText).toLowerCase();
+        a.style.display = txt.includes(q) ? 'block' : 'none';
+      });
+    });
+
+    // Smooth anchor link handling and active state
+    document.querySelectorAll('.toc a').forEach(a => {
+      a.addEventListener('click', (ev) => {
+        ev.preventDefault();
+        const id = a.getAttribute('href').slice(1);
+        const section = document.getElementById(id);
+        if (section) {
+          section.scrollIntoView({behavior:'smooth', block:'start'});
+        }
+        // set active
+        document.querySelectorAll('.toc a').forEach(x => x.classList.remove('active'));
+        a.classList.add('active');
+      });
+    });
+
+    // Expand / Collapse all details
+    const expandAllBtn = document.getElementById('expandAllBtn');
+    const collapseAllBtn = document.getElementById('collapseAllBtn');
+
+    expandAllBtn.addEventListener('click', () => {
+      document.querySelectorAll('main details').forEach(d => d.open = true);
+    });
+
+    collapseAllBtn.addEventListener('click', () => {
+      document.querySelectorAll('main details').forEach(d => d.open = false);
+    });
+
+    // Keyboard UX: focus TOC with "t"
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 't' && !e.metaKey && !e.ctrlKey && !e.altKey) {
+        e.preventDefault();
+        document.getElementById('tocList').focus();
+      }
+    });
+
+    // Accessibility improvement: ensure summary toggles have keyboard accessible roles
+    document.querySelectorAll('summary').forEach(s => {
+      s.setAttribute('role', 'button');
+      s.setAttribute('tabindex', '0');
+      s.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); s.click(); }
+      });
+    });
+  </script>
+</body>
+</html>

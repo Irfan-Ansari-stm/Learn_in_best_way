@@ -1,0 +1,631 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5.1 Function Declarations and Expressions</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00d4ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --border-color: #1a3b5c;
+        }
+        
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+        
+        .left-panel {
+            background-color: #0d213a;
+            border-right: 1px solid var(--border-color);
+            height: 100vh;
+            position: fixed;
+            width: 300px;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--amber);
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+        
+        .toc-item {
+            margin: 8px 0;
+            padding: 6px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .toc-item:hover {
+            background-color: rgba(0, 212, 255, 0.1);
+        }
+        
+        .toc-item.active {
+            background-color: rgba(0, 212, 255, 0.2);
+            border-left: 3px solid var(--cyan);
+        }
+        
+        .toc-subitem {
+            margin-left: 20px;
+            margin-top: 5px;
+            padding: 5px 8px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: #ccc;
+        }
+        
+        .toc-subitem:hover {
+            background-color: rgba(0, 212, 255, 0.1);
+        }
+        
+        .btn-control {
+            margin-bottom: 20px;
+            background-color: transparent;
+            border: 1px solid var(--amber);
+            color: var(--amber);
+            border-radius: 20px;
+            padding: 6px 12px;
+            font-size: 0.9rem;
+        }
+        
+        .btn-control:hover {
+            background-color: rgba(255, 183, 77, 0.2);
+        }
+        
+        pre code {
+            display: block;
+            padding: 15px;
+            background-color: #12253f;
+            border-left: 4px solid var(--amber);
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+        
+        code {
+            background-color: #12253f;
+            color: var(--amber);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        
+        details {
+            margin-bottom: 25px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #0d1f33;
+        }
+        
+        summary {
+            padding: 12px 18px;
+            background-color: #1a3b5c;
+            color: var(--cyan);
+            font-weight: bold;
+            cursor: pointer;
+            list-style: none;
+            transition: background-color 0.3s;
+            position: relative;
+            font-size: 1.05rem;
+        }
+        
+        summary:hover {
+            background-color: #224a70;
+        }
+        
+        summary::before {
+            content: "▶ ";
+            font-size: 0.9em;
+            transition: transform 0.3s;
+            display: inline-block;
+        }
+        
+        details[open] > summary::before {
+            transform: rotate(90deg);
+        }
+        
+        details > div {
+            padding: 15px;
+            margin: 0;
+            color: #ddd;
+            line-height: 1.7;
+        }
+        
+        .highlight {
+            color: var(--amber);
+            font-weight: 600;
+        }
+        
+        .definition {
+            border-left: 3px solid var(--cyan);
+            padding-left: 15px;
+            margin: 15px 0;
+            font-style: italic;
+        }
+        
+        .example {
+            border-left: 3px solid var(--amber);
+            padding-left: 15px;
+            margin: 15px 0;
+            background-color: rgba(255, 183, 77, 0.05);
+        }
+        
+        .uses {
+            border-left: 3px solid #88ccff;
+            padding-left: 15px;
+            margin: 15px 0;
+            color: #aaa;
+        }
+        
+        .search-box {
+            width: 100%;
+            margin-bottom: 15px;
+            background-color: #12253f;
+            border-color: var(--amber);
+            color: var(--text-light);
+        }
+        
+        .section-header {
+            margin-top: 40px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--amber);
+            color: var(--cyan);
+        }
+        
+        .footer-note {
+            margin-top: 50px;
+            text-align: center;
+            color: #888;
+            font-size: 0.9rem;
+            padding: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+<body>
+    <!-- Left Panel -->
+    <div class="left-panel">
+        <h3 class="text-center mb-4">Function Declarations & Expressions</h3>
+        <p class="text-muted small text-center">JavaScript Core Concepts</p>
+        
+        <div class="mb-4 d-flex gap-2">
+            <button id="expandAll" class="btn btn-control btn-sm">Expand All</button>
+            <button id="collapseAll" class="btn btn-control btn-sm">Collapse All</button>
+        </div>
+        
+        <input type="text" class="form-control search-box" id="searchTOC" placeholder="Search topics...">
+        
+        <div class="toc">
+            <div class="toc-item active" data-target="function-declaration">5.1 Function Declarations and Expressions</div>
+            
+            <div class="toc-subitem" data-target="func-decl-syntax">○ Function declaration syntax</div>
+            <div class="toc-subitem" data-target="func-expression">○ Function expressions</div>
+            <div class="toc-subitem" data-target="anonymous-func">○ Anonymous functions</div>
+            <div class="toc-subitem" data-target="named-func-expression">○ Named function expressions</div>
+            <div class="toc-subitem" data-target="hoisting">○ Function hoisting behavior</div>
+        </div>
+        
+        <div class="mt-5">
+            <h6 class="text-muted">Author</h6>
+            <p class="small">Dr. Alex Rivera<br>Advanced Programming Tutor<br>Computer Science Institute</p>
+        </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="right-panel">
+        <h1>5.1 Function Declarations and Expressions</h1>
+        <p class="lead">Master the two fundamental ways to define functions in JavaScript — their syntax, behavior, and practical applications.</p>
+
+        <details id="function-declaration">
+            <summary>Overview: Function Declaration vs Expression</summary>
+            <div>
+                <p>JavaScript provides two primary ways to define functions: <span class="highlight">function declarations</span> and <span class="highlight">function expressions</span>. Understanding the difference is crucial for writing predictable, maintainable code.</p>
+                
+                <div class="definition">
+                    <strong>Definition:</strong> A function declaration is a standalone statement that defines a named function with the <code>function</code> keyword. A function expression assigns a function (named or anonymous) to a variable, property, or passes it as an argument.
+                </div>
+                
+                <div class="example">
+                    <strong>Example Comparison:</strong><br>
+                    <strong>Declaration:</strong> <code>function greet() { ... }</code><br>
+                    <strong>Expression:</strong> <code>const greet = function() { ... }</code>
+                </div>
+                
+                <div class="uses">
+                    <strong>Uses:</strong> Declarations are ideal for reusable utility functions. Expressions are preferred when you need to pass functions as arguments, create closures, or dynamically define behavior.
+                </div>
+            </div>
+        </details>
+
+        <details id="func-decl-syntax">
+            <summary>Function Declaration Syntax</summary>
+            <div>
+                <p>A function declaration begins with the <code>function</code> keyword followed by the function name, parameters in parentheses, and a code block enclosed in curly braces.</p>
+                
+                <pre><code>function functionName(parameter1, parameter2, ...) {
+    // function body
+    return result;
+}</code></pre>
+                
+                <div class="example">
+                    <strong>Real Example:</strong><br>
+                    <code>function calculateArea(radius) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return Math.PI * radius * radius;<br>
+}</code>
+                </div>
+                
+                <div class="definition">
+                    <strong>Key Characteristics:</strong>
+                    <ul>
+                        <li>Must have a name (identifier)</li>
+                        <li>Is hoisted (available before declaration in code)</li>
+                        <li>Cannot be conditionally declared (though modern JS allows some flexibility)</li>
+                        <li>Best used for top-level, reusable logic</li>
+                    </ul>
+                </div>
+                
+                <div class="uses">
+                    <strong>When to Use:</strong> When you want to define a utility function that will be called from multiple places in your code. Ideal for mathematical operations, data validation, or common transformations.
+                </div>
+            </div>
+        </details>
+
+        <details id="func-expression">
+            <summary>Function Expressions</summary>
+            <div>
+                <p>A function expression creates a function as part of a larger expression — most commonly assigned to a variable.</p>
+                
+                <pre><code>const myFunction = function(parameter1, parameter2) {
+    // function body
+    return result;
+};</code></pre>
+                
+                <div class="example">
+                    <strong>Real Example:</strong><br>
+                    <code>const multiply = function(a, b) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return a * b;<br>
+};<br><br>
+console.log(multiply(5, 3)); // Output: 15</code>
+                </div>
+                
+                <div class="definition">
+                    <strong>Key Characteristics:</strong>
+                    <ul>
+                        <li>Created within an expression context</li>
+                        <li>Not hoisted — must be defined before use</li>
+                        <li>Can be anonymous or named</li>
+                        <li>Can be reassigned to another variable</li>
+                    </ul>
+                </div>
+                
+                <div class="uses">
+                    <strong>When to Use:</strong> When you need to pass a function as an argument (callbacks), create private scopes, or assign different behaviors based on conditions.
+                </div>
+                
+                <div class="example">
+                    <strong>Conditional Assignment:</strong><br>
+                    <code>let operation;<br>
+if (shouldAdd) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;operation = function(x, y) { return x + y; };<br>
+} else {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;operation = function(x, y) { return x - y; };<br>
+}<br>
+console.log(operation(10, 4)); // 14 or 6 depending on condition</code>
+                </div>
+            </div>
+        </details>
+
+        <details id="anonymous-func">
+            <summary>Anonymous Functions</summary>
+            <div>
+                <p>An anonymous function is a function without a name. They're often used as function expressions or passed directly as arguments.</p>
+                
+                <pre><code>// As a function expression
+const sayHello = function() {
+    console.log("Hello!");
+};
+
+// As a callback
+setTimeout(function() {
+    console.log("This runs after 1 second");
+}, 1000);
+
+// As an IIFE (Immediately Invoked Function Expression)
+(function() {
+    console.log("Runs immediately!");
+})();</code></pre>
+                
+                <div class="definition">
+                    <strong>Key Characteristics:</strong>
+                    <ul>
+                        <li>No identifier/name</li>
+                        <li>Cannot be referenced by name after creation</li>
+                        <li>Cannot be reused unless assigned to a variable</li>
+                        <li>Essential for callbacks and functional programming patterns</li>
+                    </ul>
+                </div>
+                
+                <div class="example">
+                    <strong>Common Use Case — Array Methods:</strong><br>
+                    <code>const numbers = [1, 2, 3, 4];<br>
+const doubled = numbers.map(function(num) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return num * 2;<br>
+});<br>
+console.log(doubled); // [2, 4, 6, 8]</code>
+                </div>
+                
+                <div class="uses">
+                    <strong>When to Use:</strong> For one-time-use functions, event handlers, array methods (<code>map()</code>, <code>filter()</code>, <code>reduce()</code>), and asynchronous callbacks. They keep code concise and focused.
+                </div>
+                
+                <div class="warning">
+                    <strong>Debugging Tip:</strong> Anonymous functions show up as "<code>anonymous</code>" in stack traces. Use named function expressions for better debugging!
+                </div>
+            </div>
+        </details>
+
+        <details id="named-func-expression">
+            <summary>Named Function Expressions</summary>
+            <div>
+                <p>A named function expression is a function expression that has a name — but this name is only accessible inside the function itself.</p>
+                
+                <pre><code>const factorial = function fact(n) {
+    if (n <= 1) return 1;
+    return n * fact(n - 1); // Can call itself using 'fact'
+};</code></pre>
+                
+                <div class="definition">
+                    <strong>Key Characteristics:</strong>
+                    <ul>
+                        <li>Name exists only in the function's scope</li>
+                        <li>External code uses the variable name (<code>factorial</code>)</li>
+                        <li>Internal recursion uses the function name (<code>fact</code>)</li>
+                        <li>Helps with debugging and recursion</li>
+                    </ul>
+                </div>
+                
+                <div class="example">
+                    <strong>Debugging Advantage:</strong><br>
+                    <code>const processData = function process(data) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if (!data) throw new Error("Data required");<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return data.toUpperCase();<br>
+};<br><br>
+processData(null); // Stack trace shows: "at process (file.js:2)" — not "anonymous"</code>
+                </div>
+                
+                <div class="example">
+                    <strong>Recursion Example:</strong><br>
+                    <code>const fibonacci = function fib(n) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;if (n &lt;= 1) return n;<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return fib(n - 1) + fib(n - 2);<br>
+};<br><br>
+console.log(fibonacci(6)); // 8</code>
+                </div>
+                
+                <div class="uses">
+                    <strong>When to Use:</strong> Always prefer named function expressions over anonymous ones when you need recursion, self-reference, or better stack trace clarity. Modern linters and debuggers favor them.
+                </div>
+            </div>
+        </details>
+
+        <details id="hoisting">
+            <summary>Function Hoisting Behavior</summary>
+            <div>
+                <p>Hoisting is JavaScript’s default behavior of moving declarations to the top of their scope during compilation.</p>
+                
+                <div class="definition">
+                    <strong>Definition:</strong> Function declarations are fully hoisted — meaning both the name and the entire function body are moved to the top of their scope. Function expressions are only partially hoisted — only the variable declaration is hoisted, not the assignment.
+                </div>
+                
+                <div class="example">
+                    <strong>Function Declaration Hoisting:</strong><br>
+                    <code>// This works! Even though called before declaration<br>
+console.log(add(5, 3)); // Output: 8<br><br>
+function add(a, b) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return a + b;<br>
+}</code>
+                </div>
+                
+                <div class="example">
+                    <strong>Function Expression Hoisting:</strong><br>
+                    <code>// This throws TypeError: Cannot access 'multiply' before initialization<br>
+console.log(multiply(5, 3)); // ❌ ReferenceError<br><br>
+const multiply = function(a, b) {<br>
+&nbsp;&nbsp;&nbsp;&nbsp;return a * b;<br>
+};<br><br>
+// But this works:<br>
+console.log("Defined now:", multiply(5, 3)); // ✅ Output: 15</code>
+                </div>
+                
+                <div class="example">
+                    <strong>Variable Hoisting (var vs let/const):</strong><br>
+                    <code>console.log(square); // undefined (not error)<br>
+var square = function(n) { return n * n; };<br><br>
+console.log(cube); // ReferenceError: cube is not defined<br>
+const cube = function(n) { return n * n * n; };</code>
+                </div>
+                
+                <div class="uses">
+                    <strong>Practical Implications:</strong>
+                    <ul>
+                        <li>Use function declarations if you want to call functions before they appear in code (legacy style)</li>
+                        <li>Use function expressions with <code>const</code> — modern best practice</li>
+                        <li>Never rely on hoisting for production code — declare before use</li>
+                        <li>Hoisting can cause confusion — always declare variables/functions at the top of scope</li>
+                    </ul>
+                </div>
+                
+                <div class="warning">
+                    <strong>Pro Tip:</strong> In modern JavaScript, use <code>const</code> and function expressions. Avoid relying on hoisting. It makes your code more predictable and easier to reason about.
+                </div>
+            </div>
+        </details>
+
+        <details>
+            <summary>Summary Table: Function Declarations vs Expressions</summary>
+            <div>
+                <table class="table table-dark table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Function Declaration</th>
+                            <th>Function Expression</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Syntax</td>
+                            <td><code>function name() { }</code></td>
+                            <td><code>const name = function() { }</code></td>
+                        </tr>
+                        <tr>
+                            <td>Hoisting</td>
+                            <td>Full hoisting (name + body)</td>
+                            <td>Partial hoisting (only variable name)</td>
+                        </tr>
+                        <tr>
+                            <td>Reassignable</td>
+                            <td>No</td>
+                            <td>Yes (if using <code>let</code>)</td>
+                        </tr>
+                        <tr>
+                            <td>Anonymous Support</td>
+                            <td>No</td>
+                            <td>Yes</td>
+                        </tr>
+                        <tr>
+                            <td>Named Self-Reference</td>
+                            <td>Yes (by name)</td>
+                            <td>Yes (with named expression)</td>
+                        </tr>
+                        <tr>
+                            <td>Best Practice</td>
+                            <td>Legacy / simple utilities</td>
+                            <td>Modern standard</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </details>
+
+        <details>
+            <summary>Common Pitfalls & Best Practices</summary>
+            <div>
+                <ul class="list-group">
+                    <li class="list-group-item bg-secondary mb-2"><strong>Pitfall:</strong> Calling a function expression before it's defined → <code>ReferenceError</code><br><strong>Fix:</strong> Declare before use or use declarations for top-level functions.</li>
+                    
+                    <li class="list-group-item bg-secondary mb-2"><strong>Pitfall:</strong> Using <code>var</code> for function expressions → can be redeclared<br><strong>Fix:</strong> Always use <code>const</code> unless reassignment is intentional.</li>
+                    
+                    <li class="list-group-item bg-secondary mb-2"><strong>Best Practice:</strong> Prefer function expressions with <code>const</code> — they're explicit, predictable, and align with ES6+ standards.</li>
+                    
+                    <li class="list-group-item bg-secondary mb-2"><strong>Best Practice:</strong> Use named function expressions even for single-use cases — improves debugging and tooling support.</li>
+                    
+                    <li class="list-group-item bg-secondary mb-2"><strong>Best Practice:</strong> Never put function declarations inside blocks like <code>if</code> statements — behavior is inconsistent across engines.</li>
+                </ul>
+            </div>
+        </details>
+
+        <div class="footer-note">
+            © 2024 Advanced Programming Tutor | Mastering JavaScript Fundamentals | Code with Clarity
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Expand/Collapse All Buttons
+            document.getElementById('expandAll').addEventListener('click', () => {
+                document.querySelectorAll('details').forEach(detail => {
+                    detail.setAttribute('open', '');
+                });
+            });
+
+            document.getElementById('collapseAll').addEventListener('click', () => {
+                document.querySelectorAll('details').forEach(detail => {
+                    detail.removeAttribute('open');
+                });
+            });
+
+            // Smooth Scrolling for TOC
+            document.querySelectorAll('.toc-item, .toc-subitem').forEach(item => {
+                item.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const targetElement = document.getElementById(targetId);
+                    
+                    if (targetElement) {
+                        // Remove active class from all items
+                        document.querySelectorAll('.toc-item, .toc-subitem').forEach(el => {
+                            el.classList.remove('active');
+                        });
+                        
+                        // Add active class to clicked item
+                        this.classList.add('active');
+                        
+                        // Smooth scroll to target
+                        targetElement.scrollIntoView({
+                            behavior: 'smooth',
+                            block: 'start'
+                        });
+                    }
+                });
+            });
+
+            // Search functionality
+            document.getElementById('searchTOC').addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
+                
+                tocItems.forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    if (text.includes(searchTerm)) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+
+            // Syntax highlighting for code blocks
+            document.querySelectorAll('pre code').forEach(block => {
+                hljs.highlightBlock(block);
+            });
+
+            // Optional: If you want to add Prism.js later, uncomment below and include Prism CDN
+            /*
+            // For advanced syntax highlighting, you can replace above with:
+            import 'prismjs';
+            import 'prismjs/themes/prism-tomorrow.css';
+            */
+        });
+    </script>
+</body>
+</html>
+```

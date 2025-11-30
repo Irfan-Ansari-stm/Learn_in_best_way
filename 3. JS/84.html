@@ -1,0 +1,339 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>24.3 Testing Best Practices — Deep Learning Note</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github-dark.min.css">
+
+  <style>
+    :root{--bg:#0b0f10;--surface:#111518;--cyan:#06b6d4;--amber:#f59e0b;--muted:#9aa6a6;--panel-width:340px;--radius:12px}
+    html,body{height:100%}
+    body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:var(--bg);color:#e6eef0}
+    .app{display:flex;gap:18px;height:100vh;padding:20px}
+    .left-panel{width:var(--panel-width);background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.04));padding:18px;border-radius:var(--radius);position:sticky;top:20px;height:calc(100vh - 40px);flex-shrink:0;border:1px solid rgba(255,255,255,0.03)}
+    .right-panel{flex:1;background:linear-gradient(180deg,rgba(255,255,255,0.01),rgba(255,255,255,0.00));padding:22px;border-radius:var(--radius);overflow:auto;box-shadow:0 6px 18px rgba(0,0,0,0.6);border:1px solid rgba(255,255,255,0.02)}
+    .brand{display:flex;gap:12px;align-items:center}
+    .brand-mark{width:46px;height:46px;border-radius:10px;background:linear-gradient(90deg,var(--cyan),var(--amber));display:flex;align-items:center;justify-content:center;color:#071018;font-weight:700}
+    .title{font-weight:700}
+    .subtitle{font-size:0.82rem;color:var(--muted)}
+    .toc{margin-top:12px}
+    .search{margin-bottom:10px}
+    .controls{display:flex;gap:8px;margin-bottom:8px}
+    .btn-ghost{background:transparent;border:1px solid rgba(255,255,255,0.04);color:var(--muted);padding:6px 8px;border-radius:8px}
+    .toc-list{max-height:58vh;overflow:auto;padding-right:6px}
+    a.toc-item{display:block;padding:8px;border-radius:8px;margin-bottom:6px;color:inherit;text-decoration:none}
+    a.toc-item:hover{background:rgba(255,255,255,0.02);color:var(--cyan)}
+    details{background:rgba(255,255,255,0.015);padding:12px;border-radius:10px;margin-bottom:12px;border:1px solid rgba(255,255,255,0.02)}
+    summary{cursor:pointer;font-weight:600}
+    pre{background:rgba(0,0,0,0.35);padding:12px;border-radius:8px;overflow:auto}
+    code{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,'Roboto Mono','Courier New',monospace}
+    h1,h2,h3{color:#dff7fb}
+    p{color:#cfe8ea}
+    .muted{color:var(--muted)}
+    table.table thead th{border-bottom:1px solid rgba(255,255,255,0.04)}
+    @media (max-width:900px){.left-panel{display:none}}
+  </style>
+</head>
+<body>
+  <div class="app container-fluid">
+    <aside class="left-panel" aria-label="Table of contents">
+      <div class="brand">
+        <div class="brand-mark">24.3</div>
+        <div>
+          <div class="title">Testing Best Practices</div>
+          <div class="subtitle">Testable code, coverage, continuous testing, perf & accessibility</div>
+        </div>
+      </div>
+      <div style="margin-top:12px;display:flex;justify-content:space-between;align-items:center">
+        <div class="muted">Author: <strong>Irfan</strong></div>
+        <div style="background:linear-gradient(90deg,var(--cyan),rgba(0,0,0,0.12));padding:4px 8px;border-radius:999px;color:#021417;font-weight:700">Advanced</div>
+      </div>
+
+      <div class="toc">
+        <input id="tocSearch" class="form-control search" placeholder="Search TOC..." />
+        <div class="controls">
+          <button class="btn-ghost" id="expandAll">Expand all</button>
+          <button class="btn-ghost" id="collapseAll">Collapse all</button>
+          <button class="btn-ghost" id="tocReset">Reset</button>
+        </div>
+        <div class="toc-list" id="tocList">
+          <a class="toc-item" href="#testable">Writing testable code</a>
+          <a class="toc-item" href="#coverage">Code coverage &amp; metrics</a>
+          <a class="toc-item" href="#continuous">Continuous testing strategies</a>
+          <a class="toc-item" href="#performance">Performance testing</a>
+          <a class="toc-item" href="#accessibility">Accessibility testing</a>
+          <a class="toc-item" href="#tools">Tools &amp; examples</a>
+        </div>
+      </div>
+    </aside>
+
+    <main class="right-panel" id="content" tabindex="0">
+      <article>
+        <h1 id="top">24.3 Testing Best Practices — Deep Learning Note</h1>
+        <p class="muted">Practical guide to writing testable code, interpreting coverage metrics, continuous testing (shift-left), performance testing patterns, and accessibility testing. Each section uses layered <details> with examples and code blocks that render safely in browsers.</p>
+
+        <!-- TESTABLE CODE -->
+        <section id="testable" class="anchor-target">
+          <h2>Writing testable code</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>Design for testability: small pure functions, explicit dependencies (DI), clear side-effect boundaries, and seamable external integrations. Testable code enables fast unit tests and reduces flakiness.</p>
+          </details>
+
+          <details>
+            <summary>Principles & examples</summary>
+            <ol>
+              <li><strong>Single Responsibility:</strong> each module should do one thing.</li>
+              <li><strong>Pure functions:</strong> prefer pure functions where possible for easy unit testing.</li>
+              <li><strong>Dependency Injection:</strong> pass dependencies instead of importing directly.</li>
+              <li><strong>Seams:</strong> create clear boundaries for external systems (DB, network).</li>
+            </ol>
+            <pre><code class="language-javascript">// anti-pattern: hard-coded dependency
+const db = require('./db');
+function getUser(id) { return db.find(id); }
+
+// better: inject dependency
+function createUserService(db) {
+  return { getUser: (id) =&gt; db.find(id) };
+}
+
+// test: pass a fake db
+const fakeDb = { find: (id) =&gt; ({ id, name: 'test' }) };
+const service = createUserService(fakeDb);
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Tips: avoid globals & control time</summary>
+            <p>Avoid global state; use abstractions for timers and random values. Use fake timers in tests to control time-dependent behavior.</p>
+            <pre><code class="language-javascript">// using Jest fake timers
+jest.useFakeTimers();
+setTimeout(() =&gt; { /* ... */ }, 1000);
+jest.advanceTimersByTime(1000);
+</code></pre>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- COVERAGE -->
+        <section id="coverage" class="anchor-target">
+          <h2>Code coverage &amp; metrics</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>Coverage measures how much of your code is executed by tests: statements, branches, functions, and lines. Use coverage as a tool to identify untested areas, not as a strict gate to reach 100%—focus on meaningful coverage.</p>
+          </details>
+
+          <details>
+            <summary>Understanding metrics</summary>
+            <ul>
+              <li><strong>Statements:</strong> percent of executed statements.</li>
+              <li><strong>Branches:</strong> conditional branches (if/else) covered.</li>
+              <li><strong>Functions:</strong> functions that were called.</li>
+              <li><strong>Lines:</strong> lines executed.</li>
+            </ul>
+            <p class="muted">Branch coverage is often the most informative — it tells you about tested control flow.</p>
+          </details>
+
+          <details>
+            <summary>Coverage thresholds & policies</summary>
+            <p>Set sensible thresholds (e.g., 80% statements, 70% branches) and focus on critical modules for higher targets. Use coverage diffs in PRs to avoid untested additions.</p>
+            <pre><code class="language-json">// jest.config.js
+module.exports = {
+  collectCoverage: true,
+  coverageThreshold: {
+    global: { branches: 70, functions: 80, lines: 80, statements: 80 }
+  }
+};
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Interpreting low coverage</summary>
+            <p>Low coverage can indicate dead code, hard-to-test code, or missing tests. Rather than blindly writing tests to reach a number, refactor code to be more testable and remove dead paths.</p>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- CONTINUOUS -->
+        <section id="continuous" class="anchor-target">
+          <h2>Continuous testing strategies</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>Shift-left testing: run fast checks early (pre-commit, PR), run heavier tests (integration/E2E) on CI or scheduled jobs. Feedback speed is crucial — developer velocity depends on fast, reliable testing loops.</p>
+          </details>
+
+          <details>
+            <summary>Pipeline design example</summary>
+            <pre><code class="language-yaml"># suggested stages
+1. Pre-commit: lint + format (husky + lint-staged)
+2. PR: run unit tests, type-check, lightweight integration tests
+3. Merge: run full integration + E2E + performance smoke tests
+4. Nightly: run full E2E, long-running performance suites
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Techniques: test impact analysis & test selection</summary>
+            <p>Use test selection to run only tests affected by changed files; employ test impact analysis to prioritize tests. Cache and parallelize to reduce wall-clock time.</p>
+            <pre><code class="language-bash"># example: run tests matching changed files (pseudo)
+CHANGED=$(git diff --name-only origin/main...HEAD)
+npm run test -- --testPathPattern="$(echo $CHANGED | sed -e 's/ /|/g')"
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Flaky test management</summary>
+            <ul>
+              <li>Detect flakiness by tracking test failure history.</li>
+              <li>Quarantine flaky tests and fix root causes rather than increasing retries.</li>
+              <li>Record artifacts (screenshots, videos, logs) to debug CI flakiness.</li>
+            </ul>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- PERFORMANCE -->
+        <section id="performance" class="anchor-target">
+          <h2>Performance testing</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>Performance testing ensures the system meets latency and throughput requirements. Types include load testing, stress testing, and benchmarking. Run performance tests in environments that mirror production where possible.</p>
+          </details>
+
+          <details>
+            <summary>Tools & patterns</summary>
+            <ul>
+              <li>Use k6, Gatling, or Artillery for HTTP load testing.</li>
+              <li>Use Benchmark.js for microbenchmarks (pure JS functions).</li>
+              <li>Measure real user metrics (RUM) and synthetic tests for end-to-end performance.</li>
+            </ul>
+            <pre><code class="language-javascript">// simple microbenchmark with Benchmark.js
+const Benchmark = require('benchmark');
+const suite = new Benchmark.Suite();
+
+suite.add('concat', function() { 'a'.concat('b'); })
+     .add('plus', function() { 'a' + 'b'; })
+     .on('cycle', (e) =&gt; console.log(String(e.target)))
+     .run();
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Interpreting results & regression testing</summary>
+            <p>Automate performance regression detection by storing baselines and failing builds when regressions exceed thresholds. Use percentiles (p50, p95, p99) instead of averages for latency analysis.</p>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- ACCESSIBILITY -->
+        <section id="accessibility" class="anchor-target">
+          <h2>Accessibility testing</h2>
+
+          <details open>
+            <summary>Executive summary</summary>
+            <p>Accessibility (a11y) testing ensures applications are usable by people with disabilities. Combine automated tooling with manual testing (screen readers, keyboard navigation) and include a11y checks in CI.</p>
+          </details>
+
+          <details>
+            <summary>Automated tools & examples</summary>
+            <ul>
+              <li>axe-core (axe-core, jest-axe) for automated rule checks.</li>
+              <li>Pa11y for CLI checks and CI integration.</li>
+              <li>Accessibility Insights and Lighthouse for audits.</li>
+            </ul>
+            <pre><code class="language-javascript">// jest-axe example
+const { axe, toHaveNoViolations } = require('jest-axe');
+expect.extend(toHaveNoViolations);
+
+test('homepage is accessible', async () =&gt; {
+  const html = renderToString(&lt;App /&gt;);
+  const results = await axe(html);
+  expect(results).toHaveNoViolations();
+});
+</code></pre>
+          </details>
+
+          <details>
+            <summary>Manual testing & personas</summary>
+            <p>Test with screen readers (NVDA, VoiceOver), keyboard-only navigation, and consider assistive tech personas. Prioritize fixes by impact and user scenarios.</p>
+          </details>
+
+          <details>
+            <summary>Integrating a11y into workflow</summary>
+            <p>Add a11y checks to PRs and run full audits on major releases. Include a checklist for designers and developers during feature reviews.</p>
+          </details>
+        </section>
+
+        <hr />
+
+        <!-- TOOLS -->
+        <section id="tools" class="anchor-target">
+          <h2>Tools &amp; examples</h2>
+
+          <details>
+            <summary>Useful tools summarised</summary>
+            <table class="table table-dark table-striped">
+              <thead><tr><th>Category</th><th>Tool</th><th>Use</th></tr></thead>
+              <tbody>
+                <tr><td>Unit/Integration</td><td>Jest, Mocha, Vitest</td><td>Fast tests, mocks, snapshots</td></tr>
+                <tr><td>E2E</td><td>Playwright, Cypress</td><td>User-flows, cross-browser</td></tr>
+                <tr><td>Perf</td><td>k6, Artillery, Benchmark.js</td><td>Load & microbenchmarking</td></tr>
+                <tr><td>A11y</td><td>axe-core, pa11y, Lighthouse</td><td>Automated accessibility checks</td></tr>
+              </tbody>
+            </table>
+          </details>
+
+          <details>
+            <summary>Sample CI snippet: run coverage & a11y</summary>
+            <pre><code class="language-yaml">jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v4
+        with: { node-version: 16 }
+      - run: npm ci
+      - run: npm run test:unit -- --coverage
+      - run: npm run test:a11y
+</code></pre>
+          </details>
+        </section>
+
+        <footer style="margin-top:20px;padding-bottom:40px;">
+          <p class="muted">End of note. Use the left TOC to navigate and expand/collapse sections. Tell me which part you want deeper: sample perf pipeline, a11y remediation checklist, or test impact analysis scripts — I'll insert it into this same file.</p>
+        </footer>
+      </article>
+    </main>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/languages/javascript.min.js"></script>
+  <script>
+    if(window.hljs){ hljs.highlightAll(); }
+
+    document.querySelectorAll('#tocList a').forEach(a=>{
+      a.addEventListener('click', function(e){ e.preventDefault(); const id=this.getAttribute('href').slice(1); const el=document.getElementById(id); if(el){ el.scrollIntoView({behavior:'smooth',block:'start'}); const d=el.querySelector('details'); if(d && !d.open) d.open=true; } });
+    });
+
+    document.getElementById('expandAll').addEventListener('click', ()=> document.querySelectorAll('details').forEach(d=> d.open=true));
+    document.getElementById('collapseAll').addEventListener('click', ()=> document.querySelectorAll('details').forEach(d=> d.open=false));
+    document.getElementById('tocReset').addEventListener('click', ()=> document.getElementById('content').scrollTo({top:0,behavior:'smooth'}));
+
+    document.getElementById('tocSearch').addEventListener('input', ()=>{ const q=document.getElementById('tocSearch').value.trim().toLowerCase(); document.querySelectorAll('#tocList a').forEach(a=>{ a.style.display = a.textContent.toLowerCase().includes(q) ? 'block' : 'none'; }); });
+
+    document.addEventListener('keydown',(e)=>{ if(e.key==='E' || e.key==='e') document.querySelectorAll('details').forEach(d=> d.open=true); if(e.key==='C' || e.key==='c') document.querySelectorAll('details').forEach(d=> d.open=false); });
+  </script>
+</body>
+</html>

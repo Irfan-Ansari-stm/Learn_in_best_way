@@ -1,0 +1,1733 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Event Fundamentals in JavaScript - Deep Learning Note (Module 17.1)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap CDN -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+
+    <style>
+        :root {
+            --bg-main: #050816;
+            --bg-panel: #020617;
+            --bg-panel-soft: #0b1120;
+            --border-subtle: #1f2937;
+            --text-main: #e5e7eb;
+            --text-muted: #9ca3af;
+            --accent-cyan: #06b6d4;
+            --accent-amber: #f59e0b;
+            --accent-danger: #fb7185;
+            --code-bg: #020617;
+            --code-border: #1f2937;
+            --shadow-soft: 0 18px 40px rgba(0, 0, 0, 0.55);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            background: radial-gradient(circle at top, #0f172a 0, #020617 45%, #020617 100%);
+            color: var(--text-main);
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            min-height: 100vh;
+        }
+
+        /* Layout */
+        .app-shell {
+            display: flex;
+            min-height: 100vh;
+            max-width: 100%;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 320px;
+            max-width: 100%;
+            background: linear-gradient(180deg, #020617 0%, #020617 45%, #020617 100%);
+            border-right: 1px solid var(--border-subtle);
+            box-shadow: var(--shadow-soft);
+            padding: 1.5rem 1.25rem;
+            position: sticky;
+            top: 0;
+            align-self: flex-start;
+            height: 100vh;
+            overflow-y: auto;
+            z-index: 10;
+        }
+
+        .main-content {
+            flex: 1;
+            max-height: 100vh;
+            overflow-y: auto;
+            padding: 1.5rem 1.5rem 3rem;
+        }
+
+        @media (max-width: 767.98px) {
+            .app-shell {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                position: relative;
+                height: auto;
+                max-height: 60vh;
+            }
+
+            .main-content {
+                max-height: unset;
+            }
+        }
+
+        /* Sidebar styling */
+        .badge-level {
+            border-radius: 999px;
+            padding: 0.15rem 0.65rem;
+            font-size: 0.7rem;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+            border: 1px solid rgba(148, 163, 184, 0.4);
+            color: var(--accent-cyan);
+        }
+
+        .course-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+        }
+
+        .course-subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .author-card {
+            background: radial-gradient(circle at top left, rgba(6, 182, 212, 0.12), transparent 55%);
+            border-radius: 0.95rem;
+            padding: 0.8rem 0.9rem;
+            border: 1px solid rgba(31, 41, 55, 0.9);
+            margin-top: 0.75rem;
+        }
+
+        .author-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .author-meta {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .toc-header {
+            margin-top: 1.3rem;
+            margin-bottom: 0.4rem;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--accent-amber);
+        }
+
+        .toc-search {
+            position: relative;
+            margin-bottom: 0.5rem;
+        }
+
+        .toc-search input {
+            background: rgba(15, 23, 42, 0.95);
+            border-radius: 999px;
+            border: 1px solid rgba(31, 41, 55, 0.9);
+            color: var(--text-main);
+            font-size: 0.8rem;
+            padding-right: 1.9rem;
+        }
+
+        .toc-search input:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 0 1px rgba(6, 182, 212, 0.3);
+        }
+
+        .toc-search-icon {
+            position: absolute;
+            right: 0.6rem;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .toc-controls {
+            display: flex;
+            gap: 0.4rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .toc-controls button {
+            flex: 1;
+            border-radius: 999px;
+            border: 1px solid rgba(31, 41, 55, 0.85);
+            background: rgba(15, 23, 42, 0.85);
+            color: var(--text-muted);
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+        }
+
+        .toc-controls button:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        .toc-list {
+            list-style: none;
+            padding-left: 0;
+            margin: 0;
+            font-size: 0.82rem;
+        }
+
+        .toc-item {
+            margin-bottom: 0.2rem;
+        }
+
+        .toc-link {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            text-decoration: none;
+            color: var(--text-muted);
+            padding: 0.35rem 0.45rem;
+            border-radius: 999px;
+            transition: background 150ms ease, color 150ms ease, transform 120ms ease;
+        }
+
+        .toc-link span.bullet {
+            width: 0.25rem;
+            height: 0.25rem;
+            border-radius: 999px;
+            background: rgba(148, 163, 184, 0.7);
+        }
+
+        .toc-link:hover {
+            background: rgba(15, 23, 42, 0.95);
+            color: var(--accent-cyan);
+            transform: translateX(1px);
+        }
+
+        .toc-link.active {
+            background: rgba(8, 47, 73, 0.85);
+            color: var(--accent-cyan);
+        }
+
+        .toc-link[data-level="2"] {
+            padding-left: 1.7rem;
+            font-size: 0.78rem;
+        }
+
+        .toc-link[data-level="3"] {
+            padding-left: 2.1rem;
+            font-size: 0.76rem;
+        }
+
+        .toc-link[data-level="2"] span.bullet,
+        .toc-link[data-level="3"] span.bullet {
+            transform: scale(0.8);
+            opacity: 0.7;
+        }
+
+        /* Main content styling */
+        .content-header {
+            margin-bottom: 1.4rem;
+            border-bottom: 1px solid rgba(31, 41, 55, 0.9);
+            padding-bottom: 0.9rem;
+        }
+
+        .content-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+
+        .content-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            margin-top: 0.5rem;
+        }
+
+        .content-badge {
+            font-size: 0.7rem;
+            border-radius: 999px;
+            padding: 0.15rem 0.55rem;
+            border: 1px solid rgba(55, 65, 81, 0.95);
+            color: var(--text-muted);
+        }
+
+        .content-badge.highlight {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        .pill-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            border-radius: 999px;
+            padding: 0.15rem 0.55rem;
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .pill-tag-dot {
+            width: 0.28rem;
+            height: 0.28rem;
+            border-radius: 999px;
+            background: var(--accent-amber);
+        }
+
+        .intro-callout {
+            background: radial-gradient(circle at top left, rgba(245, 158, 11, 0.12), rgba(15, 23, 42, 0.98));
+            border-radius: 1.2rem;
+            padding: 1rem 1.1rem;
+            border: 1px solid rgba(55, 65, 81, 0.95);
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 1.2rem;
+            font-size: 0.92rem;
+        }
+
+        .intro-callout h2 {
+            font-size: 1.05rem;
+            margin-bottom: 0.45rem;
+        }
+
+        .section-card {
+            background: radial-gradient(circle at top left, rgba(6, 182, 212, 0.08), rgba(15, 23, 42, 0.96));
+            border-radius: 1.2rem;
+            padding: 1rem 1.1rem;
+            border: 1px solid rgba(31, 41, 55, 0.95);
+            margin-bottom: 1.2rem;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            margin-bottom: 0.4rem;
+            color: var(--accent-cyan);
+        }
+
+        .section-subtitle {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.7rem;
+        }
+
+        /* Details / summary styling */
+        details {
+            border-radius: 0.9rem;
+            border: 1px solid rgba(31, 41, 55, 0.9);
+            background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.96));
+            margin-bottom: 0.7rem;
+            padding: 0.1rem 0.85rem 0.6rem;
+        }
+
+        details[open] {
+            border-color: rgba(6, 182, 212, 0.8);
+            box-shadow: 0 0 0 1px rgba(6, 182, 212, 0.25);
+        }
+
+        summary {
+            cursor: pointer;
+            list-style: none;
+            padding: 0.55rem 0.2rem 0.55rem 0.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .summary-icon {
+            width: 1.1rem;
+            height: 1.1rem;
+            border-radius: 999px;
+            border: 1px solid rgba(75, 85, 99, 0.9);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            color: var(--accent-cyan);
+        }
+
+        details[open] .summary-icon {
+            border-color: var(--accent-cyan);
+            background: rgba(8, 47, 73, 0.9);
+        }
+
+        .summary-label {
+            flex: 1;
+        }
+
+        .summary-pill {
+            font-size: 0.7rem;
+            padding: 0.1rem 0.5rem;
+            border-radius: 999px;
+            background: rgba(15, 23, 42, 0.85);
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            color: var(--text-muted);
+        }
+
+        .details-body {
+            padding-top: 0.4rem;
+            padding-bottom: 0.1rem;
+            font-size: 0.9rem;
+            color: var(--text-main);
+        }
+
+        .details-body p {
+            margin-bottom: 0.4rem;
+        }
+
+        .details-body ul {
+            margin-bottom: 0.35rem;
+        }
+
+        .details-body li {
+            margin-bottom: 0.2rem;
+        }
+
+        .badge-mini {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            border-radius: 999px;
+            font-size: 0.65rem;
+            padding: 0.05rem 0.45rem;
+            border: 1px solid rgba(55, 65, 81, 0.9);
+            color: var(--text-muted);
+        }
+
+        .badge-mini-dot {
+            width: 0.26rem;
+            height: 0.26rem;
+            border-radius: 999px;
+            background: var(--accent-cyan);
+        }
+
+        .pill-warning {
+            border-color: rgba(248, 113, 113, 0.8);
+            color: #fecaca;
+        }
+
+        /* Code blocks */
+        pre {
+            margin: 0.5rem 0 0.8rem;
+            padding: 0.75rem 0.8rem;
+            background: radial-gradient(circle at top left, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 1));
+            border-radius: 0.75rem;
+            border: 1px solid var(--code-border);
+            overflow-x: auto;
+            font-size: 0.82rem;
+            line-height: 1.5;
+        }
+
+        code {
+            font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            background: transparent;
+            color: #e5e7eb;
+        }
+
+        .code-block {
+            position: relative;
+        }
+
+        .code-lang-label {
+            position: absolute;
+            top: 0.4rem;
+            right: 0.7rem;
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+        }
+
+        .inline-code {
+            background: rgba(15, 23, 42, 0.95);
+            border-radius: 0.35rem;
+            padding: 0.05rem 0.35rem;
+            border: 1px solid rgba(31, 41, 55, 0.95);
+            font-size: 0.85em;
+        }
+
+        /* Simple syntax highlight tokens */
+        .token-keyword {
+            color: #38bdf8;
+            font-weight: 500;
+        }
+
+        .token-string {
+            color: #f97316;
+        }
+
+        .token-number {
+            color: #a5b4fc;
+        }
+
+        .token-comment {
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        .token-property {
+            color: #22c55e;
+        }
+
+        .token-method {
+            color: #fbbf24;
+        }
+
+        /* Utility text */
+        .text-muted-soft {
+            color: var(--text-muted);
+        }
+
+        .tip-box {
+            margin-top: 0.4rem;
+            padding: 0.45rem 0.6rem;
+            border-radius: 0.7rem;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px dashed rgba(55, 65, 81, 0.9);
+            font-size: 0.8rem;
+        }
+
+        .tip-title {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--accent-amber);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 0.7rem;
+        }
+
+        @media (max-width: 991.98px) {
+            .grid-2 {
+                grid-template-columns: minmax(0, 1fr);
+            }
+        }
+
+        .highlight-box {
+            border-radius: 0.85rem;
+            background: rgba(15, 23, 42, 0.98);
+            border: 1px solid rgba(31, 41, 55, 0.9);
+            padding: 0.6rem 0.7rem;
+            font-size: 0.85rem;
+        }
+
+        .highlight-box h4 {
+            font-size: 0.9rem;
+            margin-bottom: 0.35rem;
+        }
+
+        .api-signature {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-size: 0.86rem;
+            background: rgba(15, 23, 42, 0.9);
+            padding: 0.4rem 0.55rem;
+            border-radius: 0.6rem;
+            border: 1px solid rgba(31, 41, 55, 0.9);
+        }
+
+        .step-list {
+            counter-reset: step-counter;
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .step-list li {
+            counter-increment: step-counter;
+            margin-bottom: 0.4rem;
+            position: relative;
+            padding-left: 1.3rem;
+        }
+
+        .step-list li::before {
+            content: counter(step-counter);
+            position: absolute;
+            left: 0;
+            top: 0.05rem;
+            width: 1rem;
+            height: 1rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(8, 47, 73, 0.95);
+            color: var(--accent-cyan);
+        }
+
+        .warning-text {
+            color: var(--accent-danger);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="app-shell">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="badge-level">JavaScript Events</span>
+                <span class="pill-tag">
+                    <span class="pill-tag-dot"></span>
+                    v1.0 Note
+                </span>
+            </div>
+
+            <div class="mt-2">
+                <div class="course-title text-uppercase">Module 17.1 – Event Fundamentals</div>
+                <div class="course-subtitle">
+                    Event-driven programming, event types, addEventListener vs inline handlers, event objects, and event
+                    lifecycle — from basic intuition to robust patterns.
+                </div>
+            </div>
+
+            <div class="author-card mt-2">
+                <div class="author-name">Prepared for: College → Master / PhD learners</div>
+                <div class="author-meta">
+                    Style: deep intuition, layered explanations, and production-ready examples for real web apps.
+                </div>
+            </div>
+
+            <div class="toc-header mt-3">Table of Contents</div>
+
+            <div class="toc-search">
+                <input id="tocSearchInput" class="form-control form-control-sm" type="text"
+                    placeholder="Search sections...">
+                <span class="toc-search-icon">⌕</span>
+            </div>
+
+            <div class="toc-controls">
+                <button id="btnExpandAll" type="button">Expand all</button>
+                <button id="btnCollapseAll" type="button">Collapse all</button>
+            </div>
+
+            <ul class="toc-list mt-2" id="tocList">
+                <li class="toc-item">
+                    <a href="#overview" class="toc-link" data-scroll data-level="1">
+                        <span class="bullet"></span>
+                        <span>0. Executive Overview</span>
+                    </a>
+                </li>
+                <li class="toc-item">
+                    <a href="#event-driven" class="toc-link" data-scroll data-level="1">
+                        <span class="bullet"></span>
+                        <span>1. Event-driven Programming</span>
+                    </a>
+                </li>
+                <li class="toc-item">
+                    <a href="#event-types" class="toc-link" data-scroll data-level="1">
+                        <span class="bullet"></span>
+                        <span>2. Event Types &amp; Categories</span>
+                    </a>
+                </li>
+                <li class="toc-item">
+                    <a href="#addeventlistener-vs-inline" class="toc-link" data-scroll data-level="1">
+                        <span class="bullet"></span>
+                        <span>3. addEventListener() vs Inline Handlers</span>
+                    </a>
+                </li>
+                <li class="toc-item">
+                    <a href="#event-object" class="toc-link" data-scroll data-level="1">
+                        <span class="bullet"></span>
+                        <span>4. Event Object Properties</span>
+                    </a>
+                </li>
+                <li class="toc-item">
+                    <a href="#event-lifecycle" class="toc-link" data-scroll data-level="1">
+                        <span class="bullet"></span>
+                        <span>5. Event Timing &amp; Lifecycle</span>
+                    </a>
+                </li>
+                <li class="toc-item">
+                    <a href="#integration-patterns" class="toc-link" data-scroll data-level="1">
+                        <span class="bullet"></span>
+                        <span>6. Integration Patterns &amp; Best Practices</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="mt-4">
+                <div class="tip-box">
+                    <div class="tip-title mb-1">Study workflow tip</div>
+                    <div class="text-muted-soft">
+                        For events, practice like this:
+                        <ul class="mt-1 mb-0">
+                            <li>Console-log the event object</li>
+                            <li>Play with bubbling vs capturing</li>
+                            <li>Use event delegation in a list</li>
+                            <li>Draw lifecycle timeline on paper</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <header class="content-header">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2">
+                    <div>
+                        <div class="content-title text-uppercase">Module 17.1 – Event Fundamentals</div>
+                        <div class="text-muted-soft">
+                            Moving from “calling functions” to “reacting to events”: the mental shift that makes web UIs
+                            feel alive and interactive.
+                        </div>
+                    </div>
+                    <div class="content-badges">
+                        <span class="content-badge highlight">JavaScript</span>
+                        <span class="content-badge">Browser APIs</span>
+                        <span class="content-badge">Event model</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- INTRO / OVERVIEW -->
+            <section id="overview" class="intro-callout">
+                <h2>0. Executive Overview</h2>
+                <p>
+                    In basic programming, you often think in a <strong>sequential</strong> way: “line 1 runs, then line 2,
+                    then line 3…”. But real web applications are <strong>event-driven</strong>: the user might click a
+                    button anytime, server data might arrive later, a timer might fire after some delay. You,
+                    as the JavaScript developer, cannot control <em>when</em> the event happens; you only define
+                    <strong>what should happen in response</strong>.
+                </p>
+                <p>
+                    In this module you will learn the deep foundations of how browser events work:
+                </p>
+                <ul>
+                    <li><strong>Event-driven programming</strong> – thinking in terms of “register listeners” instead of “call functions directly”.</li>
+                    <li><strong>Event types &amp; categories</strong> – mouse, keyboard, input, UI, network, custom events, etc.</li>
+                    <li><strong>addEventListener vs inline handlers</strong> – why modern code uses <span class="inline-code">addEventListener</span> almost always.</li>
+                    <li><strong>Event object properties</strong> – <span class="inline-code">target</span>, <span class="inline-code">currentTarget</span>, coordinates, keys, <span class="inline-code">preventDefault()</span>, <span class="inline-code">stopPropagation()</span>.</li>
+                    <li><strong>Event timing &amp; lifecycle</strong> – capture phase, target phase, bubble phase, and how event loop scheduling interacts.</li>
+                </ul>
+                <div class="highlight-box mt-2">
+                    <h4>High-level pseudocode for event-driven UI</h4>
+                    <pre class="code-block"><span class="code-lang-label">pseudocode</span><code>
+// 1. Get reference to some DOM element
+button = document.getElementById('save')
+
+// 2. Register an event listener (event type + handler)
+button.addEventListener('click', handleSave)
+
+// 3. Define the handler (what to do when event happens)
+function handleSave(event):
+    readFormValues()
+    validate()
+    sendToServer()
+    showFeedback()
+
+// 4. Browser invokes handler whenever user clicks the button
+//    - timing is controlled by the user, not by our code</code></pre>
+                </div>
+            </section>
+
+            <!-- 1. Event-driven programming -->
+            <section id="event-driven" class="section-card">
+                <div class="section-title">1. Event-driven Programming</div>
+                <div class="section-subtitle">
+                    From top-down scripts to reactive systems that respond to user input, network responses, timers, and
+                    more.
+                </div>
+
+                <!-- Executive summary -->
+                <details open>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Executive summary: what does "event-driven" really mean?</span>
+                        <span class="summary-pill">Concept</span>
+                    </summary>
+                    <div class="details-body">
+                        <p>
+                            In an <strong>event-driven program</strong>, you do not call everything in a fixed
+                            order. Instead you:
+                        </p>
+                        <ul>
+                            <li>Set up <strong>listeners</strong> for events (clicks, key presses, network responses).</li>
+                            <li>Define callback functions that should run when those events occur.</li>
+                            <li>Let the browser’s event loop call your functions at the right time.</li>
+                        </ul>
+                        <p>
+                            The browser effectively says: <em>“Whenever X happens, I will call your handler”</em>. Your code
+                            becomes a set of <strong>reactions</strong> rather than a single linear story.
+                        </p>
+                    </div>
+                </details>
+
+                <!-- Deep mental model -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Deep mental model of events + event loop</span>
+                        <span class="summary-pill">Theory</span>
+                    </summary>
+                    <div class="details-body">
+                        <p>
+                            Conceptually, imagine the browser maintains a <strong>queue</strong> of events:
+                        </p>
+                        <ul>
+                            <li>“User clicked button A”</li>
+                            <li>“Key pressed: Enter”</li>
+                            <li>“Mouse moved to position (x, y)”</li>
+                            <li>“Timeout finished”</li>
+                        </ul>
+                        <p>
+                            The event loop repeatedly:
+                        </p>
+                        <ol class="step-list">
+                            <li>Reads the next event from the queue.</li>
+                            <li>Finds all listeners that match (e.g. click on that element).</li>
+                            <li>Calls your callback functions, passing an <strong>event object</strong>.</li>
+                            <li>Waits for JavaScript to finish (single-threaded), then continues.</li>
+                        </ol>
+                        <p>
+                            This is why heavy or blocking operations inside event handlers make the UI feel “frozen”:
+                            the event loop cannot process the next event until the current one is done.
+                        </p>
+                    </div>
+                </details>
+
+                <!-- Example: minimal event-driven counter -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Example: simple counter with click events</span>
+                        <span class="summary-pill">Example</span>
+                    </summary>
+                    <div class="details-body">
+                        <div class="grid-2">
+                            <div>
+                                <div class="highlight-box mb-2">
+                                    <h4>HTML skeleton</h4>
+                                    <pre class="code-block"><span class="code-lang-label">html</span><code class="language-html">&lt;button id="increment-btn"&gt;+1&lt;/button&gt;
+&lt;span id="counter-value"&gt;0&lt;/span&gt;</code></pre>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="highlight-box mb-2">
+                                    <h4>JavaScript (event-driven)</h4>
+                                    <pre class="code-block"><span class="code-lang-label">js</span><code class="language-js">
+let count = 0;
+
+const button = document.getElementById('increment-btn');
+const display = document.getElementById('counter-value');
+
+// Register listener: what to do when button is clicked
+button.addEventListener('click', (event) =&gt; {
+  count += 1;
+  display.textContent = count;
+});</code></pre>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tip-box">
+                            <div class="tip-title">Key observation</div>
+                            <div class="text-muted-soft">
+                                Our script runs once at page load, sets up the listener, and then “goes to sleep”.
+                                After that, every click wakes up the handler, which updates state and UI.
+                            </div>
+                        </div>
+                    </div>
+                </details>
+            </section>
+
+            <!-- 2. Event Types & Categories -->
+            <section id="event-types" class="section-card">
+                <div class="section-title">2. Event Types &amp; Categories</div>
+                <div class="section-subtitle">
+                    Events are not just "click" and "keydown". The browser has a rich taxonomy of event types.
+                </div>
+
+                <!-- Overview of categories -->
+                <details open>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">High-level categories of events</span>
+                        <span class="summary-pill">Concept</span>
+                    </summary>
+                    <div class="details-body">
+                        <ul>
+                            <li><strong>Mouse / Pointer events</strong> – <span class="inline-code">click</span>, <span class="inline-code">dblclick</span>, <span class="inline-code">mousedown</span>, <span class="inline-code">mouseup</span>, <span class="inline-code">mousemove</span>, <span class="inline-code">contextmenu</span>, <span class="inline-code">pointerdown</span>, etc.</li>
+                            <li><strong>Keyboard events</strong> – <span class="inline-code">keydown</span>, <span class="inline-code">keypress</span> (deprecated), <span class="inline-code">keyup</span>.</li>
+                            <li><strong>Form &amp; input events</strong> – <span class="inline-code">input</span>, <span class="inline-code">change</span>, <span class="inline-code">submit</span>, <span class="inline-code">focus</span>, <span class="inline-code">blur</span>.</li>
+                            <li><strong>Window / UI events</strong> – <span class="inline-code">load</span>, <span class="inline-code">resize</span>, <span class="inline-code">scroll</span>, <span class="inline-code">hashchange</span>, <span class="inline-code">beforeunload</span>.</li>
+                            <li><strong>Clipboard &amp; drag/drop</strong> – <span class="inline-code">copy</span>, <span class="inline-code">paste</span>, <span class="inline-code">dragstart</span>, <span class="inline-code">drop</span>, etc.</li>
+                            <li><strong>Custom events</strong> – your own event names via <span class="inline-code">CustomEvent</span>.</li>
+                        </ul>
+                        <p>
+                            Different event types populate different properties on the event object, e.g. mouse coordinates
+                            for mouse events, <span class="inline-code">key</span> / <span class="inline-code">code</span> for keyboard, etc.
+                        </p>
+                    </div>
+                </details>
+
+                <!-- Quick mapping table (conceptual, textual) -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Concept map: event type → typical use case</span>
+                        <span class="summary-pill">Mapping</span>
+                    </summary>
+                    <div class="details-body">
+                        <ul>
+                            <li><strong>click</strong> – primary user action (buttons, links, toggles).</li>
+                            <li><strong>input</strong> – instant feedback on text fields (live validation, counting).</li>
+                            <li><strong>change</strong> – commit-like events (select dropdown, checkbox change).</li>
+                            <li><strong>submit</strong> – form submission; ideal place to call <span class="inline-code">preventDefault()</span> for SPA.</li>
+                            <li><strong>keydown</strong> – keyboard shortcuts, key navigation (e.g., ESC to close modal).</li>
+                            <li><strong>scroll</strong> – infinite scroll, sticky headers (but use carefully for performance).</li>
+                            <li><strong>load</strong> – initial setup after all resources are ready.</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <!-- Example: combining different event types -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Example: search box with keyboard + input events</span>
+                        <span class="summary-pill">Example</span>
+                    </summary>
+                    <div class="details-body">
+                        <div class="grid-2">
+                            <div>
+                                <div class="highlight-box mb-2">
+                                    <h4>HTML</h4>
+                                    <pre class="code-block"><span class="code-lang-label">html</span><code class="language-html">&lt;input
+  id="search-box"
+  type="text"
+  placeholder="Search..."
+&gt;</code></pre>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="highlight-box mb-2">
+                                    <h4>JS: live feedback + Enter shortcut</h4>
+                                    <pre class="code-block"><span class="code-lang-label">js</span><code class="language-js">
+const searchBox = document.getElementById('search-box');
+
+// Live feedback (every character)
+searchBox.addEventListener('input', (event) =&gt; {
+  console.log('User is typing:', event.target.value);
+});
+
+// Submit on Enter key
+searchBox.addEventListener('keydown', (event) =&gt; {
+  if (event.key === 'Enter') {
+    console.log('User pressed Enter with query:', event.target.value);
+    // triggerSearch(event.target.value);
+  }
+});</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </details>
+            </section>
+
+            <!-- 3. addEventListener vs inline handlers -->
+            <section id="addeventlistener-vs-inline" class="section-card">
+                <div class="section-title">3. addEventListener() vs Inline Handlers</div>
+                <div class="section-subtitle">
+                    Why modern JavaScript prefers addEventListener over inline attributes like onclick.
+                </div>
+
+                <!-- Executive comparison -->
+                <details open>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">High-level comparison</span>
+                        <span class="summary-pill">Concept</span>
+                    </summary>
+                    <div class="details-body">
+                        <p>
+                            There are two main styles to attach event handlers in the browser:
+                        </p>
+                        <ul>
+                            <li><strong>Inline HTML handlers</strong> – <span class="inline-code">&lt;button onclick="doSomething()"&gt;</span></li>
+                            <li><strong>JavaScript listeners</strong> – <span class="inline-code">element.addEventListener('click', handler)</span></li>
+                        </ul>
+                        <p>
+                            Modern code almost always prefers <span class="inline-code">addEventListener</span> because:
+                        </p>
+                        <ul>
+                            <li>It keeps HTML and JS responsibilities separated (better maintainability).</li>
+                            <li>Allows <strong>multiple handlers</strong> for the same event.</li>
+                            <li>Works well with tools, bundlers, frameworks, and testing.</li>
+                            <li>Avoids security and debugging problems from inline code strings.</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <!-- Syntax comparison -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Syntax: inline handler vs addEventListener</span>
+                        <span class="summary-pill">Syntax</span>
+                    </summary>
+                    <div class="details-body">
+                        <div class="grid-2">
+                            <div>
+                                <div class="highlight-box mb-2">
+                                    <h4>Inline HTML handler (legacy style)</h4>
+                                    <pre class="code-block"><span class="code-lang-label">html</span><code class="language-html">&lt;button onclick="handleClick()"&gt;Click me&lt;/button&gt;
+
+&lt;script&gt;
+  function handleClick() {
+    alert('Inline handler clicked');
+  }
+&lt;/script&gt;</code></pre>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="highlight-box mb-2">
+                                    <h4>addEventListener (recommended)</h4>
+                                    <pre class="code-block"><span class="code-lang-label">html</span><code class="language-html">&lt;button id="btn"&gt;Click me&lt;/button&gt;
+
+&lt;script&gt;
+  const btn = document.getElementById('btn');
+
+  btn.addEventListener('click', () =&gt; {
+    alert('Modern handler clicked');
+  });
+&lt;/script&gt;</code></pre>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tip-box">
+                            <div class="tip-title">Cleaner separation</div>
+                            <div class="text-muted-soft">
+                                Treat HTML as structure (what is on the page) and JS as behavior (what it does). Mixing
+                                JavaScript strings inside HTML attributes makes refactoring and testing harder.
+                            </div>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Multiple handlers & options -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Multiple listeners, capture, once, passive</span>
+                        <span class="summary-pill">Options</span>
+                    </summary>
+                    <div class="details-body">
+                        <p>
+                            <span class="inline-code">addEventListener</span> also supports <strong>options</strong>:
+                        </p>
+
+                        <div class="api-signature mb-2">
+                            element.addEventListener(type, listener, options)
+                        </div>
+                        <ul>
+                            <li><span class="inline-code">options.capture</span> – listen in the capture phase (true/false).</li>
+                            <li><span class="inline-code">options.once</span> – automatically remove listener after first call.</li>
+                            <li><span class="inline-code">options.passive</span> – hint that listener will not call <span class="inline-code">preventDefault()</span> (performance for scroll/touch).</li>
+                        </ul>
+
+                        <pre class="code-block"><span class="code-lang-label">js</span><code class="language-js">
+const button = document.getElementById('save-btn');
+
+// 1. Two separate handlers
+button.addEventListener('click', () =&gt; {
+  console.log('Handler A');
+});
+
+button.addEventListener('click', () =&gt; {
+  console.log('Handler B');
+});
+
+// 2. One-time handler
+button.addEventListener('click', () =&gt; {
+  console.log('This will run only once');
+}, { once: true });
+
+// 3. Passive scroll listener
+window.addEventListener('scroll', () =&gt; {
+  // cannot call preventDefault() here
+  // but browser can optimize scrolling
+}, { passive: true });</code></pre>
+                    </div>
+                </details>
+
+                <!-- Pitfalls -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Pitfalls of inline handlers</span>
+                        <span class="summary-pill">Pitfalls</span>
+                    </summary>
+                    <div class="details-body">
+                        <ul class="step-list">
+                            <li>
+                                <span class="warning-text">String-based code:</span> inline handlers are strings that are
+                                evaluated in a global context; this is harder to analyze statically and can be less secure.
+                            </li>
+                            <li>
+                                <strong>Global function dependency:</strong> functions must be in the global scope to be
+                                accessible from inline handlers.
+                            </li>
+                            <li>
+                                <strong>No easy removal:</strong> removing or changing an inline handler requires DOM
+                                manipulation, whereas <span class="inline-code">removeEventListener</span> unbinds behavior in JS.
+                            </li>
+                        </ul>
+                    </div>
+                </details>
+            </section>
+
+            <!-- 4. Event Object -->
+            <section id="event-object" class="section-card">
+                <div class="section-title">4. Event Object Properties</div>
+                <div class="section-subtitle">
+                    Every event comes with a detailed event object containing context such as target, type, coordinates,
+                    keys, and control APIs.
+                </div>
+
+                <!-- Executive summary -->
+                <details open>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">What is the event object?</span>
+                        <span class="summary-pill">Concept</span>
+                    </summary>
+                    <div class="details-body">
+                        <p>
+                            When you register a handler like:
+                            <span class="inline-code">element.addEventListener('click', (event) =&gt; { ... })</span>,
+                            the browser automatically creates an <strong>event object</strong> and passes it to your
+                            function. This object:
+                        </p>
+                        <ul>
+                            <li>Describes <strong>what happened</strong> (event type, time, etc.).</li>
+                            <li>Tells you <strong>where it happened</strong> (target element, coordinates).</li>
+                            <li>Gives you <strong>control functions</strong> (<span class="inline-code">preventDefault()</span>, <span class="inline-code">stopPropagation()</span>).</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <!-- Core properties -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Core universal properties</span>
+                        <span class="summary-pill">Properties</span>
+                    </summary>
+                    <div class="details-body">
+                        <p>Some properties exist on almost all event types:</p>
+                        <ul>
+                            <li><span class="inline-code">event.type</span> – string, e.g. <span class="inline-code">'click'</span>.</li>
+                            <li><span class="inline-code">event.target</span> – original DOM element that triggered the event.</li>
+                            <li><span class="inline-code">event.currentTarget</span> – element whose listener is currently running.</li>
+                            <li><span class="inline-code">event.timeStamp</span> – time (ms) when event was created.</li>
+                            <li><span class="inline-code">event.bubbles</span> – does it bubble?</li>
+                            <li><span class="inline-code">event.cancelable</span> – can <span class="inline-code">preventDefault()</span> be used?</li>
+                        </ul>
+
+                        <pre class="code-block"><span class="code-lang-label">js</span><code class="language-js">
+document.addEventListener('click', (event) =&gt; {
+  console.log('type:', event.type);              // "click"
+  console.log('target:', event.target);          // deepest element clicked
+  console.log('currentTarget:', event.currentTarget); // document
+  console.log('timeStamp:', event.timeStamp);
+});</code></pre>
+
+                        <div class="tip-box">
+                            <div class="tip-title">target vs currentTarget</div>
+                            <div class="text-muted-soft">
+                                <span class="inline-code">target</span> is the original element where the event started.
+                                <span class="inline-code">currentTarget</span> is the element whose handler is currently
+                                running — very important for event delegation.
+                            </div>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Mouse & keyboard specific properties -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Mouse &amp; keyboard specific properties</span>
+                        <span class="summary-pill">Properties</span>
+                    </summary>
+                    <div class="details-body">
+                        <div class="grid-2">
+                            <div>
+                                <div class="highlight-box mb-2">
+                                    <h4>Mouse events (MouseEvent)</h4>
+                                    <ul>
+                                        <li><span class="inline-code">event.clientX</span>, <span class="inline-code">event.clientY</span> – position in viewport.</li>
+                                        <li><span class="inline-code">event.pageX</span>, <span class="inline-code">event.pageY</span> – position in document.</li>
+                                        <li><span class="inline-code">event.button</span> – which mouse button (0 = left).</li>
+                                        <li><span class="inline-code">event.ctrlKey</span>, <span class="inline-code">event.shiftKey</span> – modifier keys.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="highlight-box mb-2">
+                                    <h4>Keyboard events (KeyboardEvent)</h4>
+                                    <ul>
+                                        <li><span class="inline-code">event.key</span> – human-readable key, e.g. <span class="inline-code">'a'</span>, <span class="inline-code">'Enter'</span>.</li>
+                                        <li><span class="inline-code">event.code</span> – physical key on the keyboard, e.g. <span class="inline-code">'KeyA'</span>, <span class="inline-code">'ArrowUp'</span>.</li>
+                                        <li><span class="inline-code">event.altKey</span>, <span class="inline-code">event.metaKey</span>, etc.</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <pre class="code-block"><span class="code-lang-label">js</span><code class="language-js">
+// Log mouse coordinates on click
+document.addEventListener('click', (event) =&gt; {
+  console.log(`Clicked at (x=${event.clientX}, y=${event.clientY})`);
+});
+
+// Use keyboard shortcuts
+document.addEventListener('keydown', (event) =&gt; {
+  if (event.key === 'Escape') {
+    console.log('ESC pressed, close modal');
+  }
+  if (event.ctrlKey &amp;&amp; event.key === 's') {
+    event.preventDefault(); // avoid default browser "Save page" dialog
+    console.log('Ctrl+S shortcut triggered');
+  }
+});</code></pre>
+                    </div>
+                </details>
+
+                <!-- Control methods -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Control methods: preventDefault &amp; stopPropagation</span>
+                        <span class="summary-pill">Control</span>
+                    </summary>
+                    <div class="details-body">
+                        <ul>
+                            <li>
+                                <span class="inline-code">event.preventDefault()</span> – cancel the <strong>default behavior</strong> (e.g. form submit, link navigation, text selection) if event is cancelable.
+                            </li>
+                            <li>
+                                <span class="inline-code">event.stopPropagation()</span> – stop the event from bubbling further up the DOM tree.
+                            </li>
+                            <li>
+                                <span class="inline-code">event.stopImmediatePropagation()</span> – stop other listeners on the same element.
+                            </li>
+                        </ul>
+
+                        <div class="grid-2">
+                            <div>
+                                <div class="highlight-box mb-2">
+                                    <h4>Example: blocking link navigation</h4>
+                                    <pre class="code-block"><span class="code-lang-label">js</span><code class="language-js">
+const link = document.querySelector('a.prevent-nav');
+
+link.addEventListener('click', (event) =&gt; {
+  event.preventDefault(); // stop browser from navigating
+  console.log('Link click intercepted. Do SPA navigation instead.');
+});</code></pre>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="highlight-box mb-2">
+                                    <h4>Example: stopping propagation</h4>
+                                    <pre class="code-block"><span class="code-lang-label">js</span><code class="language-js">
+const outer = document.getElementById('outer');
+const inner = document.getElementById('inner');
+
+outer.addEventListener('click', () =&gt; {
+  console.log('Outer clicked');
+});
+
+inner.addEventListener('click', (event) =&gt; {
+  console.log('Inner clicked only');
+  event.stopPropagation(); // prevent bubbling to outer
+});</code></pre>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tip-box">
+                            <div class="tip-title">Use cautiously</div>
+                            <div class="text-muted-soft">
+                                Overusing <span class="inline-code">stopPropagation()</span> can make components hard to
+                                integrate together. Prefer it only when a parent’s generic behavior would clearly conflict.
+                            </div>
+                        </div>
+                    </div>
+                </details>
+            </section>
+
+            <!-- 5. Event timing & lifecycle -->
+            <section id="event-lifecycle" class="section-card">
+                <div class="section-title">5. Event Timing &amp; Lifecycle</div>
+                <div class="section-subtitle">
+                    How events travel through the DOM: capture phase, target phase, and bubbling phase, and how this fits
+                    into the event loop.
+                </div>
+
+                <!-- Executive summary -->
+                <details open>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Three phases of event propagation</span>
+                        <span class="summary-pill">Concept</span>
+                    </summary>
+                    <div class="details-body">
+                        <p>
+                            Most DOM events travel through three conceptual phases:
+                        </p>
+                        <ol class="step-list">
+                            <li><strong>Capturing phase</strong> – from the window down to the target element.</li>
+                            <li><strong>Target phase</strong> – the event reaches the actual target element.</li>
+                            <li><strong>Bubbling phase</strong> – the event bubbles up from the target to the window.</li>
+                        </ol>
+                        <p>
+                            You can attach listeners for:
+                        </p>
+                        <ul>
+                            <li>Capture phase listeners (using <span class="inline-code">{ capture: true }</span>).</li>
+                            <li>Bubble phase listeners (default, capture false).</li>
+                        </ul>
+                        <p>
+                            This is the mechanism that makes <strong>event delegation</strong> possible: a parent element
+                            can listen for events that originate from its children.
+                        </p>
+                    </div>
+                </details>
+
+                <!-- Diagram via explanation -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Text diagram: event path in nested elements</span>
+                        <span class="summary-pill">Theory</span>
+                    </summary>
+                    <div class="details-body">
+                        <p>Consider this DOM:</p>
+                        <pre class="code-block"><span class="code-lang-label">html</span><code class="language-html">&lt;div id="outer"&gt;
+  &lt;div id="middle"&gt;
+    &lt;button id="inner"&gt;Click me&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;</code></pre>
+
+                        <p>
+                            When you click the button, the event path is conceptually:
+                        </p>
+                        <pre class="code-block"><span class="code-lang-label">text</span><code>
+// Capture phase:
+window → document → &lt;html&gt; → &lt;body&gt; → #outer → #middle → #inner
+
+// Target phase:
+#inner (the clicked button)
+
+// Bubble phase:
+#inner → #middle → #outer → &lt;body&gt; → &lt;html&gt; → document → window</code></pre>
+
+                        <p>
+                            At each step, if a listener is registered for that phase, it can run and potentially
+                            <span class="inline-code">stopPropagation()</span> to prevent further listeners from seeing the event.
+                        </p>
+                    </div>
+                </details>
+
+                <!-- Capture vs bubble example -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Example: logging capture vs bubble</span>
+                        <span class="summary-pill">Example</span>
+                    </summary>
+                    <div class="details-body">
+                        <pre class="code-block"><span class="code-lang-label">js</span><code class="language-js">
+const outer = document.getElementById('outer');
+const inner = document.getElementById('inner');
+
+// Capture listeners
+document.addEventListener('click', () =&gt; {
+  console.log('Document capture');
+}, { capture: true });
+
+outer.addEventListener('click', () =&gt; {
+  console.log('Outer capture');
+}, { capture: true });
+
+// Bubble listeners
+outer.addEventListener('click', () =&gt; {
+  console.log('Outer bubble');
+});
+
+document.addEventListener('click', () =&gt; {
+  console.log('Document bubble');
+});
+
+// When clicking #inner the log order will show the phases:
+// Document capture → Outer capture → ... target ... → Outer bubble → Document bubble</code></pre>
+
+                        <div class="tip-box">
+                            <div class="tip-title">Practical tip</div>
+                            <div class="text-muted-soft">
+                                Most real-world code uses bubble-phase listeners only (default). Capture is useful for
+                                very global behaviors like analytics or “global click outside to close” patterns.
+                            </div>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Event loop timing -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Event loop timing: where do events sit?</span>
+                        <span class="summary-pill">Timing</span>
+                    </summary>
+                    <div class="details-body">
+                        <p>
+                            At a slightly more advanced level, events are just one of many things processed by the
+                            <strong>event loop</strong> along with:
+                        </p>
+                        <ul>
+                            <li>Microtasks (Promises callbacks).</li>
+                            <li>Timers (<span class="inline-code">setTimeout</span>, <span class="inline-code">setInterval</span>).</li>
+                            <li>Render / paint steps.</li>
+                        </ul>
+                        <p>
+                            The exact ordering rules can get complex, but a simple mental model:
+                        </p>
+                        <ol class="step-list">
+                            <li>JavaScript runs current task (e.g. an event handler).</li>
+                            <li>After it finishes, microtasks (like resolved promise handlers) run.</li>
+                            <li>Then the browser may paint the UI.</li>
+                            <li>Then the event loop moves to the next event or timer.</li>
+                        </ol>
+                        <p>
+                            This is why it is usually safe to mutate the DOM inside an event handler: the browser will
+                            apply changes and repaint after the handler and its microtasks complete.
+                        </p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- 6. Integration Patterns -->
+            <section id="integration-patterns" class="section-card">
+                <div class="section-title">6. Integration Patterns &amp; Best Practices</div>
+                <div class="section-subtitle">
+                    How to use events sanely in large applications: delegation, cleanup, and performance-aware patterns.
+                </div>
+
+                <!-- Event delegation -->
+                <details open>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Pattern: event delegation for dynamic lists</span>
+                        <span class="summary-pill">Pattern</span>
+                    </summary>
+                    <div class="details-body">
+                        <p>
+                            <strong>Event delegation</strong> means: instead of attaching a listener to every item, you
+                            attach a single listener to a common ancestor and use <span class="inline-code">event.target</span>
+                            to figure out which child was clicked.
+                        </p>
+                        <p>This is especially powerful for dynamic content (items added/removed at runtime).</p>
+
+                        <div class="grid-2">
+                            <div>
+                                <div class="highlight-box mb-2">
+                                    <h4>HTML: dynamic list</h4>
+                                    <pre class="code-block"><span class="code-lang-label">html</span><code class="language-html">&lt;ul id="todo-list"&gt;
+  &lt;li data-id="1"&gt;Buy milk&lt;/li&gt;
+  &lt;li data-id="2"&gt;Read book&lt;/li&gt;
+  &lt;!-- More items may be added dynamically --&gt;
+&lt;/ul&gt;</code></pre>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="highlight-box mb-2">
+                                    <h4>JS: delegated click handler</h4>
+                                    <pre class="code-block"><span class="code-lang-label">js</span><code class="language-js">
+const list = document.getElementById('todo-list');
+
+list.addEventListener('click', (event) =&gt; {
+  const li = event.target.closest('li');
+  if (!li || !list.contains(li)) return;
+
+  const id = li.getAttribute('data-id');
+  console.log('Clicked todo item with id:', id);
+});</code></pre>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="tip-box">
+                            <div class="tip-title">Benefits</div>
+                            <div class="text-muted-soft">
+                                Event delegation reduces the number of listeners, improves performance, and automatically
+                                handles newly-added items without needing to attach new handlers.
+                            </div>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Cleanup & memory leaks -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Pattern: cleaning up listeners to avoid memory leaks</span>
+                        <span class="summary-pill">Pattern</span>
+                    </summary>
+                    <div class="details-body">
+                        <p>
+                            In long-lived single-page applications, forgetting to remove event listeners when DOM
+                            elements are removed can keep objects alive in memory unnecessarily.
+                        </p>
+
+                        <pre class="code-block"><span class="code-lang-label">js</span><code class="language-js">
+function attachTemporaryListener() {
+  const modal = document.getElementById('my-modal');
+  const closeBtn = modal.querySelector('.close');
+
+  function handleClose() {
+    modal.remove();
+    // Remove listener when no longer needed
+    closeBtn.removeEventListener('click', handleClose);
+  }
+
+  closeBtn.addEventListener('click', handleClose);
+}</code></pre>
+
+                        <div class="tip-box">
+                            <div class="tip-title">Rule of thumb</div>
+                            <div class="text-muted-soft">
+                                If you add listeners to elements that may be removed or replaced, make sure you
+                                have a clear point where you call <span class="inline-code">removeEventListener</span>, or
+                                use delegation so the listener stays on a stable ancestor element.
+                            </div>
+                        </div>
+                    </div>
+                </details>
+
+                <!-- Putting everything together -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Integrated example: form with validation and keyboard shortcuts</span>
+                        <span class="summary-pill">Example</span>
+                    </summary>
+                    <div class="details-body">
+                        <p>
+                            Let us combine multiple ideas: event types, event objects, preventDefault, and delegation.
+                        </p>
+
+                        <pre class="code-block"><span class="code-lang-label">html</span><code class="language-html">&lt;form id="login-form"&gt;
+  &lt;input id="email" type="email" placeholder="Email"&gt;
+  &lt;input id="password" type="password" placeholder="Password"&gt;
+  &lt;button type="submit"&gt;Login&lt;/button&gt;
+&lt;/form&gt;
+
+&lt;div id="messages"&gt;&lt;/div&gt;</code></pre>
+
+                        <pre class="code-block"><span class="code-lang-label">js</span><code class="language-js">
+const form = document.getElementById('login-form');
+const messages = document.getElementById('messages');
+
+function showMessage(text, type = 'info') {
+  messages.textContent = text;
+  messages.setAttribute('data-type', type);
+}
+
+// Form submit handler
+form.addEventListener('submit', (event) =&gt; {
+  event.preventDefault(); // avoid full page reload
+
+  const email = form.email.value.trim();
+  const password = form.password.value;
+
+  if (!email || !password) {
+    showMessage('Please fill in all fields', 'error');
+    return;
+  }
+
+  // Fake async login
+  showMessage('Logging in...');
+  setTimeout(() =&gt; {
+    showMessage('Logged in successfully!', 'success');
+  }, 1000);
+});
+
+// Keyboard shortcut: Ctrl+Enter to submit
+form.addEventListener('keydown', (event) =&gt; {
+  if (event.ctrlKey &amp;&amp; event.key === 'Enter') {
+    event.preventDefault();
+    form.requestSubmit(); // HTML5 API to trigger submit programmatically
+  }
+});</code></pre>
+                    </div>
+                </details>
+
+                <!-- Final summary -->
+                <details>
+                    <summary>
+                        <span class="summary-icon">▶</span>
+                        <span class="summary-label">Final mental model &amp; checklist</span>
+                        <span class="summary-pill">Summary</span>
+                    </summary>
+                    <div class="details-body">
+                        <p><strong>Core mental model:</strong></p>
+                        <ul>
+                            <li>The browser maintains an event queue; your handlers are callbacks attached to event types.</li>
+                            <li><span class="inline-code">addEventListener</span> is the modern, flexible way to attach handlers.</li>
+                            <li>Every event comes with an event object carrying context and control methods.</li>
+                            <li>Events propagate through capture → target → bubble phases, enabling delegation.</li>
+                        </ul>
+                        <p><strong>When designing event-based code, ask:</strong></p>
+                        <ul>
+                            <li>Which element should own the listener? Individual item or parent (delegation)?</li>
+                            <li>Do I need to prevent the default browser behavior?</li>
+                            <li>Do I need to clean up this listener when the UI changes?</li>
+                            <li>Is the work inside the handler lightweight enough not to block the UI?</li>
+                        </ul>
+                        <p>
+                            Mastering these fundamentals makes advanced topics like custom events, reactive frameworks,
+                            and complex UI patterns feel much more natural and predictable.
+                        </p>
+                    </div>
+                </details>
+            </section>
+        </main>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL"
+        crossorigin="anonymous"></script>
+
+    <!-- Custom JS utilities: smooth scrolling, TOC search, expand/collapse all, simple syntax highlighting -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Smooth scrolling for TOC links
+            const tocLinks = document.querySelectorAll('.toc-link[data-scroll]');
+
+            tocLinks.forEach(link => {
+                link.addEventListener('click', (event) => {
+                    event.preventDefault();
+                    const targetId = link.getAttribute('href');
+                    const targetEl = document.querySelector(targetId);
+                    if (!targetEl) return;
+
+                    targetEl.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+
+                    // highlight active link
+                    tocLinks.forEach(l => l.classList.remove('active'));
+                    link.classList.add('active');
+                });
+            });
+
+            // TOC search filter
+            const tocSearchInput = document.getElementById('tocSearchInput');
+            const tocList = document.getElementById('tocList');
+            if (tocSearchInput && tocList) {
+                tocSearchInput.addEventListener('input', () => {
+                    const query = tocSearchInput.value.trim().toLowerCase();
+                    const items = tocList.querySelectorAll('.toc-item');
+
+                    items.forEach(item => {
+                        const link = item.querySelector('.toc-link');
+                        if (!link) return;
+                        const text = link.textContent.toLowerCase();
+                        item.style.display = text.includes(query) ? '' : 'none';
+                    });
+                });
+            }
+
+            // Expand / collapse all <details>
+            const allDetails = Array.from(document.querySelectorAll('details'));
+            const btnExpandAll = document.getElementById('btnExpandAll');
+            const btnCollapseAll = document.getElementById('btnCollapseAll');
+
+            if (btnExpandAll) {
+                btnExpandAll.addEventListener('click', () => {
+                    allDetails.forEach(d => d.open = true);
+                });
+            }
+
+            if (btnCollapseAll) {
+                btnCollapseAll.addEventListener('click', () => {
+                    allDetails.forEach(d => d.open = false);
+                });
+            }
+
+            // Simple syntax highlighting for code blocks
+            function escapeHtml(str) {
+                return str
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;');
+            }
+
+            function highlightCode(codeEl) {
+                const rawText = codeEl.textContent;
+                let html = escapeHtml(rawText);
+
+                // Comments
+                html = html.replace(/(\/\/.*?$)/gm, '<span class="token-comment">$1</span>');
+
+                // Strings
+                html = html.replace(/(".*?"|\'.*?\'|\`.*?\`)/g, '<span class="token-string">$1</span>');
+
+                // Numbers
+                html = html.replace(/\b(\d+(\.\d+)?)\b/g, '<span class="token-number">$1</span>');
+
+                // Keywords (basic set)
+                const keywordPattern = /\b(const|let|var|function|return|if|else|for|while|class|new|this|super|extends|null|true|false|async|await)\b/g;
+                html = html.replace(keywordPattern, '<span class="token-keyword">$1</span>');
+
+                // Properties / methods (simple heuristic: .something)
+                html = html.replace(/(\.[a-zA-Z_$][\w$]*)/g, '<span class="token-property">$1</span>');
+
+                codeEl.innerHTML = html;
+            }
+
+            document.querySelectorAll('pre code.language-js, pre code.language-html, pre code.language-css').forEach(codeEl => {
+                highlightCode(codeEl);
+            });
+        });
+    </script>
+</body>
+
+</html>
