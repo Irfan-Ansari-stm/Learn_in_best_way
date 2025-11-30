@@ -1,0 +1,2396 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Learning Notes: React Ecosystem Deep Dive</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00f5ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --border-color: #1a3b5f;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Roboto', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            background-color: #0c213a;
+            border-right: 1px solid var(--border-color);
+            height: 100vh;
+            position: fixed;
+            width: 300px;
+            overflow-y: auto;
+            padding: 1rem;
+            box-shadow: 2px 0 10px rgba(0, 245, 255, 0.1);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 2rem;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.3rem;
+            margin-top: 2rem;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: var(--amber);
+        }
+
+        .toc-item {
+            margin: 0.5rem 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            color: var(--text-light);
+        }
+
+        .toc-item:hover {
+            background-color: rgba(0, 245, 255, 0.1);
+        }
+
+        .toc-item.active {
+            background-color: rgba(0, 245, 255, 0.2);
+            border-left: 3px solid var(--cyan);
+        }
+
+        .toc-subitem {
+            margin-left: 1.5rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 4px;
+            color: #a0cfe8;
+            font-size: 0.9rem;
+        }
+
+        .toc-subitem:hover {
+            background-color: rgba(0, 245, 255, 0.1);
+        }
+
+        .code-block {
+            background-color: #0f1e33;
+            border-left: 4px solid var(--amber);
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .highlight {
+            color: var(--amber);
+            font-weight: bold;
+        }
+
+        .details-summary {
+            cursor: pointer;
+            padding: 0.8rem;
+            background-color: #0f223a;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .details-summary:hover {
+            background-color: #132a4a;
+            box-shadow: 0 2px 6px rgba(0, 245, 255, 0.15);
+        }
+
+        .details-content {
+            padding: 1rem;
+            background-color: #0d1e35;
+            border-radius: 0 0 6px 6px;
+            border: 1px solid var(--border-color);
+            border-top: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-control {
+            background-color: rgba(0, 245, 255, 0.1);
+            color: var(--cyan);
+            border: 1px solid var(--cyan);
+            margin: 0.5rem 0;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .btn-control:hover {
+            background-color: rgba(0, 245, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .author-info {
+            color: var(--amber);
+            font-style: italic;
+            margin: 1rem 0;
+            padding: 0.8rem;
+            background-color: rgba(255, 183, 77, 0.1);
+            border-radius: 6px;
+            border-left: 3px solid var(--amber);
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: #000;
+            font-weight: bold;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+
+        .section-marker {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background-color: var(--amber);
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 245, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 245, 255, 0.5);
+        }
+
+        .search-input {
+            background-color: #0f1e33;
+            border: 1px solid var(--border-color);
+            color: var(--text-light);
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border-radius: 4px;
+            width: 100%;
+        }
+
+        .sub-header {
+            color: var(--amber);
+            font-size: 1.2rem;
+            margin: 1.5rem 0 1rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        .definition-box {
+            border-left: 3px solid var(--cyan);
+            background-color: rgba(0, 245, 255, 0.05);
+            padding: 0.8rem;
+            margin: 1rem 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .example-box {
+            border-left: 3px solid var(--amber);
+            background-color: rgba(255, 183, 77, 0.08);
+            padding: 0.8rem;
+            margin: 1rem 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .uses-box {
+            border-left: 3px solid #8bc34a;
+            background-color: rgba(139, 195, 74, 0.08);
+            padding: 0.8rem;
+            margin: 1rem 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .comparison-table th, .comparison-table td {
+            border: 1px solid var(--border-color) !important;
+        }
+
+        .code-comment {
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        .warning-box {
+            border-left: 3px solid #ff6b6b;
+            background-color: rgba(255, 107, 107, 0.1);
+            padding: 0.8rem;
+            margin: 1rem 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .tip-box {
+            border-left: 3px solid #4caf50;
+            background-color: rgba(76, 175, 80, 0.1);
+            padding: 0.8rem;
+            margin: 1rem 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .tool-badge {
+            background-color: rgba(0, 245, 255, 0.1);
+            color: var(--cyan);
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.8rem;
+            display: inline-block;
+            margin: 0 0.2rem;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .logo-container img {
+            height: 30px;
+            filter: brightness(0) invert(1);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid p-0 m-0">
+    <div class="row g-0">
+        <!-- Left Panel -->
+        <div class="col-auto left-panel">
+            <h3 class="text-center mb-4">React Ecosystem Deep Dive</h3>
+            <p class="author-info">By: Advanced React Architecture Tutor</p>
+
+            <div class="mb-3">
+                <input type="text" class="form-control search-input" id="searchToc" placeholder="Search topics...">
+            </div>
+
+            <button class="btn btn-control w-100" id="expandAll">Expand All</button>
+            <button class="btn btn-control w-100" id="collapseAll">Collapse All</button>
+
+            <div class="mt-4">
+                <h5 class="text-muted mb-3">Table of Contents</h5>
+                <ul class="list-unstyled">
+                    <li>
+                        <div class="toc-item" data-target="#section-21-1">
+                            <span class="section-marker"></span>21.1 UI Component Libraries (MUI, Chakra UI, Ant Design)
+                        </div>
+                        <ul class="list-unstyled ms-3" id="section-21-1">
+                            <li><div class="toc-subitem" data-scroll="def-ui-libraries">Definition</div></li>
+                            <li><div class="toc-subitem" data-scroll="detail-ui-libraries">Detail</div></li>
+                            <li><div class="toc-subitem" data-scroll="syntax-ui-libraries">Syntax & Examples</div></li>
+                            <li><div class="toc-subitem" data-scroll="example-ui-libraries">Example</div></li>
+                            <li><div class="toc-subitem" data-scroll="uses-ui-libraries">Uses</div></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <div class="toc-item" data-target="#section-21-2">
+                            <span class="section-marker"></span>21.2 Development Tools and Extensions
+                        </div>
+                        <ul class="list-unstyled ms-3" id="section-21-2">
+                            <li><div class="toc-subitem" data-scroll="def-dev-tools">Definition</div></li>
+                            <li><div class="toc-subitem" data-scroll="detail-dev-tools">Detail</div></li>
+                            <li><div class="toc-subitem" data-scroll="syntax-dev-tools">Syntax & Tools</div></li>
+                            <li><div class="toc-subitem" data-scroll="example-dev-tools">Example</div></li>
+                            <li><div class="toc-subitem" data-scroll="uses-dev-tools">Uses</div></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <div class="toc-item" data-target="#section-21-3">
+                            <span class="section-marker"></span>21.3 Build Tools (Webpack, Vite, Parcel)
+                        </div>
+                        <ul class="list-unstyled ms-3" id="section-21-3">
+                            <li><div class="toc-subitem" data-scroll="def-build-tools">Definition</div></li>
+                            <li><div class="toc-subitem" data-scroll="detail-build-tools">Detail</div></li>
+                            <li><div class="toc-subitem" data-scroll="syntax-build-tools">Syntax & Comparison</div></li>
+                            <li><div class="toc-subitem" data-scroll="example-build-tools">Example</div></li>
+                            <li><div class="toc-subitem" data-scroll="uses-build-tools">Uses</div></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <div class="toc-item" data-target="#section-21-4">
+                            <span class="section-marker"></span>21.4 TypeScript with React
+                        </div>
+                        <ul class="list-unstyled ms-3" id="section-21-4">
+                            <li><div class="toc-subitem" data-scroll="def-typescript">Definition</div></li>
+                            <li><div class="toc-subitem" data-scroll="detail-typescript">Detail</div></li>
+                            <li><div class="toc-subitem" data-scroll="syntax-typescript">Syntax & Examples</div></li>
+                            <li><div class="toc-subitem" data-scroll="example-typescript">Example</div></li>
+                            <li><div class="toc-subitem" data-scroll="uses-typescript">Uses</div></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <div class="toc-item" data-target="#section-21-5">
+                            <span class="section-marker"></span>21.5 Storybook for Component Development
+                        </div>
+                        <ul class="list-unstyled ms-3" id="section-21-5">
+                            <li><div class="toc-subitem" data-scroll="def-storybook">Definition</div></li>
+                            <li><div class="toc-subitem" data-scroll="detail-storybook">Detail</div></li>
+                            <li><div class="toc-subitem" data-scroll="syntax-storybook">Syntax & Setup</div></li>
+                            <li><div class="toc-subitem" data-scroll="example-storybook">Example</div></li>
+                            <li><div class="toc-subitem" data-scroll="uses-storybook">Uses</div></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <div class="toc-item" data-target="#section-21-6">
+                            <span class="section-marker"></span>21.6 ESLint and Prettier Configuration
+                        </div>
+                        <ul class="list-unstyled ms-3" id="section-21-6">
+                            <li><div class="toc-subitem" data-scroll="def-eslint-prettier">Definition</div></li>
+                            <li><div class="toc-subitem" data-scroll="detail-eslint-prettier">Detail</div></li>
+                            <li><div class="toc-subitem" data-scroll="syntax-eslint-prettier">Syntax & Configuration</div></li>
+                            <li><div class="toc-subitem" data-scroll="example-eslint-prettier">Example</div></li>
+                            <li><div class="toc-subitem" data-scroll="uses-eslint-prettier">Uses</div></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <div class="toc-item" data-target="#section-21-7">
+                            <span class="section-marker"></span>21.7 Husky and Git Hooks
+                        </div>
+                        <ul class="list-unstyled ms-3" id="section-21-7">
+                            <li><div class="toc-subitem" data-scroll="def-husky">Definition</div></li>
+                            <li><div class="toc-subitem" data-scroll="detail-husky">Detail</div></li>
+                            <li><div class="toc-subitem" data-scroll="syntax-husky">Syntax & Configuration</div></li>
+                            <li><div class="toc-subitem" data-scroll="example-husky">Example</div></li>
+                            <li><div class="toc-subitem" data-scroll="uses-husky">Uses</div></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="col right-panel">
+            <h1>React Ecosystem Deep Dive</h1>
+            <h4 class="text-muted">Mastering the Modern React Toolchain</h4>
+
+            <!-- Section 21.1 -->
+            <section id="section-21-1">
+                <h2>21.1 UI Component Libraries (MUI, Chakra UI, Ant Design)</h2>
+                
+                <details>
+                    <summary class="details-summary">Definition</summary>
+                    <div class="details-content definition-box">
+                        <p>UI component libraries are collections of pre-built, reusable, and customizable components that follow design systems to accelerate frontend development.</p>
+                        <p>They provide everything from buttons and forms to complex layouts and data grids — with consistent styling and accessibility built-in.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Detail</summary>
+                    <div class="details-content">
+                        <p><strong>Why use component libraries?</strong></p>
+                        <ul>
+                            <li>Speed up development — no need to build from scratch</li>
+                            <li>Ensure consistency across your application</li>
+                            <li>Improve accessibility compliance</li>
+                            <li>Reduce CSS maintenance overhead</li>
+                            <li>Follow modern design principles</li>
+                        </ul>
+                        
+                        <p><strong>Key Differences Between Major Libraries:</strong></p>
+                        <table class="table table-dark mt-3 comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>Feature</th>
+                                    <th>MUI (Material UI)</th>
+                                    <th>Chakra UI</th>
+                                    <th>Ant Design</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Design System</td>
+                                    <td>Google Material Design</td>
+                                    <td>Custom (Accessible-first)</td>
+                                    <td>Enterprise (Ant Design)</td>
+                                </tr>
+                                <tr>
+                                    <td>Styling Approach</td>
+                                    <td>CSS-in-JS (Emotion)</td>
+                                    <td>CSS-in-JS (Styled-system)</td>
+                                    <td>Less + CSS Modules</td>
+                                </tr>
+                                <tr>
+                                    <td>Component Count</td>
+                                    <td>100+</td>
+                                    <td>70+</td>
+                                    <td>80+</td>
+                                </tr>
+                                <tr>
+                                    <td>Theme Customization</td>
+                                    <td>Highly flexible</td>
+                                    <td>Extremely flexible</td>
+                                    <td>Configurable via Less variables</td>
+                                </tr>
+                                <tr>
+                                    <td>Accessibility</td>
+                                    <td>Excellent</td>
+                                    <td>Best-in-class</td>
+                                    <td>Good</td>
+                                </tr>
+                                <tr>
+                                    <td>Learning Curve</td>
+                                    <td>Moderate</td>
+                                    <td>Low</td>
+                                    <td>Medium</td>
+                                </tr>
+                                <tr>
+                                    <td>Best For</td>
+                                    <td>Enterprise apps, Google-like interfaces</td>
+                                    <td>Startups, accessible applications</td>
+                                    <td>Admin panels, enterprise dashboards</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <p><strong>When NOT to use:</strong> Simple projects with unique designs where you want full control over every pixel.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Syntax & Examples</summary>
+                    <div class="details-content">
+                        <p><strong>MUI Example:</strong></p>
+                        <pre><code class="language-jsx">// npm install @mui/material @emotion/react @emotion/styled
+import { Button, TextField, Container, Box } from '@mui/material';
+
+export default function MuiForm() {
+  return (
+    &lt;Container maxWidth="sm"&gt;
+      &lt;Box sx={{ my: 4 }}&gt;
+        &lt;TextField 
+          label="Email" 
+          variant="outlined" 
+          fullWidth 
+          margin="normal" 
+        /&gt;
+        &lt;TextField 
+          label="Password" 
+          type="password" 
+          variant="outlined" 
+          fullWidth 
+          margin="normal" 
+        /&gt;
+        &lt;Button 
+          variant="contained" 
+          color="primary" 
+          size="large" 
+          fullWidth 
+          sx={{ mt: 2 }}
+        &gt;
+          Sign In
+        &lt;/Button&gt;
+      &lt;/Box&gt;
+    &lt;/Container&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>Chakra UI Example:</strong></p>
+                        <pre><code class="language-jsx">// npm install @chakra-ui/react @emotion/react @emotion/styled framer-motion
+import { Button, Input, Stack, Container, VStack } from '@chakra-ui/react';
+
+export default function ChakraForm() {
+  return (
+    &lt;Container maxW="sm" py={8}&gt;
+      &lt;VStack spacing={4} align="stretch"&gt;
+        &lt;Input placeholder="Email" type="email" /&gt;
+        &lt;Input placeholder="Password" type="password" /&gt;
+        &lt;Button colorScheme="blue" size="lg" borderRadius="md"&gt;
+          Sign In
+        &lt;/Button&gt;
+      &lt;/VStack&gt;
+    &lt;/Container&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>Ant Design Example:</strong></p>
+                        <pre><code class="language-jsx">// npm install antd
+import { Form, Input, Button } from 'antd';
+
+export default function AntdForm() {
+  const [form] = Form.useForm();
+  
+  const onFinish = (values) =&gt; {
+    console.log('Success:', values);
+  };
+  
+  return (
+    &lt;Form 
+      form={form} 
+      name="login" 
+      onFinish={onFinish} 
+      layout="vertical"
+    &gt;
+      &lt;Form.Item 
+        name="email" 
+        label="Email" 
+        rules={[{ required: true, message: 'Please input your email!' }]}
+      &gt;
+        &lt;Input /&gt;
+      &lt;/Form.Item&gt;
+      
+      &lt;Form.Item 
+        name="password" 
+        label="Password" 
+        rules={[{ required: true, message: 'Please input your password!' }]}
+      &gt;
+        &lt;Input.Password /&gt;
+      &lt;/Form.Item&gt;
+      
+      &lt;Form.Item&gt;
+        &lt;Button type="primary" htmlType="submit" block&gt;
+          Sign In
+        &lt;/Button&gt;
+      &lt;/Form.Item&gt;
+    &lt;/Form&gt;
+  );
+}</code></pre>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Example</summary>
+                    <div class="details-content example-box">
+                        <p><strong>Scenario:</strong> Admin dashboard with complex tables and modals</p>
+                        
+                        <pre><code class="language-jsx">// Using MUI for Admin Dashboard
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, IconButton } from '@mui/material';
+import { Delete as DeleteIcon, Edit as EditIcon } from '@mui/icons-material';
+
+export default function UserManagement() {
+  const [users, setUsers] = useState([
+    { id: 1, name: 'Alice Johnson', email: 'alice@example.com', role: 'admin' },
+    { id: 2, name: 'Bob Smith', email: 'bob@example.com', role: 'user' }
+  ]);
+  
+  const [open, setOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState(null);
+  
+  const handleOpen = (user) =&gt; {
+    setEditingUser(user);
+    setOpen(true);
+  };
+  
+  const handleClose = () =&gt; {
+    setOpen(false);
+    setEditingUser(null);
+  };
+  
+  const handleDelete = (id) =&gt; {
+    setUsers(users.filter(user =&gt; user.id !== id));
+  };
+  
+  return (
+    &lt;div style={{ padding: '2rem' }}&gt;
+      &lt;Button variant="contained" color="primary" sx={{ mb: 2 }}&gt;
+        Add User
+      &lt;/Button&gt;
+      
+      &lt;TableContainer component={Paper}&gt;
+        &lt;Table&gt;
+          &lt;TableHead&gt;
+            &lt;TableRow&gt;
+              &lt;TableCell&gt;Name&lt;/TableCell&gt;
+              &lt;TableCell&gt;Email&lt;/TableCell&gt;
+              &lt;TableCell&gt;Role&lt;/TableCell&gt;
+              &lt;TableCell&gt;Actions&lt;/TableCell&gt;
+            &lt;/TableRow&gt;
+          &lt;/TableHead&gt;
+          &lt;TableBody&gt;
+            {users.map((user) =&gt; (
+              &lt;TableRow key={user.id}&gt;
+                &lt;TableCell&gt;{user.name}&lt;/TableCell&gt;
+                &lt;TableCell&gt;{user.email}&lt;/TableCell&gt;
+                &lt;TableCell&gt;{user.role}&lt;/TableCell&gt;
+                &lt;TableCell&gt;
+                  &lt;IconButton onClick={() =&gt; handleOpen(user)}&gt;
+                    &lt;EditIcon /&gt;
+                  &lt;/IconButton&gt;
+                  &lt;IconButton onClick={() =&gt; handleDelete(user.id)}&gt;
+                    &lt;DeleteIcon /&gt;
+                  &lt;/IconButton&gt;
+                &lt;/TableCell&gt;
+              &lt;/TableRow&gt;
+            ))}
+          &lt;/TableBody&gt;
+        &lt;/Table&gt;
+      &lt;/TableContainer&gt;
+      
+      &lt;Dialog open={open} onClose={handleClose}&gt;
+        &lt;DialogTitle&gt;{editingUser ? 'Edit User' : 'Add User'}&lt;/DialogTitle&gt;
+        &lt;DialogContent&gt;
+          &lt;TextField 
+            autoFocus 
+            margin="dense" 
+            label="Name" 
+            fullWidth 
+            defaultValue={editingUser?.name} 
+          /&gt;
+          &lt;TextField 
+            margin="dense" 
+            label="Email" 
+            type="email" 
+            fullWidth 
+            defaultValue={editingUser?.email} 
+          /&gt;
+          &lt;TextField 
+            margin="dense" 
+            label="Role" 
+            fullWidth 
+            defaultValue={editingUser?.role} 
+          /&gt;
+        &lt;/DialogContent&gt;
+        &lt;DialogActions&gt;
+          &lt;Button onClick={handleClose}&gt;Cancel&lt;/Button&gt;
+          &lt;Button onClick={handleClose} variant="contained"&gt;Save&lt;/Button&gt;
+        &lt;/DialogActions&gt;
+      &lt;/Dialog&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>What this demonstrates:</strong></p>
+                        <ul>
+                            <li>Consistent theming across all components</li>
+                            <li>Responsive behavior out-of-the-box</li>
+                            <li>Keyboard navigation and screen reader support</li>
+                            <li>Proper spacing and typography system</li>
+                            <li>Easy customization through theme provider</li>
+                        </ul>
+                        
+                        <p><strong>Result:</strong> Professional-looking admin interface built in hours instead of weeks!</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Uses</summary>
+                    <div class="details-content uses-box">
+                        <ul>
+                            <li>Enterprise applications requiring consistent design</li>
+                            <li>Internal tools and dashboards</li>
+                            <li>Products needing rapid prototyping</li>
+                            <li>Teams without dedicated UI designers</li>
+                            <li>Projects requiring strict accessibility compliance</li>
+                            <li>Applications with complex form validations</li>
+                            <li>Multi-platform applications (web, mobile, desktop)</li>
+                        </ul>
+                        <p><strong>Golden Rule:</strong> Choose a library based on your team's needs — not just aesthetics. Consider accessibility, documentation quality, and community support.</p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- Section 21.2 -->
+            <section id="section-21-2">
+                <h2>21.2 Development Tools and Extensions</h2>
+                
+                <details>
+                    <summary class="details-summary">Definition</summary>
+                    <div class="details-content definition-box">
+                        <p>Development tools and extensions are software utilities that enhance the React development experience by providing debugging, profiling, and productivity features.</p>
+                        <p>These tools help developers write better code faster and identify issues before they reach production.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Detail</summary>
+                    <div class="details-content">
+                        <p><strong>Essential Tools Breakdown:</strong></p>
+                        
+                        <h5 class="mt-3">1. React Developer Tools (Browser Extension)</h5>
+                        <p>The most important tool — allows you to inspect React component hierarchy, props, state, hooks, and performance.</p>
+                        
+                        <h5 class="mt-3">2. Redux DevTools</h5>
+                        <p>For state management debugging — visualize state changes, time-travel debugging, action logging.</p>
+                        
+                        <h5 class="mt-3">3. VS Code Extensions</h5>
+                        <p>Code completion, snippets, linting, formatting, and syntax highlighting tailored for React/JSX.</p>
+                        
+                        <h5 class="mt-3">4. React Router DevTools</h5>
+                        <p>Visualize routing structure and debug navigation issues.</p>
+                        
+                        <h5 class="mt-3">5. Webpack Bundle Analyzer</h5>
+                        <p>Visualize bundle composition to identify large dependencies.</p>
+                        
+                        <p><strong>Why they matter:</strong> These tools reduce debugging time from hours to minutes. They're not optional — they're essential for professional development.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Syntax & Tools</summary>
+                    <div class="details-content">
+                        <p><strong>VS Code Extensions (Must-Have):</strong></p>
+                        <ul>
+                            <li><strong>ESLint</strong> — Real-time code quality checking</li>
+                            <li><strong>Prettier</strong> — Automatic code formatting</li>
+                            <li><strong>Reactjs code snippets</strong> — Quick component templates</li>
+                            <li><strong>JavaScript (ES6) code snippets</strong> — Common patterns</li>
+                            <li><strong>Path Intellisense</strong> — Auto-complete file paths</li>
+                            <li><strong>Bracket Pair Colorizer</strong> — Visualize nested brackets</li>
+                            <li><strong>GitLens</strong> — Enhanced Git integration</li>
+                        </ul>
+                        
+                        <p><strong>React Developer Tools Features:</strong></p>
+                        <pre><code class="language-bash"># Install Chrome/Firefox extension
+# Search for "React Developer Tools" in browser store</code></pre>
+                        
+                        <p><strong>Using React DevTools:</strong></p>
+                        <ol>
+                            <li>Open DevTools → Components tab</li>
+                            <li>Click any component to see its props/state/hooks</li>
+                            <li>Hover over components to highlight in the UI</li>
+                            <li>Use the "Profiler" tab to analyze rendering performance</li>
+                            <li>Right-click components to "Inspect" their source</li>
+                        </ol>
+                        
+                        <p><strong>Redux DevTools Interface:</strong></p>
+                        <img src="https://via.placeholder.com/600x300?text=Redux+DevTools+Timeline+View" alt="Redux DevTools Timeline" class="img-fluid my-3" style="border: 1px solid #1a3b5f; border-radius: 6px;">
+                        
+                        <p><strong>Webpack Bundle Analyzer:</strong></p>
+                        <pre><code class="language-bash"># Add to package.json scripts
+{
+  "scripts": {
+    "analyze": "react-app-rewired build && webpack-bundle-analyzer build/bundle-stats.json"
+  }
+}</code></pre>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Example</summary>
+                    <div class="details-content example-box">
+                        <p><strong>Scenario:</strong> Debugging a performance issue in a complex application</p>
+                        
+                        <p><strong>Problem:</strong> When clicking a button, the entire app re-renders slowly.</p>
+                        
+                        <p><strong>Debugging Process:</strong></p>
+                        <ol>
+                            <li><strong>Step 1:</strong> Open React Developer Tools → Components tab</li>
+                            <li><strong>Step 2:</strong> Enable "Highlight updates when components render"</li>
+                            <li><strong>Step 3:</strong> Click the problematic button — watch which components light up</li>
+                            <li><strong>Step 4:</strong> Notice that 15 unrelated components are re-rendering</li>
+                            <li><strong>Step 5:</strong> Check each component's props — find one prop is changing unnecessarily</li>
+                            <li><strong>Step 6:</strong> Use <code className="hook-name">useMemo</code> or <code className="hook-name">React.memo</code> to prevent unnecessary renders</li>
+                        </ol>
+                        
+                        <p><strong>Before Fix:</strong></p>
+                        <pre><code class="language-jsx">// ❌ Problematic code
+function App() {
+  const [count, setCount] = useState(0);
+  
+  // This object changes on every render!
+  const config = {
+    theme: 'dark',
+    language: 'en',
+    apiUrl: process.env.API_URL,
+    version: '1.0'
+  };
+  
+  return (
+    &lt;div&gt;
+      &lt;Counter count={count} setCount={setCount} /&gt;
+      &lt;Header config={config} /&gt;  {/* Re-renders EVERY time */}
+      &lt;Sidebar config={config} /&gt;  {/* Re-renders EVERY time */}
+      &lt;Footer config={config} /&gt;   {/* Re-renders EVERY time */}
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>After Fix:</strong></p>
+                        <pre><code class="language-jsx">// ✅ Optimized code
+function App() {
+  const [count, setCount] = useState(0);
+  
+  // ✅ Memoize the config object
+  const config = useMemo(() =&gt; ({
+    theme: 'dark',
+    language: 'en',
+    apiUrl: process.env.API_URL,
+    version: '1.0'
+  }), []); // Empty dependency array
+  
+  return (
+    &lt;div&gt;
+      &lt;Counter count={count} setCount={setCount} /&gt;
+      &lt;Header config={config} /&gt;  {/* Only re-renders if config changes */}
+      &lt;Sidebar config={config} /&gt;  {/* Only re-renders if config changes */}
+      &lt;Footer config={config} /&gt;   {/* Only re-renders if config changes */}
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>Performance Impact:</strong> Render time reduced from 450ms to 80ms — 82% improvement!</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Uses</summary>
+                    <div class="details-content uses-box">
+                        <ul>
+                            <li>Debugging component state and props</li>
+                            <li>Identifying unnecessary re-renders</li>
+                            <li>Understanding component hierarchy</li>
+                            <li>Profiling performance bottlenecks</li>
+                            <li>Time-travel debugging with Redux</li>
+                            <li>Visualizing bundle size optimization opportunities</li>
+                            <li>Quick access to code snippets and templates</li>
+                            <li>Real-time error detection during development</li>
+                        </ul>
+                        <p><strong>Pro Tip:</strong> Make React Developer Tools part of your daily workflow — use it for every bug fix and feature implementation. It's your best friend!</p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- Section 21.3 -->
+            <section id="section-21-3">
+                <h2>21.3 Build Tools (Webpack, Vite, Parcel)</h2>
+                
+                <details>
+                    <summary class="details-summary">Definition</summary>
+                    <div class="details-content definition-box">
+                        <p>Build tools are systems that compile, bundle, optimize, and serve your React application for production.</p>
+                        <p>They handle tasks like transpiling JSX/TypeScript, minifying code, code splitting, asset optimization, and hot module replacement.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Detail</summary>
+                    <div class="details-content">
+                        <p><strong>Traditional Approach: Webpack</strong></p>
+                        <ul>
+                            <li>Powerful but complex configuration</li>
+                            <li>Slow startup times (especially in large projects)</li>
+                            <li>Excellent ecosystem and plugins</li>
+                            <li>Used by Create React App (CRA) historically</li>
+                        </ul>
+                        
+                        <p><strong>Modern Approach: Vite</strong></p>
+                        <ul>
+                            <li>Uses native ES modules in development</li>
+                            <li>Instant server start (no bundling needed during dev)</li>
+                            <li>Lightning-fast HMR (Hot Module Replacement)</li>
+                            <li>Optimized for production with Rollup</li>
+                            <li>Became the new standard for React projects</li>
+                        </ul>
+                        
+                        <p><strong>Alternative: Parcel</strong></p>
+                        <ul>
+                            <li>Zero-config approach</li>
+                            <li>Automatic dependency detection</li>
+                            <li>Great for small to medium projects</li>
+                            <li>Slower than Vite in large projects</li>
+                        </ul>
+                        
+                        <p><strong>Key Concepts:</strong></p>
+                        <ul>
+                            <li><strong>Bundle:</strong> Combined JavaScript files sent to browser</li>
+                            <li><strong>Tree Shaking:</strong> Removing unused code</li>
+                            <li><strong>Code Splitting:</strong> Breaking bundle into smaller chunks</li>
+                            <li><strong>HMR:</strong> Hot Module Replacement — update code without full refresh</li>
+                            <li><strong>Minification:</strong> Reducing file size for production</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Syntax & Comparison</summary>
+                    <div class="details-content">
+                        <p><strong>Comparison Table:</strong></p>
+                        <table class="table table-dark mt-3 comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>Feature</th>
+                                    <th>Webpack</th>
+                                    <th>Vite</th>
+                                    <th>Parcel</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Development Server Start</td>
+                                    <td>5-15 seconds</td>
+                                    <td>&lt;1 second</td>
+                                    <td>2-5 seconds</td>
+                                </tr>
+                                <tr>
+                                    <td>HMR Speed</td>
+                                    <td>Fast</td>
+                                    <td>Extremely fast</td>
+                                    <td>Fast</td>
+                                </tr>
+                                <tr>
+                                    <td>Configuration Complexity</td>
+                                    <td>High</td>
+                                    <td>Low-Medium</td>
+                                    <td>None</td>
+                                </tr>
+                                <tr>
+                                    <td>Production Build</td>
+                                    <td>Rollup-based</td>
+                                    <td>Rollup-based</td>
+                                    <td>Custom</td>
+                                </tr>
+                                <tr>
+                                    <td>ESM Support</td>
+                                    <td>Requires plugin</td>
+                                    <td>Native</td>
+                                    <td>Auto-detect</td>
+                                </tr>
+                                <tr>
+                                    <td>Best For</td>
+                                    <td>Complex enterprise apps</td>
+                                    <td>Modern React/Vue apps</td>
+                                    <td>Small projects, quick prototypes</td>
+                                </tr>
+                                <tr>
+                                    <td>Current React Standard</td>
+                                    <td>Legacy</td>
+                                    <td>✅ Yes</td>
+                                    <td>No</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <p><strong>Vite Configuration (vite.config.js):</strong></p>
+                        <pre><code class="language-javascript">import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    port: 3000,
+    open: true,
+  },
+  build: {
+    sourcemap: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+        },
+      },
+    },
+  },
+});</code></pre>
+                        
+                        <p><strong>Webpack Configuration (webpack.config.js):</strong></p>
+                        <pre><code class="language-javascript">const path = require('path');
+
+module.exports = {
+  entry: './src/index.js',
+  output: {
+    path: path.resolve(__dirname, 'dist'),
+    filename: 'bundle.[contenthash].js',
+  },
+  module: {
+    rules: [
+      {
+        test: /\.(js|jsx)$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+        },
+      },
+      {
+        test: /\.css$/,
+        use: ['style-loader', 'css-loader'],
+      },
+    ],
+  },
+  resolve: {
+    extensions: ['.js', '.jsx'],
+  },
+  devServer: {
+    static: './dist',
+    hot: true,
+    port: 3000,
+  },
+};</code></pre>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Example</summary>
+                    <div class="details-content example-box">
+                        <p><strong>Scenario:</strong> Creating a new React project with different build tools</p>
+                        
+                        <p><strong>Creating with Vite (Recommended):</strong></p>
+                        <pre><code class="language-bash"># Create React + Vite project
+npm create vite@latest my-react-app -- --template react
+cd my-react-app
+npm install
+npm run dev
+
+# Or with TypeScript
+npm create vite@latest my-react-app -- --template react-ts</code></pre>
+                        
+                        <p><strong>Creating with Webpack (Legacy):</strong></p>
+                        <pre><code class="language-bash"># Create React App (uses Webpack under hood)
+npx create-react-app my-react-app
+cd my-react-app
+npm start
+
+# Note: CRA is being deprecated in favor of Vite</code></pre>
+                        
+                        <p><strong>Creating with Parcel:</strong></p>
+                        <pre><code class="language-bash"># Create Parcel project
+mkdir my-parcel-app
+cd my-parcel-app
+npm init -y
+npm install react react-dom
+npm install -D parcel
+
+# Create index.html
+echo '&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+  &lt;head&gt;
+    &lt;title&gt;Parcel React&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;div id="root"&gt;&lt;/div&gt;
+    &lt;script type="module" src="./src/index.jsx"&gt;&lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;' &gt; index.html
+
+# Create src/index.jsx
+mkdir src
+echo 'import React from "react";
+import ReactDOM from "react-dom/client";
+
+const App = () =&gt; &lt;h1&gt;Hello Parcel!&lt;/h1&gt;;
+
+ReactDOM.createRoot(document.getElementById("root")).render(&lt;App /&gt;);' &gt; src/index.jsx
+
+# Start server
+npx parcel index.html</code></pre>
+                        
+                        <p><strong>Performance Test Results:</strong></p>
+                        <table class="table table-dark mt-3 comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>Tool</th>
+                                    <th>Initial Startup</th>
+                                    <th>HMR Update Time</th>
+                                    <th>Production Build Size</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Webpack (CRA)</td>
+                                    <td>8.2s</td>
+                                    <td>1.4s</td>
+                                    <td>420KB</td>
+                                </tr>
+                                <tr>
+                                    <td>Vite</td>
+                                    <td><span class="highlight">0.6s</span></td>
+                                    <td><span class="highlight">0.1s</span></td>
+                                    <td>380KB</td>
+                                </tr>
+                                <tr>
+                                    <td>Parcel</td>
+                                    <td>3.1s</td>
+                                    <td>0.8s</td>
+                                    <td>410KB</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <p><strong>What this means:</strong> With Vite, you can make a change and see it reflected in under 100ms — making development feel instantaneous!</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Uses</summary>
+                    <div class="details-content uses-box">
+                        <ul>
+                            <li>Compiling JSX and TypeScript to JavaScript</li>
+                            <li>Minifying and compressing assets</li>
+                            <li>Code splitting for lazy loading</li>
+                            <li>Asset optimization (images, fonts, SVGs)</li>
+                            <li>Generating source maps for debugging</li>
+                            <li>Enabling hot module replacement</li>
+                            <li>Managing environment variables</li>
+                            <li>Creating production-ready bundles</li>
+                        </ul>
+                        <p><strong>Golden Rule:</strong> Always use Vite for new React projects. It's faster, simpler, and represents the future of React tooling.</p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- Section 21.4 -->
+            <section id="section-21-4">
+                <h2>21.4 TypeScript with React</h2>
+                
+                <details>
+                    <summary class="details-summary">Definition</summary>
+                    <div class="details-content definition-box">
+                        <p>TypeScript is a statically typed superset of JavaScript that adds type annotations and compile-time type checking to React applications.</p>
+                        <p>It catches errors before runtime and provides excellent IDE support through autocompletion and refactoring tools.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Detail</summary>
+                    <div class="details-content">
+                        <p><strong>Why use TypeScript with React?</strong></p>
+                        <ul>
+                            <li>Prevents bugs before they happen</li>
+                            <li>Improves code readability and maintainability</li>
+                            <li>Enables powerful refactoring tools</li>
+                            <li>Provides autocomplete and IntelliSense</li>
+                            <li>Documents component APIs clearly</li>
+                            <li>Reduces team communication overhead</li>
+                        </ul>
+                        
+                        <p><strong>Types You'll Use Daily:</strong></p>
+                        <ul>
+                            <li><code>Props</code> — Define component input types</li>
+                            <li><code>State</code> — Type your state objects</li>
+                            <li><code>Event Handlers</code> — Type event parameters</li>
+                            <li><code>Refs</code> — Type DOM element references</li>
+                            <li><code>Context</code> — Type context values</li>
+                            <li><code>Custom Hooks</code> — Type hook return values</li>
+                        </ul>
+                        
+                        <p><strong>Myth Busting:</strong></p>
+                        <ul>
+                            <li><strong>Myth:</strong> TypeScript makes development slower</li>
+                            <li><strong>Truth:</strong> It saves hours of debugging time</li>
+                            <li><strong>Myth:</strong> React doesn't need TypeScript</li>
+                            <li><strong>Truth:</strong> React + TypeScript is the industry standard</li>
+                            <li><strong>Myth:</strong> TypeScript is hard to learn</li>
+                            <li><strong>Truth:</strong> Basic typing takes 1 day to learn</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Syntax & Examples</summary>
+                    <div class="details-content">
+                        <p><strong>Basic Component Typing:</strong></p>
+                        <pre><code class="language-jsx">// ❌ Without TypeScript
+function Welcome(props) {
+  return &lt;h1&gt;Hello, {props.name}&lt;/h1&gt;;
+}
+
+// ✅ With TypeScript
+interface WelcomeProps {
+  name: string;
+  age?: number; // Optional property
+  isActive: boolean;
+}
+
+function Welcome({ name, age, isActive }: WelcomeProps) {
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;Hello, {name}&lt;/h1&gt;
+      {age &amp;&amp; &lt;p&gt;Age: {age}&lt;/p&gt;}
+      &lt;p&gt;Active: {isActive ? 'Yes' : 'No'}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>Function Component with Props:</strong></p>
+                        <pre><code class="language-jsx">// Function component with explicit typing
+type ButtonProps = {
+  children: React.ReactNode;
+  onClick: () =&gt; void;
+  variant?: 'primary' | 'secondary' | 'danger';
+  disabled?: boolean;
+};
+
+const Button: React.FC&lt;ButtonProps&gt; = ({ 
+  children, 
+  onClick, 
+  variant = 'primary', 
+  disabled = false 
+}) =&gt; {
+  const baseClasses = 'px-4 py-2 rounded-md font-medium';
+  const variantClasses = {
+    primary: 'bg-blue-600 text-white hover:bg-blue-700',
+    secondary: 'bg-gray-600 text-white hover:bg-gray-700',
+    danger: 'bg-red-600 text-white hover:bg-red-700',
+  };
+  
+  return (
+    &lt;button
+      onClick={onClick}
+      disabled={disabled}
+      className={`${baseClasses} ${variantClasses[variant]} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+    &gt;
+      {children}
+    &lt;/button&gt;
+  );
+};</code></pre>
+                        
+                        <p><strong>Custom Hook with Types:</strong></p>
+                        <pre><code class="language-jsx">import { useState, useCallback } from 'react';
+
+interface UseLocalStorageReturn&lt;T&gt; {
+  value: T;
+  setValue: (value: T | ((val: T) =&gt; T)) =&gt; void;
+}
+
+function useLocalStorage&lt;T&gt;(key: string, initialValue: T): UseLocalStorageReturn&lt;T&gt; {
+  const [storedValue, setStoredValue] = useState&lt;T&gt;(() =&gt; {
+    try {
+      const item = window.localStorage.getItem(key);
+      return item ? JSON.parse(item) : initialValue;
+    } catch (error) {
+      console.error(error);
+      return initialValue;
+    }
+  });
+
+  const setValue = useCallback(
+    (value: T | ((val: T) =&gt; T)) =&gt; {
+      try {
+        const valueToStore = value instanceof Function ? value(storedValue) : value;
+        setStoredValue(valueToStore);
+        window.localStorage.setItem(key, JSON.stringify(valueToStore));
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    [key, storedValue]
+  );
+
+  return [storedValue, setValue];
+}</code></pre>
+                        
+                        <p><strong>Using Context with TypeScript:</strong></p>
+                        <pre><code class="language-jsx">import { createContext, useContext, useState } from 'react';
+
+interface ThemeContextType {
+  theme: 'light' | 'dark';
+  toggleTheme: () =&gt; void;
+}
+
+const ThemeContext = createContext&lt;ThemeContextType | undefined&gt;(undefined);
+
+export function ThemeProvider({ children }) {
+  const [theme, setTheme] = useState&lt;'light' | 'dark'&gt;('light');
+  
+  const toggleTheme = () =&gt; {
+    setTheme(currentTheme =&gt; currentTheme === 'light' ? 'dark' : 'light');
+  };
+  
+  return (
+    &lt;ThemeContext.Provider value={{ theme, toggleTheme }}>
+      {children}
+    &lt;/ThemeContext.Provider&gt;
+  );
+}
+
+export function useTheme() {
+  const context = useContext(ThemeContext);
+  if (context === undefined) {
+    throw new Error('useTheme must be used within a ThemeProvider');
+  }
+  return context;
+}</code></pre>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Example</summary>
+                    <div class="details-content example-box">
+                        <p><strong>Scenario:</strong> Complex form with validation and async submission</p>
+                        
+                        <pre><code class="language-jsx">// types.d.ts
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'user' | 'guest';
+  createdAt: Date;
+}
+
+export interface UserFormValues {
+  name: string;
+  email: string;
+  role: 'admin' | 'user' | 'guest';
+}
+
+export interface FormErrors {
+  name?: string;
+  email?: string;
+  role?: string;
+}</code></pre>
+                        
+                        <pre><code class="language-jsx">// components/UserForm.tsx
+import { useState } from 'react';
+import { UserFormValues, FormErrors, User } from '../types';
+
+interface UserFormProps {
+  onSubmit: (userData: UserFormValues) =&gt; Promise&lt;User&gt;;
+  initialValues?: Partial&lt;UserFormValues&gt;;
+}
+
+const UserForm: React.FC&lt;UserFormProps&gt; = ({ onSubmit, initialValues }) =&gt; {
+  const [values, setValues] = useState&lt;UserFormValues&gt;({
+    name: initialValues?.name || '',
+    email: initialValues?.email || '',
+    role: initialValues?.role || 'user',
+  });
+  
+  const [errors, setErrors] = useState&lt;FormErrors&gt;({});
+  const [isSubmitting, setIsSubmitting] = useState&lt;boolean&gt;(false);
+  
+  const handleChange = (e: React.ChangeEvent&lt;HTMLInputElement | HTMLSelectElement&gt;) =&gt; {
+    const { name, value } = e.target;
+    setValues(prev =&gt; ({ ...prev, [name]: value }));
+    
+    // Clear error when user starts typing
+    if (errors[name as keyof FormErrors]) {
+      setErrors(prev =&gt; ({ ...prev, [name]: undefined }));
+    }
+  };
+  
+  const validate = (): boolean =&gt; {
+    const newErrors: FormErrors = {};
+    
+    if (!values.name.trim()) newErrors.name = 'Name is required';
+    if (values.name.length &lt; 3) newErrors.name = 'Name must be at least 3 characters';
+    
+    if (!values.email.trim()) newErrors.email = 'Email is required';
+    else if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(values.email)) newErrors.email = 'Invalid email format';
+    
+    if (!values.role) newErrors.role = 'Role is required';
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+  
+  const handleSubmit = async (e: React.FormEvent&lt;HTMLFormElement&gt;) =&gt; {
+    e.preventDefault();
+    
+    if (!validate()) return;
+    
+    setIsSubmitting(true);
+    try {
+      const newUser = await onSubmit(values);
+      console.log('User created:', newUser);
+    } catch (error) {
+      console.error('Failed to create user:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+  
+  return (
+    &lt;form onSubmit={handleSubmit} style={{ padding: '2rem', maxWidth: '500px', margin: '0 auto' }}&gt;
+      &lt;h2&gt;Create User&lt;/h2&gt;
+      
+      &lt;div style={{ marginBottom: '1rem' }}&gt;
+        &lt;label htmlFor="name"&gt;Name&lt;/label&gt;
+        &lt;input
+          id="name"
+          name="name"
+          type="text"
+          value={values.name}
+          onChange={handleChange}
+          style={{
+            width: '100%',
+            padding: '0.75rem',
+            border: errors.name ? '2px solid #ff6b6b' : '1px solid #00f5ff',
+            borderRadius: '4px'
+          }}
+        /&gt;
+        {errors.name &amp;&amp; &lt;p style={{ color: '#ff6b6b', fontSize: '0.8rem', marginTop: '0.25rem' }}&gt;{errors.name}&lt;/p&gt;}
+      &lt;/div&gt;
+      
+      &lt;div style={{ marginBottom: '1rem' }}&gt;
+        &lt;label htmlFor="email"&gt;Email&lt;/label&gt;
+        &lt;input
+          id="email"
+          name="email"
+          type="email"
+          value={values.email}
+          onChange={handleChange}
+          style={{
+            width: '100%',
+            padding: '0.75rem',
+            border: errors.email ? '2px solid #ff6b6b' : '1px solid #00f5ff',
+            borderRadius: '4px'
+          }}
+        /&gt;
+        {errors.email &amp;&amp; &lt;p style={{ color: '#ff6b6b', fontSize: '0.8rem', marginTop: '0.25rem' }}&gt;{errors.email}&lt;/p&gt;}
+      &lt;/div&gt;
+      
+      &lt;div style={{ marginBottom: '1rem' }}&gt;
+        &lt;label htmlFor="role"&gt;Role&lt;/label&gt;
+        &lt;select
+          id="role"
+          name="role"
+          value={values.role}
+          onChange={handleChange}
+          style={{
+            width: '100%',
+            padding: '0.75rem',
+            border: errors.role ? '2px solid #ff6b6b' : '1px solid #00f5ff',
+            borderRadius: '4px'
+          }}
+        &gt;
+          &lt;option value=""&gt;Select role...&lt;/option&gt;
+          &lt;option value="admin"&gt;Admin&lt;/option&gt;
+          &lt;option value="user"&gt;User&lt;/option&gt;
+          &lt;option value="guest"&gt;Guest&lt;/option&gt;
+        &lt;/select&gt;
+        {errors.role &amp;&amp; &lt;p style={{ color: '#ff6b6b', fontSize: '0.8rem', marginTop: '0.25rem' }}&gt;{errors.role}&lt;/p&gt;}
+      &lt;/div&gt;
+      
+      &lt;button
+        type="submit"
+        disabled={isSubmitting}
+        style={{
+          backgroundColor: '#00f5ff',
+          color: '#000',
+          padding: '0.75rem 2rem',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: isSubmitting ? 'not-allowed' : 'pointer'
+        }}
+      &gt;
+        {isSubmitting ? 'Creating...' : 'Create User'}
+      &lt;/button&gt;
+    &lt;/form&gt;
+  );
+};
+
+export default UserForm;</code></pre>
+                        
+                        <p><strong>Benefits Demonstrated:</strong></p>
+                        <ul>
+                            <li>IDE shows autocomplete for possible roles: 'admin', 'user', 'guest'</li>
+                            <li>TypeScript prevents assigning invalid values to role</li>
+                            <li>Compiler catches missing properties in form values</li>
+                            <li>Clear documentation of what each component expects</li>
+                            <li>Refactoring is safe — renaming a property updates all usages</li>
+                        </ul>
+                        
+                        <p><strong>Result:</strong> Zero runtime errors in form handling — all validation caught at compile time!</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Uses</summary>
+                    <div class="details-content uses-box">
+                        <ul>
+                            <li>Defining component props and state types</li>
+                            <li>Typing custom hooks and context values</li>
+                            <li>Validating API response shapes</li>
+                            <li>Ensuring consistent data structures</li>
+                            <li>Improving team collaboration and code reviews</li>
+                            <li>Enabling advanced refactoring capabilities</li>
+                            <li>Reducing debugging time in large codebases</li>
+                            <li>Documentation generation from type definitions</li>
+                        </ul>
+                        <p><strong>Industry Standard:</strong> Over 85% of professional React teams use TypeScript. It's not optional anymore — it's expected.</p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- Section 21.5 -->
+            <section id="section-21-5">
+                <h2>21.5 Storybook for Component Development</h2>
+                
+                <details>
+                    <summary class="details-summary">Definition</summary>
+                    <div class="details-content definition-box">
+                        <p>Storybook is an open-source tool for developing, testing, and documenting UI components in isolation.</p>
+                        <p>It creates a sandbox where you can explore all states of your components without running your full application.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Detail</summary>
+                    <div class="details-content">
+                        <p><strong>Why use Storybook?</strong></p>
+                        <ul>
+                            <li>Develop components independently of your app</li>
+                            <li>Test edge cases easily (loading, errors, empty states)</li>
+                            <li>Document component usage and API</li>
+                            <li>Enable design-system consistency</li>
+                            <li>Facilitate team collaboration between designers and developers</li>
+                            <li>Automate visual regression testing</li>
+                        </ul>
+                        
+                        <p><strong>Core Concepts:</strong></p>
+                        <ul>
+                            <li><strong>Stories:</strong> Individual examples of a component</li>
+                            <li><strong>Args:</strong> Component parameters (equivalent to props)</li>
+                            <li><strong>Controls:</strong> Interactive UI to modify args</li>
+                            <li><strong>Addons:</strong> Extensions for testing, accessibility, etc.</li>
+                            <li><strong>Docs:</strong> Auto-generated documentation pages</li>
+                        </ul>
+                        
+                        <p><strong>Workflow Benefits:</strong></p>
+                        <ol>
+                            <li>Designers can preview components without developer involvement</li>
+                            <li>Developers can work on components without app context</li>
+                            <li>QA engineers can test all component variations</li>
+                            <li>Team has a single source of truth for component behavior</li>
+                        </ol>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Syntax & Setup</summary>
+                    <div class="details-content">
+                        <p><strong>Installation:</strong></p>
+                        <pre><code class="language-bash"># For React projects
+npx storybook@latest init
+
+# Or with Vite
+npm create storybook@latest -- --type react-vite</code></pre>
+                        
+                        <p><strong>Basic Component Story:</strong></p>
+                        <pre><code class="language-jsx">// components/Button.stories.tsx
+import type { Meta, StoryObj } from '@storybook/react';
+import Button from './Button';
+
+// 👇 This defines how the component appears in Storybook
+const meta: Meta&lt;typeof Button&gt; = {
+  title: 'Components/Button',
+  component: Button,
+  tags: ['autodocs'],
+  argTypes: {
+    variant: {
+      control: 'select',
+      options: ['primary', 'secondary', 'danger'],
+    },
+    size: {
+      control: 'select',
+      options: ['small', 'medium', 'large'],
+    },
+    disabled: {
+      control: 'boolean',
+    },
+  },
+};
+
+export default meta;
+
+// 👇 Each story represents a different state of the component
+type Story = StoryObj&lt;typeof Button&gt;;
+
+export const Primary: Story = {
+  args: {
+    children: 'Primary Button',
+    variant: 'primary',
+    size: 'medium',
+  },
+};
+
+export const Secondary: Story = {
+  args: {
+    children: 'Secondary Button',
+    variant: 'secondary',
+    size: 'medium',
+  },
+};
+
+export const Danger: Story = {
+  args: {
+    children: 'Danger Button',
+    variant: 'danger',
+    size: 'medium',
+  },
+};
+
+export const Disabled: Story = {
+  args: {
+    children: 'Disabled Button',
+    variant: 'primary',
+    size: 'medium',
+    disabled: true,
+  },
+};
+
+export const Large: Story = {
+  args: {
+    children: 'Large Button',
+    variant: 'primary',
+    size: 'large',
+  },
+};</code></pre>
+                        
+                        <p><strong>Using Controls for Dynamic Testing:</strong></p>
+                        <p>In Storybook UI, you get interactive sliders, toggles, and dropdowns to modify props in real-time!</p>
+                        
+                        <p><strong>Adding Docs with MDX:</strong></p>
+                        <pre><code class="language-jsx">// components/Button.mdx
+import { Canvas, Meta, ArgsTable, Story } from '@storybook/addon-docs';
+import * as stories from './Button.stories';
+
+&lt;Meta title="Components/Button" component={stories.Button} /&gt;
+
+# Button Component
+
+This button component supports multiple variants and sizes.
+
+## Usage Examples
+
+&lt;Canvas&gt;
+  &lt;Story name="Primary Button" args={stories.Primary.args} /&gt;
+  &lt;Story name="Secondary Button" args={stories.Secondary.args} /&gt;
+&lt;/Canvas&gt;
+
+## Props Reference
+
+&lt;ArgsTable of={stories.Button} /&gt;</code></pre>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Example</summary>
+                    <div class="details-content example-box">
+                        <p><strong>Scenario:</strong> Developing a complex DataGrid component</p>
+                        
+                        <pre><code class="language-jsx">// components/DataGrid.stories.tsx
+import type { Meta, StoryObj } from '@storybook/react';
+import DataGrid from './DataGrid';
+
+const meta: Meta&lt;typeof DataGrid&gt; = {
+  title: 'Components/DataGrid',
+  component: DataGrid,
+  tags: ['autodocs'],
+  argTypes: {
+    columns: { control: 'object' },
+    data: { control: 'object' },
+    isLoading: { control: 'boolean' },
+    hasError: { control: 'boolean' },
+    rowHeight: { control: 'number' },
+    pagination: { control: 'boolean' },
+  },
+};
+
+export default meta;
+
+type Story = StoryObj&lt;typeof DataGrid&gt;;
+
+// ✅ Normal state
+export const Default: Story = {
+  args: {
+    columns: [
+      { field: 'name', headerName: 'Name', width: 150 },
+      { field: 'email', headerName: 'Email', width: 200 },
+      { field: 'role', headerName: 'Role', width: 120 },
+      { field: 'status', headerName: 'Status', width: 100 },
+    ],
+    data: [
+      { id: 1, name: 'Alice Johnson', email: 'alice@example.com', role: 'admin', status: 'active' },
+      { id: 2, name: 'Bob Smith', email: 'bob@example.com', role: 'user', status: 'inactive' },
+      { id: 3, name: 'Carol Davis', email: 'carol@example.com', role: 'user', status: 'active' },
+      { id: 4, name: 'David Wilson', email: 'david@example.com', role: 'admin', status: 'active' },
+    ],
+    rowHeight: 48,
+    pagination: true,
+  },
+};
+
+// ✅ Loading state
+export const Loading: Story = {
+  args: {
+    ...Default.args,
+    isLoading: true,
+    data: [],
+  },
+};
+
+// ✅ Error state
+export const Error: Story = {
+  args: {
+    ...Default.args,
+    hasError: true,
+    data: [],
+  },
+};
+
+// ✅ Empty state
+export const Empty: Story = {
+  args: {
+    ...Default.args,
+    data: [],
+  },
+};
+
+// ✅ Different row heights
+export const Compact: Story = {
+  args: {
+    ...Default.args,
+    rowHeight: 32,
+  },
+};
+
+// ✅ No pagination
+export const InfiniteScroll: Story = {
+  args: {
+    ...Default.args,
+    pagination: false,
+  },
+};</code></pre>
+                        
+                        <p><strong>Storybook UI Experience:</strong></p>
+                        <ul>
+                            <li>Toggle <code>isLoading</code> checkbox to see loading state</li>
+                            <li>Change <code>rowHeight</code> slider to adjust row spacing</li>
+                            <li>Modify <code>data</code> object to add/remove rows</li>
+                            <li>Test accessibility with built-in axe addon</li>
+                            <li>Take screenshots for visual regression testing</li>
+                        </ul>
+                        
+                        <p><strong>Team Collaboration Benefits:</strong></p>
+                        <ol>
+                            <li>Designer can suggest changes directly in Storybook</li>
+                            <li>Product manager can review component states without code</li>
+                            <li>QA engineer can test all edge cases systematically</li>
+                            <li>New team members can understand component behavior instantly</li>
+                        </ol>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Uses</summary>
+                    <div class="details-content uses-box">
+                        <ul>
+                            <li>Component-driven development workflow</li>
+                            <li>Design system documentation</li>
+                            <li>Visual regression testing</li>
+                            <li>Accessibility testing</li>
+                            <li>Team knowledge sharing</li>
+                            <li>Independent component testing</li>
+                            <li>Integration with CI/CD pipelines</li>
+                            <li>Automated screenshot testing</li>
+                        </ul>
+                        <p><strong>Pro Tip:</strong> Make Storybook part of your pull request process. Every new component should have accompanying stories before merging.</p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- Section 21.6 -->
+            <section id="section-21-6">
+                <h2>21.6 ESLint and Prettier Configuration</h2>
+                
+                <details>
+                    <summary class="details-summary">Definition</summary>
+                    <div class="details-content definition-box">
+                        <p>ESLint is a static code analysis tool that identifies problematic patterns in JavaScript/TypeScript code.</p>
+                        <p>Prettier is a code formatter that enforces consistent code style by automatically formatting your code.</p>
+                        <p>Together, they ensure clean, readable, and maintainable codebases.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Detail</summary>
+                    <div class="details-content">
+                        <p><strong>How They Work Together:</strong></p>
+                        <ol>
+                            <li><strong>ESLint:</strong> Finds bugs, enforces best practices, checks code quality</li>
+                            <li><strong>Prettier:</strong> Formats code consistently — handles spacing, line breaks, quotes, etc.</li>
+                            <li><strong>Integration:</strong> ESLint can integrate with Prettier to avoid conflicts</li>
+                        </ol>
+                        
+                        <p><strong>Why This Matters:</strong></p>
+                        <ul>
+                            <li>Eliminates style debates in code reviews</li>
+                            <li>Reduces merge conflicts</li>
+                            <li>Improves code readability</li>
+                            <li>Enforces team coding standards</li>
+                            <li>Prevents common bugs and anti-patterns</li>
+                        </ul>
+                        
+                        <p><strong>Common ESLint Rules:</strong></p>
+                        <ul>
+                            <li><code>no-console</code> — Prevent console.log in production</li>
+                            <li><code>no-unused-vars</code> — Catch unused variables</li>
+                            <li><code>react/prop-types</code> — Ensure prop types are defined</li>
+                            <li><code>react/jsx-key</code> — Require keys in lists</li>
+                            <li><code>eqeqeq</code> — Enforce strict equality</li>
+                            <li><code>semi</code> — Require semicolons</li>
+                            <li><code>quotes</code> — Enforce quote style</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Syntax & Configuration</summary>
+                    <div class="details-content">
+                        <p><strong>Installation:</strong></p>
+                        <pre><code class="language-bash"># For React + TypeScript projects
+npm install --save-dev eslint @typescript-eslint/parser @typescript-eslint/eslint-plugin prettier eslint-config-prettier eslint-plugin-prettier
+
+# Initialize ESLint
+npx eslint --init
+
+# Or use React template
+npx eslint --ext .js,.jsx,.ts,.tsx --config ./eslintrc.cjs .</code></pre>
+                        
+                        <p><strong>ESLint Configuration (.eslintrc.cjs):</strong></p>
+                        <pre><code class="language-javascript">module.exports = {
+  env: {
+    browser: true,
+    es2021: true,
+    node: true,
+  },
+  extends: [
+    'eslint:recommended',
+    'plugin:@typescript-eslint/recommended',
+    'plugin:react/recommended',
+    'plugin:react/jsx-runtime',
+    'prettier',
+  ],
+  parser: '@typescript-eslint/parser',
+  parserOptions: {
+    ecmaVersion: 'latest',
+    sourceType: 'module',
+    ecmaFeatures: {
+      jsx: true,
+    },
+  },
+  plugins: [
+    '@typescript-eslint',
+    'react',
+    'react-hooks',
+    'prettier',
+  ],
+  settings: {
+    react: {
+      version: 'detect',
+    },
+  },
+  rules: {
+    // Best practices
+    'no-console': 'warn',
+    'no-unused-vars': 'error',
+    'eqeqeq': ['error', 'always'],
+    'semi': ['error', 'always'],
+    'quotes': ['error', 'single'],
+    
+    // React specific
+    'react/prop-types': 'off', // We use TypeScript
+    'react/react-in-jsx-scope': 'off',
+    'react-hooks/rules-of-hooks': 'error',
+    'react-hooks/exhaustive-deps': 'warn',
+    
+    // Prettier integration
+    'prettier/prettier': 'error',
+  },
+};</code></pre>
+                        
+                        <p><strong>Prettier Configuration (.prettierrc):</strong></p>
+                        <pre><code class="language-json">{  
+  "semi": true,
+  "singleQuote": true,
+  "trailingComma": "es5",
+  "printWidth": 80,
+  "tabWidth": 2,
+  "useTabs": false,
+  "bracketSpacing": true,
+  "arrowParens": "always"
+}</code></pre>
+                        
+                        <p><strong>Package.json Scripts:</strong></p>
+                        <pre><code class="language-json">{
+  "scripts": {
+    "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\"",
+    "lint:fix": "eslint \"src/**/*.{js,jsx,ts,tsx}\" --fix",
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
+    "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css,md}\""
+  }
+}</code></pre>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Example</summary>
+                    <div class="details-content example-box">
+                        <p><strong>Before Formatting:</strong></p>
+                        <pre><code class="language-jsx">// ❌ Bad code
+import React from 'react';
+
+const MyComponent = (props) => {
+  const {name, age, isActive} = props;
+  let message = '';
+  if(age &gt;= 18){
+    message = 'Adult';
+  }else{
+    message = 'Minor';
+  }
+  return &lt;div&gt;{message} {name} is {isActive?'active':'inactive'}&lt;/div&gt;;
+}</code></pre>
+                        
+                        <p><strong>After ESLint + Prettier:</strong></p>
+                        <pre><code class="language-jsx">// ✅ Clean, consistent code
+import React from 'react';
+
+interface MyComponentProps {
+  name: string;
+  age: number;
+  isActive: boolean;
+}
+
+const MyComponent: React.FC&lt;MyComponentProps&gt; = ({ name, age, isActive }) =&gt; {
+  const message = age >= 18 ? 'Adult' : 'Minor';
+  
+  return (
+    &lt;div&gt;
+      {message} {name} is {isActive ? 'active' : 'inactive'}
+    &lt;/div&gt;
+  );
+};
+
+export default MyComponent;</code></pre>
+                        
+                        <p><strong>What changed:</strong></p>
+                        <ul>
+                            <li>Added TypeScript interface for props</li>
+                            <li>Fixed indentation and spacing</li>
+                            <li>Replaced if/else with ternary operator</li>
+                            <li>Used single quotes consistently</li>
+                            <li>Added proper line breaks and parentheses</li>
+                            <li>Removed unnecessary curly braces</li>
+                            <li>Added semicolon (if configured)</li>
+                            <li>Improved readability dramatically</li>
+                        </ul>
+                        
+                        <p><strong>VS Code Integration:</strong></p>
+                        <pre><code class="language-json">// .vscode/settings.json
+{
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.formatOnSave": true,
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ]
+}</code></pre>
+                        
+                        <p><strong>Result:</strong> Every time you save, your code is automatically formatted and cleaned — no more manual cleanup!</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Uses</summary>
+                    <div class="details-content uses-box">
+                        <ul>
+                            <li>Enforcing consistent code style across team</li>
+                            <li>Preventing common JavaScript/TypeScript bugs</li>
+                            <li>Automatically fixing formatting issues</li>
+                            <li>Integrating with CI/CD pipelines</li>
+                            <li>Improving code review efficiency</li>
+                            <li>Reducing mental load for developers</li>
+                            <li>Enabling automatic code fixes in editors</li>
+                            <li>Creating a professional codebase culture</li>
+                        </ul>
+                        <p><strong>Golden Rule:</strong> Never manually format code. Let ESLint + Prettier do it automatically. Your brain should focus on solving problems, not on semicolons.</p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- Section 21.7 -->
+            <section id="section-21-7">
+                <h2>21.7 Husky and Git Hooks</h2>
+                
+                <details>
+                    <summary class="details-summary">Definition</summary>
+                    <div class="details-content definition-box">
+                        <p>Husky is a tool that makes it easy to configure and manage Git hooks — scripts that run automatically before or after Git commands.</p>
+                        <p>Git hooks enable automated code quality checks before commits or pushes.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Detail</summary>
+                    <div class="details-content">
+                        <p><strong>Why use Git hooks?</strong></p>
+                        <ul>
+                            <li>Prevent bad code from entering repository</li>
+                            <li>Enforce code quality standards</li>
+                            <li>Automate repetitive tasks</li>
+                            <li>Save time on code reviews</li>
+                            <li>Protect main branch integrity</li>
+                        </ul>
+                        
+                        <p><strong>Common Git Hooks:</strong></p>
+                        <ul>
+                            <li><strong>pre-commit:</strong> Run before commit — perfect for linting and formatting</li>
+                            <li><strong>pre-push:</strong> Run before push — good for tests and build verification</li>
+                            <li><strong>commit-msg:</strong> Validate commit message format</li>
+                            <li><strong>post-merge:</strong> Run after merge — useful for installing dependencies</li>
+                        </ul>
+                        
+                        <p><strong>Flow:</strong></p>
+                        <ol>
+                            <li>Developer makes changes</li>
+                            <li>Developer runs <code>git add .</code></li>
+                            <li>Developer runs <code>git commit -m "message"</code></li>
+                            <li>Husky triggers <code>pre-commit</code> hook</li>
+                            <li>Hook runs ESLint + Prettier + tests</li>
+                            <li>If any check fails → commit blocked</li>
+                            <li>Developer fixes issues → tries again</li>
+                            <li>All checks pass → commit succeeds</li>
+                        </ol>
+                        
+                        <p><strong>Benefits:</strong></p>
+                        <ul>
+                            <li>Never accidentally commit broken code</li>
+                            <li>Consistent code quality across team</li>
+                            <li>Reduced CI/CD failures</li>
+                            <li>Enforced commit message standards</li>
+                            <li>Automated documentation generation</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Syntax & Configuration</summary>
+                    <div class="details-content">
+                        <p><strong>Installation:</strong></p>
+                        <pre><code class="language-bash"># Install husky and lint-staged
+npm install --save-dev husky lint-staged
+
+# Initialize husky
+npx husky add .husky/pre-commit "npm run lint-staged"
+
+# Or use newer command
+npx husky add .husky/pre-commit "npx --no-install lint-staged"</code></pre>
+                        
+                        <p><strong>package.json Configuration:</strong></p>
+                        <pre><code class="language-json">{
+  "scripts": {
+    "lint": "eslint \"src/**/*.{js,jsx,ts,tsx}\"",
+    "lint:fix": "eslint \"src/**/*.{js,jsx,ts,tsx}\" --fix",
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,md}\"",
+    "test": "jest",
+    "test:coverage": "jest --coverage",
+    "lint-staged": "lint-staged"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,css,md}": [
+      "prettier --write"
+    ]
+  }
+}</code></pre>
+                        
+                        <p><strong>.husky/pre-commit:</strong></p>
+                        <pre><code class="language-bash">#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Run lint-staged (will fix and stage changes)
+npm run lint-staged
+
+# Run tests
+npm test
+
+# If tests fail, exit with error (prevent commit)
+if [ $? -ne 0 ]; then
+  echo "Tests failed! Commit aborted."
+  exit 1
+fi</code></pre>
+                        
+                        <p><strong>Commit Message Format Hook:</strong></p>
+                        <pre><code class="language-bash"># .husky/commit-msg
+#!/bin/sh
+. "$(dirname "$0")/_/husky.sh"
+
+# Check if commit message follows conventional commits format
+COMMIT_MSG_FILE=$1
+COMMIT_MSG=$(cat $COMMIT_MSG_FILE)
+
+# Allow empty commits
+if [ -z "$COMMIT_MSG" ]; then
+  exit 0
+fi
+
+# Conventional Commits regex pattern
+REGEX='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert|release)(\(.+\))?: .{1,50}$'
+
+if [[ ! $COMMIT_MSG =~ $REGEX ]]; then
+  echo "❌ Invalid commit message format!"
+  echo "✅ Valid formats:"
+  echo "  feat: Add new feature"
+  echo "  fix: Correct a bug"
+  echo "  docs: Update documentation"
+  echo "  style: Format code (whitespace, etc.)"
+  echo "  refactor: Refactor code without changing behavior"
+  echo "  perf: Improve performance"
+  echo "  test: Add or update tests"
+  echo "  build: Changes affecting build system"
+  echo "  ci: Continuous integration changes"
+  echo "  chore: Maintenance tasks"
+  echo "  revert: Revert a previous commit"
+  echo "  release: Version release"
+  exit 1
+fi</code></pre>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Example</summary>
+                    <div class="details-content example-box">
+                        <p><strong>Scenario:</strong> A developer tries to commit buggy code</p>
+                        
+                        <p><strong>Step 1:</strong> Developer writes a component with an error</p>
+                        <pre><code class="language-jsx">// components/BuggyComponent.tsx
+import React from 'react';
+
+// ❌ Bug: Missing required prop
+const BuggyComponent = ({ name }) =&gt; {
+  return &lt;div&gt;Hello {name.toUpperCase()}!&lt;/div&gt;;
+};
+
+export default BuggyComponent;</code></pre>
+                        
+                        <p><strong>Step 2:</strong> Developer stages changes</p>
+                        <pre><code class="language-bash">git add components/BuggyComponent.tsx</code></pre>
+                        
+                        <p><strong>Step 3:</strong> Developer tries to commit</p>
+                        <pre><code class="language-bash">git commit -m "Add BuggyComponent"</code></pre>
+                        
+                        <p><strong>What happens next:</strong></p>
+                        <ol>
+                            <li>Husky triggers pre-commit hook</li>
+                            <li>Lint-staged runs ESLint on the file</li>
+                            <li>ESLint finds: <code>'name' is missing in props validation</code></li>
+                            <li>ESLint also finds: <code>Missing semicolon</code></li>
+                            <li>ESLint attempts to auto-fix these issues</li>
+                            <li>Commit is blocked because the component still has unresolved issues</li>
+                            <li>Developer sees error message in terminal</li>
+                            <li>Developer fixes the component</li>
+                            <li>Developer tries again — now passes</li>
+                        </ol>
+                        
+                        <p><strong>Fixed Component:</strong></p>
+                        <pre><code class="language-jsx">// components/BuggyComponent.tsx
+import React from 'react';
+
+interface BuggyComponentProps {
+  name: string; // ✅ Now properly typed
+}
+
+const BuggyComponent: React.FC&lt;BuggyComponentProps&gt; = ({ name }) =&gt; {
+  return &lt;div&gt;Hello {name.toUpperCase()}!&lt;/div&gt;;
+};
+
+export default BuggyComponent;</code></pre>
+                        
+                        <p><strong>Another Example:</strong> Invalid commit message</p>
+                        <pre><code class="language-bash"># ❌ This will be rejected
+git commit -m "fixed bug"</code></pre>
+                        
+                        <pre><code class="language-bash"># ✅ This will be accepted
+git commit -m "fix: Correct BuggyComponent prop validation"</code></pre>
+                        
+                        <p><strong>CI/CD Integration:</strong> Even if someone bypasses local hooks, your CI pipeline should run:</p>
+                        <pre><code class="language-yaml"># .github/workflows/ci.yml
+name: CI
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run build</code></pre>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Uses</summary>
+                    <div class="details-content uses-box">
+                        <ul>
+                            <li>Preventing broken code from being committed</li>
+                            <li>Enforcing code formatting standards</li>
+                            <li>Validating commit message conventions</li>
+                            <li>Running tests before pushing</li>
+                            <li>Automating code quality checks</li>
+                            <li>Protecting main branch quality</li>
+                            <li>Standardizing team workflows</li>
+                            <li>Reducing CI/CD pipeline failures</li>
+                        </ul>
+                        <p><strong>Golden Rule:</strong> The best code quality system is one that prevents bad code from ever entering your repository — not one that catches it later.</p>
+                    </div>
+                </details>
+            </section>
+
+            <div class="mt-5 p-4 bg-dark rounded-3 border">
+                <h4 class="text-center text-muted">Key Takeaways</h4>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item bg-transparent border-0"><span class="badge">✅</span> Choose UI libraries based on team needs — MUI for enterprise, Chakra for accessibility, Ant for dashboards.</li>
+                    <li class="list-group-item bg-transparent border-0"><span class="badge">✅</span> Use React Developer Tools religiously — it's your #1 debugging companion.</li>
+                    <li class="list-group-item bg-transparent border-0"><span class="badge">✅</span> Always use Vite for new React projects — it's faster, simpler, and the future.</li>
+                    <li class="list-group-item bg-transparent border-0"><span class="badge">✅</span> TypeScript isn't optional anymore — it's the industry standard for professional React development.</li>
+                    <li class="list-group-item bg-transparent border-0"><span class="badge">✅</span> Storybook transforms component development — treat it as documentation, not just a playground.</li>
+                    <li class="list-group-item bg-transparent border-0"><span class="badge">✅</span> ESLint + Prettier together eliminate style debates — automate formatting so your brain can focus on logic.</li>
+                    <li class="list-group-item bg-transparent border-0"><span class="badge">✅</span> Husky and Git hooks are your safety net — never allow broken code to enter your repository.</li>
+                    <li class="list-group-item bg-transparent border-0"><span class="badge">✅</span> Mastering these tools makes you 10x more productive — they're not extras, they're essential infrastructure.</li>
+                </ul>
+                <div class="mt-3 tip-box">
+                    <strong>💡 Pro Tip:</strong> Set up all these tools on your very first React project. The initial setup takes 1-2 hours, but saves you 10+ hours per week going forward.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Search functionality
+        const searchInput = document.getElementById('searchToc');
+        const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
+
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            tocItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        // Expand/Collapse controls
+        document.getElementById('expandAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.open = true;
+            });
+        });
+
+        document.getElementById('collapseAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.open = false;
+            });
+        });
+
+        // Smooth scrolling for TOC links
+        document.querySelectorAll('[data-scroll]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('data-scroll');
+                const element = document.querySelector(`[id="${targetId}"]`);
+                if (element) {
+                    window.scrollTo({
+                        top: element.offsetTop - 100,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Highlight active section in TOC
+                    document.querySelectorAll('.toc-subitem').forEach(el => el.classList.remove('active'));
+                    this.classList.add('active');
+                }
+            });
+        });
+
+        // Auto-scroll TOC highlighting based on viewport
+        window.addEventListener('scroll', () => {
+            const sections = ['def-ui-libraries', 'detail-ui-libraries', 'syntax-ui-libraries', 'example-ui-libraries', 'uses-ui-libraries',
+                             'def-dev-tools', 'detail-dev-tools', 'syntax-dev-tools', 'example-dev-tools', 'uses-dev-tools',
+                             'def-build-tools', 'detail-build-tools', 'syntax-build-tools', 'example-build-tools', 'uses-build-tools',
+                             'def-typescript', 'detail-typescript', 'syntax-typescript', 'example-typescript', 'uses-typescript',
+                             'def-storybook', 'detail-storybook', 'syntax-storybook', 'example-storybook', 'uses-storybook',
+                             'def-eslint-prettier', 'detail-eslint-prettier', 'syntax-eslint-prettier', 'example-eslint-prettier', 'uses-eslint-prettier',
+                             'def-husky', 'detail-husky', 'syntax-husky', 'example-husky', 'uses-husky'];
+            
+            let currentSection = '';
+            const scrollPosition = window.pageYOffset + 100;
+
+            sections.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    const offsetTop = element.offsetTop;
+                    const offsetHeight = element.offsetHeight;
+                    if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
+                        currentSection = id;
+                    }
+                }
+            });
+
+            document.querySelectorAll('.toc-subitem').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            if (currentSection) {
+                const activeItem = document.querySelector(`[data-scroll="${currentSection}"]`);
+                if (activeItem) {
+                    activeItem.classList.add('active');
+                }
+            }
+        });
+
+        // Syntax highlighting (simple)
+        document.querySelectorAll('pre code').forEach(block => {
+            hljs.highlightBlock(block);
+        });
+    });
+
+    // Simple syntax highlighter fallback if Prism/HLJS not loaded
+    if (typeof hljs === 'undefined') {
+        window.hljs = {
+            highlightBlock: function(block) {
+                // Minimal highlight for code blocks
+                block.classList.add('hljs');
+            }
+        };
+    }
+</script>
+
+<!-- Include Highlight.js for syntax highlighting (optional enhancement) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+
+</body>
+</html>

@@ -1,0 +1,1906 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter 7: State Management Basics</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00f5ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --border-color: #00c4ff;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .sidebar {
+            background-color: #0d2140;
+            border-right: 2px solid var(--border-color);
+            height: 100vh;
+            position: fixed;
+            overflow-y: auto;
+            padding: 1rem;
+            width: 280px;
+            box-shadow: 5px 0 15px rgba(0, 212, 255, 0.1);
+        }
+
+        .content {
+            margin-left: 280px;
+            padding: 2rem;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.3rem;
+            margin-top: 2rem;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: var(--amber);
+            border-bottom: 3px solid var(--amber);
+        }
+
+        .toc-item {
+            margin: 0.5rem 0;
+            padding: 0.4rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        .toc-item:hover {
+            background-color: rgba(0, 245, 255, 0.1);
+            padding-left: 0.8rem;
+        }
+
+        .toc-item.active {
+            background-color: rgba(0, 245, 255, 0.2);
+            border-left: 3px solid var(--cyan);
+        }
+
+        .toc-subitem {
+            margin-left: 1.5rem;
+            font-size: 0.9rem;
+            color: #b8c4d6;
+            padding: 0.2rem 0;
+        }
+
+        .toc-subitem:hover {
+            background-color: rgba(0, 245, 255, 0.08);
+            padding-left: 0.5rem;
+        }
+
+        .search-box {
+            margin: 1rem 0;
+            background-color: #1a2a40;
+            border: 1px solid var(--border-color);
+            color: var(--text-light);
+        }
+
+        .code-block {
+            background-color: #121e33;
+            border-left: 4px solid var(--amber);
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 8px rgba(0, 212, 255, 0.1);
+        }
+
+        pre code {
+            color: var(--cyan);
+            display: block;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.2);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+
+        .note {
+            background-color: rgba(0, 245, 255, 0.1);
+            border-left: 4px solid var(--cyan);
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .warning {
+            background-color: rgba(255, 183, 77, 0.15);
+            border-left: 4px solid var(--amber);
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        details {
+            margin: 1.5rem 0;
+            border: 1px solid rgba(0, 245, 255, 0.3);
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #0d1b33;
+        }
+
+        summary {
+            padding: 1rem;
+            background-color: #122647;
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--cyan);
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s ease;
+        }
+
+        summary:hover {
+            background-color: #1a3155;
+        }
+
+        summary::before {
+            content: "▶ ";
+            font-size: 0.9rem;
+            transition: transform 0.3s ease;
+        }
+
+        details[open] > summary::before {
+            content: "▼ ";
+            transform: rotate(90deg);
+        }
+
+        .btn-control {
+            margin-bottom: 1rem;
+            background-color: rgba(0, 245, 255, 0.15);
+            border: 1px solid var(--border-color);
+            color: var(--cyan);
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .btn-control:hover {
+            background-color: rgba(0, 245, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .author-info {
+            color: #b8c4d6;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border-bottom: 1px solid rgba(0, 245, 255, 0.2);
+        }
+
+        .section-marker {
+            color: var(--amber);
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        .jsx-tag {
+            color: var(--amber);
+        }
+
+        .jsx-attr {
+            color: #a0eaff;
+        }
+
+        .jsx-value {
+            color: #a8f5ff;
+        }
+
+        .keyword {
+            color: #ff9e6d;
+        }
+
+        .comment {
+            color: #5a7e9d;
+            font-style: italic;
+        }
+
+        .state-name {
+            color: #a8f5ff;
+            font-weight: 600;
+        }
+
+        .hook-name {
+            color: var(--amber);
+            font-weight: 600;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 991px) {
+            .sidebar {
+                width: 250px;
+            }
+            .content {
+                margin-left: 250px;
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 2px solid var(--border-color);
+            }
+            .content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Left Sidebar -->
+    <div class="sidebar">
+        <h3 class="text-center mb-4">Chapter 7: State Management Basics</h3>
+        <p class="author-info">Mastered by React Tutor • For Deep Understanding</p>
+
+        <div class="mb-4">
+            <input type="text" class="form-control search-box" id="searchToc" placeholder="Search topics...">
+        </div>
+
+        <div class="mb-3">
+            <button class="btn btn-sm btn-control w-100" id="expandAll">Expand All</button>
+            <button class="btn btn-sm btn-control w-100 mt-2" id="collapseAll">Collapse All</button>
+        </div>
+
+        <div class="toc">
+            <div class="toc-item" data-target="section-7-1">7.1 What is State?</div>
+            <div class="toc-item" data-target="section-7-2">7.2 useState Hook Introduction</div>
+            <div class="toc-item" data-target="section-7-3">7.3 State vs Props</div>
+            <div class="toc-item" data-target="section-7-4">7.4 Updating State Correctly</div>
+            <div class="toc-item" data-target="section-7-5">7.5 State Batching</div>
+            <div class="toc-item" data-target="section-7-6">7.6 Functional State Updates</div>
+            <div class="toc-item" data-target="section-7-7">7.7 Multiple State Variables</div>
+            <div class="toc-item" data-target="section-7-8">7.8 State Best Practices</div>
+        </div>
+    </div>
+
+    <!-- Right Content Panel -->
+    <div class="content">
+        <div id="section-7-1">
+            <h2><span class="section-marker">7.1</span> What is State?</h2>
+            <details>
+                <summary>State Definition and Analogy</summary>
+                <p>State represents data that changes over time in a component. It's the memory of your component - what it remembers between renders.</p>
+                
+                <div class="note">
+                    <strong>Core Concept:</strong> State = Component's Memory. Just like your brain remembers your name, state lets components remember information.
+                </div>
+            </details>
+
+            <details>
+                <summary>Why Do We Need State?</summary>
+                <p>Without state, components are static. They can only render based on props they receive from parents. State allows components to be interactive and dynamic.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// Static component - no state
+function Welcome({ name }) {
+  return &lt;h1&gt;Hello, {name}&lt;/h1&gt;;
+}
+
+// Interactive component - with state
+function Counter() {
+  const [count, setCount] = useState(0);
+  
+  return (
+    &lt;div&gt;
+      &lt;p&gt;Count: {count}&lt;/p&gt;
+      &lt;button onClick={() =&gt; setCount(count + 1)}&gt;Increment&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}`}
+                    </code>
+                </div>
+                
+                <p><strong>Real-world examples of state:</strong></p>
+                <ul>
+                    <li>Whether a modal is open or closed</li>
+                    <li>The current value of a form input</li>
+                    <li>The items in a shopping cart</li>
+                    <li>The current tab in a tabbed interface</li>
+                    <li>Whether a button is loading or not</li>
+                    <li>The user's login status</li>
+                </ul>
+            </details>
+
+            <details>
+                <summary>State vs Data Flow</summary>
+                <p>Think of state as the source of truth for your component's behavior. When state changes, React re-renders the component with the new state.</p>
+                
+                <div class="note">
+                    <strong>Analogy:</strong> Imagine a TV remote control. The channel number displayed on screen is the state. When you press a button, you're changing the state (channel), which causes the TV to update its display.
+                </div>
+            </details>
+
+            <details>
+                <summary>When NOT to Use State</summary>
+                <p>Don't put data in state if it can be derived from props or other state.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ❌ BAD - Unnecessary state
+function UserProfile({ firstName, lastName }) {
+  const fullName = useState(firstName + ' ' + lastName); // Don't do this!
+  
+  return &lt;h1&gt;{fullName}&lt;/h1&gt;;
+}
+
+// ✅ GOOD - Derived value
+function UserProfile({ firstName, lastName }) {
+  return &lt;h1&gt;{firstName + ' ' + lastName}&lt;/h1&gt;;
+}
+
+// ❌ BAD - Redundant state
+function Form({ initialEmail }) {
+  const [email, setEmail] = useState(initialEmail);
+  const [isDirty, setIsDirty] = useState(false);
+  
+  const handleEmailChange = (e) =&gt; {
+    setEmail(e.target.value);
+    setIsDirty(true); // This can be derived!
+  };
+  
+  // Instead, calculate isDirty based on comparison
+  const isDirty = email !== initialEmail; // No state needed!
+}`}
+                    </code>
+                </div>
+                
+                <div class="warning">
+                    <strong>Golden Rule:</strong> If you can calculate something from existing state or props, don't store it in state. Store only what cannot be derived.
+                </div>
+            </details>
+        </div>
+
+        <div id="section-7-2">
+            <h2><span class="section-marker">7.2</span> useState Hook Introduction</h2>
+            <details>
+                <summary>What is a Hook?</summary>
+                <p>Hooks are special functions that let you "hook into" React features like state and lifecycle methods from functional components.</p>
+                
+                <div class="note">
+                    <strong>Key Insight:</strong> Hooks were introduced in React 16.8 to solve problems with class components. They make state and side effects available in functional components without classes.
+                </div>
+            </details>
+
+            <details>
+                <summary>useState Syntax and Structure</summary>
+                <p>The useState hook returns an array with two elements: the current state value and a function to update it.</p>
+                
+                <div class="code-block">
+                    <code>
+{`import { useState } from 'react';
+
+function Counter() {
+  // Array destructuring syntax - most common approach
+  const [count, setCount] = useState(0);
+  
+  // Equivalent to:
+  // const stateArray = useState(0);
+  // const count = stateArray[0];
+  // const setCount = stateArray[1];
+  
+  return (
+    &lt;div&gt;
+      &lt;p&gt;Count: {count}&lt;/p&gt;
+      &lt;button onClick={() =&gt; setCount(count + 1)}&gt;Increment&lt;/button&gt;
+      &lt;button onClick={() =&gt; setCount(count - 1)}&gt;Decrement&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}`}
+                    </code>
+                </div>
+                
+                <p><strong>Breaking down the syntax:</strong></p>
+                <ul>
+                    <li><code>const</code> - Declares a constant variable</li>
+                    <li><code>[count, setCount]</code> - Array destructuring pattern</li>
+                    <li><code>useState(0)</code> - Hook call with initial value</li>
+                    <li><code>count</code> - Current state value</li>
+                    <li><code>setCount</code> - State updater function</li>
+                </ul>
+            </details>
+
+            <details>
+                <summary>Initial State Values</summary>
+                <p>You can initialize state with any JavaScript value: numbers, strings, booleans, objects, arrays, or even null.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// Numbers
+const [score, setScore] = useState(0);
+
+// Strings
+const [name, setName] = useState('');
+
+// Booleans
+const [isVisible, setIsVisible] = useState(true);
+
+// Objects
+const [user, setUser] = useState({
+  name: '',
+  email: '',
+  age: 0
+});
+
+// Arrays
+const [items, setItems] = useState(['Apple', 'Banana']);
+
+// Null/undefined
+const [data, setData] = useState(null);
+
+// Complex initial state
+const [formData, setFormData] = useState({
+  name: '',
+  email: '',
+  preferences: {
+    notifications: true,
+    newsletter: false
+  },
+  hobbies: []
+});`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Understanding the Updater Function</summary>
+                <p>The second value from useState is always a function that updates state. You can name it anything, but conventionally use <code>set{StateName}</code>.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// Common naming patterns
+const [count, setCount] = useState(0);
+const [name, setName] = useState('');
+const [isVisible, setIsVisible] = useState(true);
+const [user, setUser] = useState({});
+const [items, setItems] = useState([]);
+
+// You could name them differently (but DON'T!)
+const [value, updateValue] = useState(0); // Works, but confusing!
+const [x, y] = useState(0); // Very confusing - what is y?!
+const [myState, myFunction] = useState(''); // Avoid this!`}
+                    </code>
+                </div>
+                
+                <div class="note">
+                    <strong>Best Practice:</strong> Always use <code>set{CapitalizedStateName}</code> naming convention. It makes your code self-documenting and helps other developers understand your intent immediately.
+                </div>
+            </details>
+
+            <details>
+                <summary>useState Hook Rules</summary>
+                <p>React has strict rules about how hooks work:</p>
+                
+                <ol>
+                    <li><strong>Only call Hooks at the top level:</strong> Don't call hooks inside loops, conditions, or nested functions</li>
+                    <li><strong>Only call Hooks from React functions:</strong> Call hooks from React functional components or custom hooks</li>
+                    <li><strong>Call Hooks in the same order each time:</strong> React relies on order to match hooks between renders</li>
+                </ol>
+                
+                <div class="warning">
+                    <strong>❌ BAD EXAMPLE:</strong>
+                    <pre><code>// DON'T DO THIS
+function MyComponent({ shouldRender }) {
+  if (shouldRender) {
+    const [count, setCount] = useState(0); // Violates rule!
+  }
+  
+  return &lt;div&gt;...&lt;/div&gt;;
+}</code></pre>
+                    
+                    <strong>✅ GOOD EXAMPLE:</strong>
+                    <pre><code>// DO THIS INSTEAD
+function MyComponent({ shouldRender }) {
+  const [count, setCount] = useState(0);
+  
+  if (!shouldRender) {
+    return null;
+  }
+  
+  return &lt;div&gt;...&lt;/div&gt;;
+}</code></pre>
+                </div>
+            </details>
+        </div>
+
+        <div id="section-7-3">
+            <h2><span class="section-marker">7.3</span> State vs Props</h2>
+            <details>
+                <summary>Side-by-Side Comparison</summary>
+                <p>Understanding the difference between state and props is fundamental to React development.</p>
+                
+                <table class="table table-dark table-striped mt-3">
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>State</th>
+                            <th>Props</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Definition</strong></td>
+                            <td>Data managed internally by a component</td>
+                            <td>Data passed from parent to child</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Who controls it?</strong></td>
+                            <td>Component itself</td>
+                            <td>Parent component</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Can change?</strong></td>
+                            <td>Yes, using setState functions</td>
+                            <td>No, they're read-only</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Initialization</strong></td>
+                            <td>Using useState hook</td>
+                            <td>Passed as attributes in JSX</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Scope</strong></td>
+                            <td>Local to component</td>
+                            <td>From parent to child</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Reactivity</strong></td>
+                            <td>Changes trigger re-render</td>
+                            <td>Changes trigger re-render</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Use Case</strong></td>
+                            <td>Form inputs, counters, UI toggles</td>
+                            <td>Configuration, data display, callbacks</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </details>
+
+            <details>
+                <summary>Visual Example: Parent-Child Communication</summary>
+                <p>Let's see state and props working together in a real example:</p>
+                
+                <div class="code-block">
+                    <code>
+{`// Parent Component - Manages state
+function App() {
+  const [count, setCount] = useState(0); // State managed here
+  
+  const increment = () =&gt; setCount(count + 1);
+  
+  return (
+    &lt;div&gt;
+      &lt;Counter 
+        count={count}           // Prop: passing state down
+        onIncrement={increment} // Prop: passing callback up
+      /&gt;
+      &lt;Display value={count} /&gt; // Prop: passing state down
+    &lt;/div&gt;
+  );
+}
+
+// Child Component - Uses props
+function Counter({ count, onIncrement }) {
+  return (
+    &lt;div&gt;
+      &lt;p&gt;Current count: {count}&lt;/p&gt;
+      &lt;button onClick={onIncrement}&gt;Increment&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+
+// Another Child Component - Uses props
+function Display({ value }) {
+  return &lt;p&gt;Displaying: {value}&lt;/p&gt;;
+}`}
+                    </code>
+                </div>
+                
+                <div class="note">
+                    <strong>Analogy:</strong> Think of state as a flashlight battery (managed internally) and props as the light beam (passed outward). The battery powers the flashlight, but the beam illuminates other things.
+                </div>
+            </details>
+
+            <details>
+                <summary>When to Use State vs Props</summary>
+                <p>Ask yourself these questions:</p>
+                
+                <div class="code-block">
+                    <code>
+{`// Use STATE when:
+// - The data changes over time within the component
+// - The data is user input (form fields)
+// - The data affects UI behavior (toggles, modals)
+// - The data needs to persist across renders
+
+// Use PROPS when:
+// - The data comes from a parent component
+// - The data is configuration (colors, sizes, labels)
+// - The data is static or rarely changes
+// - You want to pass callbacks for child-to-parent communication
+
+// 🚫 Never mutate props directly
+function Button({ label, disabled }) {
+  // ❌ BAD - Trying to change prop
+  disabled = true; // This won't work and is wrong!
+  
+  // ✅ GOOD - Use state for internal toggling
+  const [isPressed, setIsPressed] = useState(false);
+  
+  return (
+    &lt;button 
+      disabled={disabled || isPressed}
+      onClick={() =&gt; setIsPressed(!isPressed)}
+    &gt;
+      {label}
+    &lt;/button&gt;
+  );
+}`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Lifting State Up</summary>
+                <p>When multiple components need to share state, lift it up to their closest common ancestor.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ❌ BAD - Duplicate state
+function TemperatureInput({ scale, temperature, onTemperatureChange }) {
+  const handleChange = (e) =&gt; {
+    onTemperatureChange(e.target.value);
+  };
+  
+  return (
+    &lt;input 
+      value={temperature}
+      onChange={handleChange}
+      placeholder={`Enter temperature in ${scale}`}
+    /&gt;
+  );
+}
+
+function Calculator() {
+  // ❌ BAD: Duplicate state in both inputs
+  const [celsius, setCelsius] = useState('');
+  const [fahrenheit, setFahrenheit] = useState('');
+  
+  // This creates synchronization problems!
+  
+  return (
+    &lt;div&gt;
+      &lt;TemperatureInput 
+        scale="C" 
+        temperature={celsius} 
+        onTemperatureChange={setCelsius} 
+      /&gt;
+      &lt;TemperatureInput 
+        scale="F" 
+        temperature={fahrenheit} 
+        onTemperatureChange={setFahrenheit} 
+      /&gt;
+    &lt;/div&gt;
+  );
+}
+
+// ✅ GOOD - Lifted state
+function Calculator() {
+  const [temperature, setTemperature] = useState('');
+  const [scale, setScale] = useState('C');
+  
+  const handleTemperatureChange = (newTemp) =&gt; {
+    setTemperature(newTemp);
+  };
+  
+  const handleScaleChange = (newScale) =&gt; {
+    setScale(newScale);
+  };
+  
+  return (
+    &lt;div&gt;
+      &lt;TemperatureInput 
+        scale={scale} 
+        temperature={temperature} 
+        onTemperatureChange={handleTemperatureChange} 
+      /&gt;
+      &lt;ScaleSelector 
+        scale={scale} 
+        onScaleChange={handleScaleChange} 
+      /&gt;
+    &lt;/div&gt;
+  );
+}`}
+                    </code>
+                </div>
+                
+                <div class="note">
+                    <strong>Rule of Thumb:</strong> If two components need to reflect the same data, move that state to their nearest common parent.
+                </div>
+            </details>
+        </div>
+
+        <div id="section-7-4">
+            <h2><span class="section-marker">7.4</span> Updating State Correctly</h2>
+            <details>
+                <summary>Immutability Principle</summary>
+                <p>Never modify state directly. Always create new values when updating state.</p>
+                
+                <div class="warning">
+                    <strong>❌ BAD EXAMPLES:</strong>
+                    <pre><code>// ❌ Mutating array directly
+const [items, setItems] = useState(['apple', 'banana']);
+items.push('orange'); // DON'T DO THIS!
+setItems(items);
+
+// ❌ Mutating object directly
+const [user, setUser] = useState({ name: 'Alice', age: 25 });
+user.age = 26; // DON'T DO THIS!
+setUser(user);
+
+// ❌ Mutating nested object
+const [config, setConfig] = useState({
+  theme: 'dark',
+  settings: {
+    notifications: true,
+    sound: false
+  }
+});
+config.settings.notifications = false; // DON'T DO THIS!
+setConfig(config);</code></pre>
+                </div>
+                
+                <div class="note">
+                    <strong>Why Immutability Matters:</strong> React uses reference equality to determine if state has changed. If you mutate state directly, React might not detect the change and won't re-render your component!
+                </div>
+            </details>
+
+            <details>
+                <summary>Updating Primitive State</summary>
+                <p>For simple types (numbers, strings, booleans), just pass the new value.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// Numbers
+const [count, setCount] = useState(0);
+setCount(count + 1); // Create new number
+
+// Strings
+const [name, setName] = useState('');
+setName('John Doe'); // Create new string
+
+// Booleans
+const [isVisible, setIsVisible] = useState(true);
+setIsVisible(false); // Create new boolean
+setIsVisible(prev => !prev); // Toggle with functional update (see section 7.6)`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Updating Arrays</summary>
+                <p>Always create a new array when updating state.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// Adding item
+const [items, setItems] = useState(['apple', 'banana']);
+setItems([...items, 'orange']); // Spread operator
+
+// Removing item by index
+const [items, setItems] = useState(['apple', 'banana', 'orange']);
+setItems(items.filter((_, index) =&gt; index !== 1)); // Remove index 1
+
+// Updating item by index
+const [items, setItems] = useState(['apple', 'banana', 'orange']);
+setItems(items.map((item, index) =&gt; 
+  index === 1 ? 'grape' : item
+));
+
+// Clearing array
+const [items, setItems] = useState(['apple', 'banana']);
+setItems([]); // New empty array
+
+// Reordering
+const [items, setItems] = useState(['apple', 'banana', 'orange']);
+setItems([items[2], items[0], items[1]]); // Reverse order}`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Updating Objects</summary>
+                <p>Always create a new object when updating state.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// Simple object update
+const [user, setUser] = useState({ name: 'Alice', age: 25 });
+setUser({ ...user, age: 26 }); // Spread operator
+
+// Nested object update
+const [profile, setProfile] = useState({
+  name: 'Alice',
+  address: {
+    street: '123 Main St',
+    city: 'New York'
+  }
+});
+setProfile({
+  ...profile,
+  address: {
+    ...profile.address,
+    city: 'Boston'
+  }
+});
+
+// Object with computed properties
+const [formData, setFormData] = useState({
+  firstName: '',
+  lastName: '',
+  email: ''
+});
+setFormData({
+  ...formData,
+  [event.target.name]: event.target.value // Dynamic key
+});
+
+// Reset object
+const [user, setUser] = useState({ name: 'Alice', age: 25 });
+setUser({}); // Creates new empty object
+
+// Using functional update for complex logic
+const [user, setUser] = useState({ name: 'Alice', score: 85 });
+setUser(prevUser =&gt; ({
+  ...prevUser,
+  score: prevUser.score + 10
+}));`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Common Mistakes and Fixes</summary>
+                <table class="table table-dark table-striped mt-3">
+                    <thead>
+                        <tr>
+                            <th>Mistake</th>
+                            <th>Why It's Bad</th>
+                            <th>Correct Approach</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>state.push(item)</code></td>
+                            <td>Modifies original array</td>
+                            <td><code>setState([...state, item])</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>state.property = newValue</code></td>
+                            <td>Modifies original object</td>
+                            <td><code>setState({...state, property: newValue})</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>state[index] = newValue</code></td>
+                            <td>Modifies original array</td>
+                            <td><code>setState(state.map((item, i) =&gt; i === index ? newValue : item))</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>setState(state)</code></td>
+                            <td>No change detected (same reference)</td>
+                            <td><code>setState({...state})</code> or <code>setState(state + 1)</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>setState({ ...state, nested: { ...state.nested, prop: value } })</code></td>
+                            <td>Too verbose</td>
+                            <td>Consider using libraries like immer or split into smaller state variables</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </details>
+        </div>
+
+        <div id="section-7-5">
+            <h2><span class="section-marker">7.5</span> State Batching</h2>
+            <details>
+                <summary>What Is State Batching?</summary>
+                <p>React groups multiple state updates into a single re-render for performance optimization. This prevents unnecessary multiple renders.</p>
+                
+                <div class="note">
+                    <strong>Core Concept:</strong> React doesn't re-render after every single state update. Instead, it waits and combines multiple updates into one efficient batch.
+                </div>
+            </details>
+
+            <details>
+                <summary>Batching in Event Handlers</summary>
+                <p>In event handlers, React automatically batches multiple state updates.</p>
+                
+                <div class="code-block">
+                    <code>
+{`function Counter() {
+  const [count, setCount] = useState(0);
+  const [flag, setFlag] = useState(false);
+  
+  const handleClick = () =&gt; {
+    setCount(count + 1);   // These will be batched
+    setCount(count + 1);   // together into ONE render
+    setCount(count + 1);
+    
+    setFlag(true);         // And this too!
+  };
+  
+  // Only ONE re-render occurs, not four!
+  // Final state: count = 3, flag = true
+}`}
+                    </code>
+                </div>
+                
+                <div class="note">
+                    <strong>Performance Benefit:</strong> Without batching, 4 state updates would cause 4 re-renders. With batching, we get 1 re-render → better performance!
+                </div>
+            </details>
+
+            <details>
+                <summary>Batching in Asynchronous Code</summary>
+                <p>Before React 18, batching only worked in event handlers. Now it works everywhere!</p>
+                
+                <div class="code-block">
+                    <code>
+{`// React 18+ - Batching works in async code too!
+function MyComponent() {
+  const [count, setCount] = useState(0);
+  const [loading, setLoading] = useState(false);
+  
+  const fetchData = async () =&gt; {
+    setLoading(true);           // Batched
+    const data = await fetch('/api/data');
+    setCount(data.count);       // Batched
+    setLoading(false);          // All three updates batched!
+  };
+  
+  return (
+    &lt;div&gt;
+      {loading ? 'Loading...' : `Count: ${count}`}
+    &lt;/div&gt;
+  );
+}`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>When Batching Doesn't Work (Legacy Behavior)</summary>
+                <p>In older React versions, batching didn't work in promises, timeouts, or event listeners attached directly to DOM elements.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// BEFORE React 18 - Each update caused separate render
+function MyComponent() {
+  const [count, setCount] = useState(0);
+  
+  useEffect(() =&gt; {
+    setTimeout(() =&gt; {
+      setCount(count + 1); // Separate render
+      setCount(count + 1); // Separate render
+      setCount(count + 1); // Separate render
+    }, 1000);
+  }, []);
+  
+  // Would cause 3 separate re-renders before React 18
+}`}
+                    </code>
+                </div>
+                
+                <div class="warning">
+                    <strong>Important:</strong> In React 18+, all updates are automatically batched regardless of context. This means you can rely on consistent behavior across your entire application.
+                </div>
+            </details>
+
+            <details>
+                <summary>Force Immediate Update (Rare Cases)</summary>
+                <p>If you absolutely need to force an immediate update, use <code>flushSync</code> (use sparingly!):</p>
+                
+                <div class="code-block">
+                    <code>
+{`import { flushSync } from 'react-dom';
+
+function MyComponent() {
+  const [count, setCount] = useState(0);
+  
+  const handleClick = () =&gt; {
+    flushSync(() =&gt; {
+      setCount(count + 1);
+    });
+    // The component re-renders immediately here
+    console.log('Count:', count); // Will show updated value
+  };
+}`}
+                    </code>
+                </div>
+                
+                <div class="note">
+                    <strong>Warning:</strong> <code>flushSync</code> defeats React's performance optimizations. Use it only when you need synchronous rendering for accessibility or layout measurements.
+                </div>
+            </details>
+        </div>
+
+        <div id="section-7-6">
+            <h2><span class="section-marker">7.6</span> Functional State Updates</h2>
+            <details>
+                <summary>Problem: Stale Closures</summary>
+                <p>When you use state in asynchronous code or multiple rapid updates, you might encounter stale closures where your state value isn't up-to-date.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ❌ BAD - Stale closure problem
+function Counter() {
+  const [count, setCount] = useState(0);
+  
+  const handleClick = () =&gt; {
+    // Each click handler has its own closure with count=0
+    setTimeout(() =&gt; {
+      setCount(count + 1); // Still uses old count value!
+    }, 1000);
+  };
+  
+  return (
+    &lt;div&gt;
+      &lt;p&gt;Count: {count}&lt;/p&gt;
+      &lt;button onClick={handleClick}&gt;Increment after delay&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}`}
+                    </code>
+                </div>
+                
+                <div class="warning">
+                    <strong>Result:</strong> Clicking the button multiple times quickly will only increment once because each timeout closure captures the same initial value of count (0).
+                </div>
+            </details>
+
+            <details>
+                <summary>Solution: Functional Updates</summary>
+                <p>Pass a function to the state setter that receives the previous state as an argument.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ✅ GOOD - Functional update
+function Counter() {
+  const [count, setCount] = useState(0);
+  
+  const handleClick = () =&gt; {
+    setTimeout(() =&gt; {
+      setCount(prevCount =&gt; prevCount + 1); // Uses current state!
+    }, 1000);
+  };
+  
+  return (
+    &lt;div&gt;
+      &lt;p&gt;Count: {count}&lt;/p&gt;
+      &lt;button onClick={handleClick}&gt;Increment after delay&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}`}
+                    </code>
+                </div>
+                
+                <div class="note">
+                    <strong>How it works:</strong> The function you pass gets called with the most recent state value, ensuring you're always working with the correct data.
+                </div>
+            </details>
+
+            <details>
+                <summary>Multiple Rapid Updates</summary>
+                <p>Functional updates are essential when multiple state updates happen in quick succession.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ❌ BAD - Can lead to incorrect results
+function Counter() {
+  const [count, setCount] = useState(0);
+  
+  const handleClick = () =&gt; {
+    setCount(count + 1);  // Uses current count (0)
+    setCount(count + 1);  // Also uses current count (0) - not updated yet!
+    setCount(count + 1);  // Still uses current count (0)
+    // Result: count becomes 1, not 3!
+  };
+  
+  // ✅ GOOD - Functional updates ensure correctness
+  const handleClick = () =&gt; {
+    setCount(prev =&gt; prev + 1); // Uses previous value (0)
+    setCount(prev =&gt; prev + 1); // Uses previous value (1)
+    setCount(prev =&gt; prev + 1); // Uses previous value (2)
+    // Result: count becomes 3!
+  };
+}`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Complex State Updates</summary>
+                <p>Functional updates are perfect for complex state logic involving multiple dependencies.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// Managing a shopping cart
+function ShoppingCart() {
+  const [cart, setCart] = useState([]);
+  
+  const addToCart = (product) =&gt; {
+    setCart(prevCart =&gt; {
+      // Find existing item
+      const existingItem = prevCart.find(item =&gt; item.id === product.id);
+      
+      if (existingItem) {
+        // Update quantity
+        return prevCart.map(item =&gt; 
+          item.id === product.id 
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      } else {
+        // Add new item
+        return [...prevCart, { ...product, quantity: 1 }];
+      }
+    });
+  };
+  
+  const removeFromCart = (productId) =&gt; {
+    setCart(prevCart =&gt; 
+      prevCart.filter(item =&gt; item.id !== productId)
+    );
+  };
+  
+  const updateQuantity = (productId, newQuantity) =&gt; {
+    if (newQuantity &lt;= 0) {
+      removeFromCart(productId);
+      return;
+    }
+    
+    setCart(prevCart =&gt; 
+      prevCart.map(item =&gt; 
+        item.id === productId 
+          ? { ...item, quantity: newQuantity }
+          : item
+      )
+    );
+  };
+}`}
+                    </code>
+                </div>
+                
+                <div class="note">
+                    <strong>Pro Tip:</strong> Functional updates are especially important when your state depends on previous state values. Always prefer them when in doubt!
+                </div>
+            </details>
+
+            <details>
+                <summary>When Not to Use Functional Updates</summary>
+                <p>Don't overuse functional updates. Use them only when necessary.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ✅ GOOD - Simple case, no dependency on previous state
+const [isVisible, setIsVisible] = useState(true);
+const toggle = () =&gt; setIsVisible(!isVisible); // Fine!
+
+// ✅ GOOD - Depends on previous state
+const [count, setCount] = useState(0);
+const increment = () =&gt; setCount(prev =&gt; prev + 1); // Better!
+
+// ✅ GOOD - Complex calculation
+const [user, setUser] = useState({ name: '', score: 0 });
+const updateUser = (updates) =&gt; {
+  setUser(prev =&gt; ({
+    ...prev,
+    ...updates,
+    lastUpdated: new Date().toISOString()
+  }));
+};`}
+                    </code>
+                </div>
+            </details>
+        </div>
+
+        <div id="section-7-7">
+            <h2><span class="section-marker">7.7</span> Multiple State Variables</h2>
+            <details>
+                <summary>Separate State for Different Concerns</summary>
+                <p>Use multiple useState calls for different pieces of state. Don't try to put everything in one state object unless it's naturally related.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ✅ GOOD - Separate state variables for different concerns
+function Form() {
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [age, setAge] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState({});
+  
+  return (
+    &lt;form&gt;
+      &lt;input 
+        value={name} 
+        onChange={(e) =&gt; setName(e.target.value)} 
+        placeholder="Name"
+      /&gt;
+      &lt;input 
+        value={email} 
+        onChange={(e) =&gt; setEmail(e.target.value)} 
+        placeholder="Email"
+      /&gt;
+      &lt;input 
+        value={age} 
+        onChange={(e) =&gt; setAge(e.target.value)} 
+        placeholder="Age"
+      /&gt;
+      &lt;button onClick={handleSubmit} disabled={isSubmitting}&gt;
+        {isSubmitting ? 'Submitting...' : 'Submit'}
+      &lt;/button&gt;
+    &lt;/form&gt;
+  );
+}`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Grouping Related State</summary>
+                <p>When state values are tightly coupled, group them in a single object.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ✅ GOOD - Grouped related state
+function UserSettings() {
+  const [user, setUser] = useState({
+    name: '',
+    email: '',
+    avatar: null,
+    theme: 'light'
+  });
+  
+  const [preferences, setPreferences] = useState({
+    notifications: true,
+    newsletter: false,
+    language: 'en'
+  });
+  
+  const handleInputChange = (field, value) =&gt; {
+    setUser(prev =&gt; ({ ...prev, [field]: value }));
+  };
+  
+  const handlePreferenceChange = (field, value) =&gt; {
+    setPreferences(prev =&gt; ({ ...prev, [field]: value }));
+  };
+  
+  return (
+    &lt;div&gt;
+      &lt;input 
+        value={user.name} 
+        onChange={(e) =&gt; handleInputChange('name', e.target.value)} 
+        placeholder="Your name"
+      /&gt;
+      &lt;input 
+        value={user.email} 
+        onChange={(e) =&gt; handleInputChange('email', e.target.value)} 
+        placeholder="Email"
+      /&gt;
+      &lt;label&gt;
+        &lt;input 
+          type="checkbox" 
+          checked={preferences.notifications} 
+          onChange={(e) =&gt; handlePreferenceChange('notifications', e.target.checked)} 
+        /&gt;
+        Email notifications
+      &lt;/label&gt;
+    &lt;/div&gt;
+  );
+}`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>When NOT to Group State</summary>
+                <p>Don't group unrelated state just because you think it looks cleaner.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ❌ BAD - Mixing unrelated state
+function App() {
+  const [appState, setAppState] = useState({
+    user: { name: '', email: '' },
+    isLoading: false,
+    darkMode: false,
+    cartItems: [],
+    selectedTab: 'home',
+    notificationCount: 0,
+    lastUpdated: null
+  });
+  
+  // Problem: Every small change forces re-render of entire app state
+  // Hard to track which part of state changed
+  // Difficult to optimize with React.memo
+  
+  return &lt;div&gt;...&lt;/div&gt;;
+}
+
+// ✅ GOOD - Separated concerns
+function App() {
+  const [user, setUser] = useState({ name: '', email: '' });
+  const [isLoading, setIsLoading] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+  const [cartItems, setCartItems] = useState([]);
+  const [selectedTab, setSelectedTab] = useState('home');
+  const [notificationCount, setNotificationCount] = useState(0);
+  const [lastUpdated, setLastUpdated] = useState(null);
+  
+  return &lt;div&gt;...&lt;/div&gt;;
+}`}
+                    </code>
+                </div>
+                
+                <div class="warning">
+                    <strong>Performance Insight:</strong> React re-renders components when state changes. If you have one large state object, any change to any property triggers a full re-render. Separate state variables allow React to be more granular in its updates.
+                </div>
+            </details>
+
+            <details>
+                <summary>Custom Hooks for State Logic</summary>
+                <p>Extract complex state logic into custom hooks for reusability.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// Custom hook for form handling
+function useForm(initialValues) {
+  const [values, setValues] = useState(initialValues);
+  const [errors, setErrors] = useState({});
+  
+  const handleChange = (e) =&gt; {
+    const { name, value } = e.target;
+    setValues(prev =&gt; ({ ...prev, [name]: value }));
+    // Clear error when field is modified
+    if (errors[name]) {
+      setErrors(prev =&gt; ({ ...prev, [name]: '' }));
+    }
+  };
+  
+  const setFieldError = (fieldName, message) =&gt; {
+    setErrors(prev =&gt; ({ ...prev, [fieldName]: message }));
+  };
+  
+  return {
+    values,
+    errors,
+    handleChange,
+    setFieldError,
+    reset: () =&gt; setValues(initialValues),
+    setValues
+  };
+}
+
+// Usage in component
+function LoginForm() {
+  const { values, errors, handleChange, setFieldError } = useForm({
+    email: '',
+    password: ''
+  });
+  
+  const handleSubmit = (e) =&gt; {
+    e.preventDefault();
+    
+    const newErrors = {};
+    if (!values.email) newErrors.email = 'Email is required';
+    if (!values.password) newErrors.password = 'Password is required';
+    
+    if (Object.keys(newErrors).length &gt; 0) {
+      setErrors(newErrors);
+      return;
+    }
+    
+    // Submit logic...
+  };
+  
+  return (
+    &lt;form onSubmit={handleSubmit}&gt;
+      &lt;input 
+        name="email" 
+        value={values.email} 
+        onChange={handleChange} 
+        placeholder="Email"
+      /&gt;
+      {errors.email &amp;&amp; &lt;span className="error"&gt;{errors.email}&lt;/span&gt;}
+      
+      &lt;input 
+        name="password" 
+        type="password"
+        value={values.password} 
+        onChange={handleChange} 
+        placeholder="Password"
+      /&gt;
+      {errors.password &amp;&amp; &lt;span className="error"&gt;{errors.password}&lt;/span&gt;}
+      
+      &lt;button type="submit"&gt;Login&lt;/button&gt;
+    &lt;/form&gt;
+  );
+}`}
+                    </code>
+                </div>
+                
+                <div class="note">
+                    <strong>Power of Custom Hooks:</strong> This pattern lets you reuse form logic across multiple components while keeping state management clean and testable.
+                </div>
+            </details>
+        </div>
+
+        <div id="section-7-8">
+            <h2><span class="section-marker">7.8</span> State Best Practices</h2>
+            <details>
+                <summary>1. Keep State Minimal</summary>
+                <p>Store only what's necessary. Derive everything else from state.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ❌ BAD - Too much state
+function TodoList() {
+  const [todos, setTodos] = useState([]);
+  const [completedCount, setCompletedCount] = useState(0);
+  const [activeCount, setActiveCount] = useState(0);
+  const [filter, setFilter] = useState('all');
+  const [hasChanged, setHasChanged] = useState(false);
+  
+  // This is redundant - can be calculated!
+  const completedCount = todos.filter(t =&gt; t.completed).length;
+  const activeCount = todos.length - completedCount;
+  
+  return &lt;div&gt;...&lt;/div&gt;;
+}
+
+// ✅ GOOD - Minimal state
+function TodoList() {
+  const [todos, setTodos] = useState([]);
+  const [filter, setFilter] = useState('all');
+  
+  // Derived values
+  const filteredTodos = todos.filter(todo =&gt; {
+    if (filter === 'active') return !todo.completed;
+    if (filter === 'completed') return todo.completed;
+    return true;
+  });
+  
+  const completedCount = todos.filter(t =&gt; t.completed).length;
+  const activeCount = todos.length - completedCount;
+  
+  return &lt;div&gt;...&lt;/div&gt;;
+}`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>2. Use Descriptive Names</summary>
+                <p>Names should clearly indicate what the state represents.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ❌ BAD - Vague names
+const [val, setVal] = useState('');
+const [show, setShow] = useState(false);
+const [data, setData] = useState([]);
+
+// ✅ GOOD - Descriptive names
+const [username, setUsername] = useState('');
+const [isModalOpen, setIsModalOpen] = useState(false);
+const [userPosts, setUserPosts] = useState([]);
+const [isLoading, setIsLoading] = useState(false);
+const [validationErrors, setValidationErrors] = useState({});`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>3. Initialize State Properly</summary>
+                <p>Always initialize state with appropriate default values.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ❌ BAD - Undefined state
+const [user, setUser] = useState(); // Don't do this!
+const [items, setItems] = useState(); // Don't do this!
+
+// ✅ GOOD - Explicit defaults
+const [user, setUser] = useState(null);
+const [items, setItems] = useState([]);
+const [count, setCount] = useState(0);
+const [isActive, setIsActive] = useState(false);
+const [settings, setSettings] = useState({ theme: 'light' });
+
+// ✅ GOOD - Complex initialization
+const [formData, setFormData] = useState({
+  name: '',
+  email: '',
+  phone: '',
+  newsletter: false
+});`}
+                    </code>
+                </div>
+                
+                <div class="note">
+                    <strong>Why it matters:</strong> Initializing with proper defaults prevents runtime errors and makes your component's behavior predictable.
+                </div>
+            </details>
+
+            <details>
+                <summary>4. Avoid State Mutation</summary>
+                <p>Always treat state as immutable. This is non-negotiable.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ❌ BAD - Direct mutation
+const [items, setItems] = useState(['apple', 'banana']);
+items.push('orange'); // NEVER DO THIS!
+setItems(items);
+
+// ✅ GOOD - Immutable updates
+const [items, setItems] = useState(['apple', 'banana']);
+setItems([...items, 'orange']); // Create new array
+
+// ✅ GOOD - Object updates
+const [user, setUser] = useState({ name: 'Alice', age: 25 });
+setUser({ ...user, age: 26 }); // Create new object
+
+// ✅ GOOD - Nested updates
+const [config, setConfig] = useState({
+  theme: 'dark',
+  colors: {
+    primary: '#007bff',
+    secondary: '#6c757d'
+  }
+});
+setConfig({
+  ...config,
+  colors: {
+    ...config.colors,
+    primary: '#0056b3'
+  }
+});`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>5. Use Functional Updates for Complex Logic</summary>
+                <p>When state depends on previous state, always use functional updates.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ❌ BAD - Can cause race conditions
+const [count, setCount] = useState(0);
+const increment = () =&gt; {
+  setCount(count + 1);
+  setCount(count + 1);
+  setCount(count + 1);
+}; // Results in count = 1 instead of 3!
+
+// ✅ GOOD - Functional updates guarantee correctness
+const [count, setCount] = useState(0);
+const increment = () =&gt; {
+  setCount(prev =&gt; prev + 1);
+  setCount(prev =&gt; prev + 1);
+  setCount(prev =&gt; prev + 1);
+}; // Results in count = 3!`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>6. Split Large Components</summary>
+                <p>If you have many state variables, consider splitting the component.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ❌ BAD - Monolithic component
+function Dashboard() {
+  const [user, setUser] = useState({});
+  const [posts, setPosts] = useState([]);
+  const [comments, setComments] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [theme, setTheme] = useState('light');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState('home');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
+  // Huge render function...
+  return &lt;div&gt;...&lt;/div&gt;;
+}
+
+// ✅ GOOD - Split into smaller components
+function Dashboard() {
+  const [user, setUser] = useState({});
+  const [theme, setTheme] = useState('light');
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  
+  return (
+    &lt;div&gt;
+      &lt;Header user={user} theme={theme} setTheme={setTheme} /&gt;
+      &lt;Sidebar 
+        isOpen={sidebarOpen} 
+        onToggle={setSidebarOpen} 
+      /&gt;
+      &lt;MainContent 
+        user={user} 
+        theme={theme} 
+      /&gt;
+    &lt;/div&gt;
+  );
+}
+
+function MainContent({ user, theme }) {
+  const [posts, setPosts] = useState([]);
+  const [comments, setComments] = useState([]);
+  const [notifications, setNotifications] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [activeTab, setActiveTab] = useState('home');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
+  return (
+    &lt;div&gt;
+      &lt;SearchBar searchTerm={searchTerm} setSearchTerm={setSearchTerm} /&gt;
+      &lt;Tabs activeTab={activeTab} setActiveTab={setActiveTab} /&gt;
+      &lt;PostFeed posts={posts} setPosts={setPosts} /&gt;
+      &lt;CommentSection comments={comments} setComments={setComments} /&gt;
+      &lt;NotificationPanel notifications={notifications} /&gt;
+    &lt;/div&gt;
+  );
+}`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>7. Test Your State Logic</summary>
+                <p>Write tests for state transitions to ensure reliability.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// Example test with Jest and React Testing Library
+test('increments counter correctly', () =&gt; {
+  render(&lt;Counter /&gt;);
+  
+  const button = screen.getByRole('button', { name: /increment/i });
+  const display = screen.getByText(/count: 0/i);
+  
+  expect(display).toBeInTheDocument();
+  
+  fireEvent.click(button);
+  expect(screen.getByText(/count: 1/i)).toBeInTheDocument();
+  
+  fireEvent.click(button);
+  fireEvent.click(button);
+  expect(screen.getByText(/count: 3/i)).toBeInTheDocument();
+});`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>8. Document Your State</summary>
+                <p>Add comments explaining why state exists and how it's used.</p>
+                
+                <div class="code-block">
+                    <code>
+{`function ChatApp() {
+  // State tracking: current message being typed
+  // Updated on every keystroke via onChange
+  // Submitted via sendButton onClick
+  const [message, setMessage] = useState('');
+  
+  // State tracking: chat history
+  // Initialized with sample messages
+  // Updated when new messages are sent
+  const [messages, setMessages] = useState([
+    { id: 1, text: 'Hello!', sender: 'Alice' },
+    { id: 2, text: 'Hi there!', sender: 'Bob' }
+  ]);
+  
+  // State tracking: typing indicator
+  // Shows when another user is typing
+  // Set to true when receiving typing event from API
+  // Set to false after 2 seconds of inactivity
+  const [isTyping, setIsTyping] = useState(false);
+  
+  // State tracking: connection status
+  // True when WebSocket connection is established
+  // False when disconnected
+  const [connected, setConnected] = useState(false);
+  
+  return &lt;div&gt;...&lt;/div&gt;;
+}`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Final Checklist: State Health Check</summary>
+                <ul>
+                    <li>☑️ Is my state minimal? Can I derive anything?</li>
+                    <li>☑️ Are my state names descriptive?</li>
+                    <li>☑️ Am I initializing state properly?</li>
+                    <li>☑️ Am I mutating state anywhere? (Fix it!)</li>
+                    <li>☑️ Do I use functional updates when state depends on previous state?</li>
+                    <li>☑️ Have I split large components with many state variables?</li>
+                    <li>☑️ Do I have tests for state transitions?</li>
+                    <li>☑️ Is my state logic documented?</li>
+                </ul>
+                
+                <div class="note">
+                    <strong>Remember:</strong> Good state management is invisible. Users shouldn't notice how you manage state—they should just experience a smooth, responsive UI. When your state is well-managed, your components become predictable, testable, and maintainable.
+                </div>
+            </details>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Expand/Collapse All Controls
+        document.getElementById('expandAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.setAttribute('open', '');
+            });
+        });
+
+        document.getElementById('collapseAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.removeAttribute('open');
+            });
+        });
+
+        // Search functionality for TOC
+        document.getElementById('searchToc').addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase();
+            const tocItems = document.querySelectorAll('.toc-item');
+            
+            tocItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(query)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        // Smooth scrolling for TOC navigation
+        document.querySelectorAll('.toc-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target');
+                const targetElement = document.getElementById(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Highlight active item
+                    document.querySelectorAll('.toc-item').forEach(el => el.classList.remove('active'));
+                    this.classList.add('active');
+                }
+            });
+        });
+
+        // Highlight code snippets with simple syntax highlighting
+        document.querySelectorAll('pre code').forEach(block => {
+            // Simple syntax highlighting for JSX
+            const content = block.textContent;
+            
+            // Highlight JSX tags
+            let highlighted = content
+                .replace(/(&lt;\/?)([a-zA-Z][a-zA-Z0-9]*)(&gt;)/g, '$1<span class="jsx-tag">$2</span>$3')
+                .replace(/([a-zA-Z]+)=/g, '<span class="jsx-attr">$1</span>=')
+                .replace(/=["'][^"']*["']/g, match => `<span class="jsx-value">${match}</span>`)
+                .replace(/(true|false|null|undefined)/g, '<span class="keyword">$1</span>')
+                .replace(/\/\/.*$/gm, match => `<span class="comment">${match}</span>`);
+            
+            block.innerHTML = highlighted;
+        });
+
+        // Initialize first section as active
+        document.querySelector('.toc-item').classList.add('active');
+
+        // Add smooth scroll to all anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+<!-- Code injected by live-server -->
+<script>
+	// <![CDATA[  <-- For SVG support
+	if ('WebSocket' in window) {
+		(function () {
+			function refreshCSS() {
+				var sheets = [].slice.call(document.getElementsByTagName("link"));
+				var head = document.getElementsByTagName("head")[0];
+				for (var i = 0; i < sheets.length; ++i) {
+					var elem = sheets[i];
+					var parent = elem.parentElement || head;
+					parent.removeChild(elem);
+					var rel = elem.rel;
+					if (elem.href && typeof rel != "string" || rel.length == 0 || rel.toLowerCase() == "stylesheet") {
+						var url = elem.href.replace(/(&|\?)_cacheOverride=\d+/, '');
+						elem.href = url + (url.indexOf('?') >= 0 ? '&' : '?') + '_cacheOverride=' + (new Date().valueOf());
+					}
+					parent.appendChild(elem);
+				}
+			}
+			var protocol = window.location.protocol === 'http:' ? 'ws://' : 'wss://';
+			var address = protocol + window.location.host + window.location.pathname + '/ws';
+			var socket = new WebSocket(address);
+			socket.onmessage = function (msg) {
+				if (msg.data == 'reload') window.location.reload();
+				else if (msg.data == 'refreshcss') refreshCSS();
+			};
+			if (sessionStorage && !sessionStorage.getItem('IsThisFirstTime_Log_From_LiveServer')) {
+				console.log('Live reload enabled.');
+				sessionStorage.setItem('IsThisFirstTime_Log_From_LiveServer', true);
+			}
+		})();
+	}
+	else {
+		console.error('Upgrade your browser. This Browser is NOT supported WebSocket for Live-Reloading.');
+	}
+	// ]]>
+</script>
+</body>
+</html>

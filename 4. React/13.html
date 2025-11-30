@@ -1,0 +1,2164 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter 8: Event Handling</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00f5ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --border-color: #00c4ff;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .sidebar {
+            background-color: #0d2140;
+            border-right: 2px solid var(--border-color);
+            height: 100vh;
+            position: fixed;
+            overflow-y: auto;
+            padding: 1rem;
+            width: 280px;
+            box-shadow: 5px 0 15px rgba(0, 212, 255, 0.1);
+        }
+
+        .content {
+            margin-left: 280px;
+            padding: 2rem;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.3rem;
+            margin-top: 2rem;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: var(--amber);
+            border-bottom: 3px solid var(--amber);
+        }
+
+        .toc-item {
+            margin: 0.5rem 0;
+            padding: 0.4rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        .toc-item:hover {
+            background-color: rgba(0, 245, 255, 0.1);
+            padding-left: 0.8rem;
+        }
+
+        .toc-item.active {
+            background-color: rgba(0, 245, 255, 0.2);
+            border-left: 3px solid var(--cyan);
+        }
+
+        .toc-subitem {
+            margin-left: 1.5rem;
+            font-size: 0.9rem;
+            color: #b8c4d6;
+            padding: 0.2rem 0;
+        }
+
+        .toc-subitem:hover {
+            background-color: rgba(0, 245, 255, 0.08);
+            padding-left: 0.5rem;
+        }
+
+        .search-box {
+            margin: 1rem 0;
+            background-color: #1a2a40;
+            border: 1px solid var(--border-color);
+            color: var(--text-light);
+        }
+
+        .code-block {
+            background-color: #121e33;
+            border-left: 4px solid var(--amber);
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 8px rgba(0, 212, 255, 0.1);
+        }
+
+        pre code {
+            color: var(--cyan);
+            display: block;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.2);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+
+        .note {
+            background-color: rgba(0, 245, 255, 0.1);
+            border-left: 4px solid var(--cyan);
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .warning {
+            background-color: rgba(255, 183, 77, 0.15);
+            border-left: 4px solid var(--amber);
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        details {
+            margin: 1.5rem 0;
+            border: 1px solid rgba(0, 245, 255, 0.3);
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #0d1b33;
+        }
+
+        summary {
+            padding: 1rem;
+            background-color: #122647;
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--cyan);
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s ease;
+        }
+
+        summary:hover {
+            background-color: #1a3155;
+        }
+
+        summary::before {
+            content: "▶ ";
+            font-size: 0.9rem;
+            transition: transform 0.3s ease;
+        }
+
+        details[open] > summary::before {
+            content: "▼ ";
+            transform: rotate(90deg);
+        }
+
+        .btn-control {
+            margin-bottom: 1rem;
+            background-color: rgba(0, 245, 255, 0.15);
+            border: 1px solid var(--border-color);
+            color: var(--cyan);
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .btn-control:hover {
+            background-color: rgba(0, 245, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .author-info {
+            color: #b8c4d6;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border-bottom: 1px solid rgba(0, 245, 255, 0.2);
+        }
+
+        .section-marker {
+            color: var(--amber);
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        .jsx-tag {
+            color: var(--amber);
+        }
+
+        .jsx-attr {
+            color: #a0eaff;
+        }
+
+        .jsx-value {
+            color: #a8f5ff;
+        }
+
+        .keyword {
+            color: #ff9e6d;
+        }
+
+        .comment {
+            color: #5a7e9d;
+            font-style: italic;
+        }
+
+        .event-name {
+            color: var(--amber);
+            font-weight: 600;
+        }
+
+        .form-control {
+            background-color: #1a2a40;
+            border-color: var(--border-color);
+            color: var(--text-light);
+        }
+
+        .form-label {
+            color: var(--cyan);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 991px) {
+            .sidebar {
+                width: 250px;
+            }
+            .content {
+                margin-left: 250px;
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 2px solid var(--border-color);
+            }
+            .content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Left Sidebar -->
+    <div class="sidebar">
+        <h3 class="text-center mb-4">Chapter 8: Event Handling</h3>
+        <p class="author-info">Mastered by React Tutor • For Deep Understanding</p>
+
+        <div class="mb-4">
+            <input type="text" class="form-control search-box" id="searchToc" placeholder="Search topics...">
+        </div>
+
+        <div class="mb-3">
+            <button class="btn btn-sm btn-control w-100" id="expandAll">Expand All</button>
+            <button class="btn btn-sm btn-control w-100 mt-2" id="collapseAll">Collapse All</button>
+        </div>
+
+        <div class="toc">
+            <div class="toc-item" data-target="section-8-1">8.1 Handling Events in React</div>
+            <div class="toc-item" data-target="section-8-2">8.2 SyntheticEvent System</div>
+            <div class="toc-item" data-target="section-8-3">8.3 Event Handler Patterns</div>
+            <div class="toc-item" data-target="section-8-4">8.4 Passing Arguments to Event Handlers</div>
+            <div class="toc-item" data-target="section-8-5">8.5 Form Handling Basics</div>
+            <div class="toc-item" data-target="section-8-6">8.6 Controlled vs Uncontrolled Components</div>
+            <div class="toc-item" data-target="section-8-7">8.7 Form Validation Fundamentals</div>
+        </div>
+    </div>
+
+    <!-- Right Content Panel -->
+    <div class="content">
+        <div id="section-8-1">
+            <h2><span class="section-marker">8.1</span> Handling Events in React</h2>
+            <details>
+                <summary>Event Handling Philosophy</summary>
+                <p>In React, event handling follows a consistent pattern that's similar to HTML but with important differences. Events are named using camelCase rather than lowercase, and you pass a function as the event handler rather than a string.</p>
+                
+                <div class="note">
+                    <strong>Core Concept:</strong> React events are synthetic events that wrap native browser events, providing cross-browser compatibility and performance optimizations.
+                </div>
+            </details>
+
+            <details>
+                <summary>Basic Event Syntax</summary>
+                <p>Compare HTML and React event handling:</p>
+                
+                <div class="code-block">
+                    <code>
+{`// HTML - Traditional approach
+&lt;button onclick="handleClick()"&gt;Click me&lt;/button&gt;
+
+// React - Modern approach
+&lt;button onClick={handleClick}&gt;Click me&lt;/button&gt;
+
+// HTML - With inline JavaScript
+&lt;input onkeyup="validateInput(this.value)"&gt;
+
+// React - With function reference
+&lt;input onKeyUp={(e) =&gt; validateInput(e.target.value)} /&gt;`}
+                    </code>
+                </div>
+                
+                <p><strong>Key Differences:</strong></p>
+                <ul>
+                    <li>React uses camelCase: <code>onClick</code>, not <code>onclick</code></li>
+                    <li>React passes functions, not strings</li>
+                    <li>React events are synthetic (cross-browser compatible)</li>
+                    <li>Preventing default behavior requires explicit call to <code>e.preventDefault()</code></li>
+                </ul>
+            </details>
+
+            <details>
+                <summary>Common Event Types</summary>
+                <p>React supports most standard DOM events with consistent naming:</p>
+                
+                <div class="code-block">
+                    <code>
+{`// Mouse Events
+onClick, onContextMenu, onDoubleClick, onDrag, onDragEnd, onDragEnter, 
+onDragExit, onDragLeave, onDragOver, onDragStart, onDrop, onMouseDown, 
+onMouseEnter, onMouseLeave, onMouseMove, onMouseOut, onMouseOver, onMouseUp
+
+// Form Events
+onChange, onInput, onSubmit, onFocus, onBlur, onReset, onPaste
+
+// Keyboard Events
+onKeyDown, onKeyPress, onKeyUp
+
+// Touch Events
+onTouchCancel, onTouchEnd, onTouchMove, onTouchStart
+
+// Selection Events
+onSelect
+
+// Clipboard Events
+onCopy, onCut, onPaste
+
+// Animation Events
+onAnimationStart, onAnimationEnd, onAnimationIteration
+
+// Transition Events
+onTransitionEnd`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Simple Event Example</summary>
+                <p>A complete example showing event handling in action:</p>
+                
+                <div class="code-block">
+                    <code>
+{`import { useState } from 'react';
+
+function Counter() {
+  const [count, setCount] = useState(0);
+  
+  // Event handler function
+  const handleIncrement = () =&gt; {
+    setCount(count + 1);
+  };
+  
+  const handleDecrement = () =&gt; {
+    setCount(count - 1);
+  };
+  
+  const handleReset = () =&gt; {
+    setCount(0);
+  };
+  
+  return (
+    &lt;div&gt;
+      &lt;p&gt;Count: {count}&lt;/p&gt;
+      
+      &lt;button onClick={handleIncrement}&gt;+1&lt;/button&gt;
+      &lt;button onClick={handleDecrement}&gt;-1&lt;/button&gt;
+      &lt;button onClick={handleReset}&gt;Reset&lt;/button&gt;
+      
+      &lt;!-- You can also use arrow functions directly --&gt;
+      &lt;button onClick={() =&gt; setCount(count + 10)}&gt;+10&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}`}
+                    </code>
+                </div>
+                
+                <div class="note">
+                    <strong>Important:</strong> When you write <code>onClick={handleIncrement}</code>, you're passing a reference to the function. When you write <code>onClick={handleIncrement()}</code>, you're calling the function immediately during render!
+                </div>
+            </details>
+        </div>
+
+        <div id="section-8-2">
+            <h2><span class="section-marker">8.2</span> SyntheticEvent System</h2>
+            <details>
+                <summary>What is SyntheticEvent?</summary>
+                <p>React's SyntheticEvent is a cross-browser wrapper around the browser's native event. It ensures consistent behavior across different browsers and provides additional features.</p>
+                
+                <div class="note">
+                    <strong>Core Insight:</strong> SyntheticEvent is React's way of abstracting away browser inconsistencies so you don't have to worry about them.
+                </div>
+            </details>
+
+            <details>
+                <summary>Properties and Methods</summary>
+                <p>SyntheticEvent has the same interface as the browser's native event, plus some additional features:</p>
+                
+                <div class="code-block">
+                    <code>
+{`function EventHandler() {
+  const handleClick = (event) =&gt; {
+    console.log('Event type:', event.type);           // 'click'
+    console.log('Target element:', event.target);     // The element clicked
+    console.log('Current target:', event.currentTarget); // Element with event listener
+    console.log('Page X/Y:', event.pageX, event.pageY); // Coordinates relative to page
+    console.log('Client X/Y:', event.clientX, event.clientY); // Coordinates relative to viewport
+    
+    // Prevent default behavior
+    event.preventDefault();
+    
+    // Stop propagation (bubbling)
+    event.stopPropagation();
+    
+    // Check for modifier keys
+    console.log('Ctrl key pressed:', event.ctrlKey);
+    console.log('Shift key pressed:', event.shiftKey);
+    console.log('Alt key pressed:', event.altKey);
+    console.log('Meta key pressed:', event.metaKey);
+  };
+  
+  return (
+    &lt;button onClick={handleClick}&gt;Click me&lt;/button&gt;
+  );
+}`}
+                    </code>
+                </div>
+                
+                <table class="table table-dark table-striped mt-3">
+                    <thead>
+                        <tr>
+                            <th>Property</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>bubbles</code></td>
+                            <td>Boolean indicating if event bubbles up</td>
+                        </tr>
+                        <tr>
+                            <td><code>cancelable</code></td>
+                            <td>Boolean indicating if event can be canceled</td>
+                        </tr>
+                        <tr>
+                            <td><code>currentTarget</code></td>
+                            <td>The element whose event listener triggered the event</td>
+                        </tr>
+                        <tr>
+                            <td><code>defaultPrevented</code></td>
+                            <td>Boolean indicating if preventDefault() was called</td>
+                        </tr>
+                        <tr>
+                            <td><code>eventPhase</code></td>
+                            <td>Which phase of the event flow is being processed</td>
+                        </tr>
+                        <tr>
+                            <td><code>isTrusted</code></td>
+                            <td>Whether the event was generated by a user action</td>
+                        </tr>
+                        <tr>
+                            <td><code>target</code></td>
+                            <td>The element where the event originated</td>
+                        </tr>
+                        <tr>
+                            <td><code>timeStamp</code></td>
+                            <td>Time when the event was created</td>
+                        </tr>
+                        <tr>
+                            <td><code>type</code></td>
+                            <td>Type of event (click, submit, etc.)</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </details>
+
+            <details>
+                <summary>Event Pooling and Performance</summary>
+                <p>For performance reasons, SyntheticEvent objects are pooled. This means the event object is reused after the event handler completes.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ❌ BAD - Trying to access event asynchronously
+function BadHandler() {
+  const handleClick = (event) =&gt; {
+    setTimeout(() =&gt; {
+      console.log(event.target.value); // ❌ This will be null!
+    }, 1000);
+  };
+  
+  return &lt;button onClick={handleClick}&gt;Click me&lt;/button&gt;;
+}
+
+// ✅ GOOD - Extract values immediately
+function GoodHandler() {
+  const handleClick = (event) =&gt; {
+    const value = event.target.value; // Extract immediately
+    setTimeout(() =&gt; {
+      console.log(value); // ✅ This works!
+    }, 1000);
+  };
+  
+  return &lt;button onClick={handleClick}&gt;Click me&lt;/button&gt;;
+}
+
+// ✅ ALSO GOOD - Call persist()
+function AlsoGoodHandler() {
+  const handleClick = (event) =&gt; {
+    event.persist(); // Prevents pooling
+    setTimeout(() =&gt; {
+      console.log(event.target.value); // ✅ This works!
+    }, 1000);
+  };
+  
+  return &lt;button onClick={handleClick}&gt;Click me&lt;/button&gt;;
+}`}
+                    </code>
+                </div>
+                
+                <div class="warning">
+                    <strong>Important:</strong> If you need to access event properties asynchronously, either extract the values you need immediately or call <code>event.persist()</code>. Otherwise, you'll get null values due to event pooling.
+                </div>
+            </details>
+
+            <details>
+                <summary>Why SyntheticEvents Exist</summary>
+                <p>React's SyntheticEvent system solves several real-world problems:</p>
+                
+                <ul>
+                    <li><strong>Cross-browser compatibility:</strong> Different browsers implement events slightly differently</li>
+                    <li><strong>Performance optimization:</strong> Event pooling reduces memory allocation</li>
+                    <li><strong>Consistent API:</strong> Same methods and properties across all browsers</li>
+                    <li><strong>Security:</strong> Normalized event data prevents potential exploits</li>
+                    <li><strong>Integration with React's rendering cycle:</strong> Events work seamlessly with React's reconciliation process</li>
+                </ul>
+                
+                <div class="note">
+                    <strong>Real-world analogy:</strong> Think of SyntheticEvent as a universal adapter for electrical devices. Instead of having different plugs for each country (browser), React provides one standardized plug (SyntheticEvent) that works everywhere.
+                </div>
+            </details>
+        </div>
+
+        <div id="section-8-3">
+            <h2><span class="section-marker">8.3</span> Event Handler Patterns</h2>
+            <details>
+                <summary>Pattern 1: Inline Arrow Functions</summary>
+                <p>Useful for simple, one-time handlers, but avoid in loops or frequently rendered components.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ✅ OK for simple cases
+function Button() {
+  return (
+    &lt;button onClick={() =&gt; alert('Clicked!')}&gt;Click me&lt;/button&gt;
+  );
+}
+
+// ❌ BAD - Creates new function on every render
+function TodoList({ todos }) {
+  return (
+    &lt;ul&gt;
+      {todos.map(todo =&gt; (
+        &lt;li key={todo.id}&gt;
+          {todo.text}
+          &lt;button onClick={() =&gt; deleteTodo(todo.id)}&gt;Delete&lt;/button&gt;
+        &lt;/li&gt;
+      ))}
+    &lt;/ul&gt;
+  );
+}`}
+                    </code>
+                </div>
+                
+                <div class="warning">
+                    <strong>Performance Warning:</strong> Inline arrow functions create a new function instance on every render, which can cause unnecessary re-renders of child components that receive these functions as props.
+                </div>
+            </details>
+
+            <details>
+                <summary>Pattern 2: Named Function Declarations</summary>
+                <p>Best for complex logic and better performance.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ✅ GOOD - Named function declaration
+function TodoList({ todos, onDelete }) {
+  const handleDelete = (id) =&gt; {
+    // Complex deletion logic here
+    onDelete(id);
+  };
+  
+  return (
+    &lt;ul&gt;
+      {todos.map(todo =&gt; (
+        &lt;li key={todo.id}&gt;
+          {todo.text}
+          &lt;button onClick={() =&gt; handleDelete(todo.id)}&gt;Delete&lt;/button&gt;
+        &lt;/li&gt;
+      ))}
+    &lt;/ul&gt;
+  );
+}`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Pattern 3: Bind Method (Class Components)</summary>
+                <p>Legacy approach for class components (not needed in functional components).</p>
+                
+                <div class="code-block">
+                    <code>
+{`// Class component legacy pattern (avoid in new code)
+class TodoItem extends React.Component {
+  constructor(props) {
+    super(props);
+    this.handleClick = this.handleClick.bind(this);
+  }
+  
+  handleClick() {
+    this.props.onDelete(this.props.id);
+  }
+  
+  render() {
+    return (
+      &lt;li&gt;
+        {this.props.text}
+        &lt;button onClick={this.handleClick}&gt;Delete&lt;/button&gt;
+      &lt;/li&gt;
+    );
+  }
+}`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Pattern 4: Custom Hooks for Event Logic</summary>
+                <p>Extract complex event handling into reusable custom hooks.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// Custom hook for form validation
+function useFormValidation(initialValues, validationRules) {
+  const [values, setValues] = useState(initialValues);
+  const [errors, setErrors] = useState({});
+  
+  const handleChange = (e) =&gt; {
+    const { name, value } = e.target;
+    setValues(prev =&gt; ({ ...prev, [name]: value }));
+    
+    // Validate immediately
+    if (validationRules[name]) {
+      const error = validationRules[name](value);
+      setErrors(prev =&gt; ({ ...prev, [name]: error }));
+    }
+  };
+  
+  const handleSubmit = (e) =&gt; {
+    e.preventDefault();
+    // Validate all fields
+    const newErrors = {};
+    Object.keys(validationRules).forEach(key =&gt; {
+      newErrors[key] = validationRules[key](values[key]);
+    });
+    
+    setErrors(newErrors);
+    
+    // Only submit if no errors
+    if (Object.values(newErrors).every(error =&gt; !error)) {
+      // Submit logic here
+      console.log('Form submitted:', values);
+    }
+  };
+  
+  return { values, errors, handleChange, handleSubmit };
+}
+
+// Usage
+function LoginForm() {
+  const validationRules = {
+    email: (value) =&gt; !value ? 'Email is required' : !/\S+@\S+\.\S+/.test(value) ? 'Email is invalid' : '',
+    password: (value) =&gt; !value ? 'Password is required' : value.length &lt; 8 ? 'Password must be at least 8 characters' : ''
+  };
+  
+  const { values, errors, handleChange, handleSubmit } = useFormValidation(
+    { email: '', password: '' },
+    validationRules
+  );
+  
+  return (
+    &lt;form onSubmit={handleSubmit}&gt;
+      &lt;input 
+        name="email" 
+        value={values.email} 
+        onChange={handleChange} 
+        placeholder="Email"
+      /&gt;
+      {errors.email &amp;&amp; &lt;span className="error"&gt;{errors.email}&lt;/span&gt;}
+      
+      &lt;input 
+        name="password" 
+        type="password"
+        value={values.password} 
+        onChange={handleChange} 
+        placeholder="Password"
+      /&gt;
+      {errors.password &amp;&amp; &lt;span className="error"&gt;{errors.password}&lt;/span&gt;}
+      
+      &lt;button type="submit"&gt;Login&lt;/button&gt;
+    &lt;/form&gt;
+  );
+}`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Pattern 5: Event Delegation Pattern</summary>
+                <p>Handle events at a higher level instead of attaching listeners to many elements.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ❌ BAD - Attaching individual handlers to each button
+function ButtonGroup() {
+  const buttons = ['Home', 'About', 'Contact', 'Services', 'Blog'];
+  
+  return (
+    &lt;div&gt;
+      {buttons.map(buttonName =&gt; (
+        &lt;button 
+          key={buttonName} 
+          onClick={() =&gt; navigateTo(buttonName)}
+        &gt;
+          {buttonName}
+        &lt;/button&gt;
+      ))}
+    &lt;/div&gt;
+  );
+}
+
+// ✅ GOOD - Event delegation with single handler
+function ButtonGroup() {
+  const handleButtonClick = (event) =&gt; {
+    const buttonName = event.target.textContent;
+    navigateTo(buttonName);
+  };
+  
+  return (
+    &lt;div onClick={handleButtonClick}&gt; {/* Parent container */}
+      {['Home', 'About', 'Contact', 'Services', 'Blog'].map(buttonName =&gt; (
+        &lt;button key={buttonName}&gt;{buttonName}&lt;/button&gt;
+      ))}
+    &lt;/div&gt;
+  );
+}`}
+                    </code>
+                </div>
+                
+                <div class="note">
+                    <strong>Performance Benefit:</strong> Instead of 5 separate event listeners, we have just one. This is especially beneficial when dealing with large lists or dynamic content.
+                </div>
+            </details>
+        </div>
+
+        <div id="section-8-4">
+            <h2><span class="section-marker">8.4</span> Passing Arguments to Event Handlers</h2>
+            <details>
+                <summary>Problem: Event Handler Context</summary>
+                <p>You often need to pass additional data to event handlers beyond the event object itself.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ❌ BAD - Can't pass arguments easily
+function TodoList({ todos }) {
+  const handleDelete = () =&gt; {
+    // How do I know which todo to delete?!
+  };
+  
+  return (
+    &lt;ul&gt;
+      {todos.map(todo =&gt; (
+        &lt;li key={todo.id}&gt;
+          {todo.text}
+          &lt;button onClick={handleDelete}&gt;Delete&lt;/button&gt;
+        &lt;/li&gt;
+      ))}
+    &lt;/ul&gt;
+  );
+}`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Solution 1: Arrow Functions with Parameters</summary>
+                <p>Wrap your handler in an arrow function to pass additional parameters.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ✅ GOOD - Using arrow function to pass arguments
+function TodoList({ todos, onDelete }) {
+  return (
+    &lt;ul&gt;
+      {todos.map(todo =&gt; (
+        &lt;li key={todo.id}&gt;
+          {todo.text}
+          &lt;button onClick={() =&gt; onDelete(todo.id)}&gt;Delete&lt;/button&gt;
+        &lt;/li&gt;
+      ))}
+    &lt;/ul&gt;
+  );
+}
+
+// Pass multiple arguments
+function ProductList({ products, addToCart }) {
+  return (
+    &lt;ul&gt;
+      {products.map(product =&gt; (
+        &lt;li key={product.id}&gt;
+          {product.name} - ${product.price}
+          &lt;button onClick={() =&gt; addToCart(product.id, product.price)}&gt;Add to Cart&lt;/button&gt;
+        &lt;/li&gt;
+      ))}
+    &lt;/ul&gt;
+  );
+}`}
+                    </code>
+                </div>
+                
+                <div class="warning">
+                    <strong>Performance Note:</strong> While this works, it creates a new function on every render. For performance-critical applications, consider using useCallback or other patterns.
+                </div>
+            </details>
+
+            <details>
+                <summary>Solution 2: bind() Method</summary>
+                <p>Use bind() to create bound functions with preset arguments.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ✅ GOOD - Using bind() method
+function TodoList({ todos, onDelete }) {
+  const handleDelete = (id) =&gt; {
+    onDelete(id);
+  };
+  
+  return (
+    &lt;ul&gt;
+      {todos.map(todo =&gt; (
+        &lt;li key={todo.id}&gt;
+          {todo.text}
+          &lt;button onClick={handleDelete.bind(null, todo.id)}&gt;Delete&lt;/button&gt;
+        &lt;/li&gt;
+      ))}
+    &lt;/ul&gt;
+  );
+}
+
+// Another example
+function ColorPicker({ colors, onSelectColor }) {
+  const handleColorSelect = (color) =&gt; {
+    onSelectColor(color);
+  };
+  
+  return (
+    &lt;div&gt;
+      {colors.map(color =&gt; (
+        &lt;button 
+          key={color} 
+          style={{ backgroundColor: color }}
+          onClick={handleColorSelect.bind(null, color)}
+        &gt;
+          {color}
+        &lt;/button&gt;
+      ))}
+    &lt;/div&gt;
+  );
+}`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Solution 3: Data Attributes (Recommended)</summary>
+                <p>Store data in HTML attributes and retrieve it from the event object.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ✅ BEST PRACTICE - Using data attributes
+function TodoList({ todos, onDelete }) {
+  const handleDelete = (event) =&gt; {
+    const id = event.currentTarget.dataset.id;
+    onDelete(id);
+  };
+  
+  return (
+    &lt;ul&gt;
+      {todos.map(todo =&gt; (
+        &lt;li key={todo.id}&gt;
+          {todo.text}
+          &lt;button 
+            data-id={todo.id} 
+            onClick={handleDelete}
+          &gt;Delete&lt;/button&gt;
+        &lt;/li&gt;
+      ))}
+    &lt;/ul&gt;
+  );
+}
+
+// Multiple data attributes
+function ProductList({ products, addToCart }) {
+  const handleAddToCart = (event) =&gt; {
+    const productId = event.currentTarget.dataset.id;
+    const price = parseFloat(event.currentTarget.dataset.price);
+    const name = event.currentTarget.dataset.name;
+    
+    addToCart(productId, price, name);
+  };
+  
+  return (
+    &lt;ul&gt;
+      {products.map(product =&gt; (
+        &lt;li key={product.id}&gt;
+          {product.name} - ${product.price}
+          &lt;button 
+            data-id={product.id}
+            data-price={product.price}
+            data-name={product.name}
+            onClick={handleAddToCart}
+          &gt;Add to Cart&lt;/button&gt;
+        &lt;/li&gt;
+      ))}
+    &lt;/ul&gt;
+  );
+}`}
+                    </code>
+                </div>
+                
+                <div class="note">
+                    <strong>Why this is best:</strong> 
+                    <ul>
+                        <li>Creates only one event handler function</li>
+                        <li>No new functions created on every render</li>
+                        <li>Works with React's event delegation</li>
+                        <li>Accessible and semantic</li>
+                        <li>Easy to debug</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details>
+                <summary>Solution 4: useCallback Hook for Optimization</summary>
+                <p>When you need to pass arguments and want optimal performance.</p>
+                
+                <div class="code-block">
+                    <code>
+{`import { useCallback } from 'react';
+
+function TodoList({ todos, onDelete }) {
+  // Memoize the handler function
+  const handleDelete = useCallback((id) =&gt; {
+    onDelete(id);
+  }, [onDelete]); // Dependencies array
+  
+  return (
+    &lt;ul&gt;
+      {todos.map(todo =&gt; (
+        &lt;li key={todo.id}&gt;
+          {todo.text}
+          &lt;button onClick={() =&gt; handleDelete(todo.id)}&gt;Delete&lt;/button&gt;
+        &lt;/li&gt;
+      ))}
+    &lt;/ul&gt;
+  );
+}
+
+// Even better - combine with data attributes
+function TodoList({ todos, onDelete }) {
+  const handleDelete = useCallback((event) =&gt; {
+    const id = event.currentTarget.dataset.id;
+    onDelete(id);
+  }, [onDelete]);
+  
+  return (
+    &lt;ul&gt;
+      {todos.map(todo =&gt; (
+        &lt;li key={todo.id}&gt;
+          {todo.text}
+          &lt;button 
+            data-id={todo.id} 
+            onClick={handleDelete}
+          &gt;Delete&lt;/button&gt;
+        &lt;/li&gt;
+      ))}
+    &lt;/ul&gt;
+  );
+}`}
+                    </code>
+                </div>
+                
+                <div class="warning">
+                    <strong>Important:</strong> Use <code>useCallback</code> judiciously. Only memoize handlers when you have proven performance issues. Overusing it can make your code more complex without benefits.
+                </div>
+            </details>
+
+            <details>
+                <summary>Advanced Example: Complex Event Handling</summary>
+                <p>Handling events with multiple parameters and conditions.</p>
+                
+                <div class="code-block">
+                    <code>
+{`function ShoppingCart({ items, updateQuantity, removeItem }) {
+  const handleQuantityChange = (event, itemId) =&gt; {
+    const newValue = parseInt(event.target.value, 10);
+    
+    // Validate input
+    if (isNaN(newValue) || newValue &lt; 0) {
+      event.target.value = 0;
+      return;
+    }
+    
+    updateQuantity(itemId, newValue);
+  };
+  
+  const handleRemove = (itemId) =&gt; {
+    if (window.confirm('Are you sure you want to remove this item?')) {
+      removeItem(itemId);
+    }
+  };
+  
+  return (
+    &lt;ul&gt;
+      {items.map(item =&gt; (
+        &lt;li key={item.id}&gt;
+          &lt;div&gt;
+            &lt;span&gt;{item.name}&lt;/span&gt;
+            &lt;input 
+              type="number" 
+              min="0" 
+              value={item.quantity} 
+              onChange={(e) =&gt; handleQuantityChange(e, item.id)}
+            /&gt;
+            &lt;span&gt;${item.price}&lt;/span&gt;
+            &lt;button onClick={() =&gt; handleRemove(item.id)}&gt;Remove&lt;/button&gt;
+          &lt;/div&gt;
+        &lt;/li&gt;
+      ))}
+    &lt;/ul&gt;
+  );
+}`}
+                    </code>
+                </div>
+            </details>
+        </div>
+
+        <div id="section-8-5">
+            <h2><span class="section-marker">8.5</span> Form Handling Basics</h2>
+            <details>
+                <summary>Why Form Handling Is Special</summary>
+                <p>Forms are unique because they involve user input that needs to be tracked, validated, and submitted. React handles forms differently than traditional HTML forms.</p>
+                
+                <div class="note">
+                    <strong>Core Concept:</strong> In React, form state should be managed by React state, not by the DOM itself.
+                </div>
+            </details>
+
+            <details>
+                <summary>Basic Form Structure</summary>
+                <p>Let's create a simple contact form:</p>
+                
+                <div class="code-block">
+                    <code>
+{`import { useState } from 'react';
+
+function ContactForm() {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    message: ''
+  });
+  
+  const handleChange = (event) =&gt; {
+    const { name, value } = event.target;
+    setFormData(prev =&gt; ({
+      ...prev,
+      [name]: value
+    }));
+  };
+  
+  const handleSubmit = (event) =&gt; {
+    event.preventDefault(); // Prevent page refresh
+    console.log('Form submitted:', formData);
+    // Here you would typically send data to an API
+  };
+  
+  return (
+    &lt;form onSubmit={handleSubmit}&gt;
+      &lt;div&gt;
+        &lt;label htmlFor="name"&gt;Name:&lt;/label&gt;
+        &lt;input 
+          type="text" 
+          id="name" 
+          name="name" 
+          value={formData.name} 
+          onChange={handleChange} 
+        /&gt;
+      &lt;/div&gt;
+      
+      &lt;div&gt;
+        &lt;label htmlFor="email"&gt;Email:&lt;/label&gt;
+        &lt;input 
+          type="email" 
+          id="email" 
+          name="email" 
+          value={formData.email} 
+          onChange={handleChange} 
+        /&gt;
+      &lt;/div&gt;
+      
+      &lt;div&gt;
+        &lt;label htmlFor="message"&gt;Message:&lt;/label&gt;
+        &lt;textarea 
+          id="message" 
+          name="message" 
+          value={formData.message} 
+          onChange={handleChange} 
+        &gt;&lt;/textarea&gt;
+      &lt;/div&gt;
+      
+      &lt;button type="submit"&gt;Send Message&lt;/button&gt;
+    &lt;/form&gt;
+  );
+}`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Handling Different Input Types</summary>
+                <p>React handles various form elements consistently:</p>
+                
+                <div class="code-block">
+                    <code>
+{`function AdvancedForm() {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    age: '',
+    gender: 'male',
+    newsletter: false,
+    bio: '',
+    avatar: null
+  });
+  
+  const handleChange = (event) =&gt; {
+    const { name, value, type, checked } = event.target;
+    const inputValue = type === 'checkbox' ? checked : value;
+    
+    setFormData(prev =&gt; ({
+      ...prev,
+      [name]: inputValue
+    }));
+  };
+  
+  const handleFileChange = (event) =&gt; {
+    setFormData(prev =&gt; ({
+      ...prev,
+      avatar: event.target.files[0]
+    }));
+  };
+  
+  return (
+    &lt;form&gt;
+      &lt;div&gt;
+        &lt;label&gt;Name:
+          &lt;input 
+            type="text" 
+            name="name" 
+            value={formData.name} 
+            onChange={handleChange} 
+          /&gt;
+        &lt;/label&gt;
+      &lt;/div&gt;
+      
+      &lt;div&gt;
+        &lt;label&gt;Email:
+          &lt;input 
+            type="email" 
+            name="email" 
+            value={formData.email} 
+            onChange={handleChange} 
+          /&gt;
+        &lt;/label&gt;
+      &lt;/div&gt;
+      
+      &lt;div&gt;
+        &lt;label&gt;Age:
+          &lt;input 
+            type="number" 
+            name="age" 
+            value={formData.age} 
+            onChange={handleChange} 
+          /&gt;
+        &lt;/label&gt;
+      &lt;/div&gt;
+      
+      &lt;div&gt;
+        &lt;label&gt;Gender:
+          &lt;select 
+            name="gender" 
+            value={formData.gender} 
+            onChange={handleChange}
+          &gt;
+            &lt;option value="male"&gt;Male&lt;/option&gt;
+            &lt;option value="female"&gt;Female&lt;/option&gt;
+            &lt;option value="other"&gt;Other&lt;/option&gt;
+          &lt;/select&gt;
+        &lt;/label&gt;
+      &lt;/div&gt;
+      
+      &lt;div&gt;
+        &lt;label&gt;
+          &lt;input 
+            type="checkbox" 
+            name="newsletter" 
+            checked={formData.newsletter} 
+            onChange={handleChange} 
+          /&gt;
+          Subscribe to newsletter
+        &lt;/label&gt;
+      &lt;/div&gt;
+      
+      &lt;div&gt;
+        &lt;label&gt;Bio:
+          &lt;textarea 
+            name="bio" 
+            value={formData.bio} 
+            onChange={handleChange} 
+          &gt;&lt;/textarea&gt;
+        &lt;/label&gt;
+      &lt;/div&gt;
+      
+      &lt;div&gt;
+        &lt;label&gt;Avatar:
+          &lt;input 
+            type="file" 
+            name="avatar" 
+            accept="image/*" 
+            onChange={handleFileChange} 
+          /&gt;
+        &lt;/label&gt;
+      &lt;/div&gt;
+    &lt;/form&gt;
+  );
+}`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Handling Multiple Forms</summary>
+                <p>Use different state variables or structure for complex form scenarios:</p>
+                
+                <div class="code-block">
+                    <code>
+{`function MultiStepForm() {
+  const [step, setStep] = useState(1);
+  const [personalData, setPersonalData] = useState({
+    firstName: '',
+    lastName: '',
+    email: ''
+  });
+  const [addressData, setAddressData] = useState({
+    street: '',
+    city: '',
+    zipCode: '',
+    country: ''
+  });
+  
+  const handlePersonalChange = (e) =&gt; {
+    const { name, value } = e.target;
+    setPersonalData(prev =&gt; ({ ...prev, [name]: value }));
+  };
+  
+  const handleAddressChange = (e) =&gt; {
+    const { name, value } = e.target;
+    setAddressData(prev =&gt; ({ ...prev, [name]: value }));
+  };
+  
+  const nextStep = () =&gt; {
+    if (step &lt; 2) setStep(step + 1);
+  };
+  
+  const prevStep = () =&gt; {
+    if (step &gt; 1) setStep(step - 1);
+  };
+  
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Step {step} of 2&lt;/h2&gt;
+      
+      {step === 1 &amp;&amp; (
+        &lt;form&gt;
+          &lt;input 
+            name="firstName" 
+            value={personalData.firstName} 
+            onChange={handlePersonalChange} 
+            placeholder="First Name" 
+          /&gt;
+          &lt;input 
+            name="lastName" 
+            value={personalData.lastName} 
+            onChange={handlePersonalChange} 
+            placeholder="Last Name" 
+          /&gt;
+          &lt;input 
+            name="email" 
+            value={personalData.email} 
+            onChange={handlePersonalChange} 
+            placeholder="Email" 
+          /&gt;
+          &lt;button type="button" onClick={nextStep}&gt;Next&lt;/button&gt;
+        &lt;/form&gt;
+      )}
+      
+      {step === 2 &amp;&amp; (
+        &lt;form&gt;
+          &lt;input 
+            name="street" 
+            value={addressData.street} 
+            onChange={handleAddressChange} 
+            placeholder="Street Address" 
+          /&gt;
+          &lt;input 
+            name="city" 
+            value={addressData.city} 
+            onChange={handleAddressChange} 
+            placeholder="City" 
+          /&gt;
+          &lt;input 
+            name="zipCode" 
+            value={addressData.zipCode} 
+            onChange={handleAddressChange} 
+            placeholder="ZIP Code" 
+          /&gt;
+          &lt;input 
+            name="country" 
+            value={addressData.country} 
+            onChange={handleAddressChange} 
+            placeholder="Country" 
+          /&gt;
+          &lt;button type="button" onClick={prevStep}&gt;Back&lt;/button&gt;
+          &lt;button type="submit"&gt;Submit&lt;/button&gt;
+        &lt;/form&gt;
+      )}
+    &lt;/div&gt;
+  );
+}`}
+                    </code>
+                </div>
+            </details>
+        </div>
+
+        <div id="section-8-6">
+            <h2><span class="section-marker">8.6</span> Controlled vs Uncontrolled Components</h2>
+            <details>
+                <summary>Controlled Components</summary>
+                <p>In controlled components, form data is handled by React state. The component's state is the source of truth.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ✅ Controlled Component - React manages the value
+function ControlledInput() {
+  const [value, setValue] = useState('');
+  
+  const handleChange = (event) =&gt; {
+    setValue(event.target.value);
+  };
+  
+  return (
+    &lt;input 
+      type="text" 
+      value={value} 
+      onChange={handleChange} 
+    /&gt;
+  );
+}`}
+                    </code>
+                </div>
+                
+                <div class="note">
+                    <strong>Advantages:</strong>
+                    <ul>
+                        <li>Full control over form data</li>
+                        <li>Easier validation and sanitization</li>
+                        <li>Immediate feedback to users</li>
+                        <li>Consistent with React's unidirectional data flow</li>
+                        <li>Easier testing</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details>
+                <summary>Uncontrolled Components</summary>
+                <p>In uncontrolled components, form data is handled by the DOM itself. You use refs to access form values.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ❌ Uncontrolled Component - DOM manages the value
+import { useRef } from 'react';
+
+function UncontrolledInput() {
+  const inputRef = useRef(null);
+  
+  const handleSubmit = (event) =&gt; {
+    event.preventDefault();
+    console.log('Value:', inputRef.current.value); // Access DOM directly
+  };
+  
+  return (
+    &lt;form onSubmit={handleSubmit}&gt;
+      &lt;input 
+        type="text" 
+        ref={inputRef} 
+        defaultValue="Initial value" 
+      /&gt;
+      &lt;button type="submit"&gt;Submit&lt;/button&gt;
+    &lt;/form&gt;
+  );
+}`}
+                    </code>
+                </div>
+                
+                <div class="warning">
+                    <strong>When to use Uncontrolled:</strong> Rarely! Only when integrating with non-React libraries or when you need direct DOM manipulation.
+                </div>
+            </details>
+
+            <details>
+                <summary>Comparison Table</summary>
+                <table class="table table-dark table-striped mt-3">
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Controlled Components</th>
+                            <th>Uncontrolled Components</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Data Source</strong></td>
+                            <td>React state</td>
+                            <td>DOM</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Value Attribute</strong></td>
+                            <td>Always present</td>
+                            <td>Optional (<code>defaultValue</code>)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Update Mechanism</strong></td>
+                            <td>onChange handler updates state</td>
+                            <td>Refs read current value</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Validation</strong></td>
+                            <td>Easier - happens in state update</td>
+                            <td>Harder - requires DOM inspection</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Performance</strong></td>
+                            <td>Slightly slower due to re-renders</td>
+                            <td>Faster for simple cases</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Complexity</strong></td>
+                            <td>Higher - more boilerplate</td>
+                            <td>Lower - less code</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Recommended</strong></td>
+                            <td><strong>YES</strong> - React's preferred approach</td>
+                            <td>Only for edge cases</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </details>
+
+            <details>
+                <summary>Real-World Example: Login Form</summary>
+                <p>Let's build a complete login form using controlled components:</p>
+                
+                <div class="code-block">
+                    <code>
+{`import { useState } from 'react';
+
+function LoginForm() {
+  const [formData, setFormData] = useState({
+    username: '',
+    password: '',
+    rememberMe: false
+  });
+  
+  const [errors, setErrors] = useState({});
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const handleChange = (event) =&gt; {
+    const { name, value, type, checked } = event.target;
+    const inputValue = type === 'checkbox' ? checked : value;
+    
+    setFormData(prev =&gt; ({
+      ...prev,
+      [name]: inputValue
+    }));
+    
+    // Clear error when field is modified
+    if (errors[name]) {
+      setErrors(prev =&gt; ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+  };
+  
+  const validateForm = () =&gt; {
+    const newErrors = {};
+    
+    if (!formData.username.trim()) {
+      newErrors.username = 'Username is required';
+    }
+    
+    if (!formData.password) {
+      newErrors.password = 'Password is required';
+    } else if (formData.password.length &lt; 6) {
+      newErrors.password = 'Password must be at least 6 characters';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+  
+  const handleSubmit = async (event) =&gt; {
+    event.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+    
+    setIsLoading(true);
+    
+    try {
+      // Simulate API call
+      await new Promise(resolve =&gt; setTimeout(resolve, 1000));
+      console.log('Login successful:', formData);
+      // Redirect or show success message
+    } catch (error) {
+      console.error('Login failed:', error);
+      setErrors({ submit: 'Login failed. Please try again.' });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  return (
+    &lt;form onSubmit={handleSubmit}&gt;
+      &lt;div&gt;
+        &lt;label htmlFor="username"&gt;Username:&lt;/label&gt;
+        &lt;input 
+          type="text" 
+          id="username" 
+          name="username" 
+          value={formData.username} 
+          onChange={handleChange} 
+          className={errors.username ? 'error' : ''}
+        /&gt;
+        {errors.username &amp;&amp; &lt;span className="error-message"&gt;{errors.username}&lt;/span&gt;}
+      &lt;/div&gt;
+      
+      &lt;div&gt;
+        &lt;label htmlFor="password"&gt;Password:&lt;/label&gt;
+        &lt;input 
+          type="password" 
+          id="password" 
+          name="password" 
+          value={formData.password} 
+          onChange={handleChange} 
+          className={errors.password ? 'error' : ''}
+        /&gt;
+        {errors.password &amp;&amp; &lt;span className="error-message"&gt;{errors.password}&lt;/span&gt;}
+      &lt;/div&gt;
+      
+      &lt;div&gt;
+        &lt;label&gt;
+          &lt;input 
+            type="checkbox" 
+            name="rememberMe" 
+            checked={formData.rememberMe} 
+            onChange={handleChange} 
+          /&gt;
+          Remember me
+        &lt;/label&gt;
+      &lt;/div&gt;
+      
+      {errors.submit &amp;&amp; &lt;div className="error-message"&gt;{errors.submit}&lt;/div&gt;}
+      
+      &lt;button type="submit" disabled={isLoading}&gt;
+        {isLoading ? 'Logging in...' : 'Login'}
+      &lt;/button&gt;
+    &lt;/form&gt;
+  );
+}`}
+                    </code>
+                </div>
+                
+                <div class="note">
+                    <strong>Why this approach wins:</strong> Every aspect of the form is under React's control. We can validate instantly, show loading states, manage errors, and disable buttons—all with predictable state transitions.
+                </div>
+            </details>
+        </div>
+
+        <div id="section-8-7">
+            <h2><span class="section-marker">8.7</span> Form Validation Fundamentals</h2>
+            <details>
+                <summary>Why Validation Matters</summary>
+                <p>Form validation ensures data integrity, improves user experience, and prevents errors before they reach your backend.</p>
+                
+                <div class="note">
+                    <strong>Golden Rule:</strong> Always validate on the frontend for user experience, but never rely on it alone—always validate on the backend too!
+                </div>
+            </details>
+
+            <details>
+                <summary>Types of Validation</summary>
+                <p>There are several approaches to form validation:</p>
+                
+                <div class="code-block">
+                    <code>
+{`// 1. Field-by-field validation (real-time)
+// Validates each field as user types or loses focus
+
+// 2. On-submit validation
+// Validates all fields when form is submitted
+
+// 3. Mixed approach (recommended)
+// Real-time for obvious errors (like email format)
+// On-submit for complex rules (like password strength)
+
+// Example implementation
+function ValidationExample() {
+  const [formData, setFormData] = useState({
+    email: '',
+    password: '',
+    confirmPassword: ''
+  });
+  
+  const [errors, setErrors] = useState({});
+  
+  // Real-time validation for email format
+  const validateEmail = (email) =&gt; {
+    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+    return emailRegex.test(email) ? '' : 'Invalid email format';
+  };
+  
+  // On-submit validation for password matching
+  const validatePasswords = (password, confirmPassword) =&gt; {
+    if (password !== confirmPassword) {
+      return 'Passwords do not match';
+    }
+    if (password.length &lt; 8) {
+      return 'Password must be at least 8 characters';
+    }
+    return '';
+  };
+  
+  const handleChange = (event) =&gt; {
+    const { name, value } = event.target;
+    setFormData(prev =&gt; ({ ...prev, [name]: value }));
+    
+    // Real-time validation for email
+    if (name === 'email') {
+      setErrors(prev =&gt; ({ 
+        ...prev, 
+        email: validateEmail(value) 
+      }));
+    }
+  };
+  
+  const handleSubmit = (event) =&gt; {
+    event.preventDefault();
+    
+    // Reset errors
+    setErrors({});
+    
+    // Validate email
+    const emailError = validateEmail(formData.email);
+    if (emailError) {
+      setErrors(prev =&gt; ({ ...prev, email: emailError }));
+    }
+    
+    // Validate passwords
+    const passwordError = validatePasswords(formData.password, formData.confirmPassword);
+    if (passwordError) {
+      setErrors(prev =&gt; ({ ...prev, password: passwordError }));
+    }
+    
+    // If no errors, proceed
+    if (!emailError &amp;&amp; !passwordError) {
+      console.log('Form submitted successfully!');
+    }
+  };
+  
+  return (
+    &lt;form onSubmit={handleSubmit}&gt;
+      &lt;div&gt;
+        &lt;label&gt;Email:
+          &lt;input 
+            type="email" 
+            name="email" 
+            value={formData.email} 
+            onChange={handleChange} 
+          /&gt;
+        &lt;/label&gt;
+        {errors.email &amp;&amp; &lt;span className="error"&gt;{errors.email}&lt;/span&gt;}
+      &lt;/div&gt;
+      
+      &lt;div&gt;
+        &lt;label&gt;Password:
+          &lt;input 
+            type="password" 
+            name="password" 
+            value={formData.password} 
+            onChange={handleChange} 
+          /&gt;
+        &lt;/label&gt;
+        {errors.password &amp;&amp; &lt;span className="error"&gt;{errors.password}&lt;/span&gt;}
+      &lt;/div&gt;
+      
+      &lt;div&gt;
+        &lt;label&gt;Confirm Password:
+          &lt;input 
+            type="password" 
+            name="confirmPassword" 
+            value={formData.confirmPassword} 
+            onChange={handleChange} 
+          /&gt;
+        &lt;/label&gt;
+      &lt;/div&gt;
+      
+      &lt;button type="submit"&gt;Register&lt;/button&gt;
+    &lt;/form&gt;
+  );
+}`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Validation Rules Library</summary>
+                <p>Create a reusable validation utility:</p>
+                
+                <div class="code-block">
+                    <code>
+{`// utils/validation.js
+export const validators = {
+  required: (value) =&gt; value ? '' : 'This field is required',
+  minLength: (min) =&gt; (value) =&gt; 
+    value &amp;&amp; value.length &gt;= min ? '' : \`Must be at least \${min} characters\`,
+  maxLength: (max) =&gt; (value) =&gt; 
+    value &amp;&amp; value.length &lt;= max ? '' : \`Must be no more than \${max} characters\`,
+  email: (value) =&gt; {
+    const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+    return emailRegex.test(value) ? '' : 'Invalid email format';
+  },
+  phone: (value) =&gt; {
+    const phoneRegex = /^\\+?[1-9]\\d{1,14}$/;
+    return phoneRegex.test(value) ? '' : 'Invalid phone number';
+  },
+  url: (value) =&gt; {
+    const urlRegex = /^(https?:\\/\\/)?([\\da-z.-]+)\\.([a-z.]{2,6})([/\\w .-]*)*\\/?$/;
+    return urlRegex.test(value) ? '' : 'Invalid URL';
+  },
+  matches: (field) =&gt; (value, allValues) =&gt; 
+    value === allValues[field] ? '' : 'Fields do not match'
+};
+
+// Example usage
+const validationRules = {
+  email: [validators.required, validators.email],
+  password: [
+    validators.required, 
+    validators.minLength(8), 
+    validators.maxLength(128)
+  ],
+  confirmPassword: [
+    validators.required, 
+    validators.matches('password')
+  ]
+};`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Advanced Validation with Custom Hooks</summary>
+                <p>Create a comprehensive form validation hook:</p>
+                
+                <div class="code-block">
+                    <code>
+{`import { useState } from 'react';
+
+function useFormValidation(initialValues, validationRules) {
+  const [values, setValues] = useState(initialValues);
+  const [errors, setErrors] = useState({});
+  const [touched, setTouched] = useState({});
+  
+  const handleChange = (e) =&gt; {
+    const { name, value } = e.target;
+    setValues(prev =&gt; ({ ...prev, [name]: value }));
+    
+    // Validate on change for real-time feedback
+    if (touched[name]) {
+      validateField(name, value);
+    }
+  };
+  
+  const handleBlur = (e) =&gt; {
+    const { name } = e.target;
+    setTouched(prev =&gt; ({ ...prev, [name]: true }));
+    validateField(name, values[name]);
+  };
+  
+  const validateField = (name, value) =&gt; {
+    if (!validationRules[name]) return;
+    
+    const fieldErrors = [];
+    validationRules[name].forEach(rule =&gt; {
+      const error = rule(value, values);
+      if (error) fieldErrors.push(error);
+    });
+    
+    setErrors(prev =&gt; ({ ...prev, [name]: fieldErrors.length ? fieldErrors[0] : '' }));
+  };
+  
+  const validateForm = () =&gt; {
+    const newErrors = {};
+    
+    Object.keys(validationRules).forEach(field =&gt; {
+      const fieldErrors = [];
+      validationRules[field].forEach(rule =&gt; {
+        const error = rule(values[field], values);
+        if (error) fieldErrors.push(error);
+      });
+      newErrors[field] = fieldErrors.length ? fieldErrors[0] : '';
+    });
+    
+    setErrors(newErrors);
+    return Object.values(newErrors).every(error =&gt; !error);
+  };
+  
+  const resetForm = () =&gt; {
+    setValues(initialValues);
+    setErrors({});
+    setTouched({});
+  };
+  
+  return {
+    values,
+    errors,
+    touched,
+    handleChange,
+    handleBlur,
+    validateForm,
+    resetForm
+  };
+}
+
+// Usage
+function RegistrationForm() {
+  const validationRules = {
+    email: [
+      (value) =&gt; value ? '' : 'Email is required',
+      (value) =&gt; /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(value) ? '' : 'Invalid email format'
+    ],
+    password: [
+      (value) =&gt; value ? '' : 'Password is required',
+      (value) =&gt; value.length &gt;= 8 ? '' : 'Password must be at least 8 characters',
+      (value) =&gt; /[A-Z]/.test(value) ? '' : 'Password must contain uppercase letter',
+      (value) =&gt; /[0-9]/.test(value) ? '' : 'Password must contain number'
+    ],
+    confirmPassword: [
+      (value, values) =&gt; value === values.password ? '' : 'Passwords do not match'
+    ]
+  };
+  
+  const { 
+    values, 
+    errors, 
+    touched, 
+    handleChange, 
+    handleBlur, 
+    validateForm 
+  } = useFormValidation({
+    email: '',
+    password: '',
+    confirmPassword: ''
+  }, validationRules);
+  
+  const handleSubmit = async (e) =&gt; {
+    e.preventDefault();
+    
+    if (!await validateForm()) {
+      return;
+    }
+    
+    // Submit form data
+    console.log('Submitting:', values);
+  };
+  
+  return (
+    &lt;form onSubmit={handleSubmit}&gt;
+      &lt;div&gt;
+        &lt;label&gt;Email:
+          &lt;input 
+            type="email" 
+            name="email" 
+            value={values.email} 
+            onChange={handleChange} 
+            onBlur={handleBlur} 
+          /&gt;
+        &lt;/label&gt;
+        {(touched.email || errors.email) &amp;&amp; &lt;span className="error"&gt;{errors.email}&lt;/span&gt;}
+      &lt;/div&gt;
+      
+      &lt;div&gt;
+        &lt;label&gt;Password:
+          &lt;input 
+            type="password" 
+            name="password" 
+            value={values.password} 
+            onChange={handleChange} 
+            onBlur={handleBlur} 
+          /&gt;
+        &lt;/label&gt;
+        {(touched.password || errors.password) &amp;&amp; &lt;span className="error"&gt;{errors.password}&lt;/span&gt;}
+      &lt;/div&gt;
+      
+      &lt;div&gt;
+        &lt;label&gt;Confirm Password:
+          &lt;input 
+            type="password" 
+            name="confirmPassword" 
+            value={values.confirmPassword} 
+            onChange={handleChange} 
+            onBlur={handleBlur} 
+          /&gt;
+        &lt;/label&gt;
+        {(touched.confirmPassword || errors.confirmPassword) &amp;&amp; &lt;span className="error"&gt;{errors.confirmPassword}&lt;/span&gt;}
+      &lt;/div&gt;
+      
+      &lt;button type="submit"&gt;Register&lt;/button&gt;
+    &lt;/form&gt;
+  );
+}`}
+                    </code>
+                </div>
+                
+                <div class="note">
+                    <strong>Pro Tip:</strong> This approach separates validation logic from presentation, making your components cleaner and testable.
+                </div>
+            </details>
+
+            <details>
+                <summary>Accessibility Considerations</summary>
+                <p>Valid forms must be accessible:</p>
+                
+                <div class="code-block">
+                    <code>
+{`function AccessibleForm() {
+  const [email, setEmail] = useState('');
+  const [error, setError] = useState('');
+  
+  const handleChange = (e) =&gt; {
+    const value = e.target.value;
+    setEmail(value);
+    
+    // Clear error when user starts typing
+    if (error) {
+      setError('');
+    }
+  };
+  
+  const validateAndSubmit = (e) =&gt; {
+    e.preventDefault();
+    
+    if (!email.includes('@')) {
+      setError('Please enter a valid email address');
+      return;
+    }
+    
+    // Submit form
+  };
+  
+  return (
+    &lt;form onSubmit={validateAndSubmit}&gt;
+      &lt;label htmlFor="email"&gt;
+        Email Address
+        &lt;input 
+          type="email" 
+          id="email" 
+          name="email" 
+          value={email} 
+          onChange={handleChange} 
+          aria-invalid={!!error}
+          aria-describedby={error ? "email-error" : undefined}
+        /&gt;
+      &lt;/label&gt;
+      
+      {error &amp;&amp; (
+        &lt;span id="email-error" className="error" role="alert"&gt;
+          {error}
+        &lt;/span&gt;
+      )}
+      
+      &lt;button type="submit"&gt;Submit&lt;/button&gt;
+    &lt;/form&gt;
+  );
+}`}
+                    </code>
+                </div>
+                
+                <div class="note">
+                    <strong>Accessibility Best Practices:</strong>
+                    <ul>
+                        <li>Use <code>aria-invalid</code> to indicate invalid state</li>
+                        <li>Use <code>aria-describedby</code> to link error messages to inputs</li>
+                        <li>Use <code>role="alert"</code> for dynamic error messages</li>
+                        <li>Ensure keyboard navigation works properly</li>
+                        <li>Provide clear instructions for required fields</li>
+                    </ul>
+                </div>
+            </details>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Expand/Collapse All Controls
+        document.getElementById('expandAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.setAttribute('open', '');
+            });
+        });
+
+        document.getElementById('collapseAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.removeAttribute('open');
+            });
+        });
+
+        // Search functionality for TOC
+        document.getElementById('searchToc').addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase();
+            const tocItems = document.querySelectorAll('.toc-item');
+            
+            tocItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(query)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        // Smooth scrolling for TOC navigation
+        document.querySelectorAll('.toc-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target');
+                const targetElement = document.getElementById(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Highlight active item
+                    document.querySelectorAll('.toc-item').forEach(el => el.classList.remove('active'));
+                    this.classList.add('active');
+                }
+            });
+        });
+
+        // Highlight code snippets with simple syntax highlighting
+        document.querySelectorAll('pre code').forEach(block => {
+            // Simple syntax highlighting for JSX
+            const content = block.textContent;
+            
+            // Highlight JSX tags
+            let highlighted = content
+                .replace(/(&lt;\/?)([a-zA-Z][a-zA-Z0-9]*)(&gt;)/g, '$1<span class="jsx-tag">$2</span>$3')
+                .replace(/([a-zA-Z]+)=/g, '<span class="jsx-attr">$1</span>=')
+                .replace(/=["'][^"']*["']/g, match => `<span class="jsx-value">${match}</span>`)
+                .replace(/(true|false|null|undefined)/g, '<span class="keyword">$1</span>')
+                .replace(/\/\/.*$/gm, match => `<span class="comment">${match}</span>`);
+            
+            block.innerHTML = highlighted;
+        });
+
+        // Initialize first section as active
+        document.querySelector('.toc-item').classList.add('active');
+
+        // Add smooth scroll to all anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

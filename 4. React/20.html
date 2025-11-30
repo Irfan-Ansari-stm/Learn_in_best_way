@@ -1,0 +1,1352 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Module 4: State Management Solutions - Chapter 13</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a192f;
+      --cyan: #00f5ff;
+      --amber: #ffb347;
+      --text-light: #e6f1ff;
+      --border-light: #1a3b5c;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      font-family: 'Roboto', sans-serif;
+      overflow-x: hidden;
+    }
+
+    .left-panel {
+      position: fixed;
+      width: 300px;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 20px;
+      background-color: rgba(10, 25, 47, 0.9);
+      border-right: 1px solid var(--border-light);
+      z-index: 1000;
+    }
+
+    .right-panel {
+      margin-left: 300px;
+      padding: 30px;
+      height: 100vh;
+      overflow-y: auto;
+      background-color: var(--bg-dark);
+    }
+
+    h1, h2, h3, h4 {
+      color: var(--cyan);
+      font-weight: 600;
+    }
+
+    h1 {
+      border-bottom: 2px solid var(--amber);
+      padding-bottom: 10px;
+      margin-bottom: 25px;
+    }
+
+    h2 {
+      margin-top: 40px;
+      border-left: 4px solid var(--amber);
+      padding-left: 15px;
+    }
+
+    h3 {
+      color: var(--amber);
+      margin-top: 30px;
+    }
+
+    .toc-item {
+      margin: 8px 0;
+      padding: 6px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .toc-item:hover {
+      background-color: rgba(0, 245, 255, 0.1);
+    }
+
+    .toc-item.active {
+      background-color: rgba(0, 245, 255, 0.2);
+      border-left: 3px solid var(--cyan);
+    }
+
+    .search-box {
+      margin-bottom: 20px;
+      background-color: rgba(26, 59, 92, 0.5);
+      border: 1px solid var(--border-light);
+      color: var(--text-light);
+    }
+
+    .btn-control {
+      background-color: rgba(10, 25, 47, 0.7);
+      border: 1px solid var(--border-light);
+      color: var(--cyan);
+      margin-bottom: 15px;
+      font-size: 0.9rem;
+    }
+
+    .btn-control:hover {
+      background-color: rgba(0, 245, 255, 0.2);
+      color: var(--cyan);
+    }
+
+    details {
+      margin: 15px 0;
+      border-left: 1px solid var(--border-light);
+      padding-left: 15px;
+      background-color: rgba(10, 25, 47, 0.4);
+      border-radius: 0 5px 5px 0;
+    }
+
+    summary {
+      list-style: none;
+      cursor: pointer;
+      font-weight: bold;
+      color: var(--amber);
+      padding: 10px 15px;
+      background-color: rgba(0, 245, 255, 0.05);
+      border-radius: 5px;
+      margin-bottom: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    summary::before {
+      content: "▶ ";
+      font-size: 0.8em;
+    }
+
+    details[open] > summary::before {
+      content: "▼ ";
+    }
+
+    pre {
+      background-color: #0d1b2a !important;
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 15px;
+      overflow-x: auto;
+      margin: 15px 0;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    code {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.95rem;
+      color: var(--cyan);
+    }
+
+    .highlight {
+      color: var(--amber);
+      font-weight: bold;
+    }
+
+    .note {
+      background-color: rgba(255, 179, 71, 0.1);
+      border-left: 3px solid var(--amber);
+      padding: 12px 15px;
+      margin: 20px 0;
+      border-radius: 0 5px 5px 0;
+    }
+
+    .syntax {
+      background-color: rgba(0, 245, 255, 0.08);
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-weight: 500;
+      display: inline-block;
+      margin: 0 3px;
+    }
+
+    .author-info {
+      color: var(--amber);
+      font-style: italic;
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+
+    .footer-note {
+      margin-top: 60px;
+      text-align: center;
+      color: var(--amber);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border-light);
+      padding-top: 15px;
+    }
+
+    /* Smooth scrolling */
+    html {
+      scroll-behavior: smooth;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 991px) {
+      .left-panel {
+        width: 100%;
+        position: relative;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border-light);
+      }
+      .right-panel {
+        margin-left: 0;
+      }
+    }
+
+    /* Demo styling for state management examples */
+    .state-demo {
+      background-color: rgba(13, 27, 42, 0.6);
+      border: 1px dashed var(--border-light);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .jotai-btn {
+      background-color: #6366f1;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .jotai-btn:hover {
+      background-color: #4f46e5;
+      transform: translateY(-2px);
+    }
+
+    .comparison-table th, .comparison-table td {
+      border: 1px solid var(--border-light);
+      padding: 10px;
+    }
+
+    .comparison-table th {
+      background-color: rgba(0, 245, 255, 0.1);
+    }
+
+    .comparison-table tr:nth-child(even) {
+      background-color: rgba(26, 59, 92, 0.3);
+    }
+
+    .code-line {
+      display: block;
+      margin: 2px 0;
+    }
+
+    .state-badge {
+      display: inline-block;
+      background-color: var(--amber);
+      color: #000;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      margin-left: 8px;
+    }
+
+    .normalization-example {
+      background-color: rgba(13, 27, 42, 0.6);
+      border: 1px dashed var(--border-light);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      font-family: 'Roboto Mono', monospace;
+    }
+
+    .normalized-code {
+      background-color: rgba(0, 245, 255, 0.05);
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      border-left: 3px solid var(--cyan);
+    }
+
+    .comparison-highlight {
+      background-color: rgba(255, 179, 71, 0.2);
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container-fluid p-0">
+  <div class="row g-0">
+
+    <!-- Left Panel -->
+    <div class="col-md-3 left-panel">
+      <h1>Module 4</h1>
+      <h4>State Management Solutions</h4>
+      <p class="author-info">— Mastering React State with Clarity & Depth —</p>
+
+      <input type="text" class="form-control search-box" id="searchTOC" placeholder="Search topics..." />
+
+      <div class="d-grid gap-2">
+        <button class="btn btn-control" id="expandAll">Expand All</button>
+        <button class="btn btn-control" id="collapseAll">Collapse All</button>
+      </div>
+
+      <div class="toc">
+        <h5>Table of Contents</h5>
+        <div class="toc-item" data-target="#section-13-5">13.5 Jotai</div>
+        <div class="toc-item" data-target="#section-13-6">13.6 State Management Comparison</div>
+        <div class="toc-item" data-target="#section-13-7">13.7 When to Use Each Solution</div>
+        <div class="toc-item" data-target="#section-13-8">13.8 State Normalization</div>
+      </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="col-md-9 right-panel">
+
+      <!-- Section 13.5 -->
+      <section id="section-13-5">
+        <h2>13.5 Jotai</h2>
+        
+        <details>
+          <summary>📌 Summary: Atomic State Management</summary>
+          <p>Jotai is a state management library based on the concept of <span class="highlight">atoms</span> — tiny, independent pieces of state that can be combined like building blocks.</p>
+
+          <h3>🔹 Core Concepts</h3>
+          <ul>
+            <li><strong>Atoms:</strong> Small, independent state units</li>
+            <li><strong>Read/Write:</strong> Atoms can be read-only or writable</li>
+            <li><strong>Derived Atoms:</strong> Computed values from other atoms</li>
+            <li><strong>No Providers:</strong> No need to wrap your app in a context provider</li>
+          </ul>
+
+          <h3>⚡ Basic Syntax Example</h3>
+          <pre><code>
+// 1. Install: npm install jotai
+
+// 2. Create Atoms (the smallest unit of state)
+import { atom } from 'jotai';
+
+const countAtom = atom(0);
+const doubleCountAtom = atom((get) =&gt; get(countAtom) * 2);
+const resetAtom = atom(null, (get, set) =&gt; set(countAtom, 0));
+
+// 3. Use in Components
+import { useAtom } from 'jotai';
+
+function Counter() {
+  const [count, setCount] = useAtom(countAtom);
+  const [doubleCount] = useAtom(doubleCountAtom);
+  const [, reset] = useAtom(resetAtom);
+
+  return (
+    &lt;div&gt;
+      &lt;p&gt;Count: {count}&lt;/p&gt;
+      &lt;p&gt;Double: {doubleCount}&lt;/p&gt;
+      &lt;button onClick={() =&gt; setCount(count + 1)}&gt;Increment&lt;/button&gt;
+      &lt;button onClick={reset}&gt;Reset&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>💡 Why Jotai Is Revolutionary</h3>
+          <ul>
+            <li><strong>Atomic Design:</strong> Break state into tiny, reusable pieces</li>
+            <li><strong>No Re-renders:</strong> Only components using an atom re-render when it changes</li>
+            <li><strong>Zero Boilerplate:</strong> No actions, reducers, or dispatches</li>
+            <li><strong>Scalable:</strong> Combine atoms like LEGO bricks</li>
+            <li><strong>DevTools:</strong> Built-in time-travel debugging</li>
+          </ul>
+
+          <div class="note">
+            <strong>🧠 Mental Model:</strong> Think of Jotai as having multiple small light switches (atoms) instead of one big master switch. Each component only cares about the switches it needs.
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Deep Dive: Derived Atoms and Complex Logic</summary>
+          <p>Jotai's real power comes from derived atoms — computed values that automatically update when their dependencies change.</p>
+
+          <h3>⚡ Advanced Atom Composition</h3>
+          <pre><code>
+import { atom, useAtom } from 'jotai';
+
+// Primitive atoms
+const firstNameAtom = atom('John');
+const lastNameAtom = atom('Doe');
+const ageAtom = atom(25);
+
+// Derived atoms
+const fullNameAtom = atom((get) =&gt; 
+  `${get(firstNameAtom)} ${get(lastNameAtom)}`
+);
+
+const isAdultAtom = atom((get) =&gt; get(ageAtom) &gt;= 18);
+
+const userStatusAtom = atom((get) =&gt; {
+  const name = get(fullNameAtom);
+  const adult = get(isAdultAtom);
+  return `${name} is ${adult ? 'an adult' : 'a minor'}`;
+});
+
+// Async atom (fetching data)
+const userAtom = atom(async (get) =&gt; {
+  const response = await fetch('/api/user');
+  return response.json();
+});
+
+// Usage
+function UserProfile() {
+  const [firstName, setFirstName] = useAtom(firstNameAtom);
+  const [lastName, setLastName] = useAtom(lastNameAtom);
+  const [age, setAge] = useAtom(ageAtom);
+  const [fullName] = useAtom(fullNameAtom);
+  const [isAdult] = useAtom(isAdultAtom);
+  const [status] = useAtom(userStatusAtom);
+
+  return (
+    &lt;div&gt;
+      &lt;input 
+        value={firstName} 
+        onChange={(e) =&gt; setFirstName(e.target.value)} 
+        placeholder="First name"
+      /&gt;
+      &lt;input 
+        value={lastName} 
+        onChange={(e) =&gt; setLastName(e.target.value)} 
+        placeholder="Last name"
+      /&gt;
+      &lt;input 
+        type="number" 
+        value={age} 
+        onChange={(e) =&gt; setAge(parseInt(e.target.value))} 
+        placeholder="Age"
+      /&gt;
+
+      &lt;p&gt;Full Name: {fullName}&lt;/p&gt;
+      &lt;p&gt;Status: {status}&lt;/p&gt;
+      &lt;p&gt;Is Adult: {isAdult ? '✅ Yes' : '❌ No'}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>🔥 Real-World Example: Shopping Cart</h3>
+          <pre><code>
+import { atom, useAtom } from 'jotai';
+
+// Individual product atoms
+const cartItemsAtom = atom([]);
+const totalItemsAtom = atom((get) =&gt; get(cartItemsAtom).length);
+const totalPriceAtom = atom((get) =&gt; 
+  get(cartItemsAtom).reduce((sum, item) =&gt; sum + item.price * item.quantity, 0)
+);
+
+// Action atoms
+const addToCartAtom = atom(null, (get, set, product) =&gt; {
+  const currentItems = get(cartItemsAtom);
+  const existingItem = currentItems.find(item =&gt; item.id === product.id);
+  
+  if (existingItem) {
+    set(cartItemsAtom, 
+      currentItems.map(item =&gt; 
+        item.id === product.id 
+          ? { ...item, quantity: item.quantity + 1 } 
+          : item
+      )
+    );
+  } else {
+    set(cartItemsAtom, [...currentItems, { ...product, quantity: 1 }]);
+  }
+});
+
+const removeFromCartAtom = atom(null, (get, set, productId) =&gt; {
+  const currentItems = get(cartItemsAtom);
+  set(cartItemsAtom, currentItems.filter(item =&gt; item.id !== productId));
+});
+
+// Component usage
+function ProductList() {
+  const products = [
+    { id: 1, name: 'Laptop', price: 999 },
+    { id: 2, name: 'Mouse', price: 25 },
+    { id: 3, name: 'Keyboard', price: 120 }
+  ];
+
+  const [, addToCart] = useAtom(addToCartAtom);
+
+  return (
+    &lt;div&gt;
+      {products.map(product =&gt; (
+        &lt;div key={product.id} style={{ margin: '10px', padding: '10px', border: '1px solid #3a5a7f' }}&gt;
+          &lt;h3&gt;{product.name}&lt;/h3&gt;
+          &lt;p&gt;${product.price}&lt;/p&gt;
+          &lt;button onClick={() =&gt; addToCart(product)}&gt;Add to Cart&lt;/button&gt;
+        &lt;/div&gt;
+      ))}
+    &lt;/div&gt;
+  );
+}
+
+function CartSummary() {
+  const [totalItems] = useAtom(totalItemsAtom);
+  const [totalPrice] = useAtom(totalPriceAtom);
+
+  return (
+    &lt;div style={{ backgroundColor: '#1a2b42', padding: '15px', borderRadius: '8px' }}&gt;
+      &lt;h3&gt;Shopping Cart&lt;/h3&gt;
+      &lt;p&gt;Items: {totalItems}&lt;/p&gt;
+      &lt;p&gt;Total: ${totalPrice.toFixed(2)}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <div class="demo-card">
+            <h4>✅ Live Demo: Jotai Counter</h4>
+            <div style="display: flex; gap: 10px;">
+              <button class="jotai-btn">Increment (Jotai)</button>
+              <span style="color: var(--cyan);">Count: 0</span>
+              <button class="jotai-btn">Decrement (Jotai)</button>
+            </div>
+          </div>
+        </details>
+
+        <details>
+          <summary>⚙️ Deep Dive: How Jotai Achieves Performance</summary>
+          <p>Jotai uses a dependency tracking system similar to React's useMemo but at the atom level.</p>
+
+          <h3>Pseudocode: Internal Dependency Tracking</h3>
+          <pre><code>
+// Simplified version of how Jotai works:
+class Atom {
+  constructor(getter, setter) {
+    this.getter = getter;
+    this.setter = setter;
+    this.dependencies = new Set(); // Track which atoms this depends on
+    this.subscribers = new Set();  // Track which components use this atom
+    this.value = undefined;
+  }
+
+  subscribe(component) {
+    this.subscribers.add(component);
+  }
+
+  update() {
+    // Recalculate value based on dependencies
+    const newValue = this.getter(this.getDependencies());
+    
+    // If value changed, notify subscribers
+    if (newValue !== this.value) {
+      this.value = newValue;
+      this.subscribers.forEach(subscriber =&gt; subscriber.forceUpdate());
+    }
+  }
+
+  getDependencies() {
+    // Returns values of all atoms this atom depends on
+    return Array.from(this.dependencies).map(atom =&gt; atom.value);
+  }
+}
+
+// When you create a derived atom:
+const derivedAtom = atom((get) =&gt; get(atomA) + get(atomB));
+// Jotai automatically tracks: derivedAtom depends on atomA and atomB
+// Only re-calculates when atomA or atomB changes!
+          </code></pre>
+
+          <h3>📊 Jotai vs Zustand Comparison</h3>
+          <table class="table table-dark table-sm mt-3">
+            <thead>
+              <tr><th>Feature</th><th>Jotai</th><th>Zustand</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Architecture</td><td>Atoms (atomic)</td><td>Store (monolithic)</td></tr>
+              <tr><td>Bundle Size</td><td>~1.5KB</td><td>~1KB</td></tr>
+              <tr><td>Learning Curve</td><td>Medium</td><td>Easy</td></tr>
+              <tr><td>Performance</td><td>Excellent (granular updates)</td><td>Excellent (selective subscriptions)</td></tr>
+              <tr><td>Debugging</td><td>Time-travel devtools</td><td>Time-travel devtools</td></tr>
+              <tr><td>Complex State</td><td>Best for complex relationships</td><td>Best for simple global state</td></tr>
+              <tr><td>Async Support</td><td>Yes (async atoms)</td><td>Yes (plain async/await)</td></tr>
+              <tr><td>Best For</td><td>Large apps with many interconnected states</td><td>Small to medium apps</td></tr>
+            </tbody>
+          </table>
+
+          <div class="note">
+            <strong>🌟 Pro Tip:</strong> Use Jotai when you have complex state relationships (like a shopping cart with products, categories, filters, and user preferences). It scales beautifully.
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 13.6 -->
+      <section id="section-13-6">
+        <h2>13.6 State Management Comparison</h2>
+        
+        <details>
+          <summary>📌 Summary: The Ultimate Decision Matrix</summary>
+          <p>Choosing the right state management tool isn't about which is "best" — it's about which fits your project's needs.</p>
+
+          <h3>🔹 Comprehensive Comparison Table</h3>
+          <table class="table table-dark comparison-table">
+            <thead>
+              <tr>
+                <th>Criteria</th>
+                <th>Context API</th>
+                <th>Redux Toolkit</th>
+                <th>Zustand</th>
+                <th>Jotai</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>Bundle Size</strong></td>
+                <td>0 KB (built-in)</td>
+                <td>~10 KB</td>
+                <td>~1 KB</td>
+                <td>~1.5 KB</td>
+              </tr>
+              <tr>
+                <td><strong>Learning Curve</strong></td>
+                <td>Easy</td>
+                <td>Medium</td>
+                <td>Very Easy</td>
+                <td>Medium</td>
+              </tr>
+              <tr>
+                <td><strong>Boilerplate</strong></td>
+                <td>Low</td>
+                <td>Low (with RTK)</td>
+                <td>None</td>
+                <td>Minimal</td>
+              </tr>
+              <tr>
+                <td><strong>Performance</strong></td>
+                <td>Good (if optimized)</td>
+                <td>Excellent</td>
+                <td>Excellent</td>
+                <td>Excellent</td>
+              </tr>
+              <tr>
+                <td><strong>Re-renders</strong></td>
+                <td>All consumers</td>
+                <td>Only subscribed components</td>
+                <td>Only subscribed components</td>
+                <td>Only atom users</td>
+              </tr>
+              <tr>
+                <td><strong>Immutability</strong></td>
+                <td>You manage</td>
+                <td>Automatic (Immer)</td>
+                <td>You manage</td>
+                <td>You manage</td>
+              </tr>
+              <tr>
+                <td><strong>DevTools</strong></td>
+                <td>Manual</td>
+                <td>Excellent (built-in)</td>
+                <td>Excellent (plugin)</td>
+                <td>Excellent (built-in)</td>
+              </tr>
+              <tr>
+                <td><strong>Async Handling</strong></td>
+                <td>Manual</td>
+                <td>createAsyncThunk</td>
+                <td>Plain async/await</td>
+                <td>Async atoms</td>
+              </tr>
+              <tr>
+                <td><strong>Scalability</strong></td>
+                <td>Good for simple cases</td>
+                <td>Excellent for large apps</td>
+                <td>Good for small-medium</td>
+                <td>Excellent for complex relationships</td>
+              </tr>
+              <tr>
+                <td><strong>Team Adoption</strong></td>
+                <td>Easy</td>
+                <td>Standard in enterprise</td>
+                <td>Rapidly growing</td>
+                <td>Emerging favorite</td>
+              </tr>
+              <tr>
+                <td><strong>Best For</strong></td>
+                <td>Theme, auth, locale</td>
+                <td>Large, complex apps</td>
+                <td>Small to medium apps</td>
+                <td>Complex state relationships</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <h3>📊 Visual Spectrum: From Simple to Complex</h3>
+          <pre><code>
+Simple State ────────────────────────▶ Complex State
+   │                                       │
+   ▼                                       ▼
+Context API → Zustand → Jotai → Redux Toolkit
+   │       (Lightweight)   (Atomic)     (Enterprise)
+   │
+   └─── Your app grows here ────▶
+</code></pre>
+
+          <h3>🔍 Key Insights</h3>
+          <ul>
+            <li><strong>Context API:</strong> Perfect for <span class="comparison-highlight">global primitives</span> like theme, user auth, language</li>
+            <li><strong>Zustand:</strong> Best for <span class="comparison-highlight">simple global state</span> with minimal setup</li>
+            <li><strong>Jotai:</strong> Ideal for <span class="comparison-highlight">complex, interdependent state</span> (e.g., forms with dynamic fields)</li>
+            <li><strong>Redux Toolkit:</strong> Essential for <span class="comparison-highlight">large applications</span> requiring predictability and debugging</li>
+          </ul>
+
+          <div class="note">
+            <strong>🧠 Rule of Thumb:</strong> Start simple. Use Context API first. If you need more power, upgrade to Zustand. Only use Redux Toolkit or Jotai when you're hitting performance or complexity limits.
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Case Study: Choosing Based on Project Type</summary>
+          <h3>Case 1: Personal Blog (Simple)</h3>
+          <ul>
+            <li>State needed: Dark mode toggle, navigation menu open/closed</li>
+            <li><strong>Choice:</strong> Context API</li>
+            <li>Why: No complex logic, minimal state, no need for external libraries</li>
+          </ul>
+
+          <h3>Case 2: E-commerce App (Medium)</h3>
+          <ul>
+            <li>State needed: Shopping cart, user authentication, product filters, wishlist</li>
+            <li><strong>Choice:</strong> Zustand</li>
+            <li>Why: Simple API, easy to manage multiple state slices, excellent performance</li>
+          </ul>
+
+          <h3>Case 3: Financial Dashboard (Complex)</h3>
+          <ul>
+            <li>State needed: Multiple charts, real-time data feeds, user permissions, nested filters, saved views</li>
+            <li><strong>Choice:</strong> Jotai</li>
+            <li>Why: Independent atoms for each chart/filter allow granular updates and avoid unnecessary re-renders</li>
+          </ul>
+
+          <h3>Case 4: Enterprise SaaS Platform (Large)</h3>
+          <ul>
+            <li>State needed: User roles, multi-step workflows, audit logs, undo/redo, API caching, offline sync</li>
+            <li><strong>Choice:</strong> Redux Toolkit</li>
+            <li>Why: Time-travel debugging, middleware for side effects, predictable state flow, excellent team collaboration</li>
+          </ul>
+
+          <h3>🔥 Developer Experience Comparison</h3>
+          <pre><code>
+// Context API — You write everything manually
+function ThemeProvider({ children }) {
+  const [theme, setTheme] = useState('light');
+  
+  const toggleTheme = () =&gt; setTheme(prev =&gt; prev === 'light' ? 'dark' : 'light');
+  
+  return (
+    &lt;ThemeContext.Provider value={{ theme, toggleTheme }}&gt;
+      {children}
+    &lt;/ThemeContext.Provider&gt;
+  );
+}
+
+// Zustand — One file, clean syntax
+const useThemeStore = create((set) =&gt; ({
+  theme: 'light',
+  toggleTheme: () =&gt; set((state) =&gt; ({ theme: state.theme === 'light' ? 'dark' : 'light' }))
+}));
+
+// Jotai — Atomic composition
+const themeAtom = atom('light');
+const toggleThemeAtom = atom(null, (get, set) =&gt; 
+  set(themeAtom, get(themeAtom) === 'light' ? 'dark' : 'light')
+);
+
+// Redux Toolkit — Structure matters
+const themeSlice = createSlice({
+  name: 'theme',
+  initialState: 'light',
+  reducers: {
+    toggleTheme: (state) =&gt; state === 'light' ? 'dark' : 'light'
+  }
+});
+          </code></pre>
+
+          <div class="note">
+            <strong>🎯 Final Wisdom:</strong> Don't choose a state management library because it's popular. Choose it because it solves your specific problem without overcomplicating things.
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 13.7 -->
+      <section id="section-13-7">
+        <h2>13.7 When to Use Each Solution</h2>
+        
+        <details>
+          <summary>📌 Summary: The Decision Flowchart</summary>
+          <p>Use this decision tree to pick the right state management solution for your project.</p>
+
+          <h3>🔹 Decision Flowchart</h3>
+          <pre><code>
+START
+  │
+  ▼
+Is your state only needed by a few components? ──┐
+  │                                           │
+  ▼ (Yes)                                     │
+Use local state (useState/useReducer)         │
+  │                                           │
+  ▼                                           │
+Is your state needed across many components? ─┼───┐
+  │                                           │   │
+  ▼ (Yes)                                     │   │
+Is it just simple data (theme, auth, locale)? │   │
+  │                                           │   │
+  ▼ (Yes)                                     │   │
+Use Context API -----------------------------┘   │
+  │                                           │
+  ▼ (No)                                      │
+Is your app small to medium size?             │
+  │                                           │
+  ▼ (Yes)                                     │
+Use Zustand ----------------------------------┘
+  │
+  ▼ (No)
+Is your state complex with many interdependencies?
+  │
+  ▼ (Yes)
+Use Jotai
+  │
+  ▼ (No)
+Do you need enterprise-grade debugging, time-travel, and team collaboration?
+  │
+  ▼ (Yes)
+Use Redux Toolkit
+  │
+  ▼
+END
+          </code></pre>
+
+          <h3>📚 Detailed Use Cases</h3>
+
+          <h4>✅ Use Context API When:</h4>
+          <ul>
+            <li>Managing theme (dark/light mode)</li>
+            <li>Handling user authentication status</li>
+            <li>Passing locale/language preference</li>
+            <li>Sharing configuration settings</li>
+            <li>Your app has fewer than 10 components needing the state</li>
+          </ul>
+
+          <h4>✅ Use Zustand When:</h4>
+          <ul>
+            <li>Building a small to medium application</li>
+            <li>Need global state for shopping cart, user preferences</li>
+            <li>Want minimal setup and zero boilerplate</li>
+            <li>Prefer plain JavaScript functions over action/reducer patterns</li>
+            <li>Working solo or on a small team</li>
+          </ul>
+
+          <h4>✅ Use Jotai When:</h4>
+          <ul>
+            <li>Managing complex forms with dynamic fields</li>
+            <li>Multiple charts/dashboards with independent filters</li>
+            <li>State has many interdependent relationships</li>
+            <li>Performance optimization is critical</li>
+            <li>Components need to react to specific state changes without re-rendering others</li>
+          </ul>
+
+          <h4>✅ Use Redux Toolkit When:</h4>
+          <ul>
+            <li>Enterprise-level application with 100+ components</li>
+            <li>Need time-travel debugging and comprehensive devtools</li>
+            <li>Working in a large team with strict state management rules</li>
+            <li>Application requires undo/redo functionality</li>
+            <li>Need middleware for logging, analytics, or API caching</li>
+            <li>Legacy codebase already using Redux</li>
+          </ul>
+
+          <div class="note">
+            <strong>🧠 Pro Tip:</strong> Most modern React apps don't need Redux. Start with Context API → upgrade to Zustand → only go to Redux Toolkit or Jotai when you hit real limitations.
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Real-World Examples: What Companies Actually Use</summary>
+          <h3>Facebook/Meta</h3>
+          <p>Uses a custom state management system inspired by Jotai's atomic approach. They prioritize fine-grained reactivity and performance.</p>
+
+          <h3>Netflix</h3>
+          <p>Uses Redux Toolkit for their complex UI with hundreds of components, needing predictable state flow and debugging capabilities.</p>
+
+          <h3>Spotify</h3>
+          <p>Uses Zustand for their web player interface — simple, fast, and scalable enough for their needs.</p>
+
+          <h3>GitHub</h3>
+          <p>Uses Context API for theme and user preferences, avoiding additional dependencies.</p>
+
+          <h3>Stripe</h3>
+          <p>Uses Jotai for their complex payment form with dynamic fields, validation states, and conditional inputs.</p>
+
+          <h3>Amazon</h3>
+          <p>Uses a hybrid approach: Context API for global config, Redux Toolkit for shopping cart and order processing.</p>
+
+          <h3>Conclusion:</h3>
+          <p>The best choice isn't determined by popularity — it's determined by your team's needs, app complexity, and long-term maintainability.</p>
+
+          <div class="note">
+            <strong>🎯 Final Recommendation:</strong> 
+            <ul>
+              <li>Beginners: Context API → Zustand</li>
+              <li>Intermediate: Zustand → Jotai</li>
+              <li>Advanced: Redux Toolkit for enterprise, Jotai for complex interfaces</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 13.8 -->
+      <section id="section-13-8">
+        <h2>13.8 State Normalization</h2>
+        
+        <details>
+          <summary>📌 Summary: Eliminate Duplicates, Optimize Performance</summary>
+          <p>State normalization is the process of restructuring nested data into a flat structure with unique IDs, making updates faster and preventing inconsistencies.</p>
+
+          <h3>🔹 The Problem: Nested State</h3>
+          <p>Consider this common but problematic state shape:</p>
+          <pre><code>
+// ❌ BAD: Nested, duplicated data
+{
+  posts: [
+    {
+      id: 1,
+      title: 'React Tutorial',
+      author: {
+        id: 101,
+        name: 'Alice',
+        avatar: 'alice.jpg'
+      },
+      comments: [
+        {
+          id: 1001,
+          text: 'Great post!',
+          author: {
+            id: 101,
+            name: 'Alice',
+            avatar: 'alice.jpg'
+          }
+        },
+        {
+          id: 1002,
+          text: 'Thanks!',
+          author: {
+            id: 102,
+            name: 'Bob',
+            avatar: 'bob.jpg'
+          }
+        }
+      ]
+    }
+  ],
+  users: [
+    {
+      id: 101,
+      name: 'Alice',
+      avatar: 'alice.jpg'
+    },
+    {
+      id: 102,
+      name: 'Bob',
+      avatar: 'bob.jpg'
+    }
+  ]
+}
+          </code></pre>
+
+          <h3>⚠️ Why This Is Bad</h3>
+          <ul>
+            <li><strong>Duplication:</strong> User data repeated in every post/comment</li>
+            <li><strong>Inconsistency:</strong> If Alice changes her avatar, you must update everywhere</li>
+            <li><strong>Performance:</strong> Changing one comment re-renders entire post tree</li>
+            <li><strong>Memory:</strong> Wasted memory storing same data multiple times</li>
+          </ul>
+
+          <h3>⚡ Normalized State Pattern</h3>
+          <p>Transform nested data into three separate entities:</p>
+          <pre><code>
+// ✅ GOOD: Normalized state
+{
+  entities: {
+    users: {
+      101: { id: 101, name: 'Alice', avatar: 'alice.jpg' },
+      102: { id: 102, name: 'Bob', avatar: 'bob.jpg' }
+    },
+    posts: {
+      1: { id: 1, title: 'React Tutorial', authorId: 101, commentIds: [1001, 1002] }
+    },
+    comments: {
+      1001: { id: 1001, text: 'Great post!', postId: 1, authorId: 101 },
+      1002: { id: 1002, text: 'Thanks!', postId: 1, authorId: 102 }
+    }
+  },
+  ui: {
+    activePostId: 1,
+    loading: false
+  }
+}
+          </code></pre>
+
+          <h3>💡 Benefits of Normalization</h3>
+          <ul>
+            <li><strong>Single Source of Truth:</strong> User data exists once</li>
+            <li><strong>Efficient Updates:</strong> Change Alice's avatar → update one object</li>
+            <li><strong>Fast Lookups:</strong> O(1) access via ID</li>
+            <li><strong>Smaller State:</strong> Less memory usage</li>
+            <li><strong>Optimized Re-renders:</strong> Only components using specific entities update</li>
+          </ul>
+
+          <h3>🔥 Real-World Example: Social Media Feed</h3>
+          <pre><code>
+// Before normalization (BAD)
+const initialState = {
+  feed: [
+    {
+      id: 1,
+      content: 'Hello world!',
+      author: {
+        id: 101,
+        name: 'Alice',
+        avatar: 'alice.jpg',
+        followers: 1200
+      },
+      likes: [
+        { userId: 101, timestamp: '2023-01-01' },
+        { userId: 102, timestamp: '2023-01-02' }
+      ],
+      comments: [
+        {
+          id: 1001,
+          text: 'Nice post!',
+          author: {
+            id: 103,
+            name: 'Charlie',
+            avatar: 'charlie.jpg',
+            followers: 500
+          }
+        }
+      ]
+    }
+  ]
+};
+
+// After normalization (GOOD)
+const normalizedState = {
+  entities: {
+    users: {
+      101: { id: 101, name: 'Alice', avatar: 'alice.jpg', followers: 1200 },
+      102: { id: 102, name: 'Bob', avatar: 'bob.jpg', followers: 800 },
+      103: { id: 103, name: 'Charlie', avatar: 'charlie.jpg', followers: 500 }
+    },
+    posts: {
+      1: { 
+        id: 1, 
+        content: 'Hello world!', 
+        authorId: 101, 
+        likeIds: [101, 102], 
+        commentIds: [1001] 
+      }
+    },
+    comments: {
+      1001: { 
+        id: 1001, 
+        text: 'Nice post!', 
+        postId: 1, 
+        authorId: 103 
+      }
+    },
+    likes: {
+      101: { userId: 101, postId: 1, timestamp: '2023-01-01' },
+      102: { userId: 102, postId: 1, timestamp: '2023-01-02' }
+    }
+  },
+  ui: {
+    feed: [1], // Order of posts
+    loading: false
+  }
+};
+
+// Selector function to get post with author info
+const getPostWithAuthor = (state, postId) =&gt; {
+  const post = state.entities.posts[postId];
+  if (!post) return null;
+  
+  return {
+    ...post,
+    author: state.entities.users[post.authorId],
+    likes: post.likeIds.map(id =&gt; state.entities.likes[id]),
+    comments: post.commentIds.map(id =&gt; state.entities.comments[id])
+  };
+};
+
+// In component
+function Post({ postId }) {
+  const post = useSelector(state =&gt; getPostWithAuthor(state, postId));
+  
+  if (!post) return null;
+  
+  return (
+    &lt;div&gt;
+      &lt;h3&gt;{post.content}&lt;/h3&gt;
+      &lt;div&gt;By {post.author.name}&lt;/div&gt;
+      &lt;div&gt;Likes: {post.likes.length}&lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <div class="normalized-code">
+            <h4>🔑 Key Rules of Normalization</h4>
+            <ol>
+              <li><strong>Every entity gets a unique ID</strong> — use UUID or database ID</li>
+              <li><strong>Store entities in objects</strong> keyed by ID, not arrays</li>
+              <li><strong>Use references</strong> — store IDs instead of full objects</li>
+              <li><strong>Separate concerns</strong> — keep UI state (loading, selected) separate from data</li>
+              <li><strong>Always normalize before storing</strong> — normalize API responses immediately</li>
+            </ol>
+          </div>
+
+          <h3>🛠️ Tools for Normalization</h3>
+          <pre><code>
+// Using normalizr (popular library)
+import { normalize, schema } from 'normalizr';
+
+// Define schemas
+const user = new schema.Entity('users');
+const comment = new schema.Entity('comments', { author: user });
+const post = new schema.Entity('posts', { 
+  author: user, 
+  comments: [comment] 
+});
+
+// Normalize API response
+const normalizedData = normalize(apiResponse, [post]);
+
+// Result: { entities: { users: {...}, posts: {...}, comments: {...} }, result: [...] }
+          </code></pre>
+
+          <h3>⚡ Manual Normalization Function</h3>
+          <pre><code>
+function normalizePosts(posts) {
+  const entities = {
+    users: {},
+    posts: {},
+    comments: {}
+  };
+  const postIds = [];
+
+  posts.forEach(post =&gt; {
+    // Normalize user
+    if (!entities.users[post.author.id]) {
+      entities.users[post.author.id] = post.author;
+    }
+    
+    // Normalize post
+    entities.posts[post.id] = {
+      id: post.id,
+      content: post.content,
+      authorId: post.author.id,
+      commentIds: []
+    };
+    postIds.push(post.id);
+    
+    // Normalize comments
+    post.comments.forEach(comment =&gt; {
+      if (!entities.users[comment.author.id]) {
+        entities.users[comment.author.id] = comment.author;
+      }
+      
+      entities.comments[comment.id] = {
+        id: comment.id,
+        text: comment.text,
+        postId: post.id,
+        authorId: comment.author.id
+      };
+      
+      entities.posts[post.id].commentIds.push(comment.id);
+    });
+  });
+
+  return {
+    entities,
+    ui: { feed: postIds }
+  };
+}
+          </code></pre>
+
+          <div class="note">
+            <strong>🧠 Mental Model:</strong> Think of normalized state as a relational database. Posts are tables with foreign keys pointing to Users and Comments. You join them when you need the full picture.
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Advanced: Normalization with Redux Toolkit</summary>
+          <p>Redux Toolkit's <code>createEntityAdapter</code> automates normalization!</p>
+
+          <pre><code>
+import { createSlice, createEntityAdapter } from '@reduxjs/toolkit';
+
+// Create adapter for posts
+const postAdapter = createEntityAdapter();
+
+// Initial state
+const initialState = postAdapter.getInitialState({
+  loading: false,
+  error: null
+});
+
+const postSlice = createSlice({
+  name: 'posts',
+  initialState,
+  reducers: {
+    addPost: postAdapter.addOne,
+    updatePost: postAdapter.updateOne,
+    removePost: postAdapter.removeOne,
+    addPosts: postAdapter.addMany,
+    setPosts: postAdapter.setAll,
+    clearPosts: postAdapter.removeAll
+  },
+  extraReducers: (builder) =&gt; {
+    builder
+      .addCase(fetchPosts.fulfilled, (state, action) =&gt; {
+        state.loading = false;
+        postAdapter.setAll(state, action.payload);
+      })
+      .addCase(fetchPosts.pending, (state) =&gt; {
+        state.loading = true;
+      })
+      .addCase(fetchPosts.rejected, (state, action) =&gt; {
+        state.loading = false;
+        state.error = action.payload;
+      });
+  }
+});
+
+export const { addPost, updatePost, removePost } = postSlice.actions;
+export default postSlice.reducer;
+
+// Selectors
+export const {
+  selectAll: selectAllPosts,
+  selectById: selectPostById,
+  selectIds: selectPostIds
+} = postAdapter.getSelectors(state =&gt; state.posts);
+
+// In component
+function PostList() {
+  const posts = useSelector(selectAllPosts);
+  const isLoading = useSelector(state =&gt; state.posts.loading);
+
+  return (
+    &lt;div&gt;
+      {isLoading ? &lt;p&gt;Loading...&lt;/p&gt; : (
+        posts.map(post =&gt; (
+          &lt;PostCard key={post.id} postId={post.id} /&gt;
+        ))
+      )}
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <div class="demo-card">
+            <h4>✅ Live Demo: Normalized State Structure</h4>
+            <div class="normalization-example">
+              <pre><code>{
+`{
+  entities: {
+    users: {
+      "101": { id: 101, name: "Alice", avatar: "alice.jpg" },
+      "102": { id: 102, name: "Bob", avatar: "bob.jpg" }
+    },
+    posts: {
+      "1": { id: 1, title: "React Tutorial", authorId: 101 }
+    }
+  },
+  ui: {
+    activePostId: 1
+  }
+}`
+              }</code></pre>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <div class="footer-note">
+        📚 Next: Chapter 14 - React Router: Building Navigation in Single Page Applications
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript Utilities -->
+<script>
+  // Expand/Collapse All
+  document.getElementById('expandAll').addEventListener('click', () => {
+    document.querySelectorAll('details').forEach(detail => detail.open = true);
+  });
+
+  document.getElementById('collapseAll').addEventListener('click', () => {
+    document.querySelectorAll('details').forEach(detail => detail.open = false);
+  });
+
+  // Smooth Scroll to TOC Item
+  document.querySelectorAll('.toc-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const targetId = item.getAttribute('data-target');
+      document.querySelector(targetId).scrollIntoView({ behavior: 'smooth' });
+      
+      // Highlight active item
+      document.querySelectorAll('.toc-item').forEach(el => el.classList.remove('active'));
+      item.classList.add('active');
+    });
+  });
+
+  // Search TOC
+  document.getElementById('searchTOC').addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase();
+    document.querySelectorAll('.toc-item').forEach(item => {
+      const text = item.textContent.toLowerCase();
+      item.style.display = text.includes(query) ? 'block' : 'none';
+    });
+  });
+
+  // Optional: Add highlight.js if needed (uncomment if CDN available)
+  /*
+  const script = document.createElement('script');
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js';
+  script.onload = () => {
+    document.querySelectorAll('pre code').forEach(block => hljs.highlightBlock(block));
+  };
+  document.head.appendChild(script);
+  */
+</script>
+
+<!-- Bootstrap JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
+```

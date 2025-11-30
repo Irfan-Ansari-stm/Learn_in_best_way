@@ -1,0 +1,3737 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Module 4: Testing Fundamentals - Chapter 17</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a192f;
+      --cyan: #00f5ff;
+      --amber: #ffb347;
+      --text-light: #e6f1ff;
+      --border-light: #1a3b5c;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      font-family: 'Roboto', sans-serif;
+      overflow-x: hidden;
+    }
+
+    .left-panel {
+      position: fixed;
+      width: 300px;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 20px;
+      background-color: rgba(10, 25, 47, 0.9);
+      border-right: 1px solid var(--border-light);
+      z-index: 1000;
+    }
+
+    .right-panel {
+      margin-left: 300px;
+      padding: 30px;
+      height: 100vh;
+      overflow-y: auto;
+      background-color: var(--bg-dark);
+    }
+
+    h1, h2, h3, h4 {
+      color: var(--cyan);
+      font-weight: 600;
+    }
+
+    h1 {
+      border-bottom: 2px solid var(--amber);
+      padding-bottom: 10px;
+      margin-bottom: 25px;
+    }
+
+    h2 {
+      margin-top: 40px;
+      border-left: 4px solid var(--amber);
+      padding-left: 15px;
+    }
+
+    h3 {
+      color: var(--amber);
+      margin-top: 30px;
+    }
+
+    .toc-item {
+      margin: 8px 0;
+      padding: 6px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .toc-item:hover {
+      background-color: rgba(0, 245, 255, 0.1);
+    }
+
+    .toc-item.active {
+      background-color: rgba(0, 245, 255, 0.2);
+      border-left: 3px solid var(--cyan);
+    }
+
+    .search-box {
+      margin-bottom: 20px;
+      background-color: rgba(26, 59, 92, 0.5);
+      border: 1px solid var(--border-light);
+      color: var(--text-light);
+    }
+
+    .btn-control {
+      background-color: rgba(10, 25, 47, 0.7);
+      border: 1px solid var(--border-light);
+      color: var(--cyan);
+      margin-bottom: 15px;
+      font-size: 0.9rem;
+    }
+
+    .btn-control:hover {
+      background-color: rgba(0, 245, 255, 0.2);
+      color: var(--cyan);
+    }
+
+    details {
+      margin: 15px 0;
+      border-left: 1px solid var(--border-light);
+      padding-left: 15px;
+      background-color: rgba(10, 25, 47, 0.4);
+      border-radius: 0 5px 5px 0;
+    }
+
+    summary {
+      list-style: none;
+      cursor: pointer;
+      font-weight: bold;
+      color: var(--amber);
+      padding: 10px 15px;
+      background-color: rgba(0, 245, 255, 0.05);
+      border-radius: 5px;
+      margin-bottom: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    summary::before {
+      content: "▶ ";
+      font-size: 0.8em;
+    }
+
+    details[open] > summary::before {
+      content: "▼ ";
+    }
+
+    pre {
+      background-color: #0d1b2a !important;
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 15px;
+      overflow-x: auto;
+      margin: 15px 0;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    code {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.95rem;
+      color: var(--cyan);
+    }
+
+    .highlight {
+      color: var(--amber);
+      font-weight: bold;
+    }
+
+    .note {
+      background-color: rgba(255, 179, 71, 0.1);
+      border-left: 3px solid var(--amber);
+      padding: 12px 15px;
+      margin: 20px 0;
+      border-radius: 0 5px 5px 0;
+    }
+
+    .syntax {
+      background-color: rgba(0, 245, 255, 0.08);
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-weight: 500;
+      display: inline-block;
+      margin: 0 3px;
+    }
+
+    .author-info {
+      color: var(--amber);
+      font-style: italic;
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+
+    .footer-note {
+      margin-top: 60px;
+      text-align: center;
+      color: var(--amber);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border-light);
+      padding-top: 15px;
+    }
+
+    /* Smooth scrolling */
+    html {
+      scroll-behavior: smooth;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 991px) {
+      .left-panel {
+        width: 100%;
+        position: relative;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border-light);
+      }
+      .right-panel {
+        margin-left: 0;
+      }
+    }
+
+    /* Demo styling for testing examples */
+    .testing-demo {
+      background-color: rgba(13, 27, 42, 0.6);
+      border: 1px dashed var(--border-light);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .test-result {
+      margin: 15px 0;
+      padding: 15px;
+      border-radius: 8px;
+      border-left: 3px solid var(--amber);
+    }
+
+    .test-pass {
+      background-color: rgba(0, 204, 136, 0.1);
+      border-color: #00cc88;
+    }
+
+    .test-fail {
+      background-color: rgba(255, 71, 87, 0.1);
+      border-color: #ff4757;
+    }
+
+    .test-code {
+      background-color: rgba(10, 25, 47, 0.8);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 15px;
+      margin: 15px 0;
+      font-family: 'Roboto Mono', monospace;
+      white-space: pre-wrap;
+    }
+
+    .test-comment {
+      color: #666;
+      font-style: italic;
+      margin: 5px 0;
+    }
+
+    .test-assertion {
+      background-color: rgba(0, 245, 255, 0.1);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+      margin: 0 3px;
+    }
+
+    .test-step {
+      margin: 10px 0;
+      padding: 10px;
+      border-left: 3px solid var(--cyan);
+      background-color: rgba(0, 245, 255, 0.05);
+      border-radius: 0 5px 5px 0;
+    }
+
+    .test-step strong {
+      color: var(--cyan);
+    }
+
+    .testing-pattern {
+      background-color: rgba(13, 27, 42, 0.6);
+      border: 1px dashed var(--border-light);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .testing-table th, .testing-table td {
+      border: 1px solid var(--border-light);
+      padding: 10px;
+    }
+
+    .testing-table th {
+      background-color: rgba(0, 245, 255, 0.1);
+    }
+
+    .testing-table tr:nth-child(even) {
+      background-color: rgba(26, 59, 92, 0.3);
+    }
+
+    .component-preview {
+      background-color: rgba(10, 25, 47, 0.3);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 15px;
+      margin: 15px 0;
+    }
+
+    .hook-test {
+      background-color: rgba(13, 27, 42, 0.6);
+      border: 1px dashed var(--border-light);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .mock-data {
+      background-color: rgba(10, 25, 47, 0.8);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 15px;
+      margin: 15px 0;
+      font-family: 'Roboto Mono', monospace;
+    }
+
+    .test-badge {
+      display: inline-block;
+      background-color: var(--amber);
+      color: #000;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      margin-left: 8px;
+    }
+
+    .test-type {
+      display: inline-block;
+      background-color: rgba(0, 245, 255, 0.1);
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      margin-left: 8px;
+    }
+
+    .testing-diagram {
+      background-color: rgba(13, 27, 42, 0.6);
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+      font-family: 'Roboto Mono', monospace;
+      line-height: 1.6;
+    }
+
+    .testing-tip {
+      background-color: rgba(255, 179, 71, 0.1);
+      border-left: 3px solid var(--amber);
+      padding: 15px;
+      border-radius: 0 5px 5px 0;
+      margin: 15px 0;
+    }
+
+    .testing-tip strong {
+      color: var(--amber);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin: 15px 0;
+    }
+
+    .test-btn {
+      background-color: var(--cyan);
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .test-btn:hover {
+      background-color: #00c0e6;
+      transform: translateY(-2px);
+    }
+
+    .test-btn.pass {
+      background-color: #00cc88;
+      color: #000;
+    }
+
+    .test-btn.pass:hover {
+      background-color: #00aa77;
+    }
+
+    .test-btn.fail {
+      background-color: #ff4757;
+      color: #fff;
+    }
+
+    .test-btn.fail:hover {
+      background-color: #e03b4c;
+    }
+
+    .code-line {
+      display: block;
+      margin: 2px 0;
+    }
+
+    .test-output {
+      background-color: rgba(10, 25, 47, 0.8);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 15px;
+      margin: 15px 0;
+      font-family: 'Roboto Mono', monospace;
+      white-space: pre;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .test-success {
+      color: #00cc88;
+      font-weight: bold;
+    }
+
+    .test-error {
+      color: #ff4757;
+      font-weight: bold;
+    }
+
+    .test-warning {
+      color: #ffb347;
+      font-weight: bold;
+    }
+
+    .dependency-badge {
+      background-color: rgba(0, 245, 255, 0.2);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      margin: 0 3px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container-fluid p-0">
+  <div class="row g-0">
+
+    <!-- Left Panel -->
+    <div class="col-md-3 left-panel">
+      <h1>Module 4</h1>
+      <h4>Testing Fundamentals</h4>
+      <p class="author-info">— Mastering React Testing with Clarity & Depth —</p>
+
+      <input type="text" class="form-control search-box" id="searchTOC" placeholder="Search topics..." />
+
+      <div class="d-grid gap-2">
+        <button class="btn btn-control" id="expandAll">Expand All</button>
+        <button class="btn btn-control" id="collapseAll">Collapse All</button>
+      </div>
+
+      <div class="toc">
+        <h5>Table of Contents</h5>
+        <div class="toc-item" data-target="#section-17-1">17.1 Testing Philosophy and Types</div>
+        <div class="toc-item" data-target="#section-17-2">17.2 Jest Testing Framework</div>
+        <div class="toc-item" data-target="#section-17-3">17.3 React Testing Library</div>
+        <div class="toc-item" data-target="#section-17-4">17.4 Writing Your First Tests</div>
+        <div class="toc-item" data-target="#section-17-5">17.5 Testing Components</div>
+        <div class="toc-item" data-target="#section-17-6">17.6 Testing Props and State</div>
+        <div class="toc-item" data-target="#section-17-7">17.7 Testing User Interactions</div>
+        <div class="toc-item" data-target="#section-17-8">17.8 Testing Hooks</div>
+      </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="col-md-9 right-panel">
+
+      <!-- Section 17.1 -->
+      <section id="section-17-1">
+        <h2>17.1 Testing Philosophy and Types</h2>
+        
+        <details>
+          <summary>📌 Summary: Why We Test and What to Test</summary>
+          <p>Testing isn't about perfection—it's about confidence. Good tests give you the confidence to change code without fear of breaking things.</p>
+          
+          <h3>🔹 The Testing Pyramid</h3>
+          <p>The testing pyramid represents the ideal distribution of test types:</p>
+          <div class="testing-diagram">
+┌───────────────────────────────────┐
+│           Integration Tests       │ ← 20% (Fewer)
+├───────────────────────────────────┤
+│         Unit Tests                │ ← 70% (Most)
+├───────────────────────────────────┤
+│     End-to-End (E2E) Tests        │ ← 10% (Fewest)
+└───────────────────────────────────┘
+          </div>
+          <ul>
+            <li><strong>Unit Tests (70%):</strong> Test individual functions/components in isolation</li>
+            <li><strong>Integration Tests (20%):</strong> Test how components work together</li>
+            <li><strong>E2E Tests (10%):</strong> Test entire user workflows from start to finish</li>
+          </ul>
+
+          <h3>💡 Why This Distribution Matters</h3>
+          <table class="table table-dark table-sm mt-3">
+            <thead>
+              <tr><th>Test Type</th><th>Speed</th><th>Cost</th><th>Reliability</th><th>Best For</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Unit Tests</td><td>Fast</td><td>Low</td><td>High</td><td>Logic, edge cases</td></tr>
+              <tr><td>Integration Tests</td><td>Medium</td><td>Medium</td><td>Medium</td><td>Component interactions</td></tr>
+              <tr><td>E2E Tests</td><td>Slow</td><td>High</td><td>Low</td><td>User workflows</td></tr>
+            </tbody>
+          </table>
+
+          <h3>🔹 Testing Philosophy: The Three A's</h3>
+          <ol>
+            <li><strong>Arrange:</strong> Set up the test environment</li>
+            <li><strong>Act:</strong> Perform the action being tested</li>
+            <li><strong>Assert:</strong> Verify the expected outcome</li>
+          </ol>
+
+          <h3>🔥 The Testing Mindset</h3>
+          <ul>
+            <li><strong>Tests are documentation:</strong> They show how code should behave</li>
+            <li><strong>Tests are safety nets:</strong> They catch regressions before they reach users</li>
+            <li><strong>Tests are design tools:</strong> Good tests lead to better architecture</li>
+            <li><strong>Tests are confidence builders:</strong> They let you refactor fearlessly</li>
+            <li><strong>Tests are not perfect:</strong> Focus on value, not 100% coverage</li>
+          </ul>
+
+          <h3>⚠️ Common Testing Myths</h3>
+          <table class="table table-dark table-sm mt-3">
+            <thead>
+              <tr><th>Myth</th><th>Reality</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>"I don't have time to write tests"</td><td>Writing tests saves time by catching bugs early</td></tr>
+              <tr><td>"Tests slow down development"</td><td>Good tests speed up development by reducing debugging time</td></tr>
+              <tr><td>"Only QA teams should write tests"</td><td>Developers writing tests leads to better quality</td></tr>
+              <tr><td>"I need 100% test coverage"</td><td>Focus on critical paths, not arbitrary numbers</td></tr>
+              <tr><td>"Tests are hard to maintain"</td><td>Well-written tests are easy to maintain and understand</td></tr>
+              <tr><td>"I'll test manually instead"</td><td>Manual testing is inconsistent and doesn't scale</td></tr>
+            </tbody>
+          </table>
+
+          <div class="note">
+            <strong>🧠 Mental Model:</strong> Think of tests as your code's personal assistant. They check everything you've done so you can focus on building new features.
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Deep Dive: Different Types of Tests in React</summary>
+          <h3>⚡ Component Testing vs Unit Testing</h3>
+          <p>In React, we often blur these lines, but understanding the difference helps:</p>
+
+          <h4>Unit Testing</h4>
+          <pre><code>
+// ❌ BAD: Testing a component as if it were a unit
+// This tests implementation details
+
+function testCounter() {
+  const wrapper = mount(&lt;Counter /&gt;);
+  expect(wrapper.state('count')).toBe(0); // ← Testing internal state
+}
+          </code></pre>
+
+          <h4>Component Testing (React Testing Library)</h4>
+          <pre><code>
+// ✅ GOOD: Testing what the user sees
+function testCounter() {
+  render(&lt;Counter /&gt;);
+  
+  // Find button by accessible label
+  const incrementButton = screen.getByRole('button', { name: /increment/i });
+  
+  // Click it
+  fireEvent.click(incrementButton);
+  
+  // Check result
+  expect(screen.getByText(/count: 1/i)).toBeInTheDocument();
+}
+          </code></pre>
+
+          <h3>🔍 Testing Categories</h3>
+          <table class="table table-dark testing-table">
+            <thead>
+              <tr><th>Type</th><th>Description</th><th>Example</th><th>Tool</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Snapshot Testing</strong></td><td>Compare UI output against saved snapshot</td><td>Check if component rendering changed</td><td>Jest</td></tr>
+              <tr><td><strong>Component Testing</strong></td><td>Test individual components in isolation</td><td>Button, Card, Form</td><td>RTL</td></tr>
+              <tr><td><strong>Integration Testing</strong></td><td>Test how components interact</td><td>Form + Validation + API calls</td><td>RTL</td></tr>
+              <tr><td><strong>End-to-End (E2E)</strong></td><td>Test complete user flows</td><td>Login → Dashboard → Create Post</td><td>Cypress, Playwright</td></tr>
+              <tr><td><strong>Mocking</strong></td><td>Replace dependencies with controlled versions</td><td>API calls, timers, localStorage</td><td>Jest</td></tr>
+              <tr><td><strong>Accessibility Testing</strong></td><td>Verify WCAG compliance</td><td>Screen reader compatibility</td><td>RTL, axe</td></tr>
+              <tr><td><strong>Performance Testing</strong></td><td>Measure load times and rendering speed</td><td>Page load under 2s</td><td>Lighthouse, Web Vitals</td></tr>
+            </tbody>
+          </table>
+
+          <h3>🔥 Testing Principles for React</h3>
+          <ol>
+            <li><strong>Test behavior, not implementation:</strong> Don't test internal state or props directly</li>
+            <li><strong>Write tests that reflect user actions:</strong> What would a real user do?</li>
+            <li><strong>Use accessibility selectors:</strong> Use role, name, text content</li>
+            <li><strong>Keep tests simple:</strong> One assertion per test when possible</li>
+            <li><strong>Use descriptive names:</strong> Test names should read like sentences</li>
+            <li><strong>Test happy path and edge cases:</strong> Success scenarios AND failure scenarios</li>
+            <li><strong>Test at the right level:</strong> Don't over-test simple components</li>
+            <li><strong>Make tests fast:</strong> Avoid unnecessary delays and mocks</li>
+            <li><strong>Run tests frequently:</strong> Integrate into your workflow</li>
+            <li><strong>Fix failing tests immediately:</strong> Don't let broken tests accumulate</li>
+          </ol>
+
+          <div class="testing-tip">
+            <strong>🎯 Pro Tip:</strong> When writing tests, ask yourself: "If I was a new developer joining this project, could I understand what this component does just by reading the tests?"
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 17.2 -->
+      <section id="section-17-2">
+        <h2>17.2 Jest Testing Framework</h2>
+        
+        <details>
+          <summary>📌 Summary: The Foundation of React Testing</summary>
+          <p>Jest is Facebook's JavaScript testing framework that comes bundled with Create React App. It provides everything you need to write, run, and debug tests.</p>
+
+          <h3>🔹 Core Features</h3>
+          <ul>
+            <li><strong>Zero-config setup:</strong> Works out of the box with CRA</li>
+            <li><strong>Snapshot testing:</strong> Capture component output for comparison</li>
+            <li><strong>Mocking:</strong> Replace modules and functions with controlled versions</li>
+            <li><strong>Code coverage:</strong> See which parts of your code are tested</li>
+            <li><strong>Parallel execution:</strong> Runs tests quickly</li>
+            <li><strong>Watch mode:</strong> Automatically runs tests on file changes</li>
+            <li><strong>Async support:</strong> Built-in promises and async/await handling</li>
+          </ul>
+
+          <h3>⚡ Installation</h3>
+          <p>Jest comes pre-installed with Create React App, but here's how to install it manually:</p>
+          <pre><code>
+npm install --save-dev jest @types/jest ts-jest
+
+# Or with yarn
+yarn add --dev jest @types/jest ts-jest
+          </code></pre>
+
+          <h3>⚡ Basic Jest Syntax</h3>
+          <pre><code>
+// mathUtils.js
+export function add(a, b) {
+  return a + b;
+}
+
+export function subtract(a, b) {
+  return a - b;
+}
+
+// mathUtils.test.js
+import { add, subtract } from './mathUtils';
+
+// Describe groups related tests
+describe('Math Utilities', () =&gt; {
+  // Individual test cases
+  test('adds 1 + 2 to equal 3', () =&gt; {
+    expect(add(1, 2)).toBe(3);
+  });
+
+  test('subtracts 5 - 3 to equal 2', () =&gt; {
+    expect(subtract(5, 3)).toBe(2);
+  });
+
+  // More expressive syntax
+  it('multiplies 2 * 3 to equal 6', () =&gt; {
+    expect(2 * 3).toBe(6);
+  });
+});
+          </code></pre>
+
+          <h3>🔥 Essential Jest Matchers</h3>
+          <table class="table table-dark testing-table">
+            <thead>
+              <tr><th>Matcher</th><th>Usage</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>.toBe()</code></td><td><code>expect(value).toBe(expected)</code></td><td>Strict equality (===)</td></tr>
+              <tr><td><code>.toEqual()</code></td><td><code>expect(obj).toEqual(otherObj)</code></td><td>Deep equality for objects/arrays</td></tr>
+              <tr><td><code>.toBeTruthy()</code></td><td><code>expect(value).toBeTruthy()</code></td><td>Truthy value</td></tr>
+              <tr><td><code>.toBeFalsy()</code></td><td><code>expect(value).toBeFalsy()</code></td><td>Falsy value</td></tr>
+              <tr><td><code>.toBeDefined()</code></td><td><code>expect(value).toBeDefined()</code></td><td>Value is defined</td></tr>
+              <tr><td><code>.toBeUndefined()</code></td><td><code>expect(value).toBeUndefined()</code></td><td>Value is undefined</td></tr>
+              <tr><td><code>.toContain()</code></td><td><code>expect(array).toContain(item)</code></td><td>Array contains item</td></tr>
+              <tr><td><code>.toHaveLength()</code></td><td><code>expect(array).toHaveLength(n)</code></td><td>Array has length n</td></tr>
+              <tr><td><code>.toMatch()</code></td><td><code>expect(string).toMatch(regex)</code></td><td>String matches regex</td></tr>
+              <tr><td><code>.toThrow()</code></td><td><code>expect(fn).toThrow()</code></td><td>Function throws error</td></tr>
+              <tr><td><code>.toHaveBeenCalled()</code></td><td><code>expect(mockFn).toHaveBeenCalled()</code></td><td>Mock function was called</td></tr>
+              <tr><td><code>.toHaveBeenCalledWith()</code></td><td><code>expect(mockFn).toHaveBeenCalledWith(arg1, arg2)</code></td><td>Mock function called with specific args</td></tr>
+            </tbody>
+          </table>
+
+          <h3>⚡ Mocking Functions</h3>
+          <pre><code>
+// api.js
+export const fetchUser = async (id) =&gt; {
+  const response = await fetch(\`/api/users/\${id}\`);
+  return response.json();
+};
+
+// api.test.js
+import { fetchUser } from './api';
+
+// Mock the fetch function
+jest.mock('node-fetch');
+
+test('fetches user data successfully', async () =&gt; {
+  // Mock the fetch response
+  global.fetch = jest.fn().mockResolvedValue({
+    json: () =&gt; Promise.resolve({ id: 1, name: 'John' })
+  });
+
+  const user = await fetchUser(1);
+
+  expect(fetch).toHaveBeenCalledTimes(1);
+  expect(fetch).toHaveBeenCalledWith('/api/users/1');
+  expect(user).toEqual({ id: 1, name: 'John' });
+});
+
+// Mock a module completely
+jest.mock('./api', () =&gt; ({
+  fetchUser: jest.fn()
+}));
+
+test('uses mocked fetchUser', () =&gt; {
+  const mockFetchUser = require('./api').fetchUser;
+  mockFetchUser.mockResolvedValue({ id: 2, name: 'Jane' });
+
+  const user = await fetchUser(2);
+  
+  expect(mockFetchUser).toHaveBeenCalled();
+  expect(user).toEqual({ id: 2, name: 'Jane' });
+});
+          </code></pre>
+
+          <h3>🔥 Jest Setup Files</h3>
+          <pre><code>
+// jest.config.js
+module.exports = {
+  testEnvironment: 'jsdom',
+  setupFilesAfterEnv: ['&lt;rootDir&gt;/src/setupTests.js'],
+  testMatch: ['&lt;rootDir&gt;/src/**/*.(test|spec).(js|jsx|ts|tsx)'],
+  collectCoverageFrom: [
+    'src/**/*.{js,jsx,ts,tsx}',
+    '!src/**/*.d.ts'
+  ],
+  coverageDirectory: 'coverage',
+  coverageReporters: ['text', 'lcov', 'clover', 'json'],
+  moduleNameMapper: {
+    '\\.(css|less|scss|sass)$': 'identity-obj-proxy'
+  },
+  transform: {
+    '^.+\\.(js|jsx|ts|tsx)$': 'babel-jest'
+  }
+};
+
+// src/setupTests.js
+import '@testing-library/jest-dom';
+// Add any other global setup here
+          </code></pre>
+
+          <h3>📊 Jest CLI Commands</h3>
+          <pre><code>
+# Run tests once
+npm test
+
+# Run tests in watch mode (recommended)
+npm test -- --watch
+
+# Run tests with coverage report
+npm test -- --coverage
+
+# Run only tests matching a pattern
+npm test -- --testNamePattern="Counter"
+
+# Run tests in verbose mode
+npm test -- --verbose
+
+# Generate coverage report
+npm test -- --coverage
+
+# Open coverage report in browser
+npm run coverage-open
+          </code></pre>
+
+          <div class="note">
+            <strong>🧠 Mental Model:</strong> Think of Jest as your testing orchestra conductor. It coordinates all the instruments (tests), ensures everyone plays in sync (runs them), and gives you feedback on performance (coverage reports).
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Deep Dive: Snapshot Testing</summary>
+          <p>Snapshot testing captures the rendered output of a component and compares it against a previously saved snapshot.</p>
+
+          <h3>⚡ Snapshot Testing Example</h3>
+          <pre><code>
+// Button.jsx
+import React from 'react';
+
+function Button({ children, variant = 'primary', disabled = false }) {
+  const baseClasses = 'px-4 py-2 rounded-lg font-medium';
+  const variantClasses = variant === 'primary' 
+    ? 'bg-blue-500 text-white hover:bg-blue-600' 
+    : 'bg-gray-200 text-gray-800 hover:bg-gray-300';
+
+  return (
+    &lt;button 
+      className={\`\${baseClasses} \${variantClasses}\`} 
+      disabled={disabled}
+    &gt;
+      {children}
+    &lt;/button&gt;
+  );
+}
+
+export default Button;
+
+// Button.test.jsx
+import React from 'react';
+import { render } from '@testing-library/react';
+import Button from './Button';
+
+test('renders primary button correctly', () =&gt; {
+  const { container } = render(&lt;Button&gt;Click me&lt;/Button&gt;);
+
+  // Take a snapshot of the rendered output
+  expect(container).toMatchSnapshot();
+});
+
+test('renders secondary button correctly', () =&gt; {
+  const { container } = render(&lt;Button variant="secondary"&gt;Click me&lt;/Button&gt;);
+
+  expect(container).toMatchSnapshot();
+});
+
+test('renders disabled button correctly', () =&gt; {
+  const { container } = render(&lt;Button disabled&gt;Click me&lt;/Button&gt;);
+
+  expect(container).toMatchSnapshot();
+});
+          </code></pre>
+
+          <h3>🔍 How Snapshots Work</h3>
+          <p>When you first run the test, Jest creates a snapshot file:</p>
+          <pre><code>
+// __snapshots__/Button.test.jsx.snap
+exports[`Button renders primary button correctly 1`] = `
+&lt;button
+  class="px-4 py-2 rounded-lg font-medium bg-blue-500 text-white hover:bg-blue-600"
+&gt;
+  Click me
+&lt;/button&gt;
+`;
+          </code></pre>
+
+          <h3>⚠️ Snapshot Testing Best Practices</h3>
+          <table class="table table-dark testing-table">
+            <thead>
+              <tr><th>Best Practice</th><th>Why</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Use for stable UI components</td><td>Don't use for dynamic content</td></tr>
+              <tr><td>Review snapshots before committing</td><td>Ensure changes are intentional</td></tr>
+              <tr><td>Don't rely solely on snapshots</td><td>Combine with behavior tests</td></tr>
+              <tr><td>Update snapshots deliberately</td><td>Use <code>-u</code> flag to update</td></tr>
+              <tr><td>Keep snapshots small</td><td>Large snapshots are hard to review</td></tr>
+              <tr><td>Use meaningful test names</td><td>Helps identify what changed</td></tr>
+              <tr><td>Consider component structure</td><td>Changes in structure break snapshots</td></tr>
+            </tbody>
+          </table>
+
+          <h3>🔥 When NOT to Use Snapshots</h3>
+          <pre><code>
+// ❌ BAD: Dynamic content breaks snapshots
+test('renders user list', () =&gt; {
+  const users = [
+    { id: Math.random(), name: 'John' },
+    { id: Math.random(), name: 'Jane' }
+  ];
+  
+  const { container } = render(&lt;UserList users={users} /&gt;);
+  expect(container).toMatchSnapshot(); // ← Will fail every time!
+});
+
+// ✅ GOOD: Stable, predictable output
+test('renders empty user list', () =&gt; {
+  const { container } = render(&lt;UserList users={[]} /&gt;);
+  expect(container).toMatchSnapshot();
+});
+
+test('renders user list with one user', () =&gt; {
+  const { container } = render(&lt;UserList users={[{ id: 1, name: 'John' }]} /&gt;);
+  expect(container).toMatchSnapshot();
+});
+          </code></pre>
+
+          <div class="testing-tip">
+            <strong>🌟 Pro Tip:</strong> Use snapshots for layout and structure, but use RTL assertions for behavior and content. Combine both for comprehensive testing.
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 17.3 -->
+      <section id="section-17-3">
+        <h2>17.3 React Testing Library</h2>
+        
+        <details>
+          <summary>📌 Summary: Testing Like a Real User</summary>
+          <p>React Testing Library (RTL) is the de facto standard for testing React components. It encourages testing components the way users interact with them.</p>
+
+          <h3>🔹 Core Philosophy: Test Behavior, Not Implementation</h3>
+          <p>RTL follows these principles:</p>
+          <ul>
+            <li><strong>Don't test implementation details:</strong> Don't test state, props, or internal methods</li>
+            <li><strong>Test what users see:</strong> Test visible text, buttons, labels</li>
+            <li><strong>Use accessibility:</strong> Use role, name, text content to find elements</li>
+            <li><strong>Keep tests maintainable:</strong> Tests shouldn't break when you refactor</li>
+          </ul>
+
+          <h3>⚡ Installation</h3>
+          <p>RTL comes pre-installed with Create React App:</p>
+          <pre><code>
+# Already installed with CRA
+npm install --save-dev @testing-library/react @testing-library/jest-dom @testing-library/user-event
+
+# If you need to install manually
+npm install --save-dev @testing-library/react @testing-library/jest-dom @testing-library/user-event
+          </code></pre>
+
+          <h3>🔥 Essential RTL APIs</h3>
+          <table class="table table-dark testing-table">
+            <thead>
+              <tr><th>Method</th><th>Usage</th><th>Description</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>render()</code></td><td><code>render(&lt;Component /&gt;)</code></td><td>Render component into document</td></tr>
+              <tr><td><code>screen</code></td><td><code>screen.getByRole()</code></td><td>Query utilities for finding elements</td></tr>
+              <tr><td><code>getByRole()</code></td><td><code>getByRole('button')</code></td><td>Find by ARIA role</td></tr>
+              <tr><td><code>getByText()</code></td><td><code>getByText('Submit')</code></td><td>Find by text content</td></tr>
+              <tr><td><code>getByLabelText()</code></td><td><code>getByLabelText('Email')</code></td><td>Find by label text</td></tr>
+              <tr><td><code>getByPlaceholderText()</code></td><td><code>getByPlaceholderText('Enter email')</code></td><td>Find by placeholder</td></tr>
+              <tr><td><code>getByTestId()</code></td><td><code>getByTestId('submit-btn')</code></td><td>Find by data-testid attribute</td></tr>
+              <tr><td><code>fireEvent()</code></td><td><code>fireEvent.click(button)</code></td><td>Trigger events</td></tr>
+              <tr><td><code>userEvent</code></td><td><code>userEvent.click(button)</code></td><td>More realistic user events</td></tr>
+              <tr><td><code>waitFor()</code></td><td><code>waitFor(() =&gt; expect(...))</code></td><td>Wait for async operations</td></tr>
+              <tr><td><code>act()</code></td><td><code>act(() =&gt; {...})</code></td><td>Wrap state updates for accurate testing</td></tr>
+            </tbody>
+          </table>
+
+          <h3>⚡ Query Methods Priority</h3>
+          <p>RTL recommends using queries in this order of preference:</p>
+          <ol>
+            <li><strong>By Role:</strong> <code>getByRole()</code> - Best for accessibility</li>
+            <li><strong>By Text:</strong> <code>getByText()</code> - What users see</li>
+            <li><strong>By Label:</strong> <code>getByLabelText()</code> - For form fields</li>
+            <li><strong>By Placeholder:</strong> <code>getByPlaceholderText()</code> - Secondary option</li>
+            <li><strong>By Alt Text:</strong> <code>getByAltText()</code> - For images</li>
+            <li><strong>By Title:</strong> <code>getByTitle()</code> - For tooltips</li>
+            <li><strong>By Display Value:</strong> <code>getByDisplayValue()</code> - For input values</li>
+            <li><strong>By Test ID:</strong> <code>getByTestId()</code> - Last resort</li>
+          </ol>
+
+          <h3>🔥 Real-World Example: Testing a Button</h3>
+          <pre><code>
+// Button.jsx
+import React from 'react';
+
+function Button({ children, onClick, variant = 'primary', disabled = false }) {
+  const baseClasses = 'px-4 py-2 rounded-lg font-medium';
+  const variantClasses = variant === 'primary' 
+    ? 'bg-blue-500 text-white hover:bg-blue-600' 
+    : 'bg-gray-200 text-gray-800 hover:bg-gray-300';
+
+  return (
+    &lt;button 
+      className={\`\${baseClasses} \${variantClasses}\`} 
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={children}
+    &gt;
+      {children}
+    &lt;/button&gt;
+  );
+}
+
+export default Button;
+
+// Button.test.jsx
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import Button from './Button';
+
+test('renders button with text', () =&gt; {
+  render(&lt;Button&gt;Click me&lt;/Button&gt;);
+
+  // Find button by its text content
+  const button = screen.getByText(/click me/i);
+  
+  // Assert it exists
+  expect(button).toBeInTheDocument();
+  
+  // Assert it has correct text
+  expect(button).toHaveTextContent('Click me');
+});
+
+test('calls onClick when clicked', () =&gt; {
+  const handleClick = jest.fn();
+  
+  render(&lt;Button onClick={handleClick}&gt;Click me&lt;/Button&gt;);
+
+  const button = screen.getByText(/click me/i);
+  
+  // Trigger click event
+  fireEvent.click(button);
+  
+  // Assert handler was called
+  expect(handleClick).toHaveBeenCalledTimes(1);
+});
+
+test('disables button when disabled prop is true', () =&gt; {
+  render(&lt;Button disabled&gt;Click me&lt;/Button&gt;);
+
+  const button = screen.getByText(/click me/i);
+  
+  // Assert button is disabled
+  expect(button).toBeDisabled();
+});
+
+test('has correct accessibility attributes', () =&gt; {
+  render(&lt;Button&gt;Submit form&lt;/Button&gt;);
+
+  const button = screen.getByRole('button', { name: 'Submit form' });
+  
+  expect(button).toHaveAttribute('aria-label', 'Submit form');
+});
+          </code></pre>
+
+          <h3>⚡ User Event vs Fire Event</h3>
+          <p>For more realistic user interactions, use <code>userEvent</code>:</p>
+          <pre><code>
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+
+test('handles form submission with userEvent', async () =&gt; {
+  const handleSubmit = jest.fn();
+  
+  render(&lt;form onSubmit={handleSubmit}&gt;
+    &lt;input type="text" placeholder="Username" /&gt;
+    &lt;button type="submit"&gt;Submit&lt;/button&gt;
+  &lt;/form&gt;);
+
+  const input = screen.getByPlaceholderText(/username/i);
+  const submitButton = screen.getByRole('button', { name: /submit/i });
+
+  // More realistic user interaction
+  await userEvent.type(input, 'john_doe');
+  await userEvent.click(submitButton);
+
+  expect(handleSubmit).toHaveBeenCalledTimes(1);
+  expect(handleSubmit).toHaveBeenCalledWith(expect.any(Object));
+});
+          </code></pre>
+
+          <h3>🔥 Async Testing with waitFor</h3>
+          <pre><code>
+// ApiComponent.jsx
+import React, { useState, useEffect } from 'react';
+
+function ApiComponent() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() =&gt; {
+    const fetchData = async () =&gt; {
+      setLoading(true);
+      // Simulate API call
+      const response = await new Promise(resolve =&gt; 
+        setTimeout(() =&gt; resolve({ message: 'Hello World' }), 1000)
+      );
+      setData(response);
+      setLoading(false);
+    };
+
+    fetchData();
+  }, []);
+
+  if (loading) return &lt;div&gt;Loading...&lt;/div&gt;;
+  if (!data) return &lt;div&gt;Error loading data&lt;/div&gt;;
+
+  return &lt;div&gt;{data.message}&lt;/div&gt;;
+}
+
+// ApiComponent.test.jsx
+import React from 'react';
+import { render, screen, waitFor } from '@testing-library/react';
+import ApiComponent from './ApiComponent';
+
+test('displays data after loading', async () =&gt; {
+  render(&lt;ApiComponent /&gt;);
+
+  // Initial state
+  expect(screen.getByText(/loading.../i)).toBeInTheDocument();
+
+  // Wait for data to appear
+  await waitFor(() =&gt; {
+    expect(screen.getByText(/hello world/i)).toBeInTheDocument();
+  });
+});
+          </code></pre>
+
+          <div class="note">
+            <strong>🧠 Mental Model:</strong> Think of React Testing Library as a robot user. It doesn't know about your component's internals—it only knows what a human would see and interact with.
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Deep Dive: Query Methods in Depth</summary>
+          <p>Understanding the different query methods is crucial for effective testing.</p>
+
+          <h3>🔎 Getting Elements: By vs Find</h3>
+          <table class="table table-dark testing-table">
+            <thead>
+              <tr><th>Method</th><th>Behavior</th><th>When to Use</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>getBy*</code></td><td>Throws error if element not found</td><td>When element must exist</td></tr>
+              <tr><td><code>queryBy*</code></td><td>Returns null if element not found</td><td>When element might not exist</td></tr>
+              <tr><td><code>findBy*</code></td><td>Async version that waits for element</td><td>For async elements</td></tr>
+            </tbody>
+          </table>
+
+          <h3>🔥 Practical Examples</h3>
+          <pre><code>
+// Component with conditional rendering
+function UserProfile({ user, isLoading }) {
+  if (isLoading) return &lt;div&gt;Loading...&lt;/div&gt;;
+  
+  if (!user) return &lt;div&gt;No user found&lt;/div&gt;;
+  
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;{user.name}&lt;/h1&gt;
+      &lt;p&gt;{user.email}&lt;/p&gt;
+      &lt;button&gt;Edit&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+
+// Test examples
+test('shows loading state', () =&gt; {
+  render(&lt;UserProfile isLoading={true} /&gt;);
+  
+  // Use getBy since loading state must be there
+  expect(screen.getByText(/loading.../i)).toBeInTheDocument();
+});
+
+test('shows no user message', () =&gt; {
+  render(&lt;UserProfile user={null} /&gt;);
+  
+  // Use getBy since message must be there
+  expect(screen.getByText(/no user found/i)).toBeInTheDocument();
+});
+
+test('shows user profile', () =&gt; {
+  render(&lt;UserProfile user={{ name: 'John', email: 'john@example.com' }} /&gt;);
+  
+  // Use getBy since elements must be there
+  expect(screen.getByText(/john/i)).toBeInTheDocument();
+  expect(screen.getByText(/john@example.com/i)).toBeInTheDocument();
+});
+
+test('does not show edit button when user is admin', () =&gt; {
+  render(&lt;UserProfile user={{ name: 'Admin', email: 'admin@example.com', isAdmin: true }} /&gt;);
+  
+  // Use queryBy since button might not be there
+  const editButton = screen.queryByRole('button', { name: /edit/i });
+  expect(editButton).not.toBeInTheDocument();
+});
+
+test('shows edit button when user is not admin', async () =&gt; {
+  render(&lt;UserProfile user={{ name: 'John', email: 'john@example.com', isAdmin: false }} /&gt;);
+  
+  // Use findBy for async elements (if needed)
+  const editButton = await screen.findByRole('button', { name: /edit/i });
+  expect(editButton).toBeInTheDocument();
+});
+          </code></pre>
+
+          <h3>💡 Accessibility Testing with RTL</h3>
+          <pre><code>
+// Component with proper accessibility
+function SearchBar({ onSearch }) {
+  return (
+    &lt;form onSubmit={(e) =&gt; {
+      e.preventDefault();
+      onSearch(document.getElementById('search-input').value);
+    }}&gt;
+      &lt;label htmlFor="search-input"&gt;Search:&lt;/label&gt;
+      &lt;input 
+        id="search-input" 
+        type="text" 
+        placeholder="Enter search term" 
+        aria-label="Search products" 
+      /&gt;
+      &lt;button type="submit"&gt;Search&lt;/button&gt;
+    &lt;/form&gt;
+  );
+}
+
+// Test for accessibility
+test('search bar has proper accessibility', () =&gt; {
+  render(&lt;SearchBar onSearch={() =&gt; {}} /&gt;);
+
+  // Find by label
+  const label = screen.getByLabelText(/search:/i);
+  expect(label).toBeInTheDocument();
+  
+  // Find by placeholder
+  const input = screen.getByPlaceholderText(/enter search term/i);
+  expect(input).toBeInTheDocument();
+  
+  // Find by aria-label
+  const searchInput = screen.getByLabelText(/search products/i);
+  expect(searchInput).toBeInTheDocument();
+  
+  // Find by role and name
+  const submitButton = screen.getByRole('button', { name: /search/i });
+  expect(submitButton).toBeInTheDocument();
+});
+          </code></pre>
+
+          <div class="testing-tip">
+            <strong>🎯 Final Wisdom:</strong> Write tests that would still pass even if you completely rewrote the component's implementation. If your tests depend on implementation details, they're too fragile.
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 17.4 -->
+      <section id="section-17-4">
+        <h2>17.4 Writing Your First Tests</h2>
+        
+        <details>
+          <summary>📌 Summary: From Zero to Testing Hero</summary>
+          <p>Let's walk through creating your first tests step by step.</p>
+
+          <h3>🔹 Step 1: Create Your Component</h3>
+          <pre><code>
+// Counter.jsx
+import React, { useState } from 'react';
+
+function Counter({ initialCount = 0 }) {
+  const [count, setCount] = useState(initialCount);
+
+  const increment = () =&gt; setCount(count + 1);
+  const decrement = () =&gt; setCount(count - 1);
+  const reset = () =&gt; setCount(0);
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Count: {count}&lt;/h2&gt;
+      &lt;button onClick={increment}&gt;Increment&lt;/button&gt;
+      &lt;button onClick={decrement}&gt;Decrement&lt;/button&gt;
+      &lt;button onClick={reset}&gt;Reset&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default Counter;
+          </code></pre>
+
+          <h3>🔹 Step 2: Create Test File</h3>
+          <p>Create <code>Counter.test.jsx</code> next to your component:</p>
+          <pre><code>
+// Counter.test.jsx
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import Counter from './Counter';
+
+// Start with a basic test
+test('renders counter with initial count', () =&gt; {
+  render(&lt;Counter /&gt;);
+  
+  // Find the heading with count
+  const countElement = screen.getByText(/count: 0/i);
+  expect(countElement).toBeInTheDocument();
+});
+          </code></pre>
+
+          <h3>🔹 Step 3: Run Your First Test</h3>
+          <p>Run the test with npm:</p>
+          <pre><code>
+npm test
+# Or for watch mode
+npm test -- --watch
+          </code></pre>
+
+          <h3>🔹 Step 4: Add More Tests</h3>
+          <pre><code>
+// Counter.test.jsx
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import Counter from './Counter';
+
+test('renders counter with initial count', () =&gt; {
+  render(&lt;Counter /&gt;);
+  
+  const countElement = screen.getByText(/count: 0/i);
+  expect(countElement).toBeInTheDocument();
+});
+
+test('increments count when increment button is clicked', () =&gt; {
+  render(&lt;Counter /&gt;);
+  
+  const incrementButton = screen.getByRole('button', { name: /increment/i });
+  const countElement = screen.getByText(/count: 0/i);
+  
+  // Click the button
+  fireEvent.click(incrementButton);
+  
+  // Assert count increased
+  expect(countElement).toHaveTextContent('Count: 1');
+});
+
+test('decrements count when decrement button is clicked', () =&gt; {
+  render(&lt;Counter /&gt;);
+  
+  const decrementButton = screen.getByRole('button', { name: /decrement/i });
+  const countElement = screen.getByText(/count: 0/i);
+  
+  // Click the button
+  fireEvent.click(decrementButton);
+  
+  // Assert count decreased
+  expect(countElement).toHaveTextContent('Count: -1');
+});
+
+test('resets count when reset button is clicked', () =&gt; {
+  render(&lt;Counter /&gt;);
+  
+  // Increment first
+  const incrementButton = screen.getByRole('button', { name: /increment/i });
+  fireEvent.click(incrementButton);
+  fireEvent.click(incrementButton);
+  
+  const resetButton = screen.getByRole('button', { name: /reset/i });
+  const countElement = screen.getByText(/count: 2/i);
+  
+  // Click reset
+  fireEvent.click(resetButton);
+  
+  // Assert count reset to 0
+  expect(countElement).toHaveTextContent('Count: 0');
+});
+
+test('accepts initial count prop', () =&gt; {
+  render(&lt;Counter initialCount={5} /&gt;);
+  
+  const countElement = screen.getByText(/count: 5/i);
+  expect(countElement).toBeInTheDocument();
+});
+          </code></pre>
+
+          <h3>🔹 Step 5: Organize Tests with describe</h3>
+          <pre><code>
+// Counter.test.jsx
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import Counter from './Counter';
+
+describe('Counter Component', () =&gt; {
+  test('renders counter with initial count', () =&gt; {
+    render(&lt;Counter /&gt;);
+    
+    const countElement = screen.getByText(/count: 0/i);
+    expect(countElement).toBeInTheDocument();
+  });
+
+  describe('when interacting with buttons', () =&gt; {
+    test('increments count when increment button is clicked', () =&gt; {
+      render(&lt;Counter /&gt;);
+      
+      const incrementButton = screen.getByRole('button', { name: /increment/i });
+      const countElement = screen.getByText(/count: 0/i);
+      
+      fireEvent.click(incrementButton);
+      expect(countElement).toHaveTextContent('Count: 1');
+    });
+
+    test('decrements count when decrement button is clicked', () =&gt; {
+      render(&lt;Counter /&gt;);
+      
+      const decrementButton = screen.getByRole('button', { name: /decrement/i });
+      const countElement = screen.getByText(/count: 0/i);
+      
+      fireEvent.click(decrementButton);
+      expect(countElement).toHaveTextContent('Count: -1');
+    });
+
+    test('resets count when reset button is clicked', () =&gt; {
+      render(&lt;Counter /&gt;);
+      
+      // Increment first
+      const incrementButton = screen.getByRole('button', { name: /increment/i });
+      fireEvent.click(incrementButton);
+      fireEvent.click(incrementButton);
+      
+      const resetButton = screen.getByRole('button', { name: /reset/i });
+      const countElement = screen.getByText(/count: 2/i);
+      
+      fireEvent.click(resetButton);
+      expect(countElement).toHaveTextContent('Count: 0');
+    });
+  });
+
+  describe('with initial count prop', () =&gt; {
+    test('accepts initial count prop', () =&gt; {
+      render(&lt;Counter initialCount={5} /&gt;);
+      
+      const countElement = screen.getByText(/count: 5/i);
+      expect(countElement).toBeInTheDocument();
+    });
+  });
+});
+          </code></pre>
+
+          <h3>🔥 Test Structure Template</h3>
+          <pre><code>
+// Template for testing components
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import ComponentName from './ComponentName';
+
+describe('ComponentName', () =&gt; {
+  // Test initial render
+  test('renders component with default props', () =&gt; {
+    render(&lt;ComponentName /&gt;);
+    
+    // Assertions
+    expect(screen.getByText(/expected text/i)).toBeInTheDocument();
+  });
+
+  // Test user interactions
+  test('performs action when user interacts', () =&gt; {
+    render(&lt;ComponentName /&gt;);
+    
+    // Act
+    fireEvent.click(screen.getByRole('button', { name: /action/i }));
+    
+    // Assert
+    expect(screen.getByText(/new state/i)).toBeInTheDocument();
+  });
+
+  // Test with props
+  test('behaves differently with different props', () =&gt; {
+    render(&lt;ComponentName prop="value" /&gt;);
+    
+    // Assertions
+    expect(screen.getByText(/expected with value/i)).toBeInTheDocument();
+  });
+
+  // Test edge cases
+  test('handles edge cases gracefully', () =&gt; {
+    render(&lt;ComponentName prop={null} /&gt;);
+    
+    // Assertions
+    expect(screen.getByText(/fallback content/i)).toBeInTheDocument();
+  });
+});
+          </code></pre>
+
+          <div class="test-result test-pass">
+            <h4>✅ Test Results</h4>
+            <pre><code>
+PASS  src/Counter.test.jsx
+  Counter Component
+    ✓ renders counter with initial count (3 ms)
+    ✓ increments count when increment button is clicked (2 ms)
+    ✓ decrements count when decrement button is clicked (2 ms)
+    ✓ resets count when reset button is clicked (2 ms)
+    ✓ accepts initial count prop (2 ms)
+
+Test Suites: 1 passed, 1 total
+Tests:       5 passed, 5 total
+Snapshots:   0 total
+Time:        0.5 s
+Ran all test suites.
+          </code></pre>
+          </div>
+
+          <div class="note">
+            <strong>🧠 Mental Model:</strong> Think of writing tests like teaching someone how to use your component. Each test is a step-by-step instruction showing how it should work.
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Deep Dive: Testing with Mocked Dependencies</summary>
+          <p>Real-world components often depend on external services. Let's test them properly.</p>
+
+          <h3>⚡ Mocking API Calls</h3>
+          <pre><code>
+// UserProfile.jsx
+import React, { useState, useEffect } from 'react';
+
+function UserProfile({ userId }) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() =&gt; {
+    const fetchUser = async () =&gt; {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // This is our external dependency
+        const response = await fetch(\`/api/users/\${userId}\`);
+        if (!response.ok) throw new Error('Failed to fetch user');
+        
+        const userData = await response.json();
+        setUser(userData);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (userId) {
+      fetchUser();
+    }
+  }, [userId]);
+
+  if (loading) return &lt;div&gt;Loading...&lt;/div&gt;;
+  if (error) return &lt;div&gt;Error: {error}&lt;/div&gt;;
+  if (!user) return &lt;div&gt;No user found&lt;/div&gt;;
+
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;{user.name}&lt;/h1&gt;
+      &lt;p&gt;{user.email}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default UserProfile;
+
+// UserProfile.test.jsx
+import React from 'react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import UserProfile from './UserProfile';
+
+// Mock the fetch function globally
+global.fetch = jest.fn();
+
+test('shows loading state while fetching', async () =&gt; {
+  // Arrange
+  render(&lt;UserProfile userId="123" /&gt;);
+  
+  // Assert
+  expect(screen.getByText(/loading.../i)).toBeInTheDocument();
+});
+
+test('shows error when fetch fails', async () =&gt; {
+  // Arrange
+  fetch.mockRejectedValueOnce(new Error('Network error'));
+  render(&lt;UserProfile userId="123" /&gt;);
+  
+  // Assert
+  await waitFor(() =&gt; {
+    expect(screen.getByText(/error: network error/i)).toBeInTheDocument();
+  });
+});
+
+test('shows user data when fetch succeeds', async () =&gt; {
+  // Arrange
+  const mockUser = { id: 123, name: 'John Doe', email: 'john@example.com' };
+  fetch.mockResolvedValueOnce({
+    ok: true,
+    json: () =&gt; Promise.resolve(mockUser)
+  });
+  
+  render(&lt;UserProfile userId="123" /&gt;);
+  
+  // Assert
+  await waitFor(() =&gt; {
+    expect(screen.getByText(/john doe/i)).toBeInTheDocument();
+    expect(screen.getByText(/john@example.com/i)).toBeInTheDocument();
+  });
+  
+  // Verify fetch was called with correct URL
+  expect(fetch).toHaveBeenCalledWith('/api/users/123');
+});
+          </code></pre>
+
+          <h3>🔥 Mocking Custom Hooks</h3>
+          <pre><code>
+// hooks/useAuth.js
+import { useState, useEffect } from 'react';
+
+export function useAuth() {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() =&gt; {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+    setLoading(false);
+  }, []);
+
+  const login = (userData) =&gt; {
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
+  };
+
+  const logout = () =&gt; {
+    localStorage.removeItem('user');
+    setUser(null);
+  };
+
+  return { user, loading, login, logout };
+}
+
+// components/LoginForm.jsx
+import React from 'react';
+import { useAuth } from '../hooks/useAuth';
+
+function LoginForm() {
+  const { login, loading } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+
+  const handleSubmit = (e) =&gt; {
+    e.preventDefault();
+    login({ email, password });
+  };
+
+  return (
+    &lt;form onSubmit={handleSubmit}&gt;
+      &lt;input 
+        type="email" 
+        value={email} 
+        onChange={(e) =&gt; setEmail(e.target.value)} 
+        placeholder="Email" 
+      /&gt;
+      &lt;input 
+        type="password" 
+        value={password} 
+        onChange={(e) =&gt; setPassword(e.target.value)} 
+        placeholder="Password" 
+      /&gt;
+      &lt;button type="submit" disabled={loading}&gt;
+        {loading ? 'Logging in...' : 'Login'}
+      &lt;/button&gt;
+    &lt;/form&gt;
+  );
+}
+
+export default LoginForm;
+
+// LoginForm.test.jsx
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import LoginForm from './LoginForm';
+import { useAuth } from '../hooks/useAuth';
+
+// Mock the hook
+jest.mock('../hooks/useAuth');
+
+test('calls login when form is submitted', () =&gt; {
+  // Arrange
+  const mockLogin = jest.fn();
+  useAuth.mockReturnValue({
+    login: mockLogin,
+    loading: false
+  });
+
+  render(&lt;LoginForm /&gt;);
+
+  // Act
+  const emailInput = screen.getByPlaceholderText(/email/i);
+  const passwordInput = screen.getByPlaceholderText(/password/i);
+  const submitButton = screen.getByRole('button', { name: /login/i });
+
+  fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+  fireEvent.change(passwordInput, { target: { value: 'password123' } });
+  fireEvent.click(submitButton);
+
+  // Assert
+  expect(mockLogin).toHaveBeenCalledWith({
+    email: 'test@example.com',
+    password: 'password123'
+  });
+});
+
+test('disables button when loading', () =&gt; {
+  // Arrange
+  useAuth.mockReturnValue({
+    login: jest.fn(),
+    loading: true
+  });
+
+  render(&lt;LoginForm /&gt;);
+
+  // Assert
+  const submitButton = screen.getByRole('button', { name: /logging in\.\.\./i });
+  expect(submitButton).toBeDisabled();
+});
+          </code></pre>
+
+          <div class="test-output">
+            <p><span class="test-success">✓</span> All tests passed!</p>
+            <p>Now you've learned to test components with external dependencies!</p>
+          </div>
+
+          <div class="note">
+            <strong>🌟 Pro Tip:</strong> Always mock dependencies that aren't part of the component's core functionality. This makes your tests faster and more reliable.
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 17.5 -->
+      <section id="section-17-5">
+        <h2>17.5 Testing Components</h2>
+        
+        <details>
+          <summary>📌 Summary: Comprehensive Component Testing Patterns</summary>
+          <p>Let's explore testing patterns for common React component types.</p>
+
+          <h3>🔹 Button Component</h3>
+          <pre><code>
+// Button.jsx
+import React from 'react';
+
+function Button({ children, onClick, variant = 'primary', disabled = false, className = '' }) {
+  const baseClasses = 'px-4 py-2 rounded-lg font-medium transition-colors';
+  const variantClasses = {
+    primary: 'bg-blue-500 text-white hover:bg-blue-600',
+    secondary: 'bg-gray-200 text-gray-800 hover:bg-gray-300',
+    danger: 'bg-red-500 text-white hover:bg-red-600',
+    success: 'bg-green-500 text-white hover:bg-green-600'
+  };
+
+  return (
+    &lt;button 
+      className={\`\${baseClasses} \${variantClasses[variant]} \${className}\`} 
+      onClick={onClick}
+      disabled={disabled}
+      aria-label={children}
+    &gt;
+      {children}
+    &lt;/button&gt;
+  );
+}
+
+export default Button;
+
+// Button.test.jsx
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import Button from './Button';
+
+describe('Button Component', () =&gt; {
+  test('renders button with text', () =&gt; {
+    render(&lt;Button&gt;Click me&lt;/Button&gt;);
+    
+    const button = screen.getByText(/click me/i);
+    expect(button).toBeInTheDocument();
+  });
+
+  test('calls onClick when clicked', () =&gt; {
+    const handleClick = jest.fn();
+    render(&lt;Button onClick={handleClick}&gt;Click me&lt;/Button&gt;);
+    
+    const button = screen.getByText(/click me/i);
+    fireEvent.click(button);
+    
+    expect(handleClick).toHaveBeenCalledTimes(1);
+  });
+
+  test('disables button when disabled prop is true', () =&gt; {
+    render(&lt;Button disabled&gt;Click me&lt;/Button&gt;);
+    
+    const button = screen.getByText(/click me/i);
+    expect(button).toBeDisabled();
+  });
+
+  test('applies primary variant by default', () =&gt; {
+    render(&lt;Button&gt;Click me&lt;/Button&gt;);
+    
+    const button = screen.getByText(/click me/i);
+    expect(button).toHaveClass('bg-blue-500');
+    expect(button).toHaveClass('text-white');
+  });
+
+  test('applies specified variant', () =&gt; {
+    render(&lt;Button variant="danger"&gt;Delete&lt;/Button&gt;);
+    
+    const button = screen.getByText(/delete/i);
+    expect(button).toHaveClass('bg-red-500');
+    expect(button).toHaveClass('text-white');
+  });
+
+  test('applies additional className', () =&gt; {
+    render(&lt;Button className="custom-class"&gt;Click me&lt;/Button&gt;);
+    
+    const button = screen.getByText(/click me/i);
+    expect(button).toHaveClass('custom-class');
+  });
+
+  test('has proper accessibility attributes', () =&gt; {
+    render(&lt;Button&gt;Submit form&lt;/Button&gt;);
+    
+    const button = screen.getByRole('button', { name: 'Submit form' });
+    expect(button).toHaveAttribute('aria-label', 'Submit form');
+  });
+});
+          </code></pre>
+
+          <h3>🔹 Form Component</h3>
+          <pre><code>
+// LoginForm.jsx
+import React from 'react';
+
+function LoginForm({ onSubmit }) {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState({});
+
+  const validate = () =&gt; {
+    const newErrors = {};
+    
+    if (!email) newErrors.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(email)) newErrors.email = 'Email is invalid';
+    
+    if (!password) newErrors.password = 'Password is required';
+    else if (password.length &lt; 8) newErrors.password = 'Password must be at least 8 characters';
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = (e) =&gt; {
+    e.preventDefault();
+    if (validate()) {
+      onSubmit({ email, password });
+    }
+  };
+
+  return (
+    &lt;form onSubmit={handleSubmit}&gt;
+      &lt;div&gt;
+        &lt;label htmlFor="email"&gt;Email&lt;/label&gt;
+        &lt;input 
+          id="email" 
+          type="email" 
+          value={email} 
+          onChange={(e) =&gt; setEmail(e.target.value)} 
+          aria-invalid={!!errors.email}
+        /&gt;
+        {errors.email &amp;&amp; &lt;span className="error"&gt;{errors.email}&lt;/span&gt;}
+      &lt;/div&gt;
+      
+      &lt;div&gt;
+        &lt;label htmlFor="password"&gt;Password&lt;/label&gt;
+        &lt;input 
+          id="password" 
+          type="password" 
+          value={password} 
+          onChange={(e) =&gt; setPassword(e.target.value)} 
+          aria-invalid={!!errors.password}
+        /&gt;
+        {errors.password &amp;&amp; &lt;span className="error"&gt;{errors.password}&lt;/span&gt;}
+      &lt;/div&gt;
+      
+      &lt;button type="submit"&gt;Login&lt;/button&gt;
+    &lt;/form&gt;
+  );
+}
+
+export default LoginForm;
+
+// LoginForm.test.jsx
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import LoginForm from './LoginForm';
+
+describe('LoginForm', () =&gt; {
+  test('calls onSubmit with valid credentials', () =&gt; {
+    const handleSubmit = jest.fn();
+    render(&lt;LoginForm onSubmit={handleSubmit} /&gt;);
+
+    const emailInput = screen.getByLabelText(/email/i);
+    const passwordInput = screen.getByLabelText(/password/i);
+    const submitButton = screen.getByRole('button', { name: /login/i });
+
+    fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+    fireEvent.change(passwordInput, { target: { value: 'password123' } });
+    fireEvent.click(submitButton);
+
+    expect(handleSubmit).toHaveBeenCalledWith({
+      email: 'test@example.com',
+      password: 'password123'
+    });
+  });
+
+  test('shows validation errors for invalid email', () =&gt; {
+    render(&lt;LoginForm onSubmit={jest.fn()} /&gt;);
+
+    const emailInput = screen.getByLabelText(/email/i);
+    const submitButton = screen.getByRole('button', { name: /login/i });
+
+    fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
+    fireEvent.click(submitButton);
+
+    expect(screen.getByText(/email is invalid/i)).toBeInTheDocument();
+    expect(emailInput).toHaveAttribute('aria-invalid', 'true');
+  });
+
+  test('shows validation errors for empty email', () =&gt; {
+    render(&lt;LoginForm onSubmit={jest.fn()} /&gt;);
+
+    const emailInput = screen.getByLabelText(/email/i);
+    const submitButton = screen.getByRole('button', { name: /login/i });
+
+    fireEvent.change(emailInput, { target: { value: '' } });
+    fireEvent.click(submitButton);
+
+    expect(screen.getByText(/email is required/i)).toBeInTheDocument();
+    expect(emailInput).toHaveAttribute('aria-invalid', 'true');
+  });
+
+  test('shows validation errors for short password', () =&gt; {
+    render(&lt;LoginForm onSubmit={jest.fn()} /&gt;);
+
+    const passwordInput = screen.getByLabelText(/password/i);
+    const submitButton = screen.getByRole('button', { name: /login/i });
+
+    fireEvent.change(passwordInput, { target: { value: 'short' } });
+    fireEvent.click(submitButton);
+
+    expect(screen.getByText(/password must be at least 8 characters/i)).toBeInTheDocument();
+    expect(passwordInput).toHaveAttribute('aria-invalid', 'true');
+  });
+
+  test('does not submit when form is invalid', () =&gt; {
+    const handleSubmit = jest.fn();
+    render(&lt;LoginForm onSubmit={handleSubmit} /&gt;);
+
+    const submitButton = screen.getByRole('button', { name: /login/i });
+    fireEvent.click(submitButton);
+
+    expect(handleSubmit).not.toHaveBeenCalled();
+  });
+
+  test('clears errors when user starts typing', () =&gt; {
+    render(&lt;LoginForm onSubmit={jest.fn()} /&gt;);
+
+    const emailInput = screen.getByLabelText(/email/i);
+    const submitButton = screen.getByRole('button', { name: /login/i });
+
+    // Trigger error
+    fireEvent.change(emailInput, { target: { value: 'invalid' } });
+    fireEvent.click(submitButton);
+    expect(screen.getByText(/email is invalid/i)).toBeInTheDocument();
+
+    // Clear error by typing
+    fireEvent.change(emailInput, { target: { value: 'valid@example.com' } });
+    expect(screen.queryByText(/email is invalid/i)).not.toBeInTheDocument();
+  });
+});
+          </code></pre>
+
+          <h3>🔹 List Component</h3>
+          <pre><code>
+// TodoList.jsx
+import React from 'react';
+
+function TodoList({ todos, onToggle, onDelete }) {
+  return (
+    &lt;ul&gt;
+      {todos.map(todo =&gt; (
+        &lt;li key={todo.id} style={{ marginBottom: '8px' }}&gt;
+          &lt;input 
+            type="checkbox" 
+            checked={todo.completed} 
+            onChange={() =&gt; onToggle(todo.id)}
+            aria-label={\`Mark \${todo.text} as completed\`}
+          /&gt;
+          &lt;span style={{ marginLeft: '8px', textDecoration: todo.completed ? 'line-through' : 'none' }}&gt;
+            {todo.text}
+          &lt;/span&gt;
+          &lt;button 
+            onClick={() =&gt; onDelete(todo.id)}
+            aria-label={\`Delete \${todo.text}\`}
+            style={{ marginLeft: '8px' }}
+          &gt;
+            Delete
+          &lt;/button&gt;
+        &lt;/li&gt;
+      ))}
+    &lt;/ul&gt;
+  );
+}
+
+export default TodoList;
+
+// TodoList.test.jsx
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import TodoList from './TodoList';
+
+describe('TodoList', () =&gt; {
+  const mockTodos = [
+    { id: 1, text: 'Learn React', completed: false },
+    { id: 2, text: 'Write tests', completed: true },
+    { id: 3, text: 'Deploy app', completed: false }
+  ];
+
+  const mockOnToggle = jest.fn();
+  const mockOnDelete = jest.fn();
+
+  test('renders all todos', () =&gt; {
+    render(&lt;TodoList todos={mockTodos} onToggle={mockOnToggle} onDelete={mockOnDelete} /&gt;);
+
+    expect(screen.getByText(/learn react/i)).toBeInTheDocument();
+    expect(screen.getByText(/write tests/i)).toBeInTheDocument();
+    expect(screen.getByText(/deploy app/i)).toBeInTheDocument();
+  });
+
+  test('marks todo as completed when checkbox is clicked', () =&gt; {
+    render(&lt;TodoList todos={mockTodos} onToggle={mockOnToggle} onDelete={mockOnDelete} /&gt;);
+
+    const learnReactCheckbox = screen.getByRole('checkbox', { name: /mark learn react as completed/i });
+    fireEvent.click(learnReactCheckbox);
+
+    expect(mockOnToggle).toHaveBeenCalledWith(1);
+  });
+
+  test('deletes todo when delete button is clicked', () =&gt; {
+    render(&lt;TodoList todos={mockTodos} onToggle={mockOnToggle} onDelete={mockOnDelete} /&gt;);
+
+    const deleteButton = screen.getByRole('button', { name: /delete learn react/i });
+    fireEvent.click(deleteButton);
+
+    expect(mockOnDelete).toHaveBeenCalledWith(1);
+  });
+
+  test('shows completed todo with strikethrough', () =&gt; {
+    render(&lt;TodoList todos={mockTodos} onToggle={mockOnToggle} onDelete={mockOnDelete} /&gt;);
+
+    const writeTestsSpan = screen.getByText(/write tests/i);
+    expect(writeTestsSpan).toHaveStyle('text-decoration: line-through');
+  });
+
+  test('shows incomplete todo without strikethrough', () =&gt; {
+    render(&lt;TodoList todos={mockTodos} onToggle={mockOnToggle} onDelete={mockOnDelete} /&gt;);
+
+    const learnReactSpan = screen.getByText(/learn react/i);
+    expect(learnReactSpan).not.toHaveStyle('text-decoration: line-through');
+  });
+
+  test('has proper accessibility attributes', () =&gt; {
+    render(&lt;TodoList todos={mockTodos} onToggle={mockOnToggle} onDelete={mockOnDelete} /&gt;);
+
+    const learnReactCheckbox = screen.getByRole('checkbox', { name: /mark learn react as completed/i });
+    const deleteButton = screen.getByRole('button', { name: /delete learn react/i });
+
+    expect(learnReactCheckbox).toHaveAttribute('aria-label', 'mark learn react as completed');
+    expect(deleteButton).toHaveAttribute('aria-label', 'delete learn react');
+  });
+});
+          </code></pre>
+
+          <div class="test-result test-pass">
+            <h4>✅ Test Results</h4>
+            <pre><code>
+PASS  src/Button.test.jsx
+PASS  src/LoginForm.test.jsx
+PASS  src/TodoList.test.jsx
+
+Test Suites: 3 passed, 3 total
+Tests:       25 passed, 25 total
+Snapshots:   0 total
+Time:        1.2 s
+Ran all test suites.
+          </code></pre>
+          </div>
+
+          <div class="note">
+            <strong>🧠 Mental Model:</strong> Think of each component test as a user manual. It shows exactly how to use the component and what to expect when you interact with it.
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 17.6 -->
+      <section id="section-17-6">
+        <h2>17.6 Testing Props and State</h2>
+        
+        <details>
+          <summary>📌 Summary: Ensuring Components Respond Correctly to Inputs</summary>
+          <p>Testing props and state is about verifying that components respond correctly to their inputs.</p>
+
+          <h3>🔹 Testing Props</h3>
+          <p>Props are inputs to components. Test how components behave with different prop combinations.</p>
+
+          <h3>⚡ Testing Props Example</h3>
+          <pre><code>
+// UserProfile.jsx
+import React from 'react';
+
+function UserProfile({ user, showBio = true, showAvatar = true }) {
+  if (!user) return &lt;div&gt;No user provided&lt;/div&gt;;
+
+  return (
+    &lt;div&gt;
+      {showAvatar &amp;&amp; (
+        &lt;img 
+          src={user.avatar} 
+          alt={user.name} 
+          style={{ width: '80px', height: '80px', borderRadius: '50%' }} 
+        /&gt;
+      )}
+      
+      &lt;h1&gt;{user.name}&lt;/h1&gt;
+      &lt;p&gt;{user.email}&lt;/p&gt;
+      
+      {showBio &amp;&amp; user.bio &amp;&amp; (
+        &lt;p&gt;{user.bio}&lt;/p&gt;
+      )}
+    &lt;/div&gt;
+  );
+}
+
+export default UserProfile;
+
+// UserProfile.test.jsx
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import UserProfile from './UserProfile';
+
+const mockUser = {
+  id: 1,
+  name: 'John Doe',
+  email: 'john@example.com',
+  avatar: '/avatars/john.jpg',
+  bio: 'Software engineer passionate about React'
+};
+
+describe('UserProfile Component', () =&gt; {
+  test('renders user info when user prop is provided', () =&gt; {
+    render(&lt;UserProfile user={mockUser} /&gt;);
+
+    expect(screen.getByText(/john doe/i)).toBeInTheDocument();
+    expect(screen.getByText(/john@example.com/i)).toBeInTheDocument();
+  });
+
+  test('shows "No user provided" when user prop is null', () =&gt; {
+    render(&lt;UserProfile user={null} /&gt;);
+
+    expect(screen.getByText(/no user provided/i)).toBeInTheDocument();
+  });
+
+  test('shows avatar when showAvatar is true', () =&gt; {
+    render(&lt;UserProfile user={mockUser} showAvatar={true} /&gt;);
+
+    expect(screen.getByAltText(/john doe/i)).toBeInTheDocument();
+  });
+
+  test('hides avatar when showAvatar is false', () =&gt; {
+    render(&lt;UserProfile user={mockUser} showAvatar={false} /&gt;);
+
+    expect(screen.queryByAltText(/john doe/i)).not.toBeInTheDocument();
+  });
+
+  test('shows bio when showBio is true and bio exists', () =&gt; {
+    render(&lt;UserProfile user={mockUser} showBio={true} /&gt;);
+
+    expect(screen.getByText(/software engineer passionate about react/i)).toBeInTheDocument();
+  });
+
+  test('hides bio when showBio is false', () =&gt; {
+    render(&lt;UserProfile user={mockUser} showBio={false} /&gt;);
+
+    expect(screen.queryByText(/software engineer passionate about react/i)).not.toBeInTheDocument();
+  });
+
+  test('hides bio when bio is empty', () =&gt; {
+    const userWithoutBio = { ...mockUser, bio: '' };
+    render(&lt;UserProfile user={userWithoutBio} showBio={true} /&gt;);
+
+    expect(screen.queryByText(/software engineer passionate about react/i)).not.toBeInTheDocument();
+  });
+});
+          </code></pre>
+
+          <h3>🔹 Testing State</h3>
+          <p>State is internal component data. Test how state changes affect the UI.</p>
+
+          <h3>⚡ Testing State Example</h3>
+          <pre><code>
+// Counter.jsx
+import React, { useState } from 'react';
+
+function Counter({ initialValue = 0, maxValue = 10 }) {
+  const [count, setCount] = useState(initialValue);
+
+  const increment = () =&gt; {
+    if (count &lt; maxValue) {
+      setCount(count + 1);
+    }
+  };
+
+  const decrement = () =&gt; {
+    if (count &gt; 0) {
+      setCount(count - 1);
+    }
+  };
+
+  const reset = () =&gt; {
+    setCount(initialValue);
+  };
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Count: {count}&lt;/h2&gt;
+      &lt;button onClick={increment} disabled={count &gt;= maxValue}&gt;Increment&lt;/button&gt;
+      &lt;button onClick={decrement} disabled={count &lt;= 0}&gt;Decrement&lt;/button&gt;
+      &lt;button onClick={reset}&gt;Reset&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default Counter;
+
+// Counter.test.jsx
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import Counter from './Counter';
+
+describe('Counter Component', () =&gt; {
+  test('starts with initial value', () =&gt; {
+    render(&lt;Counter initialValue={5} /&gt;);
+
+    expect(screen.getByText(/count: 5/i)).toBeInTheDocument();
+  });
+
+  test('increments count when increment button is clicked', () =&gt; {
+    render(&lt;Counter initialValue={0} /&gt;);
+
+    const incrementButton = screen.getByRole('button', { name: /increment/i });
+    const countElement = screen.getByText(/count: 0/i);
+
+    fireEvent.click(incrementButton);
+    expect(countElement).toHaveTextContent('Count: 1');
+
+    fireEvent.click(incrementButton);
+    expect(countElement).toHaveTextContent('Count: 2');
+  });
+
+  test('decrements count when decrement button is clicked', () =&gt; {
+    render(&lt;Counter initialValue={5} /&gt;);
+
+    const decrementButton = screen.getByRole('button', { name: /decrement/i });
+    const countElement = screen.getByText(/count: 5/i);
+
+    fireEvent.click(decrementButton);
+    expect(countElement).toHaveTextContent('Count: 4');
+
+    fireEvent.click(decrementButton);
+    expect(countElement).toHaveTextContent('Count: 3');
+  });
+
+  test('resets count when reset button is clicked', () =&gt; {
+    render(&lt;Counter initialValue={5} /&gt;);
+
+    const incrementButton = screen.getByRole('button', { name: /increment/i });
+    const resetButton = screen.getByRole('button', { name: /reset/i });
+    const countElement = screen.getByText(/count: 5/i);
+
+    fireEvent.click(incrementButton); // Count becomes 6
+    fireEvent.click(resetButton); // Count resets to 5
+    
+    expect(countElement).toHaveTextContent('Count: 5');
+  });
+
+  test('prevents incrementing beyond max value', () =&gt; {
+    render(&lt;Counter initialValue={10} maxValue={10} /&gt;);
+
+    const incrementButton = screen.getByRole('button', { name: /increment/i });
+    const decrementButton = screen.getByRole('button', { name: /decrement/i });
+
+    // Should be disabled
+    expect(incrementButton).toBeDisabled();
+    
+    // Should be enabled
+    expect(decrementButton).not.toBeDisabled();
+  });
+
+  test('prevents decrementing below 0', () =&gt; {
+    render(&lt;Counter initialValue={0} /&gt;);
+
+    const incrementButton = screen.getByRole('button', { name: /increment/i });
+    const decrementButton = screen.getByRole('button', { name: /decrement/i });
+
+    // Should be enabled
+    expect(incrementButton).not.toBeDisabled();
+    
+    // Should be disabled
+    expect(decrementButton).toBeDisabled();
+  });
+
+  test('respects max value when changing initial value', () =&gt; {
+    render(&lt;Counter initialValue={8} maxValue={10} /&gt;);
+
+    const incrementButton = screen.getByRole('button', { name: /increment/i });
+    const countElement = screen.getByText(/count: 8/i);
+
+    // Can increment twice
+    fireEvent.click(incrementButton);
+    expect(countElement).toHaveTextContent('Count: 9');
+    
+    fireEvent.click(incrementButton);
+    expect(countElement).toHaveTextContent('Count: 10');
+    
+    // Cannot increment again
+    fireEvent.click(incrementButton);
+    expect(countElement).toHaveTextContent('Count: 10');
+  });
+});
+          </code></pre>
+
+          <h3>🔹 Testing Complex State with useEffect</h3>
+          <pre><code>
+// ProductCard.jsx
+import React, { useState, useEffect } from 'react';
+
+function ProductCard({ productId, onAddToCart }) {
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() =&gt; {
+    const fetchProduct = async () =&gt; {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Simulate API call
+        const response = await fetch(\`/api/products/\${productId}\`);
+        if (!response.ok) throw new Error('Failed to fetch product');
+        
+        const data = await response.json();
+        setProduct(data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (productId) {
+      fetchProduct();
+    }
+  }, [productId]);
+
+  if (loading) return &lt;div&gt;Loading...&lt;/div&gt;;
+  if (error) return &lt;div&gt;Error: {error}&lt;/div&gt;;
+  if (!product) return &lt;div&gt;No product found&lt;/div&gt;;
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;{product.name}&lt;/h2&gt;
+      &lt;p&gt;\${product.price}&lt;/p&gt;
+      &lt;button onClick={() =&gt; onAddToCart(product)}&gt;Add to Cart&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default ProductCard;
+
+// ProductCard.test.jsx
+import React from 'react';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import ProductCard from './ProductCard';
+
+// Mock fetch globally
+global.fetch = jest.fn();
+
+describe('ProductCard Component', () =&gt; {
+  const mockProductId = 123;
+  const mockProduct = {
+    id: 123,
+    name: 'Laptop',
+    price: 999
+  };
+
+  const mockOnAddToCart = jest.fn();
+
+  test('shows loading state while fetching', async () =&gt; {
+    render(&lt;ProductCard productId={mockProductId} onAddToCart={mockOnAddToCart} /&gt;);
+
+    expect(screen.getByText(/loading.../i)).toBeInTheDocument();
+  });
+
+  test('shows error when fetch fails', async () =&gt; {
+    fetch.mockRejectedValueOnce(new Error('Network error'));
+    
+    render(&lt;ProductCard productId={mockProductId} onAddToCart={mockOnAddToCart} /&gt;);
+
+    await waitFor(() =&gt; {
+      expect(screen.getByText(/error: network error/i)).toBeInTheDocument();
+    });
+  });
+
+  test('shows product data when fetch succeeds', async () =&gt; {
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: () =&gt; Promise.resolve(mockProduct)
+    });
+
+    render(&lt;ProductCard productId={mockProductId} onAddToCart={mockOnAddToCart} /&gt;);
+
+    await waitFor(() =&gt; {
+      expect(screen.getByText(/laptop/i)).toBeInTheDocument();
+      expect(screen.getByText(/\$999/i)).toBeInTheDocument();
+    });
+  });
+
+  test('calls onAddToCart when button is clicked', async () =&gt; {
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: () =&gt; Promise.resolve(mockProduct)
+    });
+
+    render(&lt;ProductCard productId={mockProductId} onAddToCart={mockOnAddToCart} /&gt;);
+
+    await waitFor(() =&gt; {
+      expect(screen.getByText(/laptop/i)).toBeInTheDocument();
+    });
+
+    const addButton = screen.getByRole('button', { name: /add to cart/i });
+    userEvent.click(addButton);
+
+    expect(mockOnAddToCart).toHaveBeenCalledWith(mockProduct);
+  });
+
+  test('does not fetch if productId is null', () =&gt; {
+    render(&lt;ProductCard productId={null} onAddToCart={mockOnAddToCart} /&gt;);
+
+    // No loading state
+    expect(screen.queryByText(/loading.../i)).not.toBeInTheDocument();
+    
+    // Shows "No product found"
+    expect(screen.getByText(/no product found/i)).toBeInTheDocument();
+    
+    // fetch was never called
+    expect(fetch).not.toHaveBeenCalled();
+  });
+});
+          </code></pre>
+
+          <div class="test-result test-pass">
+            <h4>✅ Test Results</h4>
+            <pre><code>
+PASS  src/UserProfile.test.jsx
+PASS  src/Counter.test.jsx
+PASS  src/ProductCard.test.jsx
+
+Test Suites: 3 passed, 3 total
+Tests:       28 passed, 28 total
+Snapshots:   0 total
+Time:        1.8 s
+Ran all test suites.
+          </code></pre>
+          </div>
+
+          <div class="note">
+            <strong>🧠 Mental Model:</strong> Think of props as the knobs on a stereo system, and state as the music playing inside. Testing props means turning the knobs and listening to the sound. Testing state means checking if the music is playing correctly.
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 17.7 -->
+      <section id="section-17-7">
+        <h2>17.7 Testing User Interactions</h2>
+        
+        <details>
+          <summary>📌 Summary: Making Sure Components Respond to Real User Actions</summary>
+          <p>Testing user interactions is about simulating how real users interact with your application.</p>
+
+          <h3>🔹 Key Interaction Types</h3>
+          <ul>
+            <li><strong>Clicks:</strong> Buttons, links, icons</li>
+            <li><strong>Typing:</strong> Input fields, textareas</li>
+            <li><strong>Selection:</strong> Dropdowns, radio buttons, checkboxes</li>
+            <li><strong>Navigation:</strong> Links, routing</li>
+            <li><strong>Drag and Drop:</strong> Reordering items</li>
+            <li><strong>Scrolling:</strong> Infinite lists</li>
+            <li><strong>Keyboard Events:</strong> Tab navigation, enter key</li>
+          </ul>
+
+          <h3>⚡ Testing Click Events</h3>
+          <pre><code>
+// ToggleButton.jsx
+import React, { useState } from 'react';
+
+function ToggleButton({ onToggle, initialState = false }) {
+  const [active, setActive] = useState(initialState);
+
+  const handleClick = () =&gt; {
+    const newValue = !active;
+    setActive(newValue);
+    onToggle&amp;&amp; onToggle(newValue);
+  };
+
+  return (
+    &lt;button 
+      onClick={handleClick}
+      aria-pressed={active}
+      style={{
+        padding: '10px 20px',
+        backgroundColor: active ? '#00f5ff' : '#3a5a7f',
+        color: 'white',
+        border: 'none',
+        borderRadius: '5px',
+        cursor: 'pointer'
+      }}
+    &gt;
+      {active ? 'ON' : 'OFF'}
+    &lt;/button&gt;
+  );
+}
+
+export default ToggleButton;
+
+// ToggleButton.test.jsx
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import ToggleButton from './ToggleButton';
+
+describe('ToggleButton', () =&gt; {
+  test('toggles state when clicked', () =&gt; {
+    render(&lt;ToggleButton /&gt;);
+
+    const button = screen.getByRole('button', { name: /off/i });
+    
+    // Initially OFF
+    expect(button).toHaveTextContent('OFF');
+    expect(button).toHaveAttribute('aria-pressed', 'false');
+    
+    // Click to turn ON
+    fireEvent.click(button);
+    expect(button).toHaveTextContent('ON');
+    expect(button).toHaveAttribute('aria-pressed', 'true');
+    
+    // Click to turn OFF again
+    fireEvent.click(button);
+    expect(button).toHaveTextContent('OFF');
+    expect(button).toHaveAttribute('aria-pressed', 'false');
+  });
+
+  test('calls onToggle callback with new value', () =&gt; {
+    const mockOnToggle = jest.fn();
+    render(&lt;ToggleButton onToggle={mockOnToggle} /&gt;);
+
+    const button = screen.getByRole('button', { name: /off/i });
+    fireEvent.click(button);
+    
+    expect(mockOnToggle).toHaveBeenCalledWith(true);
+    
+    fireEvent.click(button);
+    expect(mockOnToggle).toHaveBeenCalledWith(false);
+  });
+
+  test('initializes with specified state', () =&gt; {
+    render(&lt;ToggleButton initialState={true} /&gt;);
+
+    const button = screen.getByRole('button', { name: /on/i });
+    expect(button).toHaveTextContent('ON');
+    expect(button).toHaveAttribute('aria-pressed', 'true');
+  });
+});
+          </code></pre>
+
+          <h3>⚡ Testing Form Interactions</h3>
+          <pre><code>
+// ContactForm.jsx
+import React, { useState } from 'react';
+
+function ContactForm({ onSubmit }) {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    message: ''
+  });
+  const [errors, setErrors] = useState({});
+
+  const handleChange = (e) =&gt; {
+    const { name, value } = e.target;
+    setFormData(prev =&gt; ({ ...prev, [name]: value }));
+    
+    // Clear error when user types
+    if (errors[name]) {
+      setErrors(prev =&gt; ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const validate = () =&gt; {
+    const newErrors = {};
+    
+    if (!formData.name.trim()) newErrors.name = 'Name is required';
+    if (!formData.email.trim()) newErrors.email = 'Email is required';
+    else if (!/\S+@\S+\.\S+/.test(formData.email)) newErrors.email = 'Email is invalid';
+    if (!formData.message.trim()) newErrors.message = 'Message is required';
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = (e) =&gt; {
+    e.preventDefault();
+    if (validate()) {
+      onSubmit(formData);
+    }
+  };
+
+  return (
+    &lt;form onSubmit={handleSubmit}&gt;
+      &lt;div&gt;
+        &lt;label htmlFor="name"&gt;Name&lt;/label&gt;
+        &lt;input 
+          id="name" 
+          name="name" 
+          type="text" 
+          value={formData.name} 
+          onChange={handleChange}
+          aria-invalid={!!errors.name}
+        /&gt;
+        {errors.name &amp;&amp; &lt;span className="error"&gt;{errors.name}&lt;/span&gt;}
+      &lt;/div&gt;
+      
+      &lt;div&gt;
+        &lt;label htmlFor="email"&gt;Email&lt;/label&gt;
+        &lt;input 
+          id="email" 
+          name="email" 
+          type="email" 
+          value={formData.email} 
+          onChange={handleChange}
+          aria-invalid={!!errors.email}
+        /&gt;
+        {errors.email &amp;&amp; &lt;span className="error"&gt;{errors.email}&lt;/span&gt;}
+      &lt;/div&gt;
+      
+      &lt;div&gt;
+        &lt;label htmlFor="message"&gt;Message&lt;/label&gt;
+        &lt;textarea 
+          id="message" 
+          name="message" 
+          value={formData.message} 
+          onChange={handleChange}
+          rows="4"
+          aria-invalid={!!errors.message}
+        /&gt;
+        {errors.message &amp;&amp; &lt;span className="error"&gt;{errors.message}&lt;/span&gt;}
+      &lt;/div&gt;
+      
+      &lt;button type="submit"&gt;Send Message&lt;/button&gt;
+    &lt;/form&gt;
+  );
+}
+
+export default ContactForm;
+
+// ContactForm.test.jsx
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import ContactForm from './ContactForm';
+
+describe('ContactForm', () =&gt; {
+  const mockOnSubmit = jest.fn();
+
+  test('updates form state when typing', () =&gt; {
+    render(&lt;ContactForm onSubmit={mockOnSubmit} /&gt;);
+
+    const nameInput = screen.getByLabelText(/name/i);
+    const emailInput = screen.getByLabelText(/email/i);
+    const messageInput = screen.getByLabelText(/message/i);
+
+    fireEvent.change(nameInput, { target: { value: 'John Doe' } });
+    fireEvent.change(emailInput, { target: { value: 'john@example.com' } });
+    fireEvent.change(messageInput, { target: { value: 'Hello world!' } });
+
+    expect(nameInput.value).toBe('John Doe');
+    expect(emailInput.value).toBe('john@example.com');
+    expect(messageInput.value).toBe('Hello world!');
+  });
+
+  test('shows validation errors for empty fields', () =&gt; {
+    render(&lt;ContactForm onSubmit={mockOnSubmit} /&gt;);
+
+    const submitButton = screen.getByRole('button', { name: /send message/i });
+    fireEvent.click(submitButton);
+
+    expect(screen.getByText(/name is required/i)).toBeInTheDocument();
+    expect(screen.getByText(/email is required/i)).toBeInTheDocument();
+    expect(screen.getByText(/message is required/i)).toBeInTheDocument();
+  });
+
+  test('shows email validation error for invalid format', () =&gt; {
+    render(&lt;ContactForm onSubmit={mockOnSubmit} /&gt;);
+
+    const emailInput = screen.getByLabelText(/email/i);
+    fireEvent.change(emailInput, { target: { value: 'invalid-email' } });
+    
+    const submitButton = screen.getByRole('button', { name: /send message/i });
+    fireEvent.click(submitButton);
+
+    expect(screen.getByText(/email is invalid/i)).toBeInTheDocument();
+  });
+
+  test('clears errors when user starts typing', () =&gt; {
+    render(&lt;ContactForm onSubmit={mockOnSubmit} /&gt;);
+
+    const nameInput = screen.getByLabelText(/name/i);
+    const emailInput = screen.getByLabelText(/email/i);
+    const submitButton = screen.getByRole('button', { name: /send message/i });
+
+    // Trigger errors
+    fireEvent.click(submitButton);
+    expect(screen.getByText(/name is required/i)).toBeInTheDocument();
+    expect(screen.getByText(/email is required/i)).toBeInTheDocument();
+
+    // Clear errors by typing
+    fireEvent.change(nameInput, { target: { value: 'John' } });
+    fireEvent.change(emailInput, { target: { value: 'john@example.com' } });
+
+    expect(screen.queryByText(/name is required/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/email is required/i)).not.toBeInTheDocument();
+  });
+
+  test('calls onSubmit with form data when valid', () =&gt; {
+    render(&lt;ContactForm onSubmit={mockOnSubmit} /&gt;);
+
+    const nameInput = screen.getByLabelText(/name/i);
+    const emailInput = screen.getByLabelText(/email/i);
+    const messageInput = screen.getByLabelText(/message/i);
+    const submitButton = screen.getByRole('button', { name: /send message/i });
+
+    fireEvent.change(nameInput, { target: { value: 'John Doe' } });
+    fireEvent.change(emailInput, { target: { value: 'john@example.com' } });
+    fireEvent.change(messageInput, { target: { value: 'Hello world!' } });
+
+    fireEvent.click(submitButton);
+
+    expect(mockOnSubmit).toHaveBeenCalledWith({
+      name: 'John Doe',
+      email: 'john@example.com',
+      message: 'Hello world!'
+    });
+  });
+
+  test('does not call onSubmit when form is invalid', () =&gt; {
+    render(&lt;ContactForm onSubmit={mockOnSubmit} /&gt;);
+
+    const submitButton = screen.getByRole('button', { name: /send message/i });
+    fireEvent.click(submitButton);
+
+    expect(mockOnSubmit).not.toHaveBeenCalled();
+  });
+});
+          </code></pre>
+
+          <h3>⚡ Testing Keyboard Interactions</h3>
+          <pre><code>
+// SearchBox.jsx
+import React, { useState, useEffect } from 'react';
+
+function SearchBox({ onSearch }) {
+  const [searchTerm, setSearchTerm] = useState('');
+
+  const handleInputChange = (e) =&gt; {
+    setSearchTerm(e.target.value);
+  };
+
+  const handleKeyDown = (e) =&gt; {
+    if (e.key === 'Enter') {
+      onSearch(searchTerm);
+    }
+  };
+
+  return (
+    &lt;div&gt;
+      &lt;input 
+        type="text" 
+        value={searchTerm} 
+        onChange={handleInputChange}
+        onKeyDown={handleKeyDown}
+        placeholder="Search..."
+        aria-label="Search"
+      /&gt;
+      &lt;button onClick={() =&gt; onSearch(searchTerm)}&gt;Search&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default SearchBox;
+
+// SearchBox.test.jsx
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import SearchBox from './SearchBox';
+
+describe('SearchBox', () =&gt; {
+  const mockOnSearch = jest.fn();
+
+  test('calls onSearch when search button is clicked', () =&gt; {
+    render(&lt;SearchBox onSearch={mockOnSearch} /&gt;);
+
+    const input = screen.getByPlaceholderText(/search/i);
+    const button = screen.getByRole('button', { name: /search/i });
+
+    fireEvent.change(input, { target: { value: 'react' } });
+    fireEvent.click(button);
+
+    expect(mockOnSearch).toHaveBeenCalledWith('react');
+  });
+
+  test('calls onSearch when Enter key is pressed', () =&gt; {
+    render(&lt;SearchBox onSearch={mockOnSearch} /&gt;);
+
+    const input = screen.getByPlaceholderText(/search/i);
+
+    fireEvent.change(input, { target: { value: 'react' } });
+    fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' });
+
+    expect(mockOnSearch).toHaveBeenCalledWith('react');
+  });
+
+  test('does not call onSearch when other keys are pressed', () =&gt; {
+    render(&lt;SearchBox onSearch={mockOnSearch} /&gt;);
+
+    const input = screen.getByPlaceholderText(/search/i);
+
+    fireEvent.change(input, { target: { value: 'react' } });
+    fireEvent.keyDown(input, { key: 'Escape', code: 'Escape' });
+
+    expect(mockOnSearch).not.toHaveBeenCalled();
+  });
+
+  test('updates input value as user types', () =&gt; {
+    render(&lt;SearchBox onSearch={mockOnSearch} /&gt;);
+
+    const input = screen.getByPlaceholderText(/search/i);
+
+    fireEvent.change(input, { target: { value: 'r' } });
+    expect(input.value).toBe('r');
+
+    fireEvent.change(input, { target: { value: 're' } });
+    expect(input.value).toBe('re');
+
+    fireEvent.change(input, { target: { value: 'rea' } });
+    expect(input.value).toBe('rea');
+
+    fireEvent.change(input, { target: { value: 'react' } });
+    expect(input.value).toBe('react');
+  });
+
+  test('preserves input value when searching', () =&gt; {
+    render(&lt;SearchBox onSearch={mockOnSearch} /&gt;);
+
+    const input = screen.getByPlaceholderText(/search/i);
+
+    fireEvent.change(input, { target: { value: 'react' } });
+    fireEvent.keyDown(input, { key: 'Enter', code: 'Enter' });
+
+    // Value should remain after search
+    expect(input.value).toBe('react');
+  });
+});
+          </code></pre>
+
+          <h3>⚡ Testing Modal Interactions</h3>
+          <pre><code>
+// Modal.jsx
+import React from 'react';
+
+function Modal({ isOpen, onClose, title, children }) {
+  if (!isOpen) return null;
+
+  return (
+    &lt;div style={{ 
+      position: 'fixed', 
+      top: 0, 
+      left: 0, 
+      right: 0, 
+      bottom: 0, 
+      backgroundColor: 'rgba(0,0,0,0.5)', 
+      display: 'flex', 
+      alignItems: 'center', 
+      justifyContent: 'center' 
+    }}&gt;
+      &lt;div style={{ 
+        backgroundColor: 'white', 
+        padding: '20px', 
+        borderRadius: '8px', 
+        maxWidth: '500px', 
+        maxHeight: '80vh', 
+        overflowY: 'auto' 
+      }}&gt;
+        &lt;div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}&gt;
+          &lt;h2&gt;{title}&lt;/h2&gt;
+          &lt;button 
+            onClick={onClose}
+            aria-label="Close modal"
+            style={{
+              background: 'none',
+              border: 'none',
+              fontSize: '20px',
+              cursor: 'pointer'
+            }}
+          &gt;
+            ×
+          &lt;/button&gt;
+        &lt;/div&gt;
+        {children}
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default Modal;
+
+// Modal.test.jsx
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import Modal from './Modal';
+
+describe('Modal Component', () =&gt; {
+  const mockOnClose = jest.fn();
+
+  test('renders modal when isOpen is true', () =&gt; {
+    render(&lt;Modal isOpen={true} onClose={mockOnClose} title="Test Modal"&gt;
+      &lt;p&gt;Modal content&lt;/p&gt;
+    &lt;/Modal&gt;);
+
+    expect(screen.getByText(/test modal/i)).toBeInTheDocument();
+    expect(screen.getByText(/modal content/i)).toBeInTheDocument();
+  });
+
+  test('does not render modal when isOpen is false', () =&gt; {
+    render(&lt;Modal isOpen={false} onClose={mockOnClose} title="Test Modal"&gt;
+      &lt;p&gt;Modal content&lt;/p&gt;
+    &lt;/Modal&gt;);
+
+    expect(screen.queryByText(/test modal/i)).not.toBeInTheDocument();
+  });
+
+  test('calls onClose when close button is clicked', () =&gt; {
+    render(&lt;Modal isOpen={true} onClose={mockOnClose} title="Test Modal"&gt;
+      &lt;p&gt;Modal content&lt;/p&gt;
+    &lt;/Modal&gt;);
+
+    const closeButton = screen.getByRole('button', { name: /close modal/i });
+    fireEvent.click(closeButton);
+
+    expect(mockOnClose).toHaveBeenCalledTimes(1);
+  });
+
+  test('calls onClose when clicking outside modal', () =&gt; {
+    render(&lt;Modal isOpen={true} onClose={mockOnClose} title="Test Modal"&gt;
+      &lt;p&gt;Modal content&lt;/p&gt;
+    &lt;/Modal&gt;);
+
+    const overlay = screen.getByRole('dialog'); // The outer div
+    fireEvent.click(overlay);
+
+    expect(mockOnClose).toHaveBeenCalledTimes(1);
+  });
+
+  test('does not call onClose when clicking inside modal content', () =&gt; {
+    render(&lt;Modal isOpen={true} onClose={mockOnClose} title="Test Modal"&gt;
+      &lt;p&gt;Modal content&lt;/p&gt;
+    &lt;/Modal&gt;);
+
+    const content = screen.getByText(/modal content/i);
+    fireEvent.click(content);
+
+    expect(mockOnClose).not.toHaveBeenCalled();
+  });
+
+  test('has proper accessibility attributes', () =&gt; {
+    render(&lt;Modal isOpen={true} onClose={mockOnClose} title="Test Modal"&gt;
+      &lt;p&gt;Modal content&lt;/p&gt;
+    &lt;/Modal&gt;);
+
+    const modal = screen.getByRole('dialog');
+    expect(modal).toHaveAttribute('aria-labelledby');
+    expect(modal).toHaveAttribute('aria-modal', 'true');
+    expect(modal).toHaveAttribute('role', 'dialog');
+  });
+});
+          </code></pre>
+
+          <div class="test-result test-pass">
+            <h4>✅ Test Results</h4>
+            <pre><code>
+PASS  src/ToggleButton.test.jsx
+PASS  src/ContactForm.test.jsx
+PASS  src/SearchBox.test.jsx
+PASS  src/Modal.test.jsx
+
+Test Suites: 4 passed, 4 total
+Tests:       22 passed, 22 total
+Snapshots:   0 total
+Time:        2.1 s
+Ran all test suites.
+          </code></pre>
+          </div>
+
+          <div class="note">
+            <strong>🧠 Mental Model:</strong> Think of testing user interactions as recording a video of a real user using your application. Every click, keystroke, and gesture should produce the expected result.
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 17.8 -->
+      <section id="section-17-8">
+        <h2>17.8 Testing Hooks</h2>
+        
+        <details>
+          <summary>📌 Summary: Testing Custom Hooks Without Components</summary>
+          <p>Custom hooks encapsulate logic that can be reused across components. Testing them directly ensures they work correctly regardless of how they're used.</p>
+
+          <h3>🔹 Testing Hook Philosophy</h3>
+          <ul>
+            <li><strong>Test the logic, not the UI:</strong> Focus on what the hook returns and does</li>
+            <li><strong>Use renderHook:</strong> Render hook in isolation</li>
+            <li><strong>Test side effects:</strong> API calls, timers, subscriptions</li>
+            <li><strong>Test cleanup:</strong> Effects that clean up after themselves</li>
+            <li><strong>Test asynchronous behavior:</strong> Promises, async/await</li>
+          </ul>
+
+          <h3>⚡ Installation</h3>
+          <pre><code>
+npm install --save-dev @testing-library/react-hooks
+
+# Or with yarn
+yarn add --dev @testing-library/react-hooks
+          </code></pre>
+
+          <h3>⚡ Testing Simple Hook</h3>
+          <pre><code>
+// hooks/useCounter.js
+import { useState } from 'react';
+
+export function useCounter(initialValue = 0) {
+  const [count, setCount] = useState(initialValue);
+
+  const increment = () =&gt; setCount(count + 1);
+  const decrement = () =&gt; setCount(count - 1);
+  const reset = () =&gt; setCount(initialValue);
+
+  return { count, increment, decrement, reset };
+}
+
+// useCounter.test.js
+import { renderHook, act } from '@testing-library/react-hooks';
+import { useCounter } from './useCounter';
+
+describe('useCounter hook', () =&gt; {
+  test('returns initial value', () =&gt; {
+    const { result } = renderHook(() =&gt; useCounter());
+
+    expect(result.current.count).toBe(0);
+  });
+
+  test('returns specified initial value', () =&gt; {
+    const { result } = renderHook(() =&gt; useCounter(5));
+
+    expect(result.current.count).toBe(5);
+  });
+
+  test('increments count', () =&gt; {
+    const { result } = renderHook(() =&gt; useCounter());
+
+    // Act: Call increment
+    act(() =&gt; {
+      result.current.increment();
+    });
+
+    expect(result.current.count).toBe(1);
+
+    // Act: Call increment again
+    act(() =&gt; {
+      result.current.increment();
+    });
+
+    expect(result.current.count).toBe(2);
+  });
+
+  test('decrements count', () =&gt; {
+    const { result } = renderHook(() =&gt; useCounter(5));
+
+    act(() =&gt; {
+      result.current.decrement();
+    });
+
+    expect(result.current.count).toBe(4);
+  });
+
+  test('resets to initial value', () =&gt; {
+    const { result } = renderHook(() =&gt; useCounter(10));
+
+    // Change value
+    act(() =&gt; {
+      result.current.increment();
+    });
+
+    expect(result.current.count).toBe(11);
+
+    // Reset
+    act(() =&gt; {
+      result.current.reset();
+    });
+
+    expect(result.current.count).toBe(10);
+  });
+
+  test('returns all methods', () =&gt; {
+    const { result } = renderHook(() =&gt; useCounter());
+
+    expect(typeof result.current.increment).toBe('function');
+    expect(typeof result.current.decrement).toBe('function');
+    expect(typeof result.current.reset).toBe('function');
+  });
+});
+          </code></pre>
+
+          <h3>🔥 Testing Async Hook</h3>
+          <pre><code>
+// hooks/useApi.js
+import { useState, useEffect } from 'react';
+
+export function useApi(url) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() =&gt; {
+    const fetchData = async () =&gt; {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('Network response was not ok');
+        
+        const jsonData = await response.json();
+        setData(jsonData);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (url) {
+      fetchData();
+    }
+  }, [url]);
+
+  return { data, loading, error };
+}
+
+// useApi.test.js
+import { renderHook, act } from '@testing-library/react-hooks';
+import { useApi } from './useApi';
+
+// Mock fetch globally
+global.fetch = jest.fn();
+
+describe('useApi hook', () =&gt; {
+  const mockUrl = '/api/users';
+  const mockData = [{ id: 1, name: 'John' }];
+
+  test('returns initial state', () =&gt; {
+    const { result } = renderHook(() =&gt; useApi(mockUrl));
+
+    expect(result.current.data).toBeNull();
+    expect(result.current.loading).toBe(true);
+    expect(result.current.error).toBeNull();
+  });
+
+  test('fetches data successfully', async () =&gt; {
+    // Arrange
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: () =&gt; Promise.resolve(mockData)
+    });
+
+    const { result, waitForNextUpdate } = renderHook(() =&gt; useApi(mockUrl));
+
+    // Assert initial state
+    expect(result.current.loading).toBe(true);
+
+    // Wait for update
+    await waitForNextUpdate();
+
+    // Assert final state
+    expect(result.current.loading).toBe(false);
+    expect(result.current.data).toEqual(mockData);
+    expect(result.current.error).toBeNull();
+  });
+
+  test('handles fetch error', async () =&gt; {
+    // Arrange
+    fetch.mockRejectedValueOnce(new Error('Network error'));
+
+    const { result, waitForNextUpdate } = renderHook(() =&gt; useApi(mockUrl));
+
+    // Assert initial state
+    expect(result.current.loading).toBe(true);
+
+    // Wait for update
+    await waitForNextUpdate();
+
+    // Assert final state
+    expect(result.current.loading).toBe(false);
+    expect(result.current.data).toBeNull();
+    expect(result.current.error).toBe('Network error');
+  });
+
+  test('does not fetch if url is falsy', () =&gt; {
+    const { result } = renderHook(() =&gt; useApi(null));
+
+    expect(result.current.data).toBeNull();
+    expect(result.current.loading).toBe(true);
+    expect(result.current.error).toBeNull();
+    
+    // fetch was never called
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  test('refetches when url changes', async () =&gt; {
+    // Arrange
+    const mockData1 = [{ id: 1, name: 'John' }];
+    const mockData2 = [{ id: 2, name: 'Jane' }];
+    
+    fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () =&gt; Promise.resolve(mockData1)
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () =&gt; Promise.resolve(mockData2)
+      });
+
+    const { result, rerender, waitForNextUpdate } = renderHook(
+      ({ url }) =&gt; useApi(url),
+      { initialProps: { url: '/api/users' } }
+    );
+
+    // First fetch
+    await waitForNextUpdate();
+    expect(result.current.data).toEqual(mockData1);
+
+    // Rerender with new URL
+    rerender({ url: '/api/posts' });
+
+    // Second fetch
+    await waitForNextUpdate();
+    expect(result.current.data).toEqual(mockData2);
+  });
+});
+          </code></pre>
+
+          <h3>🔥 Testing Hook with Cleanup</h3>
+          <pre><code>
+// hooks/useInterval.js
+import { useEffect } from 'react';
+
+export function useInterval(callback, delay) {
+  const savedCallback = useRef();
+
+  useEffect(() =&gt; {
+    savedCallback.current = callback;
+  }, [callback]);
+
+  useEffect(() =&gt; {
+    if (delay !== null) {
+      const id = setInterval(() =&gt; savedCallback.current(), delay);
+      return () =&gt; clearInterval(id); // Cleanup function
+    }
+  }, [delay]);
+}
+
+// useInterval.test.js
+import { renderHook, act } from '@testing-library/react-hooks';
+import { useInterval } from './useInterval';
+
+describe('useInterval hook', () =&gt; {
+  beforeEach(() =&gt; {
+    jest.useFakeTimers();
+  });
+
+  afterEach(() =&gt; {
+    jest.useRealTimers();
+  });
+
+  test('calls callback at specified interval', () =&gt; {
+    const mockCallback = jest.fn();
+    
+    const { result } = renderHook(() =&gt; useInterval(mockCallback, 1000));
+    
+    // Fast-forward time
+    act(() =&gt; {
+      jest.advanceTimersByTime(1000);
+    });
+    
+    expect(mockCallback).toHaveBeenCalledTimes(1);
+    
+    act(() =&gt; {
+      jest.advanceTimersByTime(1000);
+    });
+    
+    expect(mockCallback).toHaveBeenCalledTimes(2);
+  });
+
+  test('cleans up interval when delay is null', () =&gt; {
+    const mockCallback = jest.fn();
+    const { result, rerender } = renderHook(
+      ({ delay }) =&gt; useInterval(mockCallback, delay),
+      { initialProps: { delay: 1000 } }
+    );
+    
+    // Start interval
+    act(() =&gt; {
+      jest.advanceTimersByTime(1000);
+    });
+    
+    expect(mockCallback).toHaveBeenCalledTimes(1);
+    
+    // Stop interval
+    rerender({ delay: null });
+    
+    // Fast-forward time again
+    act(() =&gt; {
+      jest.advanceTimersByTime(1000);
+    });
+    
+    expect(mockCallback).toHaveBeenCalledTimes(1); // Still 1, not 2
+  });
+
+  test('updates callback when it changes', () =&gt; {
+    const mockCallback1 = jest.fn();
+    const mockCallback2 = jest.fn();
+    
+    const { result, rerender } = renderHook(
+      ({ callback, delay }) =&gt; useInterval(callback, delay),
+      { initialProps: { callback: mockCallback1, delay: 1000 } }
+    );
+    
+    // First callback
+    act(() =&gt; {
+      jest.advanceTimersByTime(1000);
+    });
+    
+    expect(mockCallback1).toHaveBeenCalledTimes(1);
+    expect(mockCallback2).toHaveBeenCalledTimes(0);
+    
+    // Change callback
+    rerender({ callback: mockCallback2, delay: 1000 });
+    
+    // New callback
+    act(() =&gt; {
+      jest.advanceTimersByTime(1000);
+    });
+    
+    expect(mockCallback1).toHaveBeenCalledTimes(1);
+    expect(mockCallback2).toHaveBeenCalledTimes(1);
+  });
+});
+          </code></pre>
+
+          <h3>🔥 Testing Hook with Context</h3>
+          <pre><code>
+// hooks/useAuth.js
+import { useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
+  
+  return context;
+}
+
+// useAuth.test.js
+import { renderHook, act } from '@testing-library/react-hooks';
+import { useAuth } from './useAuth';
+import { AuthContext } from '../context/AuthContext';
+
+describe('useAuth hook', () =&gt; {
+  test('throws error when used outside provider', () =&gt; {
+    const { result } = renderHook(() =&gt; useAuth());
+    
+    expect(result.error).toBeDefined();
+    expect(result.error.message).toBe('useAuth must be used within AuthProvider');
+  });
+
+  test('returns auth context when used within provider', () =&gt; {
+    const mockContext = {
+      user: { id: 1, name: 'John' },
+      isAuthenticated: true,
+      login: jest.fn(),
+      logout: jest.fn()
+    };
+
+    const { result } = renderHook(() =&gt; useAuth(), {
+      wrapper: ({ children }) =&gt; (
+        &lt;AuthContext.Provider value={mockContext}&gt;
+          {children}
+        &lt;/AuthContext.Provider&gt;
+      )
+    });
+
+    expect(result.current).toEqual(mockContext);
+    expect(result.current.user).toEqual({ id: 1, name: 'John' });
+    expect(result.current.isAuthenticated).toBe(true);
+  });
+
+  test('provides login method', () =&gt; {
+    const mockContext = {
+      user: null,
+      isAuthenticated: false,
+      login: jest.fn(),
+      logout: jest.fn()
+    };
+
+    const { result } = renderHook(() =&gt; useAuth(), {
+      wrapper: ({ children }) =&gt; (
+        &lt;AuthContext.Provider value={mockContext}&gt;
+          {children}
+        &lt;/AuthContext.Provider&gt;
+      )
+    });
+
+    act(() =&gt; {
+      result.current.login({ id: 1, name: 'John' });
+    });
+
+    expect(mockContext.login).toHaveBeenCalledWith({ id: 1, name: 'John' });
+  });
+});
+          </code></pre>
+
+          <div class="test-result test-pass">
+            <h4>✅ Test Results</h4>
+            <pre><code>
+PASS  src/useCounter.test.js
+PASS  src/useApi.test.js
+PASS  src/useInterval.test.js
+PASS  src/useAuth.test.js
+
+Test Suites: 4 passed, 4 total
+Tests:       18 passed, 18 total
+Snapshots:   0 total
+Time:        2.5 s
+Ran all test suites.
+          </code></pre>
+          </div>
+
+          <div class="note">
+            <strong>🧠 Mental Model:</strong> Think of testing hooks as testing a black box. You don't care how it works internally—you only care about what goes in and what comes out.
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Deep Dive: Advanced Hook Testing Patterns</summary>
+          <h3>⚡ Testing Debounced Hooks</h3>
+          <pre><code>
+// hooks/useDebounce.js
+import { useState, useEffect } from 'react';
+
+export function useDebounce(value, delay) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() =&gt; {
+    const handler = setTimeout(() =&gt; {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () =&gt; clearTimeout(handler);
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
+// useDebounce.test.js
+import { renderHook, act } from '@testing-library/react-hooks';
+import { useDebounce } from './useDebounce';
+
+describe('useDebounce hook', () =&gt; {
+  beforeEach(() =&gt; {
+    jest.useFakeTimers();
+  });
+
+  afterEach(() =&gt; {
+    jest.useRealTimers();
+  });
+
+  test('returns initial value immediately', () =&gt; {
+    const { result } = renderHook(() =&gt; useDebounce('initial', 1000));
+    
+    expect(result.current).toBe('initial');
+  });
+
+  test('debounces value changes', () =&gt; {
+    const { result } = renderHook(() =&gt; useDebounce('initial', 1000));
+    
+    // Change value
+    act(() =&gt; {
+      result.current = 'updated'; // This won't work directly
+    });
+    
+    // Actually, we need to re-render:
+    const { rerender } = renderHook(({ value }) =&gt; useDebounce(value, 1000), {
+      initialProps: { value: 'initial' }
+    });
+    
+    // Change value
+    rerender({ value: 'updated' });
+    
+    // Value should still be old after immediate change
+    expect(rerender.result.current).toBe('initial');
+    
+    // Fast forward time
+    act(() =&gt; {
+      jest.advanceTimersByTime(1000);
+    });
+    
+    // Now value should be updated
+    expect(rerender.result.current).toBe('updated');
+  });
+
+  test('clears timeout when value changes before delay', () =&gt; {
+    const { rerender } = renderHook(({ value }) =&gt; useDebounce(value, 1000), {
+      initialProps: { value: 'first' }
+    });
+    
+    // Change value after 500ms
+    act(() =&gt; {
+      jest.advanceTimersByTime(500);
+    });
+    
+    rerender({ value: 'second' });
+    
+    // Advance past 1000ms
+    act(() =&gt; {
+      jest.advanceTimersByTime(1000);
+    });
+    
+    // Should now be 'second', not 'first'
+    expect(rerender.result.current).toBe('second');
+  });
+});
+          </code></pre>
+
+          <h3>⚡ Testing Hook with External Dependencies</h3>
+          <pre><code>
+// hooks/useLocalStorage.js
+import { useState } from 'react';
+
+export function useLocalStorage(key, initialValue) {
+  const [storedValue, setStoredValue] = useState(() =&gt; {
+    try {
+      const item = window.localStorage.getItem(key);
+      return item ? JSON.parse(item) : initialValue;
+    } catch (error) {
+      console.error(error);
+      return initialValue;
+    }
+  });
+
+  const setValue = (value) =&gt; {
+    try {
+      setStoredValue(value);
+      window.localStorage.setItem(key, JSON.stringify(value));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  return [storedValue, setValue];
+}
+
+// useLocalStorage.test.js
+import { renderHook, act } from '@testing-library/react-hooks';
+import { useLocalStorage } from './useLocalStorage';
+
+describe('useLocalStorage hook', () =&gt; {
+  beforeEach(() =&gt; {
+    // Clear localStorage before each test
+    localStorage.clear();
+  });
+
+  test('returns initial value when no item in localStorage', () =&gt; {
+    const { result } = renderHook(() =&gt; useLocalStorage('test-key', 'initial-value'));
+    
+    expect(result.current[0]).toBe('initial-value');
+  });
+
+  test('returns value from localStorage', () =&gt; {
+    // Set value in localStorage first
+    localStorage.setItem('test-key', JSON.stringify('stored-value'));
+    
+    const { result } = renderHook(() =&gt; useLocalStorage('test-key', 'initial-value'));
+    
+    expect(result.current[0]).toBe('stored-value');
+  });
+
+  test('sets value in localStorage', () =&gt; {
+    const { result } = renderHook(() =&gt; useLocalStorage('test-key', 'initial-value'));
+    
+    act(() =&gt; {
+      result.current[1]('new-value');
+    });
+    
+    expect(localStorage.getItem('test-key')).toBe(JSON.stringify('new-value'));
+  });
+
+  test('handles JSON parsing errors', () =&gt; {
+    // Set invalid JSON in localStorage
+    localStorage.setItem('test-key', 'invalid-json');
+    
+    const { result } = renderHook(() =&gt; useLocalStorage('test-key', 'initial-value'));
+    
+    expect(result.current[0]).toBe('initial-value'); // Falls back to initial value
+  });
+
+  test('handles serialization errors', () =&gt; {
+    const { result } = renderHook(() =&gt; useLocalStorage('test-key', 'initial-value'));
+    
+    // Mock localStorage.setItem to throw an error
+    const originalSetItem = localStorage.setItem;
+    localStorage.setItem = jest.fn().mockImplementation(() =&gt; {
+      throw new Error('Storage error');
+    });
+    
+    act(() =&gt; {
+      result.current[1]('new-value');
+    });
+    
+    // Should not crash
+    expect(localStorage.setItem).toHaveBeenCalledWith('test-key', JSON.stringify('new-value'));
+    
+    // Restore original
+    localStorage.setItem = originalSetItem;
+  });
+});
+          </code></pre>
+
+          <div class="testing-tip">
+            <strong>🌟 Pro Tip:</strong> Always test hooks in isolation before using them in components. This makes your tests faster, more reliable, and easier to debug.
+          </div>
+        </details>
+      </section>
+
+      <div class="footer-note">
+        📚 Next: Module 5 - Testing Best Practices, CI/CD Integration, and Test-Driven Development
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript Utilities -->
+<script>
+  // Expand/Collapse All
+  document.getElementById('expandAll').addEventListener('click', () => {
+    document.querySelectorAll('details').forEach(detail => detail.open = true);
+  });
+
+  document.getElementById('collapseAll').addEventListener('click', () => {
+    document.querySelectorAll('details').forEach(detail => detail.open = false);
+  });
+
+  // Smooth Scroll to TOC Item
+  document.querySelectorAll('.toc-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const targetId = item.getAttribute('data-target');
+      document.querySelector(targetId).scrollIntoView({ behavior: 'smooth' });
+      
+      // Highlight active item
+      document.querySelectorAll('.toc-item').forEach(el => el.classList.remove('active'));
+      item.classList.add('active');
+    });
+  });
+
+  // Search TOC
+  document.getElementById('searchTOC').addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase();
+    document.querySelectorAll('.toc-item').forEach(item => {
+      const text = item.textContent.toLowerCase();
+      item.style.display = text.includes(query) ? 'block' : 'none';
+    });
+  });
+
+  // Optional: Add highlight.js if needed (uncomment if CDN available)
+  /*
+  const script = document.createElement('script');
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js';
+  script.onload = () => {
+    document.querySelectorAll('pre code').forEach(block => hljs.highlightBlock(block));
+  };
+  document.head.appendChild(script);
+  */
+</script>
+
+<!-- Bootstrap JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
+```

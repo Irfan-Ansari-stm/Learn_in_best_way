@@ -1,0 +1,3171 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter 25: React Native Basics</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00d1ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --text-muted: #a0b8d8;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            background-color: #0c213d;
+            border-right: 1px solid rgba(0, 209, 255, 0.1);
+            height: 100vh;
+            position: fixed;
+            width: 300px;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid rgba(0, 209, 255, 0.2);
+            padding-bottom: 8px;
+            margin-top: 30px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin-top: 40px;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            margin-top: 35px;
+        }
+
+        .subtitle {
+            color: var(--amber);
+            font-style: italic;
+            margin-bottom: 25px;
+        }
+
+        .author-info {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        .toc-item {
+            margin: 8px 0;
+            padding: 6px 10px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .toc-item:hover {
+            background-color: rgba(0, 209, 255, 0.1);
+            color: var(--cyan);
+        }
+
+        .toc-item.active {
+            background-color: rgba(0, 209, 255, 0.2);
+            color: var(--cyan);
+            border-left: 3px solid var(--cyan);
+        }
+
+        .toc-subitem {
+            margin-left: 20px;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            padding: 4px 10px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .toc-subitem:hover {
+            background-color: rgba(0, 209, 255, 0.1);
+            color: var(--cyan);
+        }
+
+        .search-input {
+            background-color: #153350;
+            border: 1px solid rgba(0, 209, 255, 0.3);
+            color: var(--text-light);
+            margin-bottom: 20px;
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+
+        .btn-control {
+            background-color: rgba(0, 209, 255, 0.1);
+            border: 1px solid rgba(0, 209, 255, 0.3);
+            color: var(--cyan);
+            margin: 10px 0;
+            padding: 6px 12px;
+            font-size: 0.9rem;
+            border-radius: 5px;
+        }
+
+        .btn-control:hover {
+            background-color: rgba(0, 209, 255, 0.2);
+            color: var(--cyan);
+        }
+
+        .details-container {
+            margin-bottom: 30px;
+            border-left: 3px solid var(--amber);
+            border-radius: 0 8px 8px 0;
+            overflow: hidden;
+        }
+
+        .details-container summary {
+            list-style: none;
+            cursor: pointer;
+            padding: 15px;
+            background-color: rgba(255, 183, 77, 0.1);
+            color: var(--amber);
+            font-weight: bold;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0;
+        }
+
+        .details-container summary:hover {
+            background-color: rgba(255, 183, 77, 0.2);
+        }
+
+        .details-container summary::before {
+            content: "▶";
+            font-size: 0.8rem;
+            transition: transform 0.3s ease;
+        }
+
+        .details-container[open] summary::before {
+            content: "▼";
+            transform: rotate(90deg);
+        }
+
+        .details-container > div {
+            padding: 15px;
+            background-color: #0f2540;
+            border-radius: 0 0 8px 8px;
+            margin-top: 0;
+            border: 1px solid rgba(255, 183, 77, 0.1);
+        }
+
+        pre code {
+            display: block;
+            padding: 16px;
+            overflow-x: auto;
+            background-color: #0a192f;
+            border-radius: 8px;
+            border-left: 4px solid var(--amber);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #e6f1ff;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 15px 0;
+        }
+
+        code {
+            background-color: rgba(255, 183, 77, 0.1);
+            color: var(--amber);
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+        }
+
+        .highlight {
+            background-color: rgba(0, 209, 255, 0.15);
+            padding: 10px;
+            border-left: 3px solid var(--cyan);
+            margin: 20px 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .formula {
+            background-color: rgba(0, 209, 255, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-family: 'Cambria Math', serif;
+            text-align: center;
+            color: var(--cyan);
+            font-size: 1.1rem;
+        }
+
+        .use-case {
+            background-color: rgba(255, 183, 77, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 3px solid var(--amber);
+        }
+
+        .example-box {
+            background-color: rgba(10, 25, 47, 0.8);
+            border: 1px solid rgba(0, 209, 255, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: #000;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 8px;
+        }
+
+        .nav-link {
+            color: var(--text-muted) !important;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--cyan) !important;
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 991px) {
+            .left-panel {
+                width: 250px;
+            }
+            .right-panel {
+                margin-left: 250px;
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .left-panel {
+                position: relative;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid rgba(0, 209, 255, 0.1);
+            }
+            .right-panel {
+                margin-left: 0;
+                padding: 15px;
+            }
+        }
+
+        .section-marker {
+            position: absolute;
+            top: -100px;
+            visibility: hidden;
+        }
+
+        /* Copy button styling */
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 209, 255, 0.2);
+            color: #00d1ff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            z-index: 10;
+        }
+
+        pre {
+            position: relative;
+        }
+
+        /* Mobile device simulation styles */
+        .device-sim {
+            border: 1px solid rgba(0, 209, 255, 0.3);
+            border-radius: 20px;
+            margin: 20px 0;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            max-width: 300px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .device-header {
+            height: 40px;
+            background-color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 14px;
+            font-weight: bold;
+            padding: 0 10px;
+        }
+
+        .device-content {
+            background-color: #000;
+            min-height: 500px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .status-bar {
+            height: 20px;
+            background-color: #000;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 10px;
+            color: #fff;
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .ios-status-bar {
+            background-color: #000;
+            height: 40px;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 10px;
+            color: #fff;
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .android-status-bar {
+            height: 25px;
+            background-color: #000;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 10px;
+            color: #fff;
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .device-footer {
+            height: 20px;
+            background-color: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #fff;
+            font-size: 12px;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Left Panel -->
+            <div class="col-md-3 left-panel">
+                <h1>Chapter 25</h1>
+                <h3 class="subtitle">React Native Basics</h3>
+                <p class="author-info">By: React Mastery Tutor | For Advanced Students</p>
+
+                <input type="text" class="form-control search-input" id="searchToc" placeholder="Search topics...">
+                
+                <button class="btn btn-sm btn-control w-100 mb-2" id="expandAll">Expand All</button>
+                <button class="btn btn-sm btn-control w-100 mb-3" id="collapseAll">Collapse All</button>
+
+                <div id="tocContainer">
+                    <div class="toc-item" data-target="25-1">25.1 Mobile Development with React Native</div>
+                    <div class="toc-subitem" data-target="25-1-1">• What is React Native?</div>
+                    <div class="toc-subitem" data-target="25-1-2">• Cross-platform Development</div>
+                    <div class="toc-subitem" data-target="25-1-3">• React Native vs Native</div>
+                    <div class="toc-subitem" data-target="25-1-4">• React Native vs Flutter</div>
+                    
+                    <div class="toc-item" data-target="25-2">25.2 Setting up Development Environment</div>
+                    <div class="toc-subitem" data-target="25-2-1">• Requirements and Prerequisites</div>
+                    <div class="toc-subitem" data-target="25-2-2">• Installing Node.js and CLI Tools</div>
+                    <div class="toc-subitem" data-target="25-2-3">• Android Studio Setup</div>
+                    <div class="toc-subitem" data-target="25-2-4">• Xcode Setup (macOS)</div>
+                    <div class="toc-subitem" data-target="25-2-5">• Testing on Emulators</div>
+                    
+                    <div class="toc-item" data-target="25-3">25.3 Core Components and APIs</div>
+                    <div class="toc-subitem" data-target="25-3-1">• View, Text, Image Components</div>
+                    <div class="toc-subitem" data-target="25-3-2">• Flexbox Layout System</div>
+                    <div class="toc-subitem" data-target="25-3-3">• Touchable Components</div>
+                    <div class="toc-subitem" data-target="25-3-4">• ScrollView and FlatList</div>
+                    <div class="toc-subitem" data-target="25-3-5">• State Management Basics</div>
+                    
+                    <div class="toc-item" data-target="25-4">25.4 Navigation in React Native</div>
+                    <div class="toc-subitem" data-target="25-4-1">• React Navigation Library</div>
+                    <div class="toc-subitem" data-target="25-4-2">• Stack Navigator</div>
+                    <div class="toc-subitem" data-target="25-4-3">• Tab Navigator</div>
+                    <div class="toc-subitem" data-target="25-4-4">• Drawer Navigator</div>
+                    <div class="toc-subitem" data-target="25-4-5">• Passing Parameters</div>
+                    
+                    <div class="toc-item" data-target="25-5">25.5 Platform-specific Code</div>
+                    <div class="toc-subitem" data-target="25-5-1">• Platform Module</div>
+                    <div class="toc-subitem" data-target="25-5-2">• Platform-Specific Extensions</div>
+                    <div class="toc-subitem" data-target="25-5-3">• Conditional Rendering</div>
+                    <div class="toc-subitem" data-target="25-5-4">• iOS vs Android Design Guidelines</div>
+                    
+                    <div class="toc-item" data-target="25-6">25.6 Building and Deployment</div>
+                    <div class="toc-subitem" data-target="25-6-1">• Debugging and Hot Reloading</div>
+                    <div class="toc-subitem" data-target="25-6-2">• Generating APK and IPA Files</div>
+                    <div class="toc-subitem" data-target="25-6-3">• Publishing to App Store and Google Play</div>
+                    <div class="toc-subitem" data-target="25-6-4">• Expo vs Bare Workflow</div>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="col-md-9 right-panel">
+                <div class="section-marker" id="25-1"></div>
+                <h2>25.1 Mobile Development with React Native</h2>
+                <p>React Native is a framework that allows you to build native mobile applications for iOS and Android using JavaScript and React.</p>
+
+                <div class="details-container">
+                    <summary>Definition</summary>
+                    <div>
+                        React Native is an open-source framework developed by Facebook (Meta) that enables developers to create native mobile applications for iOS and Android using React, a JavaScript library for building user interfaces. It compiles to native components rather than web views, providing near-native performance.
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Detail</summary>
+                    <div>
+                        <p>Traditional mobile development requires separate codebases:</p>
+                        <ul>
+                            <li><strong>iOS:</strong> Swift or Objective-C</li>
+                            <li><strong>Android:</strong> Java or Kotlin</li>
+                        </ul>
+                        
+                        <p>React Native solves this by allowing you to write one codebase in JavaScript/React that runs natively on both platforms:</p>
+                        <ol>
+                            <li>You write components using React syntax</li>
+                            <li>React Native translates these components into native iOS and Android components</li>
+                            <li>The app runs with native performance, not in a web view</li>
+                            <li>You can use native modules when needed</li>
+                        </ol>
+                        
+                        <p>Key advantages:</p>
+                        <ul>
+                            <li><strong>Code reuse:</strong> Share up to 90% of code between platforms</li>
+                            <li><strong>Fast development:</strong> Hot reloading speeds up iteration</li>
+                            <li><strong>Single team:</strong> One team can build for both platforms</li>
+                            <li><strong>React ecosystem:</strong> Leverage existing React knowledge and libraries</li>
+                            <li><strong>Native performance:</strong> Uses native components, not web views</li>
+                        </ul>
+                        
+                        <p>It's important to understand that React Native doesn't use web technologies like HTML/CSS under the hood. Instead, it maps React components to their native equivalents:</p>
+                        <ul>
+                            <li><code>&lt;View&gt;</code> → iOS UIView / Android ViewGroup</li>
+                            <li><code>&lt;Text&gt;</code> → iOS UILabel / Android TextView</li>
+                            <li><code>&lt;Image&gt;</code> → iOS UIImageView / Android ImageView</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Cross-platform Development</summary>
+                    <div>
+                        <p>React Native enables true cross-platform development with platform-specific adaptations:</p>
+                        
+                        <pre><code>// Single component works on both iOS and Android
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+
+export default function App() {
+  return (
+    &lt;View style={styles.container}&gt;
+      &lt;Text style={styles.title}&gt;Hello World!&lt;/Text&gt;
+      &lt;Text style={styles.subtitle}&gt;Built with React Native&lt;/Text&gt;
+    &lt;/View&gt;
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#333',
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#666',
+  },
+});</code></pre>
+                        
+                        <p>When you run this code:</p>
+                        <ul>
+                            <li>On iOS: Renders with San Francisco font, rounded corners, and iOS-specific animations</li>
+                            <li>On Android: Renders with Roboto font, material design shadows, and Android-specific transitions</li>
+                        </ul>
+                        
+                        <p>This means your app looks and feels native on each platform while sharing the same logic and structure.</p>
+                        
+                        <p>Common patterns:</p>
+                        <ul>
+                            <li><strong>Shared business logic:</strong> API calls, state management, authentication</li>
+                            <li><strong>Platform-specific UI:</strong> Navigation patterns, button styles, layout spacing</li>
+                            <li><strong>Feature availability:</strong> Camera access, push notifications, biometrics</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>React Native vs Native</summary>
+                    <div>
+                        <table class="table table-dark table-striped mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Aspect</th>
+                                    <th>React Native</th>
+                                    <th>Native Development</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Language</td>
+                                    <td>JavaScript/TypeScript</td>
+                                    <td>Swift/Objective-C (iOS), Java/Kotlin (Android)</td>
+                                </tr>
+                                <tr>
+                                    <td>Performance</td>
+                                    <td>Very close to native (95-98%)</td>
+                                    <td>100%</td>
+                                </tr>
+                                <tr>
+                                    <td>Development Speed</td>
+                                    <td>⭐⭐⭐⭐⭐ (Hot reloading, shared code)</td>
+                                    <td>⭐⭐⭐ (Separate codebases)</td>
+                                </tr>
+                                <tr>
+                                    <td>Learning Curve</td>
+                                    <td>Easy if you know React</td>
+                                    <td>Steeper (platform-specific languages)</td>
+                                </tr>
+                                <tr>
+                                    <td>Community</td>
+                                    <td>Large and active</td>
+                                    <td>Very large (established ecosystems)</td>
+                                </tr>
+                                <tr>
+                                    <td>Access to Native APIs</td>
+                                    <td>Good (via bridges/modules)</td>
+                                    <td>Complete access</td>
+                                </tr>
+                                <tr>
+                                    <td>App Size</td>
+                                    <td>Larger (includes JS engine)</td>
+                                    <td>Smaller</td>
+                                </tr>
+                                <tr>
+                                    <td>Debugging</td>
+                                    <td>Excellent (Chrome DevTools)</td>
+                                    <td>Platform-specific tools</td>
+                                </tr>
+                                <tr>
+                                    <td>Updates</td>
+                                    <td>Can update without store approval</td>
+                                    <td>Requires App Store review</td>
+                                </tr>
+                                <tr>
+                                    <td>Best For</td>
+                                    <td>Most apps, MVPs, startups</td>
+                                    <td>High-performance games, complex animations</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <p class="highlight"><strong>Real-world example:</strong> Facebook, Instagram, Airbnb, Walmart, Discord, and Uber Eats all use React Native in production!</p>
+                        
+                        <p>While native development offers maximum control and performance, React Native provides an excellent balance of speed, quality, and efficiency for most applications.</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>React Native vs Flutter</summary>
+                    <div>
+                        <table class="table table-dark table-striped mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Aspect</th>
+                                    <th>React Native</th>
+                                    <th>Flutter</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Language</td>
+                                    <td>JavaScript/TypeScript</td>
+                                    <td>Dart</td>
+                                </tr>
+                                <tr>
+                                    <td>Rendering Engine</td>
+                                    <td>Native components</td>
+                                    <td>Custom engine (Skia)</td>
+                                </tr>
+                                <tr>
+                                    <td>Performance</td>
+                                    <td>Very good (near-native)</td>
+                                    <td>Excellent (consistently high)</td>
+                                </tr>
+                                <tr>
+                                    <td>UI Components</td>
+                                    <td>Native look and feel</td>
+                                    <td>Custom widgets (consistent across platforms)</td>
+                                </tr>
+                                <tr>
+                                    <td>Learning Curve</td>
+                                    <td>Easier for web developers</td>
+                                    <td>Steeper (new language and concepts)</td>
+                                </tr>
+                                <tr>
+                                    <td>Hot Reload</td>
+                                    <td>Yes</td>
+                                    <td>Yes (faster)</td>
+                                </tr>
+                                <tr>
+                                    <td>Community</td>
+                                    <td>Larger (more libraries)</td>
+                                    <td>Growing rapidly</td>
+                                </tr>
+                                <tr>
+                                    <td>Native Integration</td>
+                                    <td>Excellent (direct bridge)</td>
+                                    <td>Good (method channels)</td>
+                                </tr>
+                                <tr>
+                                    <td>App Size</td>
+                                    <td>Larger</td>
+                                    <td>Smaller</td>
+                                </tr>
+                                <tr>
+                                    <td>Best For</td>
+                                    <td>Apps needing native look, React developers</td>
+                                    <td>Consistent design across platforms, custom UIs</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <p><strong>Key difference:</strong></p>
+                        <ul>
+                            <li><strong>React Native:</strong> Uses actual native components from iOS and Android</li>
+                            <li><strong>Flutter:</strong> Draws everything itself using Skia graphics engine</li>
+                        </ul>
+                        
+                        <p>This means:</p>
+                        <ul>
+                            <li>React Native apps have the exact native UI behavior and accessibility features</li>
+                            <li>Flutter apps have perfect visual consistency but may feel slightly different from native apps</li>
+                            <li>React Native has better integration with existing native code</li>
+                            <li>Flutter has more consistent animation performance</li>
+                        </ul>
+                        
+                        <p>For most projects, React Native is the preferred choice because:</p>
+                        <ul>
+                            <li>It leverages existing React knowledge</li>
+                            <li>It integrates seamlessly with the JavaScript ecosystem</li>
+                            <li>It provides true native appearance and behavior</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Uses</summary>
+                    <div class="use-case">
+                        <ul>
+                            <li><strong>Startups:</strong> Build MVP quickly with single team</li>
+                            <li><strong>E-commerce apps:</strong> Shared product catalog, cart, checkout</li>
+                            <li><strong>Social media apps:</strong> Feed, messaging, profile screens</li>
+                            <li><strong>Finance apps:</strong> Banking, budgeting, investment tracking</li>
+                            <li><strong>Health & fitness:</strong> Workout tracking, nutrition logging</li>
+                            <li><strong>Enterprise apps:</strong> Internal tools for employees</li>
+                            <li><strong>Education apps:</strong> Learning platforms, course delivery</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="section-marker" id="25-2"></div>
+                <h2>25.2 Setting up Development Environment</h2>
+                <p>Setting up a React Native development environment involves installing the necessary tools to build, test, and deploy mobile applications on both iOS and Android platforms.</p>
+
+                <div class="details-container">
+                    <summary>Definition</summary>
+                    <div>
+                        The React Native development environment consists of the required software tools, SDKs, and configurations needed to create, compile, and run React Native applications on physical devices or emulators for iOS and Android.
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Detail</summary>
+                    <div>
+                        <p>There are two main approaches to setting up React Native:</p>
+                        <ol>
+                            <li><strong>Bare React Native:</strong> Direct setup with native toolchains</li>
+                            <li><strong>Expo:</strong> Managed workflow with simplified tooling</li>
+                        </ol>
+                        
+                        <p>For beginners, we recommend starting with <strong>Expo</strong> because it handles complex setup automatically. We'll cover both approaches.</p>
+                        
+                        <p>Core requirements:</p>
+                        <ul>
+                            <li><strong>Node.js:</strong> JavaScript runtime</li>
+                            <li><strong>npm or yarn:</strong> Package manager</li>
+                            <li><strong>React Native CLI:</strong> Command-line interface</li>
+                            <li><strong>Android Studio:</strong> For Android development (Windows/macOS)</li>
+                            <li><strong>Xcode:</strong> For iOS development (macOS only)</li>
+                            <li><strong>Emulators/Simulators:</strong> Test apps without physical devices</li>
+                        </ul>
+                        
+                        <p>Important note: You need macOS to develop iOS apps. Windows/Linux users can only develop Android apps.</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Requirements and Prerequisites</summary>
+                    <div>
+                        <p><strong>For Android Development (Windows/macOS/Linux):</strong></p>
+                        <ul>
+                            <li>Node.js v18+ (LTS)</li>
+                            <li>npm v9+ or yarn v1.22+</li>
+                            <li>Android Studio (includes SDK, emulator, and tools)</li>
+                            <li>Java Development Kit (JDK) 11+</li>
+                            <li>Android SDK Platform-Tools</li>
+                            <li>Android SDK Build-Tools</li>
+                        </ul>
+                        
+                        <p><strong>For iOS Development (macOS only):</strong></p>
+                        <ul>
+                            <li>Node.js v18+ (LTS)</li>
+                            <li>npm v9+ or yarn v1.22+</li>
+                            <li>Xcode 14+</li>
+                            <li>Command Line Tools for Xcode</li>
+                            <li>CocoaPods (dependency manager for iOS)</li>
+                        </ul>
+                        
+                        <p><strong>For cross-platform development:</strong></p>
+                        <ul>
+                            <li>macOS machine (required for iOS builds)</li>
+                            <li>Physical iOS device (recommended for testing)</li>
+                            <li>Physical Android device (recommended for testing)</li>
+                            <li>GitHub account (for version control)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Installing Node.js and CLI Tools</summary>
+                    <div>
+                        <p><strong>Step 1: Install Node.js</strong></p>
+                        <pre><code># Download from https://nodejs.org or use version manager
+# Using Homebrew (macOS)
+brew install node
+
+# Using nvm (recommended)
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+nvm install --lts
+nvm use --lts</code></pre>
+                        
+                        <p><strong>Step 2: Install React Native CLI</strong></p>
+                        <pre><code># Global installation
+npm install -g react-native-cli
+
+# Or use npx (recommended - no global install needed)
+npx react-native init MyAwesomeApp</code></pre>
+                        
+                        <p><strong>Step 3: Install Expo CLI (Recommended for beginners)</strong></p>
+                        <pre><code># Install Expo globally
+npm install -g expo-cli
+
+# Create new project with Expo
+expo init MyAwesomeApp
+# Choose: "blank" template for minimal setup</code></pre>
+                        
+                        <p><strong>Step 4: Verify installation</strong></p>
+                        <pre><code># Check Node.js version
+node --version
+
+# Check npm version
+npm --version
+
+# Check React Native CLI
+react-native --version
+
+# Check Expo CLI
+expo --version</code></pre>
+                        
+                        <p>Pro tip: Use <code>npx</code> instead of global installations when possible—it ensures you're using the correct version for each project.</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Android Studio Setup</summary>
+                    <div>
+                        <p><strong>Step 1: Download and install Android Studio</strong></p>
+                        <p>Download from: <a href="https://developer.android.com/studio" target="_blank">https://developer.android.com/studio</a></p>
+                        
+                        <p><strong>Step 2: Configure Android SDK</strong></p>
+                        <ol>
+                            <li>Launch Android Studio</li>
+                            <li>Click "Configure" → "SDK Manager"</li>
+                            <li>In "SDK Platforms" tab, check:
+                                <ul>
+                                    <li>Android 13 (API 33)</li>
+                                    <li>Android 12 (API 31)</li>
+                                </ul>
+                            </li>
+                            <li>In "SDK Tools" tab, check:
+                                <ul>
+                                    <li>Android SDK Build-Tools</li>
+                                    <li>Android SDK Platform-Tools</li>
+                                    <li>Android SDK Tools</li>
+                                    <li>NDK (Side by side)</li>
+                                </ul>
+                            </li>
+                            <li>Click "Apply" and wait for installation</li>
+                        </ol>
+                        
+                        <p><strong>Step 3: Set up environment variables</strong></p>
+                        <p>Add to your shell profile (<code>.bashrc</code>, <code>.zshrc</code>, or system settings):</p>
+                        <pre><code># Add to ~/.bashrc or ~/.zshrc
+export ANDROID_HOME=$HOME/Library/Android/sdk
+export PATH=$PATH:$ANDROID_HOME/emulator
+export PATH=$PATH:$ANDROID_HOME/tools
+export PATH=$PATH:$ANDROID_HOME/tools/bin
+export PATH=$PATH:$ANDROID_HOME/platform-tools</code></pre>
+                        
+                        <p><strong>Step 4: Create an Android Virtual Device (AVD)</strong></p>
+                        <ol>
+                            <li>Open Android Studio</li>
+                            <li>Go to Tools → AVD Manager</li>
+                            <li>Click "Create Virtual Device"</li>
+                            <li>Select a phone (Pixel 4 or Pixel 5 recommended)</li>
+                            <li>Select a system image (API 33 or higher)</li>
+                            <li>Click "Next" → "Finish"</li>
+                            <li>Start the emulator by clicking the green play button</li>
+                        </ol>
+                        
+                        <p><strong>Step 5: Verify Android setup</strong></p>
+                        <pre><code># In terminal
+adb devices
+
+# Should show your emulator
+List of devices attached
+emulator-5554    device</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Xcode Setup (macOS)</summary>
+                    <div>
+                        <p><strong>Step 1: Install Xcode</strong></p>
+                        <ul>
+                            <li>Open App Store on macOS</li>
+                            <li>Search for "Xcode"</li>
+                            <li>Click "Get" and install</li>
+                            <li>Launch Xcode after installation</li>
+                            <li>Accept license agreement</li>
+                            <li>Wait for additional components to install</li>
+                        </ul>
+                        
+                        <p><strong>Step 2: Install Command Line Tools</strong></p>
+                        <pre><code># In Terminal
+xcode-select --install</code></pre>
+                        
+                        <p><strong>Step 3: Install CocoaPods</strong></p>
+                        <pre><code># Install CocoaPods (iOS dependency manager)
+sudo gem install cocoapods
+
+# Initialize CocoaPods
+pod setup</code></pre>
+                        
+                        <p><strong>Step 4: Verify Xcode setup</strong></p>
+                        <pre><code># Check Xcode command line tools
+xcode-select -p
+
+# Should return: /Applications/Xcode.app/Contents/Developer
+
+# Check iOS simulator
+xcrun simctl list devices</code></pre>
+                        
+                        <p><strong>Step 5: Create iOS Simulator</strong></p>
+                        <ol>
+                            <li>Open Xcode</li>
+                            <li>Go to Window → Devices and Simulators</li>
+                            <li>Click "Simulators" tab</li>
+                            <li>Click "+" button to add new simulator</li>
+                            <li>Select iPhone 14 or iPhone 15</li>
+                            <li>Select latest iOS version</li>
+                            <li>Name it "React Native Simulator"</li>
+                            <li>Click "Create"</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Testing on Emulators</summary>
+                    <div>
+                        <p><strong>Expo Development Client (Recommended)</strong></p>
+                        <p>Expo provides the easiest way to test on real devices:</p>
+                        
+                        <ol>
+                            <li>Install Expo Go app on your iOS/Android device from App Store or Google Play</li>
+                            <li>Start your project: <code>expo start</code></li>
+                            <li>Scan QR code with Expo Go app</li>
+                            <li>Instantly see changes on your device!</li>
+                        </ol>
+                        
+                        <p><strong>Using Android Emulator:</strong></p>
+                        <pre><code># Start Android emulator first
+emulator -avd YourAVDName
+
+# Then run app
+npx react-native run-android</code></pre>
+                        
+                        <p><strong>Using iOS Simulator:</strong></p>
+                        <pre><code># Run on iOS simulator
+npx react-native run-ios</code></pre>
+                        
+                        <p><strong>Expo alternative:</strong></p>
+                        <pre><code># With Expo
+expo start
+
+# Then press:
+# i - open iOS simulator
+# a - open Android emulator
+# w - open web preview</code></pre>
+                        
+                        <p>Pro tips:</p>
+                        <ul>
+                            <li>Use physical devices for best testing experience</li>
+                            <li>Emulators are slower and don't perfectly replicate hardware</li>
+                            <li>Enable developer options on Android for debugging</li>
+                            <li>Use USB debugging for faster connection</li>
+                        </ul>
+                        
+                        <div class="device-sim">
+                            <div class="device-header">React Native App</div>
+                            <div class="device-content">
+                                <div class="status-bar">
+                                    <span>9:41 AM</span>
+                                    <span>📶 100%</span>
+                                </div>
+                                <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; background-color: #f5f5f5;">
+                                    <img src="https://reactnative.dev/img/header_logo.svg" alt="React Native Logo" style="width: 100px; margin-bottom: 20px;" />
+                                    <h3 style="color: #333; margin: 0; font-size: 18px;">Welcome to React Native!</h3>
+                                    <p style="color: #666; text-align: center; margin-top: 10px;">Start editing to see some magic happen!</p>
+                                </div>
+                            </div>
+                            <div class="device-footer">© 2023 React Native</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Uses</summary>
+                    <div class="use-case">
+                        <ul>
+                            <li><strong>Beginners:</strong> Expo provides instant setup without complex configuration</li>
+                            <li><strong>Teams:</strong> Consistent environment across developers</li>
+                            <li><strong>Startups:</strong> Rapid prototyping with hot reload</li>
+                            <li><strong>Enterprises:</strong> Standardized development workflows</li>
+                            <li><strong>Freelancers:</strong> Single setup for multiple client projects</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="section-marker" id="25-3"></div>
+                <h2>25.3 Core Components and APIs</h2>
+                <p>React Native provides a set of core components and APIs that allow you to build native mobile applications using JavaScript and React principles.</p>
+
+                <div class="details-container">
+                    <summary>Definition</summary>
+                    <div>
+                        Core components in React Native are the fundamental building blocks for creating user interfaces, including View, Text, Image, Button, ScrollView, FlatList, and Touchable components. These components map directly to native iOS and Android UI elements.
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Detail</summary>
+                    <div>
+                        <p>Unlike web development where you use HTML tags, React Native uses its own component system:</p>
+                        
+                        <ul>
+                            <li><strong>View:</strong> Equivalent to div (container)</li>
+                            <li><strong>Text:</strong> Equivalent to span/p (text display)</li>
+                            <li><strong>Image:</strong> Equivalent to img (image display)</li>
+                            <li><strong>ScrollView:</strong> Scrollable container</li>
+                            <li><strong>FlatList:</strong> Optimized list component</li>
+                            <li><strong>TextInput:</strong> Input field</li>
+                            <li><strong>Button:</strong> Pressable button</li>
+                            <li><strong>TouchableOpacity:</strong> Touchable element with opacity feedback</li>
+                        </ul>
+                        
+                        <p>Key differences from web:</p>
+                        <ul>
+                            <li>No CSS—styling uses JavaScript objects</li>
+                            <li>Flexbox is the primary layout system</li>
+                            <li>No browser rendering engine</li>
+                            <li>Components are native, not HTML elements</li>
+                            <li>Navigation is handled differently</li>
+                        </ul>
+                        
+                        <p>Every React Native app must have at least one root component that returns JSX.</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Core Components Syntax</summary>
+                    <div>
+                        <pre><code>// Basic component structure
+import React from 'react';
+import { View, Text, Image, TouchableOpacity, StyleSheet } from 'react-native';
+
+export default function App() {
+  return (
+    &lt;View style={styles.container}&gt;
+      &lt;Text style={styles.title}&gt;Hello World!&lt;/Text&gt;
+      
+      &lt;Image 
+        source={{ uri: 'https://reactnative.dev/img/header_logo.svg' }} 
+        style={styles.logo} 
+      /&gt;
+      
+      &lt;TouchableOpacity 
+        style={styles.button} 
+        onPress={() =&gt; alert('Button pressed!')}
+      &gt;
+        &lt;Text style={styles.buttonText}&gt;Press Me&lt;/Text&gt;
+      &lt;/TouchableOpacity&gt;
+    &lt;/View&gt;
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    color: '#333',
+  },
+  logo: {
+    width: 100,
+    height: 100,
+    marginBottom: 30,
+  },
+  button: {
+    backgroundColor: '#00d1ff',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  buttonText: {
+    color: '#000',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+});</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Flexbox Layout System</summary>
+                    <div>
+                        <p>React Native uses Flexbox for layout, which is similar to web CSS but with some key differences:</p>
+                        
+                        <ul>
+                            <li><strong>Default direction:</strong> Column (not row like web)</li>
+                            <li><strong>Default alignment:</strong> Center (not left)</li>
+                            <li><strong>No float or position properties</strong></li>
+                            <li><strong>Units are pixel-based (no % or em)</strong></li>
+                        </ul>
+                        
+                        <p>Essential Flexbox properties:</p>
+                        
+                        <pre><code>// Container styles
+const containerStyle = {
+  flex: 1,           // Takes available space
+  flexDirection: 'column',  // Row or column
+  justifyContent: 'center', // Main axis: flex-start, center, flex-end, space-around, space-between
+  alignItems: 'center',     // Cross axis: flex-start, center, flex-end, stretch
+  padding: 20,
+};
+
+// Item styles
+const itemStyle = {
+  flex: 1,           // Grow to fill space
+  flexBasis: 100,    // Initial size
+  flexGrow: 1,       // How much to grow
+  flexShrink: 1,     // How much to shrink
+  alignSelf: 'center', // Override parent's alignItems
+};</code></pre>
+                        
+                        <p><strong>Practical examples:</strong></p>
+                        
+                        <pre><code>// Horizontal layout
+&lt;View style={{ flexDirection: 'row', justifyContent: 'space-between' }}&gt;
+  &lt;View style={{ width: 100, height: 100, backgroundColor: '#00d1ff' }}&gt;&lt;/View&gt;
+  &lt;View style={{ width: 100, height: 100, backgroundColor: '#ffb74d' }}&gt;&lt;/View&gt;
+  &lt;View style={{ width: 100, height: 100, backgroundColor: '#00d1ff' }}&gt;&lt;/View&gt;
+&lt;/View&gt;
+
+// Vertical layout
+&lt;View style={{ flexDirection: 'column', justifyContent: 'space-around', padding: 20 }}&gt;
+  &lt;View style={{ width: 100, height: 50, backgroundColor: '#00d1ff' }}&gt;&lt;/View&gt;
+  &lt;View style={{ width: 100, height: 50, backgroundColor: '#ffb74d' }}&gt;&lt;/View&gt;
+  &lt;View style={{ width: 100, height: 50, backgroundColor: '#00d1ff' }}&gt;&lt;/View&gt;
+&lt;/View&gt;
+
+// Center everything
+&lt;View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}&gt;
+  &lt;Text&gt;Centered Content&lt;/Text&gt;
+&lt;/View&gt;</code></pre>
+                        
+                        <p>Pro tip: Always use <code>flex: 1</code> on your root View to make it take full screen space.</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Touchable Components</summary>
+                    <div>
+                        <p>React Native provides several touchable components for handling user interactions:</p>
+                        
+                        <table class="table table-dark table-striped mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Component</th>
+                                    <th>Use Case</th>
+                                    <th>Feedback</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>TouchableOpacity</code></td>
+                                    <td>Buttons, cards, navigation items</td>
+                                    <td>Opacity reduction on press</td>
+                                </tr>
+                                <tr>
+                                    <td><code>TouchableHighlight</code></td>
+                                    <td>Buttons with accent colors</td>
+                                    <td>Background color change</td>
+                                </tr>
+                                <tr>
+                                    <td><code>TouchableWithoutFeedback</code></td>
+                                    <td>When you want touch but no visual feedback</td>
+                                    <td>No feedback</td>
+                                </tr>
+                                <tr>
+                                    <td><code>Pressable</code></td>
+                                    <td>Newer, more flexible option (React Native 0.63+)</td>
+                                    <td>Customizable feedback</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <p>Example with Pressable (modern approach):</p>
+                        <pre><code>import React from 'react';
+import { View, Text, Pressable, StyleSheet } from 'react-native';
+
+export default function App() {
+  return (
+    &lt;View style={styles.container}&gt;
+      &lt;Pressable
+        style={({ pressed }) =&gt; [
+          styles.button,
+          { opacity: pressed ? 0.7 : 1 },
+        ]}
+        onPress={() =&gt; console.log('Pressed!')}
+      &gt;
+        &lt;Text style={styles.buttonText}&gt;Modern Button&lt;/Text&gt;
+      &lt;/Pressable&gt;
+    &lt;/View&gt;
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  button: {
+    backgroundColor: '#00d1ff',
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    borderRadius: 8,
+  },
+  buttonText: {
+    color: '#000',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+});</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>ScrollView and FlatList</summary>
+                    <div>
+                        <p>Two ways to render lists in React Native:</p>
+                        
+                        <h4>ScrollView</h4>
+                        <p>Render all items at once—good for small lists:</p>
+                        <pre><code>&lt;ScrollView style={{ padding: 10 }}&gt;
+  {[...Array(10)].map((_, i) =&gt; (
+    &lt;View key={i} style={{ 
+      backgroundColor: '#00d1ff', 
+      padding: 20, 
+      marginVertical: 5, 
+      borderRadius: 8 
+    }}&gt;
+      &lt;Text&gt;Item {i + 1}&lt;/Text&gt;
+    &lt;/View&gt;
+  ))}
+&lt;/ScrollView&gt;</code></pre>
+                        
+                        <h4>FlatList</h4>
+                        <p>Render only visible items—essential for long lists:</p>
+                        <pre><code>import React from 'react';
+import { View, Text, FlatList, StyleSheet } from 'react-native';
+
+const data = Array.from({ length: 100 }, (_, i) =&gt; ({
+  id: i + 1,
+  title: `Item ${i + 1}`,
+}));
+
+export default function App() {
+  const renderItem = ({ item }) =&gt; (
+    &lt;View style={styles.item}&gt;
+      &lt;Text style={styles.text}&gt;{item.title}&lt;/Text&gt;
+    &lt;/View&gt;
+  );
+
+  return (
+    &lt;FlatList
+      data={data}
+      renderItem={renderItem}
+      keyExtractor={(item) =&gt; item.id.toString()}
+      style={{ flex: 1 }}
+      contentContainerStyle={{ padding: 10 }}
+    /&gt;
+  );
+}
+
+const styles = StyleSheet.create({
+  item: {
+    backgroundColor: '#00d1ff',
+    padding: 20,
+    marginVertical: 5,
+    borderRadius: 8,
+  },
+  text: {
+    fontSize: 16,
+    color: '#000',
+  },
+});</code></pre>
+                        
+                        <p>Key advantages of FlatList:</p>
+                        <ul>
+                            <li>Memory efficient (only renders visible items)</li>
+                            <li>Supports pull-to-refresh</li>
+                            <li>Supports infinite scrolling</li>
+                            <li>Has built-in performance optimizations</li>
+                            <li>Can handle thousands of items smoothly</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>State Management Basics</summary>
+                    <div>
+                        <p>React Native uses React hooks for state management:</p>
+                        
+                        <pre><code>import React, { useState } from 'react';
+import { View, Text, Button, StyleSheet } from 'react-native';
+
+export default function CounterApp() {
+  const [count, setCount] = useState(0);
+
+  return (
+    &lt;View style={styles.container}&gt;
+      &lt;Text style={styles.text}&gt;Count: {count}&lt;/Text&gt;
+      &lt;Button 
+        title="Increment" 
+        onPress={() =&gt; setCount(count + 1)} 
+        color="#00d1ff"
+      /&gt;
+      &lt;Button 
+        title="Decrement" 
+        onPress={() =&gt; setCount(count - 1)} 
+        color="#ffb74d"
+      /&gt;
+      &lt;Button 
+        title="Reset" 
+        onPress={() =&gt; setCount(0)} 
+        color="#999"
+      /&gt;
+    &lt;/View&gt;
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  text: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+});</code></pre>
+                        
+                        <p>Other common hooks:</p>
+                        <pre><code>// useEffect for side effects
+useEffect(() =&gt; {
+  // Run when component mounts
+  console.log('Component mounted');
+  
+  // Cleanup function
+  return () =&gt; {
+    console.log('Component unmounted');
+  };
+}, []); // Empty array means run once
+
+// useContext for global state
+import { createContext, useContext } from 'react';
+
+const ThemeContext = createContext();
+
+function App() {
+  const theme = { primaryColor: '#00d1ff', secondaryColor: '#ffb74d' };
+  
+  return (
+    &lt;ThemeContext.Provider value={theme}&gt;
+      &lt;MyComponent /&gt;
+    &lt;/ThemeContext.Provider&gt;
+  );
+}
+
+function MyComponent() {
+  const theme = useContext(ThemeContext);
+  return (
+    &lt;View style={{ backgroundColor: theme.primaryColor }}&gt;
+      &lt;Text&gt;This uses context theme&lt;/Text&gt;
+    &lt;/View&gt;
+  );
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Example</summary>
+                    <div class="example-box">
+                        <p><strong>Complete Example: Todo List App</strong></p>
+                        
+                        <pre><code>import React, { useState } from 'react';
+import { View, Text, TextInput, FlatList, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+
+export default function TodoApp() {
+  const [todos, setTodos] = useState([]);
+  const [input, setInput] = useState('');
+
+  const addTodo = () =&gt; {
+    if (input.trim()) {
+      setTodos([...todos, { id: Date.now(), text: input.trim(), completed: false }]);
+      setInput('');
+    }
+  };
+
+  const toggleTodo = (id) =&gt; {
+    setTodos(todos.map(todo =&gt; 
+      todo.id === id ? { ...todo, completed: !todo.completed } : todo
+    ));
+  };
+
+  const deleteTodo = (id) =&gt; {
+    Alert.alert(
+      'Delete Todo',
+      'Are you sure you want to delete this todo?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Delete', 
+          style: 'destructive', 
+          onPress: () =&gt; setTodos(todos.filter(todo =&gt; todo.id !== id)) 
+        }
+      ]
+    );
+  };
+
+  const renderTodo = ({ item }) =&gt; (
+    &lt;View style={styles.todoItem}&gt;
+      &lt;TouchableOpacity 
+        onPress={() =&gt; toggleTodo(item.id)}
+        style={[styles.checkbox, item.completed &amp;&amp; styles.checked]}
+      &gt;
+        {item.completed &amp;&amp; &lt;Text style={styles.checkmark}&gt;✓&lt;/Text&gt;}
+      &lt;/TouchableOpacity&gt;
+      
+      &lt;Text 
+        style={[styles.todoText, item.completed &amp;&amp; styles.completedText]}
+      &gt;
+        {item.text}
+      &lt;/Text&gt;
+      
+      &lt;TouchableOpacity 
+        onPress={() =&gt; deleteTodo(item.id)}
+        style={styles.deleteButton}
+      &gt;
+        &lt;Text style={styles.deleteText}&gt;✕&lt;/Text&gt;
+      &lt;/TouchableOpacity&gt;
+    &lt;/View&gt;
+  );
+
+  return (
+    &lt;View style={styles.container}&gt;
+      &lt;Text style={styles.title}&gt;Todo App&lt;/Text&gt;
+      
+      &lt;View style={styles.inputContainer}&gt;
+        &lt;TextInput
+          style={styles.input}
+          placeholder="Add a new task..."
+          value={input}
+          onChangeText={setInput}
+          onSubmitEditing={addTodo}
+        /&gt;
+        &lt;TouchableOpacity style={styles.addButton} onPress={addTodo}&gt;
+          &lt;Text style={styles.addButtonText}&gt;Add&lt;/Text&gt;
+        &lt;/TouchableOpacity&gt;
+      &lt;/View&gt;
+      
+      &lt;FlatList
+        data={todos}
+        renderItem={renderTodo}
+        keyExtractor={(item) =&gt; item.id.toString()}
+        style={styles.list}
+        contentContainerStyle={{ paddingBottom: 20 }}
+      /&gt;
+    &lt;/View&gt;
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginTop: 40,
+    marginBottom: 30,
+    color: '#333',
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    marginHorizontal: 20,
+    marginBottom: 20,
+  },
+  input: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 8,
+    padding: 15,
+    fontSize: 16,
+    backgroundColor: '#fff',
+  },
+  addButton: {
+    backgroundColor: '#00d1ff',
+    paddingHorizontal: 20,
+    paddingVertical: 15,
+    borderRadius: 8,
+    marginLeft: 10,
+  },
+  addButtonText: {
+    color: '#000',
+    fontWeight: 'bold',
+  },
+  list: {
+    flex: 1,
+    marginHorizontal: 20,
+  },
+  todoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 8,
+    marginBottom: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  checkbox: {
+    width: 24,
+    height: 24,
+    borderWidth: 2,
+    borderColor: '#00d1ff',
+    borderRadius: 12,
+    marginRight: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  checked: {
+    backgroundColor: '#00d1ff',
+  },
+  checkmark: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  todoText: {
+    flex: 1,
+    fontSize: 16,
+    color: '#333',
+  },
+  completedText: {
+    textDecorationLine: 'line-through',
+    color: '#999',
+  },
+  deleteButton: {
+    padding: 5,
+  },
+  deleteText: {
+    color: '#ff4444',
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+});</code></pre>
+                        
+                        <div class="device-sim">
+                            <div class="device-header">Todo App</div>
+                            <div class="device-content">
+                                <div class="ios-status-bar">
+                                    <span>9:41 AM</span>
+                                    <span>📶 100%</span>
+                                </div>
+                                <div style="flex: 1; display: flex; flex-direction: column; padding: 20px; background-color: #f5f5f5;">
+                                    <h1 style="text-align: center; color: #333; margin-bottom: 30px; font-size: 28px;">Todo App</h1>
+                                    
+                                    <div style={{ flexDirection: 'row', marginBottom: 20 }}>
+                                        <input type="text" placeholder="Add a new task..." style={{ flex: 1, borderWidth: 1, borderColor: '#ddd', borderRadius: 8, padding: 15, fontSize: 16, backgroundColor: '#fff', marginRight: 10 }} />
+                                        <button style={{ backgroundColor: '#00d1ff', paddingHorizontal: 20, paddingVertical: 15, borderRadius: 8 }}>Add</button>
+                                    </div>
+                                    
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', padding: 15, borderRadius: 8, marginBottom: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2 }}>
+                                            <div style={{ width: 24, height: 24, borderWidth: 2, borderColor: '#00d1ff', borderRadius: 12, marginRight: 15, justifyContent: 'center', alignItems: 'center', backgroundColor: '#00d1ff' }}>
+                                                <span style={{ color: '#fff', fontSize: 16 }}>✓</span>
+                                            </div>
+                                            <span style={{ flex: 1, fontSize: 16, color: '#333', textDecorationLine: 'line-through', color: '#999' }}>Buy groceries</span>
+                                            <span style={{ color: '#ff4444', fontSize: 20, fontWeight: 'bold', marginLeft: 10 }}>✕</span>
+                                        </div>
+                                        
+                                        <div style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', padding: 15, borderRadius: 8, marginBottom: 10, shadowColor: '#000', shadowOffset: { width: 0, height: 1 }, shadowOpacity: 0.1, shadowRadius: 2, elevation: 2 }}>
+                                            <div style={{ width: 24, height: 24, borderWidth: 2, borderColor: '#00d1ff', borderRadius: 12, marginRight: 15, justifyContent: 'center', alignItems: 'center' }}>
+                                                {/* No checkmark */}
+                                            </div>
+                                            <span style={{ flex: 1, fontSize: 16, color: '#333' }}>Call mom</span>
+                                            <span style={{ color: '#ff4444', fontSize: 20, fontWeight: 'bold', marginLeft: 10 }}>✕</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="device-footer">© 2023 React Native</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Uses</summary>
+                    <div class="use-case">
+                        <ul>
+                            <li><strong>Form inputs:</strong> TextInputs for user data collection</li>
+                            <li><strong>List displays:</strong> FlatList for dynamic content</li>
+                            <li><strong>Navigation:</strong> Touchables for screen transitions</li>
+                            <li><strong>Media:</strong> Images for product catalogs</li>
+                            <li><strong>Layouts:</strong> Views for container organization</li>
+                            <li><strong>User interaction:</strong> State management for responsive UI</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="section-marker" id="25-4"></div>
+                <h2>25.4 Navigation in React Native</h2>
+                <p>Navigation in React Native allows users to move between different screens or views within an application, creating a cohesive user experience.</p>
+
+                <div class="details-container">
+                    <summary>Definition</summary>
+                    <div>
+                        Navigation in React Native refers to the mechanism that enables users to navigate between different screens or views within a mobile application. This is typically implemented using the React Navigation library, which provides various navigator types like Stack, Tab, and Drawer navigators.
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Detail</summary>
+                    <div>
+                        <p>React Native doesn't have built-in navigation. You must use a third-party library:</p>
+                        <ul>
+                            <li><strong>React Navigation:</strong> Most popular, feature-rich</li>
+                            <li><strong>React Native Navigation:</strong> Native performance, complex setup</li>
+                        </ul>
+                        
+                        <p>We'll focus on <strong>React Navigation</strong> as it's the industry standard.</p>
+                        
+                        <p>Three main navigator types:</p>
+                        <ol>
+                            <li><strong>Stack Navigator:</strong> Sequential navigation (like web pages)</li>
+                            <li><strong>Tab Navigator:</strong> Bottom/top tabs for switching between views</li>
+                            <li><strong>Drawer Navigator:</strong> Side menu navigation</li>
+                        </ol>
+                        
+                        <p>Installation:</p>
+                        <pre><code># Install core package
+npm install @react-navigation/native
+
+# Install dependencies for iOS
+cd ios &amp;&amp; pod install &amp;&amp; cd ..
+
+# Install dependencies for Android
+# (automatic with React Native 0.60+)
+
+# Install stack navigator
+npm install @react-navigation/stack
+
+# Install tab navigator
+npm install @react-navigation/bottom-tabs
+
+# Install drawer navigator
+npm install @react-navigation/drawer
+
+# Install icon library (optional)
+npm install react-native-vector-icons</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Stack Navigator</summary>
+                    <div>
+                        <p>Stack Navigator creates a stack of screens where users navigate forward and backward:</p>
+                        
+                        <pre><code>// App.js
+import * as React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+
+import HomeScreen from './screens/HomeScreen';
+import DetailsScreen from './screens/DetailsScreen';
+
+const Stack = createStackNavigator();
+
+export default function App() {
+  return (
+    &lt;NavigationContainer&gt;
+      &lt;Stack.Navigator initialRouteName="Home"&gt;
+        &lt;Stack.Screen 
+          name="Home" 
+          component={HomeScreen} 
+          options={{ title: 'Home Page' }} 
+        /&gt;
+        &lt;Stack.Screen 
+          name="Details" 
+          component={DetailsScreen} 
+          options={{ title: 'Product Details' }} 
+        /&gt;
+      &lt;/Stack.Navigator&gt;
+    &lt;/NavigationContainer&gt;
+  );
+}</code></pre>
+                        
+                        <p>HomeScreen.js:</p>
+                        <pre><code>// screens/HomeScreen.js
+import React from 'react';
+import { View, Text, Button, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+
+export default function HomeScreen() {
+  const navigation = useNavigation();
+  
+  return (
+    &lt;View style={styles.container}&gt;
+      &lt;Text style={styles.title}&gt;Home Screen&lt;/Text&gt;
+      &lt;Button 
+        title="Go to Details" 
+        onPress={() =&gt; navigation.navigate('Details')} 
+        color="#00d1ff"
+      /&gt;
+    &lt;/View&gt;
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+});</code></pre>
+                        
+                        <p>DetailsScreen.js:</p>
+                        <pre><code>// screens/DetailsScreen.js
+import React from 'react';
+import { View, Text, Button, StyleSheet } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+
+export default function DetailsScreen() {
+  const navigation = useNavigation();
+  
+  return (
+    &lt;View style={styles.container}&gt;
+      &lt;Text style={styles.title}&gt;Details Screen&lt;/Text&gt;
+      &lt;Button 
+        title="Go Back" 
+        onPress={() =&gt; navigation.goBack()} 
+        color="#ffb74d"
+      /&gt;
+    &lt;/View&gt;
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+});</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Tab Navigator</summary>
+                    <div>
+                        <p>Tab Navigator creates bottom tabs for switching between primary sections:</p>
+                        
+                        <pre><code>// App.js
+import * as React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+
+import HomeScreen from './screens/HomeScreen';
+import SearchScreen from './screens/SearchScreen';
+import ProfileScreen from './screens/ProfileScreen';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
+const Tab = createBottomTabNavigator();
+
+export default function App() {
+  return (
+    &lt;NavigationContainer&gt;
+      &lt;Tab.Navigator
+        screenOptions={({ route }) =&gt; ({
+          tabBarIcon: ({ focused, color, size }) =&gt; {
+            let iconName;
+            
+            if (route.name === 'Home') {
+              iconName = focused ? 'home' : 'home-outline';
+            } else if (route.name === 'Search') {
+              iconName = focused ? 'search' : 'search-outline';
+            } else if (route.name === 'Profile') {
+              iconName = focused ? 'person' : 'person-outline';
+            }
+            
+            return &lt;Ionicons name={iconName} size={size} color={color} /&gt;;
+          },
+          tabBarActiveTintColor: '#00d1ff',
+          tabBarInactiveTintColor: '#999',
+        })}
+      &gt;
+        &lt;Tab.Screen name="Home" component={HomeScreen} /&gt;
+        &lt;Tab.Screen name="Search" component={SearchScreen} /&gt;
+        &lt;Tab.Screen name="Profile" component={ProfileScreen} /&gt;
+      &lt;/Tab.Navigator&gt;
+    &lt;/NavigationContainer&gt;
+  );
+}</code></pre>
+                        
+                        <p>Each tab screen is a regular React component:</p>
+                        <pre><code>// screens/HomeScreen.js
+import React from 'react';
+import { View, Text, StyleSheet } from 'react-native';
+
+export default function HomeScreen() {
+  return (
+    &lt;View style={styles.container}&gt;
+      &lt;Text style={styles.title}&gt;Home Tab&lt;/Text&gt;
+    &lt;/View&gt;
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+  },
+});</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Drawer Navigator</summary>
+                    <div>
+                        <p>Drawer Navigator creates a side menu that slides in from the edge:</p>
+                        
+                        <pre><code>// App.js
+import * as React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createDrawerNavigator } from '@react-navigation/drawer';
+
+import HomeScreen from './screens/HomeScreen';
+import SettingsScreen from './screens/SettingsScreen';
+import AboutScreen from './screens/AboutScreen';
+
+const Drawer = createDrawerNavigator();
+
+export default function App() {
+  return (
+    &lt;NavigationContainer&gt;
+      &lt;Drawer.Navigator initialRouteName="Home"&gt;
+        &lt;Drawer.Screen name="Home" component={HomeScreen} /&gt;
+        &lt;Drawer.Screen name="Settings" component={SettingsScreen} /&gt;
+        &lt;Drawer.Screen name="About" component={AboutScreen} /&gt;
+      &lt;/Drawer.Navigator&gt;
+    &lt;/NavigationContainer&gt;
+  );
+}</code></pre>
+                        
+                        <p>To open the drawer programmatically:</p>
+                        <pre><code>// In any screen
+import { useNavigation } from '@react-navigation/native';
+
+export default function HomeScreen() {
+  const navigation = useNavigation();
+  
+  return (
+    &lt;View style={styles.container}&gt;
+      &lt;Button 
+        title="Open Drawer" 
+        onPress={() =&gt; navigation.openDrawer()} 
+      /&gt;
+    &lt;/View&gt;
+  );
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Passing Parameters</summary>
+                    <div>
+                        <p>Pass data between screens using navigation parameters:</p>
+                        
+                        <pre><code>// Navigate with parameters
+navigation.navigate('Details', {
+  productId: 123,
+  productName: 'iPhone 15',
+  price: 999,
+});
+
+// Receive parameters in destination screen
+import { useRoute } from '@react-navigation/native';
+
+export default function DetailsScreen() {
+  const route = useRoute();
+  
+  // Access parameters
+  const { productId, productName, price } = route.params;
+  
+  return (
+    &lt;View style={styles.container}&gt;
+      &lt;Text style={styles.title}&gt;{productName}&lt;/Text&gt;
+      &lt;Text style={styles.subtitle}&gt;ID: {productId}&lt;/Text&gt;
+      &lt;Text style={styles.price}&gt;${price}&lt;/Text&gt;
+    &lt;/View&gt;
+  );
+}</code></pre>
+                        
+                        <p>For nested navigation:</p>
+                        <pre><code>// Stack inside Tab
+&lt;Tab.Navigator&gt;
+  &lt;Tab.Screen name="Products"&gt;
+    {() =&gt; (
+      &lt;Stack.Navigator&gt;
+        &lt;Stack.Screen name="List" component={ProductList} /&gt;
+        &lt;Stack.Screen name="Detail" component={ProductDetail} /&gt;
+      &lt;/Stack.Navigator&gt;
+    )}
+  &lt;/Tab.Screen&gt;
+&lt;/Tab.Navigator&gt;</code></pre>
+                        
+                        <p>Pro tip: Always validate parameters with TypeScript or PropTypes:</p>
+                        <pre><code>if (!route.params.productId) {
+  navigation.goBack();
+  return;
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Example</summary>
+                    <div class="example-box">
+                        <p><strong>Complete Example: E-commerce App with Navigation</strong></p>
+                        
+                        <pre><code>// App.js
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { createStackNavigator } from '@react-navigation/stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+
+import HomeScreen from './screens/HomeScreen';
+import ProductScreen from './screens/ProductScreen';
+import CartScreen from './screens/CartScreen';
+import ProfileScreen from './screens/ProfileScreen';
+
+const Stack = createStackNavigator();
+const Tab = createBottomTabNavigator();
+
+function HomeStack() {
+  return (
+    &lt;Stack.Navigator&gt;
+      &lt;Stack.Screen 
+        name="Home" 
+        component={HomeScreen} 
+        options={{ headerShown: false }} 
+      /&gt;
+      &lt;Stack.Screen 
+        name="Product" 
+        component={ProductScreen} 
+        options={{ title: 'Product Details' }} 
+      /&gt;
+    &lt;/Stack.Navigator&gt;
+  );
+}
+
+export default function App() {
+  return (
+    &lt;NavigationContainer&gt;
+      &lt;Tab.Navigator
+        screenOptions={({ route }) =&gt; ({
+          tabBarIcon: ({ focused, color, size }) =&gt; {
+            let iconName;
+            
+            if (route.name === 'Home') {
+              iconName = focused ? 'home' : 'home-outline';
+            } else if (route.name === 'Cart') {
+              iconName = focused ? 'cart' : 'cart-outline';
+            } else if (route.name === 'Profile') {
+              iconName = focused ? 'person' : 'person-outline';
+            }
+            
+            return &lt;Ionicons name={iconName} size={size} color={color} /&gt;;
+          },
+          tabBarActiveTintColor: '#00d1ff',
+          tabBarInactiveTintColor: '#999',
+          tabBarStyle: {
+            backgroundColor: '#fff',
+            borderTopWidth: 0,
+            shadowColor: '#000',
+            shadowOffset: { width: 0, height: -2 },
+            shadowOpacity: 0.1,
+            shadowRadius: 4,
+            elevation: 5,
+          },
+        })}
+      &gt;
+        &lt;Tab.Screen name="Home" component={HomeStack} /&gt;
+        &lt;Tab.Screen name="Cart" component={CartScreen} /&gt;
+        &lt;Tab.Screen name="Profile" component={ProfileScreen} /&gt;
+      &lt;/Tab.Navigator&gt;
+    &lt;/NavigationContainer&gt;
+  );
+}</code></pre>
+                        
+                        <p>ProductScreen.js:</p>
+                        <pre><code>// screens/ProductScreen.js
+import React from 'react';
+import { View, Text, Image, Button, StyleSheet } from 'react-native';
+import { useRoute, useNavigation } from '@react-navigation/native';
+
+export default function ProductScreen() {
+  const route = useRoute();
+  const navigation = useNavigation();
+  const { product } = route.params;
+  
+  return (
+    &lt;View style={styles.container}&gt;
+      &lt;Image 
+        source={{ uri: product.image }} 
+        style={styles.image} 
+      /&gt;
+      
+      &lt;Text style={styles.title}&gt;{product.name}&lt;/Text&gt;
+      &lt;Text style={styles.price}&gt;${product.price}&lt;/Text&gt;
+      &lt;Text style={styles.description}&gt;{product.description}&lt;/Text&gt;
+      
+      &lt;Button 
+        title="Add to Cart" 
+        onPress={() =&gt; {
+          // Navigate to cart with product info
+          navigation.navigate('Cart', { product });
+        }} 
+        color="#00d1ff"
+      /&gt;
+    &lt;/View&gt;
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#f5f5f5',
+  },
+  image: {
+    width: '100%',
+    height: 200,
+    resizeMode: 'cover',
+    borderRadius: 8,
+    marginBottom: 20,
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    color: '#333',
+  },
+  price: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#00d1ff',
+    marginBottom: 15,
+  },
+  description: {
+    fontSize: 16,
+    color: '#666',
+    lineHeight: 22,
+    marginBottom: 30,
+  },
+});</code></pre>
+                        
+                        <div class="device-sim">
+                            <div class="device-header">E-commerce App</div>
+                            <div class="device-content">
+                                <div class="ios-status-bar">
+                                    <span>9:41 AM</span>
+                                    <span>📶 100%</span>
+                                </div>
+                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 20, backgroundColor: '#f5f5f5' }}>
+                                    <img src="https://via.placeholder.com/300x200?text=Product+Image" alt="Product" style={{ width: '100%', height: 200, resizeMode: 'cover', borderRadius: 8, marginBottom: 20 }} />
+                                    
+                                    <h1 style={{ fontSize: 24, fontWeight: 'bold', marginBottom: 10, color: '#333' }}>iPhone 15 Pro</h1>
+                                    <h2 style={{ fontSize: 20, fontWeight: 'bold', marginBottom: 15, color: '#00d1ff' }}>$999</h2>
+                                    <p style={{ fontSize: 16, color: '#666', lineHeight: 22, marginBottom: 30 }}>The ultimate smartphone with titanium frame and A17 chip.</p>
+                                    
+                                    <button style={{ backgroundColor: '#00d1ff', padding: 15, borderRadius: 8, borderWidth: 0, width: '100%' }}>Add to Cart</button>
+                                </div>
+                                
+                                <div style={{ height: 60, flexDirection: 'row', backgroundColor: '#fff', borderTopWidth: 1, borderTopColor: '#eee', padding: 10, justifyContent: 'space-around', alignItems: 'center' }}>
+                                    <button style={{ backgroundColor: 'transparent', borderWidth: 0, padding: 10 }}>
+                                        <ion-icon name="home" style={{ color: '#00d1ff', fontSize: 24 }}></ion-icon>
+                                    </button>
+                                    <button style={{ backgroundColor: 'transparent', borderWidth: 0, padding: 10 }}>
+                                        <ion-icon name="cart" style={{ color: '#999', fontSize: 24 }}></ion-icon>
+                                    </button>
+                                    <button style={{ backgroundColor: 'transparent', borderWidth: 0, padding: 10 }}>
+                                        <ion-icon name="person" style={{ color: '#999', fontSize: 24 }}></ion-icon>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="device-footer">© 2023 E-commerce App</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Uses</summary>
+                    <div class="use-case">
+                        <ul>
+                            <li><strong>Multi-screen apps:</strong> Navigate between home, profile, settings</li>
+                            <li><strong>E-commerce:</strong> Browse products, view details, checkout</li>
+                            <li><strong>Social media:</strong> Switch between feed, messages, notifications</li>
+                            <li><strong>News apps:</strong> Read articles, switch categories</li>
+                            <li><strong>Banking apps:</strong> Account overview, transactions, transfers</li>
+                            <li><strong>Travel apps:</strong> Book flights, view destinations, manage reservations</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="section-marker" id="25-5"></div>
+                <h2>25.5 Platform-specific Code</h2>
+                <p>Platform-specific code allows you to write different implementations for iOS and Android within the same React Native application, ensuring optimal user experience on each platform.</p>
+
+                <div class="details-container">
+                    <summary>Definition</summary>
+                    <div>
+                        Platform-specific code in React Native refers to techniques that allow developers to write conditional code or use platform-specific components and styles based on whether the application is running on iOS or Android, ensuring native-like behavior and appearance on each platform.
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Detail</summary>
+                    <div>
+                        <p>While React Native promotes code reuse, sometimes you need platform-specific behavior:</p>
+                        <ul>
+                            <li>Design guidelines differ (Material Design vs Human Interface)</li>
+                            <li>API availability varies</li>
+                            <li>Performance characteristics differ</li>
+                            <li>User expectations vary by platform</li>
+                        </ul>
+                        
+                        <p>Four main approaches:</p>
+                        <ol>
+                            <li><strong>Platform module:</strong> Detect current platform</li>
+                            <li><strong>Platform extensions:</strong> Separate files for each platform</li>
+                            <li><strong>Conditional rendering:</strong> Render different components</li>
+                            <li><strong>Platform-specific styles:</strong> Different styling rules</li>
+                        </ol>
+                        
+                        <p>Follow Apple's Human Interface Guidelines and Google's Material Design for best results.</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Platform Module</summary>
+                    <div>
+                        <p>Use the built-in Platform module to detect the current platform:</p>
+                        
+                        <pre><code>import React from 'react';
+import { View, Text, Platform, StyleSheet } from 'react-native';
+
+export default function App() {
+  return (
+    &lt;View style={styles.container}&gt;
+      &lt;Text style={styles.text}&gt;
+        Running on {Platform.OS === 'ios' ? 'iOS' : 'Android'}
+      &lt;/Text&gt;
+      
+      &lt;View style={styles.buttonContainer}&gt;
+        {Platform.OS === 'ios' &amp;&amp; (
+          &lt;Text style={styles.iosButton}&gt;iOS Button Style&lt;/Text&gt;
+        )}
+        
+        {Platform.OS === 'android' &amp;&amp; (
+          &lt;Text style={styles.androidButton}&gt;Android Button Style&lt;/Text&gt;
+        )}
+      &lt;/View&gt;
+    &lt;/View&gt;
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  text: {
+    fontSize: 18,
+    marginBottom: 30,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    gap: 20,
+  },
+  iosButton: {
+    backgroundColor: '#00d1ff',
+    color: '#000',
+    padding: 12,
+    borderRadius: 8,
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  androidButton: {
+    backgroundColor: '#ffb74d',
+    color: '#000',
+    padding: 12,
+    borderRadius: 4,
+    fontSize: 16,
+    fontWeight: 'bold',
+    elevation: 2,
+  },
+});</code></pre>
+                        
+                        <p>Other useful Platform properties:</p>
+                        <pre><code>Platform.select({
+  ios: {
+    fontSize: 16,
+    fontFamily: 'Helvetica Neue',
+  },
+  android: {
+    fontSize: 14,
+    fontFamily: 'Roboto',
+  },
+});
+
+// Check OS version
+if (Platform.Version &gt;= 21) {
+  // Android Lollipop+
+  // Use newer APIs
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Platform-Specific Extensions</summary>
+                    <div>
+                        <p>Create separate files for each platform using naming conventions:</p>
+                        
+                        <pre><code>// Component file structure
+components/
+├── Button.js             ← Common base component
+├── Button.ios.js         ← iOS-specific implementation
+├── Button.android.js     ← Android-specific implementation
+└── Card.js               ← Common base component
+├── Card.ios.js           ← iOS-specific implementation
+└── Card.android.js       ← Android-specific implementation</code></pre>
+                        
+                        <p>Button.ios.js:</p>
+                        <pre><code>// Button.ios.js
+import React from 'react';
+import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+
+export default function Button({ children, onPress }) {
+  return (
+    &lt;TouchableOpacity style={styles.iosButton} onPress={onPress}&gt;
+      &lt;Text style={styles.iosText}&gt;{children}&lt;/Text&gt;
+    &lt;/TouchableOpacity&gt;
+  );
+}
+
+const styles = StyleSheet.create({
+  iosButton: {
+    backgroundColor: '#00d1ff',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+    marginVertical: 5,
+  },
+  iosText: {
+    color: '#000',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+});</code></pre>
+                        
+                        <p>Button.android.js:</p>
+                        <pre><code>// Button.android.js
+import React from 'react';
+import { TouchableOpacity, Text, StyleSheet } from 'react-native';
+
+export default function Button({ children, onPress }) {
+  return (
+    &lt;TouchableOpacity style={styles.androidButton} onPress={onPress}&gt;
+      &lt;Text style={styles.androidText}&gt;{children}&lt;/Text&gt;
+    &lt;/TouchableOpacity&gt;
+  );
+}
+
+const styles = StyleSheet.create({
+  androidButton: {
+    backgroundColor: '#ffb74d',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 4,
+    marginVertical: 5,
+    elevation: 2,
+  },
+  androidText: {
+    color: '#000',
+    fontSize: 14,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+  },
+});</code></pre>
+                        
+                        <p>Usage in other components:</p>
+                        <pre><code>// Any component
+import Button from './components/Button'; // Automatically picks correct platform version!
+
+export default function App() {
+  return (
+    &lt;View style={styles.container}&gt;
+      &lt;Button onPress={() =&gt; alert('Pressed!')}&gt;Click Me&lt;/Button&gt;
+    &lt;/View&gt;
+  );
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Conditional Rendering</summary>
+                    <div>
+                        <p>Conditionally render different components based on platform:</p>
+                        
+                        <pre><code>import React from 'react';
+import { View, Text, Platform, StyleSheet } from 'react-native';
+
+export default function App() {
+  return (
+    &lt;View style={styles.container}&gt;
+      &lt;Text style={styles.title}&gt;Welcome to Our App&lt;/Text&gt;
+      
+      {Platform.OS === 'ios' &amp;&amp; (
+        &lt;View style={styles.iosFeature}&gt;
+          &lt;Text&gt;iOS Exclusive Feature&lt;/Text&gt;
+        &lt;/View&gt;
+      )}
+      
+      {Platform.OS === 'android' &amp;&amp; (
+        &lt;View style={styles.androidFeature}&gt;
+          &lt;Text&gt;Android Exclusive Feature&lt;/Text&gt;
+        &lt;/View&gt;
+      )}
+      
+      &lt;View style={styles.sharedContent}&gt;
+        &lt;Text&gt;Shared content for both platforms&lt;/Text&gt;
+      &lt;/View&gt;
+    &lt;/View&gt;
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 30,
+  },
+  iosFeature: {
+    backgroundColor: '#00d1ff',
+    padding: 20,
+    borderRadius: 8,
+    marginBottom: 20,
+  },
+  androidFeature: {
+    backgroundColor: '#ffb74d',
+    padding: 20,
+    borderRadius: 4,
+    marginBottom: 20,
+    elevation: 2,
+  },
+  sharedContent: {
+    backgroundColor: '#f5f5f5',
+    padding: 20,
+    borderRadius: 8,
+  },
+});</code></pre>
+                        
+                        <p>Another example: Different navigation bars</p>
+                        <pre><code>// Header.js
+import React from 'react';
+import { View, Text, Platform, StyleSheet } from 'react-native';
+
+export default function Header() {
+  return (
+    &lt;View style={styles.header}&gt;
+      {Platform.OS === 'ios' &amp;&amp; (
+        &lt;View style={styles.iosHeader}&gt;
+          &lt;Text style={styles.iosTitle}&gt;My App&lt;/Text&gt;
+        &lt;/View&gt;
+      )}
+      
+      {Platform.OS === 'android' &amp;&amp; (
+        &lt;View style={styles.androidHeader}&gt;
+          &lt;Text style={styles.androidTitle}&gt;My App&lt;/Text&gt;
+        &lt;/View&gt;
+      )}
+    &lt;/View&gt;
+  );
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>iOS vs Android Design Guidelines</summary>
+                    <div>
+                        <p>Understand the fundamental design differences:</p>
+                        
+                        <table class="table table-dark table-striped mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Aspect</th>
+                                    <th>iOS</th>
+                                    <th>Android</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Navigation</td>
+                                    <td>Back button in header</td>
+                                    <td>System back button</td>
+                                </tr>
+                                <tr>
+                                    <td>Buttons</td>
+                                    <td>Rounded corners, subtle shadows</td>
+                                    <td>Sharp corners, elevation shadows</td>
+                                </tr>
+                                <tr>
+                                    <td>Fonts</td>
+                                    <td>San Francisco</td>
+                                    <td>Roboto</td>
+                                </tr>
+                                <tr>
+                                    <td>Icons</td>
+                                    <td>Outline style</td>
+                                    <td>Filled style</td>
+                                </tr>
+                                <tr>
+                                    <td>Colors</td>
+                                    <td>Light backgrounds, vibrant accents</td>
+                                    <td>Dark themes, material design palette</td>
+                                </tr>
+                                <tr>
+                                    <td>Animations</td>
+                                    <td>Smooth, subtle transitions</td>
+                                    <td>More pronounced, material waves</td>
+                                </tr>
+                                <tr>
+                                    <td>Alerts</td>
+                                    <td>Modal dialogs</td>
+                                    <td>Bottom sheets</td>
+                                </tr>
+                                <tr>
+                                    <td>Tab Bar</td>
+                                    <td>Top or bottom, with icons</td>
+                                    <td>Bottom only, often with labels</td>
+                                </tr>
+                                <tr>
+                                    <td>Text Input</td>
+                                    <td>Underlined</td>
+                                    <td>Floating labels</td>
+                                </tr>
+                                <tr>
+                                    <td>Keyboard</td>
+                                    <td>Transparent</td>
+                                    <td>Opaque</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <p>Best practices:</p>
+                        <ul>
+                            <li>Use platform-specific components when available</li>
+                            <li>Respect platform conventions over uniformity</li>
+                            <li>Test on both platforms regularly</li>
+                            <li>Don't force iOS design on Android and vice versa</li>
+                            <li>Consider accessibility standards on each platform</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Example</summary>
+                    <div class="example-box">
+                        <p><strong>Complete Example: Cross-platform App with Platform-specific Features</strong></p>
+                        
+                        <pre><code>// App.js
+import React from 'react';
+import { View, Text, Platform, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+export default function App() {
+  return (
+    &lt;SafeAreaView style={styles.container}&gt;
+      &lt;View style={styles.content}&gt;
+        &lt;Text style={styles.title}&gt;Cross-platform App&lt;/Text&gt;
+        
+        {Platform.OS === 'ios' &amp;&amp; (
+          &lt;View style={styles.iosFeature}&gt;
+            &lt;Text style={styles.featureText}&gt;Face ID Authentication&lt;/Text&gt;
+            &lt;Text style={styles.subtext}&gt;Secure login with facial recognition&lt;/Text&gt;
+          &lt;/View&gt;
+        )}
+        
+        {Platform.OS === 'android' &amp;&amp; (
+          &lt;View style={styles.androidFeature}&gt;
+            &lt;Text style={styles.featureText}&gt;Fingerprint Authentication&lt;/Text&gt;
+            &lt;Text style={styles.subtext}&gt;Quick login with fingerprint sensor&lt;/Text&gt;
+          &lt;/View&gt;
+        )}
+        
+        &lt;View style={styles.sharedFeature}&gt;
+          &lt;Text style={styles.featureText}&gt;Push Notifications&lt;/Text&gt;
+          &lt;Text style={styles.subtext}&gt;Stay updated with alerts&lt;/Text&gt;
+        &lt;/View&gt;
+        
+        &lt;View style={styles.buttonContainer}&gt;
+          {Platform.OS === 'ios' &amp;&amp; (
+            &lt;View style={styles.iosButton}&gt;
+              &lt;Text style={styles.iosButtonText}&gt;Login&lt;/Text&gt;
+            &lt;/View&gt;
+          )}
+          
+          {Platform.OS === 'android' &amp;&amp; (
+            &lt;View style={styles.androidButton}&gt;
+              &lt;Text style={styles.androidButtonText}&gt;Login&lt;/Text&gt;
+            &lt;/View&gt;
+          )}
+        &lt;/View&gt;
+      &lt;/View&gt;
+    &lt;/SafeAreaView&gt;
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#f5f5f5',
+  },
+  content: {
+    flex: 1,
+    padding: 20,
+    justifyContent: 'center',
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 40,
+    color: '#333',
+  },
+  iosFeature: {
+    backgroundColor: '#00d1ff',
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  androidFeature: {
+    backgroundColor: '#ffb74d',
+    padding: 20,
+    borderRadius: 8,
+    marginBottom: 20,
+    alignItems: 'center',
+    elevation: 3,
+  },
+  sharedFeature: {
+    backgroundColor: '#f0f0f0',
+    padding: 20,
+    borderRadius: 8,
+    marginBottom: 30,
+    alignItems: 'center',
+  },
+  featureText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: 5,
+  },
+  subtext: {
+    fontSize: 14,
+    color: '#666',
+    textAlign: 'center',
+  },
+  buttonContainer: {
+    alignItems: 'center',
+  },
+  iosButton: {
+    backgroundColor: '#00d1ff',
+    paddingVertical: 15,
+    paddingHorizontal: 40,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  androidButton: {
+    backgroundColor: '#ffb74d',
+    paddingVertical: 15,
+    paddingHorizontal: 40,
+    borderRadius: 4,
+    elevation: 4,
+  },
+  iosButtonText: {
+    color: '#000',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  androidButtonText: {
+    color: '#000',
+    fontSize: 16,
+    fontWeight: 'bold',
+    textTransform: 'uppercase',
+  },
+});</code></pre>
+                        
+                        <div class="device-sim">
+                            <div class="device-header">Cross-platform App</div>
+                            <div class="device-content">
+                                <div class="ios-status-bar">
+                                    <span>9:41 AM</span>
+                                    <span>📶 100%</span>
+                                </div>
+                                <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: 20, backgroundColor: '#f5f5f5' }}>
+                                    <h1 style={{ fontSize: 28, fontWeight: 'bold', textAlign: 'center', marginBottom: 40, color: '#333' }}>Cross-platform App</h1>
+                                    
+                                    <div style={{ backgroundColor: '#00d1ff', padding: 20, borderRadius: 12, marginBottom: 20, alignItems: 'center', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 2 }}>
+                                        <h2 style={{ fontSize: 18, fontWeight: 'bold', color: '#000', marginBottom: 5 }}>Face ID Authentication</h2>
+                                        <p style={{ fontSize: 14, color: '#666', textAlign: 'center' }}>Secure login with facial recognition</p>
+                                    </div>
+                                    
+                                    <div style={{ backgroundColor: '#f0f0f0', padding: 20, borderRadius: 8, marginBottom: 30, alignItems: 'center' }}>
+                                        <h2 style={{ fontSize: 18, fontWeight: 'bold', color: '#000', marginBottom: 5 }}>Push Notifications</h2>
+                                        <p style={{ fontSize: 14, color: '#666', textAlign: 'center' }}>Stay updated with alerts</p>
+                                    </div>
+                                    
+                                    <div style={{ alignItems: 'center' }}>
+                                        <button style={{ backgroundColor: '#00d1ff', paddingVertical: 15, paddingHorizontal: 40, borderRadius: 12, shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.1, shadowRadius: 4, elevation: 2 }}>
+                                            <span style={{ color: '#000', fontSize: 18, fontWeight: 'bold' }}>Login</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="device-footer">© 2023 Cross-platform App</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Uses</summary>
+                    <div class="use-case">
+                        <ul>
+                            <li><strong>Authentication:</strong> Face ID on iOS, fingerprint on Android</li>
+                            <li><strong>Notifications:</strong> Different permission flows</li>
+                            <li><strong>Payment:</strong> Apple Pay vs Google Pay integration</li>
+                            <li><strong>Camera:</strong> Different APIs and permissions</li>
+                            <li><strong>Maps:</strong> Apple Maps vs Google Maps</li>
+                            <li><strong>File system:</strong> Different storage locations</li>
+                            <li><strong>Accessibility:</strong> Platform-specific screen reader support</li>
+                            <li><strong>Performance:</strong> Platform-specific optimizations</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="section-marker" id="25-6"></div>
+                <h2>25.6 Building and Deployment</h2>
+                <p>Building and deployment in React Native involves compiling your JavaScript code into native applications that can be installed on iOS and Android devices and distributed through app stores.</p>
+
+                <div class="details-container">
+                    <summary>Definition</summary>
+                    <div>
+                        Building and deployment in React Native refers to the process of compiling your application code into native iOS (.ipa) and Android (.apk/.aab) packages that can be installed on devices and distributed through the Apple App Store and Google Play Store respectively.
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Detail</summary>
+                    <div>
+                        <p>There are two main workflows:</p>
+                        <ol>
+                            <li><strong>Expo Managed Workflow:</strong> Simplified, cloud-based builds</li>
+                            <li><strong>Bare React Native Workflow:</strong> Full control, local builds</li>
+                        </ol>
+                        
+                        <p>For beginners, we recommend Expo for easier deployment.</p>
+                        
+                        <p>Key stages:</p>
+                        <ol>
+                            <li><strong>Testing:</strong> On emulators and physical devices</li>
+                            <li><strong>Debugging:</strong> Fix issues before release</li>
+                            <li><strong>Building:</strong> Generate native binaries</li>
+                            <li><strong>Signing:</strong> Apply digital signatures</li>
+                            <li><strong>Uploading:</strong> Submit to app stores</li>
+                            <li><strong>Review:</strong> App store approval process</li>
+                            <li><strong>Release:</strong> Make app available to users</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Debugging and Hot Reloading</summary>
+                    <div>
+                        <p>Developers rely on powerful debugging tools:</p>
+                        
+                        <h4>Hot Reloading</h4>
+                        <p>Automatically refreshes UI when code changes:</p>
+                        <pre><code># Start development server
+expo start
+
+# Enable hot reloading
+# Press 'h' in terminal or shake device → Developer Menu → Enable Hot Reloading</code></pre>
+                        
+                        <h4>Remote Debugging</h4>
+                        <p>Debug with Chrome DevTools:</p>
+                        <pre><code># Shake device → Developer Menu → Debug
+# This opens http://localhost:19002 in browser
+# Open Chrome DevTools (Cmd+Option+I on Mac, Ctrl+Shift+I on Windows)</code></pre>
+                        
+                        <h4>React Native Debugger</h4>
+                        <p>Standalone desktop app with Redux integration:</p>
+                        <pre><code># Install
+npm install -g react-native-debugger
+
+# Launch
+react-native-debugger</code></pre>
+                        
+                        <h4>Logcat and Console</h4>
+                        <p>Android logs:</p>
+                        <pre><code>adb logcat *:S ReactNative:V ReactNativeJS:V</code></pre>
+                        
+                        <p>iOS logs:</p>
+                        <pre><code>xcrun simctl spawn booted log stream --level debug</code></pre>
+                        
+                        <p>Pro tips:</p>
+                        <ul>
+                            <li>Use <code>console.log()</code> for simple debugging</li>
+                            <li>Use <code>Reactotron</code> for advanced debugging</li>
+                            <li>Always test on physical devices before release</li>
+                            <li>Use TypeScript for better error detection</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Generating APK and IPA Files</summary>
+                    <div>
+                        <p><strong>Expo Method (Recommended):</strong></p>
+                        
+                        <pre><code># Build for Android
+expo build:android
+
+# Build for iOS
+expo build:ios</code></pre>
+                        
+                        <p>Expo will guide you through:</p>
+                        <ol>
+                            <li>Choosing build type (app bundle or APK)</li>
+                            <li>Configuring credentials</li>
+                            <li>Waiting for cloud build (5-15 minutes)</li>
+                            <li>Downloading the generated file</li>
+                        </ol>
+                        
+                        <p><strong>Bare React Native Method:</strong></p>
+                        
+                        <p><strong>Android APK:</strong></p>
+                        <pre><code># Generate signed APK
+cd android &amp;&amp; ./gradlew assembleRelease
+
+# Find APK at: android/app/build/outputs/apk/release/app-release.apk</code></pre>
+                        
+                        <p><strong>iOS IPA:</strong></p>
+                        <pre><code># Open Xcode project
+open ios/YourApp.xcworkspace
+
+# Select Generic iOS Device
+# Product → Archive
+# Organizer → Distribute App → App Store Connect</code></pre>
+                        
+                        <p>For Android, you need a keystore:</p>
+                        <pre><code># Generate keystore (one time)
+keytool -genkey -v -keystore my-upload-key.keystore -alias my-key-alias -keyalg RSA -keysize 2048 -validity 10000</code></pre>
+                        
+                        <p>Then configure <code>android/app/build.gradle</code>:</p>
+                        <pre><code>android {
+  ...
+  signingConfigs {
+    release {
+      if (project.hasProperty('MYAPP_UPLOAD_STORE_FILE')) {
+        storeFile file(MYAPP_UPLOAD_STORE_FILE)
+        storePassword MYAPP_UPLOAD_STORE_PASSWORD
+        keyAlias MYAPP_UPLOAD_KEY_ALIAS
+        keyPassword MYAPP_UPLOAD_KEY_PASSWORD
+      }
+    }
+  }
+  ...
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Publishing to App Store and Google Play</summary>
+                    <div>
+                        <p><strong>Google Play Store:</strong></p>
+                        <ol>
+                            <li>Create Google Play Developer account ($25 one-time fee)</li>
+                            <li>Prepare app listing (title, description, screenshots)</li>
+                            <li>Generate signed AAB (Android App Bundle) file</li>
+                            <li>Upload to Google Play Console</li>
+                            <li>Set pricing and distribution</li>
+                            <li>Submit for review</li>
+                            <li>Wait for approval (usually 1-7 days)</li>
+                            <li>Release to production</li>
+                        </ol>
+                        
+                        <p><strong>Apple App Store:</strong></p>
+                        <ol>
+                            <li>Create Apple Developer account ($99/year)</li>
+                            <li>Enroll in Apple Developer Program</li>
+                            <li>Register App ID in Apple Developer portal</li>
+                            <li>Create App Store Connect record</li>
+                            <li>Prepare app assets (icons, screenshots, descriptions)</li>
+                            <li>Archive app in Xcode</li>
+                            <li>Upload via Transporter or Xcode</li>
+                            <li>Complete metadata in App Store Connect</li>
+                            <li>Submit for review (typically 1-3 days)</li>
+                            <li>Respond to reviewer feedback if needed</li>
+                            <li>Release to App Store</li>
+                        </ol>
+                        
+                        <p>Required assets for both stores:</p>
+                        <ul>
+                            <li>App icon (1024×1024 PNG)</li>
+                            <li>App screenshots (various sizes)</li>
+                            <li>App description (100-4000 characters)</li>
+                            <li>Keywords (iOS) / Categories (Android)</li>
+                            <li>Privacy policy URL</li>
+                            <li>Support contact information</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Expo vs Bare Workflow</summary>
+                    <div>
+                        <table class="table table-dark table-striped mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Aspect</th>
+                                    <th>Expo Managed</th>
+                                    <th>Bare React Native</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Setup Complexity</td>
+                                    <td>Low</td>
+                                    <td>High</td>
+                                </tr>
+                                <tr>
+                                    <td>Build Process</td>
+                                    <td>Cloud builds</td>
+                                    <td>Local builds</td>
+                                </tr>
+                                <tr>
+                                    <td>Native Modules</td>
+                                    <td>Limited to Expo packages</td>
+                                    <td>Full access to all native libraries</td>
+                                </tr>
+                                <tr>
+                                    <td>Customization</td>
+                                    <td>Restricted</td>
+                                    <td>Complete control</td>
+                                </tr>
+                                <tr>
+                                    <td>Build Time</td>
+                                    <td>5-15 minutes (cloud)</td>
+                                    <td>Immediate (local)</td>
+                                </tr>
+                                <tr>
+                                    <td>App Size</td>
+                                    <td>Larger (includes Expo SDK)</td>
+                                    <td>Smaller</td>
+                                </tr>
+                                <tr>
+                                    <td>Cost</td>
+                                    <td>Free tier available</td>
+                                    <td>Free</td>
+                                </tr>
+                                <tr>
+                                    <td>Best For</td>
+                                    <td>Beginners, MVPs, rapid development</td>
+                                    <td>Complex apps, enterprise, performance-critical</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <p>Transitioning from Expo to Bare:</p>
+                        <pre><code># If you started with Expo and need more control
+npx expo eject
+
+# This converts your project to bare React Native
+# Now you can install any native library</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Example</summary>
+                    <div class="example-box">
+                        <p><strong>Complete Deployment Workflow with Expo</strong></p>
+                        
+                        <ol>
+                            <li><strong>Finalize App:</strong> Test thoroughly on both platforms</li>
+                            
+                            <li><strong>Update App Info:</strong> Edit <code>app.json</code>:</li>
+                            <pre><code>{
+  "expo": {
+    "name": "My Amazing App",
+    "slug": "my-amazing-app",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    }
+  }
+}</code></pre>
+                            
+                            <li><strong>Build App:</strong></li>
+                            <pre><code># Build for Android
+expo build:android -t apk
+
+# Build for iOS
+expo build:ios -t simulator  # For testing
+expo build:ios -t ipa        # For App Store</code></pre>
+                            
+                            <li><strong>Monitor Build Status:</strong></li>
+                            <pre><code># Check status
+expo build:status</code></pre>
+                            
+                            <li><strong>Download Builds:</strong></li>
+                            <pre><code># Download Android APK
+expo fetch:android:keystore
+
+# Download iOS IPA
+expo fetch:ios:certs</code></pre>
+                            
+                            <li><strong>Deploy to Stores:</strong></li>
+                            <ul>
+                                <li>Android: Upload APK/AAB to Google Play Console</li>
+                                <li>iOS: Upload IPA to App Store Connect via Transporter</li>
+                            </ul>
+                            
+                            <li><strong>Release:</strong></li>
+                            <ul>
+                                <li>Fill out all app store metadata</li>
+                                <li>Submit for review</li>
+                                <li>Wait for approval</li>
+                                <li>Release to production</li>
+                            </ul>
+                        </ol>
+                        
+                        <p>Pro tips:</p>
+                        <ul>
+                            <li>Use semantic versioning: MAJOR.MINOR.PATCH</li>
+                            <li>Always test on physical devices before release</li>
+                            <li>Keep backup of signing keys</li>
+                            <li>Use CI/CD for automated builds</li>
+                            <li>Monitor crash reports after launch</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Uses</summary>
+                    <div class="use-case">
+                        <ul>
+                            <li><strong>Startups:</strong> Rapid deployment to market</li>
+                            <li><strong>Enterprises:</strong> Controlled releases with staging environments</li>
+                            <li><strong>Freelancers:</strong> Professional deployment processes</li>
+                            <li><strong>Agencies:</strong> Client app delivery pipelines</li>
+                            <li><strong>Open Source:</strong> Community app distribution</li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS + Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Expand/Collapse All Controls
+            document.getElementById('expandAll').addEventListener('click', function() {
+                document.querySelectorAll('.details-container').forEach(el => {
+                    el.setAttribute('open', '');
+                });
+            });
+
+            document.getElementById('collapseAll').addEventListener('click', function() {
+                document.querySelectorAll('.details-container').forEach(el => {
+                    el.removeAttribute('open');
+                });
+            });
+
+            // TOC Search
+            document.getElementById('searchToc').addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
+                
+                tocItems.forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    if (text.includes(searchTerm)) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+
+            // Smooth Scroll to TOC items
+            document.querySelectorAll('.toc-item, .toc-subitem').forEach(item => {
+                item.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const element = document.getElementById(targetId);
+                    if (element) {
+                        window.scrollTo({
+                            top: element.offsetTop - 100,
+                            behavior: 'smooth'
+                        });
+                        
+                        // Highlight active item
+                        document.querySelectorAll('.toc-item').forEach(i => i.classList.remove('active'));
+                        document.querySelectorAll('.toc-subitem').forEach(i => i.classList.remove('active'));
+                        this.classList.add('active');
+                    }
+                });
+            });
+
+            // Auto highlight current section on scroll
+            const sections = document.querySelectorAll('[id^="25-"]');
+            const navLinks = document.querySelectorAll('.toc-item, .toc-subitem');
+
+            window.addEventListener('scroll', () => {
+                let current = '';
+
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop - 150;
+                    const sectionHeight = section.clientHeight;
+                    if (pageYOffset >= sectionTop && pageYOffset < sectionTop + sectionHeight) {
+                        current = section.id;
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('data-target') === current) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+
+            // Add copy button to code blocks
+            document.querySelectorAll('pre').forEach(pre => {
+                const button = document.createElement('button');
+                button.innerHTML = '<i class="fas fa-copy"></i>';
+                button.className = 'copy-btn';
+                button.style.position = 'absolute';
+                button.style.top = '10px';
+                button.style.right = '10px';
+                button.style.background = 'rgba(0, 209, 255, 0.2)';
+                button.style.color = '#00d1ff';
+                button.style.border = 'none';
+                button.style.padding = '5px 10px';
+                button.style.borderRadius = '4px';
+                button.style.cursor = 'pointer';
+                button.style.fontSize = '0.8rem';
+                button.style.zIndex = '10';
+                
+                button.addEventListener('click', () => {
+                    const text = pre.querySelector('code').textContent;
+                    navigator.clipboard.writeText(text).then(() => {
+                        button.innerHTML = '<i class="fas fa-check"></i>';
+                        setTimeout(() => {
+                            button.innerHTML = '<i class="fas fa-copy"></i>';
+                        }, 1500);
+                    });
+                });
+                
+                pre.style.position = 'relative';
+                pre.appendChild(button);
+            });
+        });
+    </script>
+
+    <!-- Highlight.js for syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/monokai.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+</html>
+```

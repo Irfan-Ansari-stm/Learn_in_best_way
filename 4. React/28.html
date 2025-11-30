@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Learning Notes: Testing in Software Engineering</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00f5ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --border-color: #1a3b5f;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Roboto', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            background-color: #0c213a;
+            border-right: 1px solid var(--border-color);
+            height: 100vh;
+            position: fixed;
+            width: 300px;
+            overflow-y: auto;
+            padding: 1rem;
+            box-shadow: 2px 0 10px rgba(0, 245, 255, 0.1);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 2rem;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.3rem;
+            margin-top: 2rem;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: var(--amber);
+        }
+
+        .toc-item {
+            margin: 0.5rem 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            color: var(--text-light);
+        }
+
+        .toc-item:hover {
+            background-color: rgba(0, 245, 255, 0.1);
+        }
+
+        .toc-item.active {
+            background-color: rgba(0, 245, 255, 0.2);
+            border-left: 3px solid var(--cyan);
+        }
+
+        .toc-subitem {
+            margin-left: 1.5rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 4px;
+            color: #a0cfe8;
+            font-size: 0.9rem;
+        }
+
+        .toc-subitem:hover {
+            background-color: rgba(0, 245, 255, 0.1);
+        }
+
+        .code-block {
+            background-color: #0f1e33;
+            border-left: 4px solid var(--amber);
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .highlight {
+            color: var(--amber);
+            font-weight: bold;
+        }
+
+        .details-summary {
+            cursor: pointer;
+            padding: 0.8rem;
+            background-color: #0f223a;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .details-summary:hover {
+            background-color: #132a4a;
+            box-shadow: 0 2px 6px rgba(0, 245, 255, 0.15);
+        }
+
+        .details-content {
+            padding: 1rem;
+            background-color: #0d1e35;
+            border-radius: 0 0 6px 6px;
+            border: 1px solid var(--border-color);
+            border-top: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-control {
+            background-color: rgba(0, 245, 255, 0.1);
+            color: var(--cyan);
+            border: 1px solid var(--cyan);
+            margin: 0.5rem 0;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .btn-control:hover {
+            background-color: rgba(0, 245, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .author-info {
+            color: var(--amber);
+            font-style: italic;
+            margin: 1rem 0;
+            padding: 0.8rem;
+            background-color: rgba(255, 183, 77, 0.1);
+            border-radius: 6px;
+            border-left: 3px solid var(--amber);
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: #000;
+            font-weight: bold;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+
+        .section-marker {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background-color: var(--amber);
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 245, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 245, 255, 0.5);
+        }
+
+        .search-input {
+            background-color: #0f1e33;
+            border: 1px solid var(--border-color);
+            color: var(--text-light);
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border-radius: 4px;
+            width: 100%;
+        }
+
+        .sub-header {
+            color: var(--amber);
+            font-size: 1.2rem;
+            margin: 1.5rem 0 1rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        .definition-box {
+            border-left: 3px solid var(--cyan);
+            background-color: rgba(0, 245, 255, 0.05);
+            padding: 0.8rem;
+            margin: 1rem 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .example-box {
+            border-left: 3px solid var(--amber);
+            background-color: rgba(255, 183, 77, 0.08);
+            padding: 0.8rem;
+            margin: 1rem 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .uses-box {
+            border-left: 3px solid #8bc34a;
+            background-color: rgba(139, 195, 74, 0.08);
+            padding: 0.8rem;
+            margin: 1rem 0;
+            border-radius: 0 6px 6px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid p-0 m-0">
+    <div class="row g-0">
+        <!-- Left Panel -->
+        <div class="col-auto left-panel">
+            <h3 class="text-center mb-4">Testing in Software Engineering</h3>
+            <p class="author-info">By: Advanced Software Engineering Tutor</p>
+
+            <div class="mb-3">
+                <input type="text" class="form-control search-input" id="searchToc" placeholder="Search topics...">
+            </div>
+
+            <button class="btn btn-control w-100" id="expandAll">Expand All</button>
+            <button class="btn btn-control w-100" id="collapseAll">Collapse All</button>
+
+            <div class="mt-4">
+                <h5 class="text-muted mb-3">Table of Contents</h5>
+                <ul class="list-unstyled">
+                    <li>
+                        <div class="toc-item" data-target="#section-18-5">
+                            <span class="section-marker"></span>18.5 Integration Testing
+                        </div>
+                        <ul class="list-unstyled ms-3" id="section-18-5">
+                            <li><div class="toc-subitem" data-scroll="def-integration">Definition</div></li>
+                            <li><div class="toc-subitem" data-scroll="detail-integration">Detail</div></li>
+                            <li><div class="toc-subitem" data-scroll="syntax-integration">Syntax & Tools</div></li>
+                            <li><div class="toc-subitem" data-scroll="example-integration">Example</div></li>
+                            <li><div class="toc-subitem" data-scroll="uses-integration">Uses</div></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <div class="toc-item" data-target="#section-18-6">
+                            <span class="section-marker"></span>18.6 End-to-End Testing with Cypress/Playwright
+                        </div>
+                        <ul class="list-unstyled ms-3" id="section-18-6">
+                            <li><div class="toc-subitem" data-scroll="def-e2e">Definition</div></li>
+                            <li><div class="toc-subitem" data-scroll="detail-e2e">Detail</div></li>
+                            <li><div class="toc-subitem" data-scroll="syntax-e2e">Syntax & Tools</div></li>
+                            <li><div class="toc-subitem" data-scroll="example-e2e">Example</div></li>
+                            <li><div class="toc-subitem" data-scroll="uses-e2e">Uses</div></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <div class="toc-item" data-target="#section-18-7">
+                            <span class="section-marker"></span>18.7 Test Coverage and Reporting
+                        </div>
+                        <ul class="list-unstyled ms-3" id="section-18-7">
+                            <li><div class="toc-subitem" data-scroll="def-coverage">Definition</div></li>
+                            <li><div class="toc-subitem" data-scroll="detail-coverage">Detail</div></li>
+                            <li><div class="toc-subitem" data-scroll="syntax-coverage">Syntax & Tools</div></li>
+                            <li><div class="toc-subitem" data-scroll="example-coverage">Example</div></li>
+                            <li><div class="toc-subitem" data-scroll="uses-coverage">Uses</div></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <div class="toc-item" data-target="#section-18-8">
+                            <span class="section-marker"></span>18.8 Continuous Integration Testing
+                        </div>
+                        <ul class="list-unstyled ms-3" id="section-18-8">
+                            <li><div class="toc-subitem" data-scroll="def-ci">Definition</div></li>
+                            <li><div class="toc-subitem" data-scroll="detail-ci">Detail</div></li>
+                            <li><div class="toc-subitem" data-scroll="syntax-ci">Syntax & Tools</div></li>
+                            <li><div class="toc-subitem" data-scroll="example-ci">Example</div></li>
+                            <li><div class="toc-subitem" data-scroll="uses-ci">Uses</div></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="col right-panel">
+            <h1>Software Testing Deep Dive</h1>
+            <h4 class="text-muted">Mastering Integration, E2E, Coverage & CI Testing</h4>
+
+            <!-- Section 18.5 -->
+            <section id="section-18-5">
+                <h2>18.5 Integration Testing</h2>
+                
+                <details>
+                    <summary class="details-summary">Definition</summary>
+                    <div class="details-content definition-box">
+                        <p>Integration testing is the process of verifying that multiple software modules or components work together as expected when combined.</p>
+                        <p>It occurs after unit testing and before system testing. The goal is to detect interface defects between integrated units.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Detail</summary>
+                    <div class="details-content">
+                        <p>Integration testing addresses problems that unit tests can't catch:</p>
+                        <ul>
+                            <li>Incorrect data flow between modules</li>
+                            <li>Communication protocol mismatches</li>
+                            <li>Resource contention (files, databases, network)</li>
+                            <li>Timing issues in concurrent systems</li>
+                            <li>Environment-specific configuration errors</li>
+                        </ul>
+                        <p>Two main approaches:</p>
+                        <ul>
+                            <li><strong>Top-down:</strong> Start from high-level modules and use stubs for lower-level ones.</li>
+                            <li><strong>Bottom-up:</strong> Start from lowest-level modules and use drivers for higher-level ones.</li>
+                            <li><strong>Big Bang:</strong> Integrate all components at once (risky but simple).</li>
+                            <li><strong>Sandwich/Hybrid:</strong> Combine top-down and bottom-up approaches.</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Syntax & Tools</summary>
+                    <div class="details-content">
+                        <p>Common tools and patterns:</p>
+                        <pre><code class="language-javascript">// Example using Jest + Supertest for API integration testing
+const request = require('supertest');
+const app = require('../app'); // Your Express app
+
+describe('User API Integration Tests', () => {
+  it('should create a user and return 201', async () => {
+    const response = await request(app)
+      .post('/api/users')
+      .send({ name: 'Alice', email: 'alice@example.com' })
+      .expect(201);
+
+    expect(response.body.name).toBe('Alice');
+    expect(response.body.email).toBe('alice@example.com');
+    expect(response.body.id).toBeDefined();
+  });
+
+  it('should get all users', async () => {
+    const response = await request(app)
+      .get('/api/users')
+      .expect(200);
+
+    expect(Array.isArray(response.body)).toBe(true);
+  });
+});</code></pre>
+                        <p>Popular frameworks:</p>
+                        <ul>
+                            <li>Java: JUnit + TestNG</li>
+                            <li>Python: pytest, unittest</li>
+                            <li>JavaScript: Jest, Mocha, Supertest</li>
+                            <li>Go: testify</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Example</summary>
+                    <div class="details-content example-box">
+                        <p><strong>Scenario:</strong> Online Shopping System</p>
+                        <ol>
+                            <li><strong>Module A:</strong> User Authentication Service</li>
+                            <li><strong>Module B:</strong> Product Catalog Service</li>
+                            <li><strong>Module C:</strong> Payment Processing Service</li>
+                            <li><strong>Module D:</strong> Order Management Service</li>
+                        </ol>
+                        <p><strong>Integration Test Case:</strong></p>
+                        <p>When a user logs in (A), searches for product (B), makes payment (C), then order is created (D) — does the entire flow work?</p>
+                        <p><strong>Test Steps:</strong></p>
+                        <pre><code>1. POST /login → returns auth token
+2. GET /products?category=books → returns product list
+3. POST /payment → with valid card, returns success
+4. POST /orders → with cart items and payment ID
+5. GET /orders/{id} → should return complete order with status "confirmed"
+</code></pre>
+                        <p>If step 4 fails because payment service returned a different format than expected → Integration test catches it!</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Uses</summary>
+                    <div class="details-content uses-box">
+                        <ul>
+                            <li>Validating communication between microservices</li>
+                            <li>Testing database connections and queries across services</li>
+                            <li>Ensuring third-party API integrations work correctly</li>
+                            <li>Verifying message queues (Kafka, RabbitMQ) handle messages properly</li>
+                            <li>Confirming caching layers (Redis) integrate correctly with business logic</li>
+                            <li>Essential for DevOps pipelines — catches regressions early</li>
+                        </ul>
+                        <p><strong>Key Benefit:</strong> Finds bugs that occur only when components interact — often more severe than unit test failures.</p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- Section 18.6 -->
+            <section id="section-18-6">
+                <h2>18.6 End-to-End Testing with Cypress/Playwright</h2>
+                
+                <details>
+                    <summary class="details-summary">Definition</summary>
+                    <div class="details-content definition-box">
+                        <p>End-to-End (E2E) testing simulates real user scenarios by interacting with the application through its UI — just like a human would.</p>
+                        <p>Tests the entire system from start to finish: browser → frontend → API → database → external services → response.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Detail</summary>
+                    <div class="details-content">
+                        <p>E2E tests are the closest to real-world usage:</p>
+                        <ul>
+                            <li>Run in actual browsers (Chrome, Firefox, Safari)</li>
+                            <li>Interact with DOM elements, clicks, forms, navigation</li>
+                            <li>Wait for asynchronous operations (API calls, animations)</li>
+                            <li>Can test responsive design and accessibility</li>
+                        </ul>
+                        <p><strong>Cypress vs Playwright:</strong></p>
+                        <table class="table table-dark mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Feature</th>
+                                    <th>Cypress</th>
+                                    <th>Playwright</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Browser Support</td>
+                                    <td>Chrome, Firefox, Edge</td>
+                                    <td>Chromium, Firefox, WebKit</td>
+                                </tr>
+                                <tr>
+                                    <td>Auto-waiting</td>
+                                    <td>Yes</td>
+                                    <td>Yes</td>
+                                </tr>
+                                <tr>
+                                    <td>Network Mocking</td>
+                                    <td>Native</td>
+                                    <td>Advanced</td>
+                                </tr>
+                                <tr>
+                                    <td>Parallel Testing</td>
+                                    <td>Requires Cloud</td>
+                                    <td>Native support</td>
+                                </tr>
+                                <tr>
+                                    <td>Mobile Testing</td>
+                                    <td>No</td>
+                                    <td>Partial via device emulation</td>
+                                </tr>
+                                <tr>
+                                    <td>Debugging</td>
+                                    <td>Excellent dev tools</td>
+                                    <td>Excellent dev tools</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Syntax & Tools</summary>
+                    <div class="details-content">
+                        <p><strong>Cypress Example:</strong></p>
+                        <pre><code class="language-javascript">// cypress/e2e/login_spec.js
+describe('User Login Flow', () => {
+  it('logs in successfully and sees dashboard', () => {
+    cy.visit('/login')
+    
+    cy.get('[data-cy=email]').type('user@test.com')
+    cy.get('[data-cy=password]').type('password123')
+    cy.get('[data-cy=submit-btn]').click()
+    
+    // Auto-waits for redirect
+    cy.url().should('include', '/dashboard')
+    cy.contains('Welcome, User!').should('be.visible')
+  })
+})</code></pre>
+
+                        <p><strong>Playwright Example:</strong></p>
+                        <pre><code class="language-javascript">// playwright/test/login.test.js
+import { test, expect } from '@playwright/test';
+
+test('should log in successfully', async ({ page }) => {
+  await page.goto('/login');
+  
+  await page.fill('[data-cy=email]', 'user@test.com');
+  await page.fill('[data-cy=password]', 'password123');
+  await page.click('[data-cy=submit-btn]');
+  
+  await expect(page).toHaveURL(/\/dashboard/);
+  await expect(page.locator('text=Welcome, User!')).toBeVisible();
+});</code></pre>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Example</summary>
+                    <div class="details-content example-box">
+                        <p><strong>Scenario:</strong> Amazon-like e-commerce checkout</p>
+                        <ol>
+                            <li>User navigates to homepage</li>
+                            <li>Searches for "wireless headphones"</li>
+                            <li>Selects first result</li>
+                            <li>Adds to cart</li>
+                            <li>Proceeds to checkout</li>
+                            <li>Enters shipping address</li>
+                            <li>Selects payment method</li>
+                            <li>Confirms order</li>
+                            <li>Sees confirmation page with order number</li>
+                        </ol>
+                        <p><strong>Why this matters:</strong> Even if every component works alone, a missing CORS header, misconfigured CDN, or race condition in the cart service might break the entire flow.</p>
+                        <p>This test runs in a real browser — just like your customer would experience it.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Uses</summary>
+                    <div class="details-content uses-box">
+                        <ul>
+                            <li>Validate critical user journeys (signup, purchase, login)</li>
+                            <li>Ensure UX consistency across devices and browsers</li>
+                            <li>Prevent regression in core business workflows</li>
+                            <li>Verify third-party integrations (payment gateways, analytics)</li>
+                            <li>Smoke testing before production deployments</li>
+                            <li>Regression suite for QA teams</li>
+                        </ul>
+                        <p><strong>Best Practice:</strong> Use E2E tests sparingly — they're slow and flaky. Focus on 5-10 critical paths. Complement with unit and integration tests.</p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- Section 18.7 -->
+            <section id="section-18-7">
+                <h2>18.7 Test Coverage and Reporting</h2>
+                
+                <details>
+                    <summary class="details-summary">Definition</summary>
+                    <div class="details-content definition-box">
+                        <p>Test coverage measures how much of your source code is executed during testing.</p>
+                        <p>It's a quantitative metric that helps identify untested parts of your codebase.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Detail</summary>
+                    <div class="details-content">
+                        <p>Types of coverage metrics:</p>
+                        <ul>
+                            <li><strong>Statement Coverage:</strong> Percentage of executable statements run</li>
+                            <li><strong>Branch Coverage:</strong> Percentage of decision branches (if/else, switch) taken</li>
+                            <li><strong>Function Coverage:</strong> Percentage of functions called</li>
+                            <li><strong>Line Coverage:</strong> Similar to statement, but at line level</li>
+                            <li><strong>Condition Coverage:</strong> Each boolean sub-expression evaluated</li>
+                        </ul>
+                        <p><strong>Important Note:</strong> High coverage ≠ good tests. You can have 100% coverage with trivial tests that don't validate behavior!</p>
+                        <p>Goal: Aim for 70-90% branch coverage on critical modules. Don't chase 100% — focus on meaningful tests.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Syntax & Tools</summary>
+                    <div class="details-content">
+                        <p><strong>Jest + Istanbul (JavaScript):</strong></p>
+                        <pre><code class="language-bash"># Add to package.json
+{
+  "scripts": {
+    "test:coverage": "jest --coverage"
+  }
+}</code></pre>
+
+                        <p><strong>Python (pytest + coverage.py):</strong></p>
+                        <pre><code class="language-bash">pip install pytest-cov
+pytest --cov=myapp --cov-report=html</code></pre>
+
+                        <p><strong>Java (JaCoCo):</strong></p>
+                        <pre><code class="language-xml"><plugin>
+  <groupId>org.jacoco</groupId>
+  <artifactId>jacoco-maven-plugin</artifactId>
+  <version>0.8.8</version>
+  <executions>
+    <execution>
+      <goals>
+        <goal>prepare-agent</goal>
+        <goal>report</goal>
+      </goals>
+    </execution>
+  </executions>
+</plugin></code></pre>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Example</summary>
+                    <div class="details-content example-box">
+                        <p><strong>Code Under Test:</strong></p>
+                        <pre><code class="language-javascript">// calculator.js
+function divide(a, b) {
+  if (b === 0) {
+    throw new Error('Cannot divide by zero');
+  }
+  return a / b;
+}</code></pre>
+
+                        <p><strong>Test Suite:</strong></p>
+                        <pre><code class="language-javascript">// calculator.test.js
+test('divides two numbers correctly', () => {
+  expect(divide(10, 2)).toBe(5);
+});
+
+test('throws error when dividing by zero', () => {
+  expect(() => divide(5, 0)).toThrow('Cannot divide by zero');
+});</code></pre>
+
+                        <p><strong>Result:</strong></p>
+                        <ul>
+                            <li>Statement Coverage: 100% (both branches covered)</li>
+                            <li>Branch Coverage: 100% (true and false paths tested)</li>
+                            <li>Function Coverage: 100%</li>
+                        </ul>
+                        <p><strong>Report Output (HTML):</strong></p>
+                        <img src="https://via.placeholder.com/600x200?text=Coverage+Report+Preview:+Green=Covered,+Red=Uncovered" alt="Coverage Report Preview" class="img-fluid my-3" style="border: 1px solid #1a3b5f; border-radius: 6px;">
+                        <p>In practice, reports show which lines are missed — guiding developers to write better tests.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Uses</summary>
+                    <div class="details-content uses-box">
+                        <ul>
+                            <li>Identify untested code paths before release</li>
+                            <li>Improve code quality by reducing blind spots</li>
+                            <li>Meet compliance requirements (medical, finance software)</li>
+                            <li>Track testing progress over time</li>
+                            <li>Set quality gates in CI/CD pipelines (e.g., fail build if coverage drops below 80%)</li>
+                            <li>Help new developers understand what’s important to test</li>
+                        </ul>
+                        <p><strong>Pro Tip:</strong> Combine coverage reports with code reviews. Ask: "Why is this line not tested?" instead of just "What's missing?"</p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- Section 18.8 -->
+            <section id="section-18-8">
+                <h2>18.8 Continuous Integration Testing</h2>
+                
+                <details>
+                    <summary class="details-summary">Definition</summary>
+                    <div class="details-content definition-box">
+                        <p>Continuous Integration (CI) is the practice of automatically building, testing, and validating code changes as soon as they are committed to version control.</p>
+                        <p>The goal: Detect integration issues early, reduce risk, and deliver software faster with confidence.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Detail</summary>
+                    <div class="details-content">
+                        <p>CI is not just running tests — it's a workflow:</p>
+                        <ol>
+                            <li>Developer pushes code to Git (GitHub, GitLab, Bitbucket)</li>
+                            <li>CI server detects change → triggers pipeline</li>
+                            <li>Pipeline runs: lint → unit tests → integration tests → build → E2E tests → coverage → deploy to staging</li>
+                            <li>Results reported immediately to developer</li>
+                            <li>If any step fails → build marked red → team notified</li>
+                        </ol>
+                        <p><strong>Benefits:</strong></p>
+                        <ul>
+                            <li>Fast feedback loop (minutes instead of days)</li>
+                            <li>Reduced merge conflicts</li>
+                            <li>Consistent environment (no "works on my machine")</li>
+                            <li>Automated documentation and artifact generation</li>
+                            <li>Enforces coding standards and security scans</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Syntax & Tools</summary>
+                    <div class="details-content">
+                        <p><strong>GitHub Actions (.github/workflows/ci.yml):</strong></p>
+                        <pre><code class="language-yaml">name: CI Pipeline
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run Lint
+        run: npm run lint
+        
+      - name: Run Unit Tests
+        run: npm test
+        
+      - name: Run Integration Tests
+        run: npm run test:integration
+        
+      - name: Generate Coverage Report
+        run: npm run test:coverage
+        
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage/lcov.info
+          
+      - name: Build App
+        run: npm run build
+        
+      - name: Deploy to Staging
+        uses: appleboy/heroku-deploy@v3.0.12
+        with:
+          heroku_api_key: ${{ secrets.HEROKU_API_KEY }}
+          heroku_app_name: "my-app-staging"
+          heroku_email: "dev@company.com"</code></pre>
+
+                        <p><strong>Other CI Tools:</strong></p>
+                        <ul>
+                            <li>Jenkins (self-hosted, highly customizable)</li>
+                            <li>GitLab CI/CD (built into GitLab)</li>
+                            <li>CircleCI</li>
+                            <li>Azure Pipelines</li>
+                            <li>Travis CI</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Example</summary>
+                    <div class="details-content example-box">
+                        <p><strong>Scenario:</strong> Team working on an e-commerce API</p>
+                        <ol>
+                            <li>Developer Alice adds a new feature: discount codes</li>
+                            <li>She writes unit tests for discount calculation logic</li>
+                            <li>She writes integration tests for API endpoints</li>
+                            <li>She commits and pushes to feature/discount-code branch</li>
+                            <li>GitHub Actions triggers:</li>
+                            <ul>
+                                <li>Lint checks pass ✅</li>
+                                <li>Unit tests: 12/12 passed ✅</li>
+                                <li>Integration tests: 5/5 passed ✅</li>
+                                <li>Coverage: 87% ✅</li>
+                                <li>Docker image built ✅</li>
+                                <li>Deployed to staging ✅</li>
+                            </ul>
+                            <li>Team lead reviews PR — sees green checks → merges</li>
+                            <li>Production deployment happens later via CD pipeline</li>
+                        </ol>
+                        <p><strong>Without CI:</strong> Alice's code sits for 3 days → merged → breaks production → blame game starts.</p>
+                        <p><strong>With CI:</strong> Issue caught in 2 minutes → fix pushed in 10 minutes.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Uses</summary>
+                    <div class="details-content uses-box">
+                        <ul>
+                            <li>Automate testing across multiple environments and OS</li>
+                            <li>Enforce quality gates before merging code</li>
+                            <li>Enable frequent releases (daily or multiple times per day)</li>
+                            <li>Reduce manual QA effort</li>
+                            <li>Provide immediate feedback to developers</li>
+                            <li>Build reproducible artifacts for deployment</li>
+                            <li>Integrate security scanning (SAST/DAST)</li>
+                            <li>Support DevOps culture: "You build it, you test it, you own it"</li>
+                        </ul>
+                        <p><strong>Golden Rule:</strong> If it's not automated, it doesn't happen consistently. CI turns testing from a chore into a safety net.</p>
+                    </div>
+                </details>
+            </section>
+
+            <div class="mt-5 p-4 bg-dark rounded-3 border">
+                <h4 class="text-center text-muted">Key Takeaways</h4>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item bg-transparent border-0"><span class="badge">✅</span> Integration testing finds bugs between components — not within them.</li>
+                    <li class="list-group-item bg-transparent border-0"><span class="badge">✅</span> E2E tests simulate real users — use them for critical paths only.</li>
+                    <li class="list-group-item bg-transparent border-0"><span class="badge">✅</span> Coverage tells you what was tested — not whether it was tested well.</li>
+                    <li class="list-group-item bg-transparent border-0"><span class="badge">✅</span> CI automates everything — from lint to deployment — making software delivery reliable.</li>
+                    <li class="list-group-item bg-transparent border-0"><span class="badge">✅</span> These four layers form a pyramid: Unit (wide base) → Integration → E2E → CI (top automation layer).</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Search functionality
+        const searchInput = document.getElementById('searchToc');
+        const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
+
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            tocItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        // Expand/Collapse controls
+        document.getElementById('expandAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.open = true;
+            });
+        });
+
+        document.getElementById('collapseAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.open = false;
+            });
+        });
+
+        // Smooth scrolling for TOC links
+        document.querySelectorAll('[data-scroll]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('data-scroll');
+                const element = document.querySelector(`[id="${targetId}"]`);
+                if (element) {
+                    window.scrollTo({
+                        top: element.offsetTop - 100,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Highlight active section in TOC
+                    document.querySelectorAll('.toc-subitem').forEach(el => el.classList.remove('active'));
+                    this.classList.add('active');
+                }
+            });
+        });
+
+        // Auto-scroll TOC highlighting based on viewport
+        window.addEventListener('scroll', () => {
+            const sections = ['def-integration', 'detail-integration', 'syntax-integration', 'example-integration', 'uses-integration',
+                             'def-e2e', 'detail-e2e', 'syntax-e2e', 'example-e2e', 'uses-e2e',
+                             'def-coverage', 'detail-coverage', 'syntax-coverage', 'example-coverage', 'uses-coverage',
+                             'def-ci', 'detail-ci', 'syntax-ci', 'example-ci', 'uses-ci'];
+            
+            let currentSection = '';
+            const scrollPosition = window.pageYOffset + 100;
+
+            sections.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    const offsetTop = element.offsetTop;
+                    const offsetHeight = element.offsetHeight;
+                    if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
+                        currentSection = id;
+                    }
+                }
+            });
+
+            document.querySelectorAll('.toc-subitem').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            if (currentSection) {
+                const activeItem = document.querySelector(`[data-scroll="${currentSection}"]`);
+                if (activeItem) {
+                    activeItem.classList.add('active');
+                }
+            }
+        });
+
+        // Syntax highlighting (simple)
+        document.querySelectorAll('pre code').forEach(block => {
+            hljs.highlightBlock(block);
+        });
+    });
+
+    // Simple syntax highlighter fallback if Prism/HLJS not loaded
+    if (typeof hljs === 'undefined') {
+        window.hljs = {
+            highlightBlock: function(block) {
+                // Minimal highlight for code blocks
+                block.classList.add('hljs');
+            }
+        };
+    }
+</script>
+
+<!-- Include Highlight.js for syntax highlighting (optional enhancement) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+
+</body>
+</html>

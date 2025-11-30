@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript Core Concepts: Array Methods, Object Shorthands & Classes</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00d1ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --text-secondary: #b3cde6;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            background-color: rgba(10, 25, 47, 0.9);
+            border-right: 1px solid var(--cyan);
+            position: fixed;
+            height: 100vh;
+            width: 300px;
+            overflow-y: auto;
+            padding: 20px;
+            z-index: 1000;
+            box-shadow: 5px 0 15px rgba(0, 209, 255, 0.1);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        h1, h2, h3, h4 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--amber);
+            padding-bottom: 8px;
+            margin-top: 30px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            border-left: 6px solid var(--amber);
+            padding-left: 15px;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            border-left: 4px solid var(--amber);
+            padding-left: 12px;
+        }
+
+        h3 {
+            font-size: 1.4rem;
+            border-left: 3px solid var(--cyan);
+            padding-left: 10px;
+            margin-top: 25px;
+        }
+
+        .subtitle {
+            color: var(--amber);
+            font-style: italic;
+            margin-bottom: 25px;
+        }
+
+        .author-info {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 25px;
+            padding: 10px;
+            background-color: rgba(0, 209, 255, 0.05);
+            border-radius: 5px;
+            border-left: 3px solid var(--cyan);
+        }
+
+        .toc-item {
+            margin: 8px 0;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-secondary);
+        }
+
+        .toc-item:hover {
+            background-color: rgba(0, 209, 255, 0.1);
+            color: var(--cyan);
+        }
+
+        .toc-item.active {
+            background-color: rgba(0, 209, 255, 0.2);
+            color: var(--cyan);
+            border-left: 3px solid var(--amber);
+        }
+
+        .search-box {
+            width: 100%;
+            margin-bottom: 20px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-color: var(--cyan);
+            color: var(--text-light);
+        }
+
+        .btn-control {
+            background-color: rgba(0, 209, 255, 0.1);
+            border: 1px solid var(--cyan);
+            color: var(--cyan);
+            margin: 10px 0;
+            width: 100%;
+            padding: 8px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+
+        .btn-control:hover {
+            background-color: rgba(0, 209, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        pre code {
+            display: block;
+            padding: 16px;
+            overflow-x: auto;
+            background-color: #0f1e33;
+            border-left: 4px solid var(--amber);
+            border-radius: 5px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--text-light);
+            font-family: 'Courier New', Courier, monospace;
+            margin: 20px 0;
+        }
+
+        .code-keyword {
+            color: var(--amber);
+        }
+        .code-string {
+            color: #a5ff8f;
+        }
+        .code-comment {
+            color: #777;
+        }
+        .code-number {
+            color: #ff9e6d;
+        }
+        .code-operator {
+            color: #ffcc66;
+        }
+        .code-method {
+            color: #00d1ff;
+        }
+
+        details {
+            margin: 20px 0;
+            border: 1px solid rgba(0, 209, 255, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        summary {
+            padding: 15px 20px;
+            background-color: rgba(0, 209, 255, 0.1);
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--cyan);
+            list-style: none;
+            font-size: 1.1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 209, 255, 0.1);
+        }
+
+        summary::before {
+            content: "▶ ";
+            font-size: 0.9rem;
+            transition: transform 0.3s ease;
+        }
+
+        details[open] summary::before {
+            transform: rotate(90deg);
+        }
+
+        details > div {
+            padding: 20px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 183, 77, 0.3);
+            font-weight: 500;
+        }
+
+        .example-box {
+            background-color: rgba(10, 25, 47, 0.5);
+            border-left: 4px solid var(--amber);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: #000;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 8px;
+        }
+
+        .footer-note {
+            color: var(--text-secondary);
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            border-top: 1px solid rgba(0, 209, 255, 0.1);
+            font-size: 0.9rem;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 992px) {
+            .left-panel {
+                width: 250px;
+            }
+            .right-panel {
+                margin-left: 250px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .left-panel {
+                position: relative;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--cyan);
+            }
+            .right-panel {
+                margin-left: 0;
+            }
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+            <!-- Left Panel -->
+            <div class="col-md-3 left-panel">
+                <h1>JavaScript Essentials</h1>
+                <p class="subtitle">Array Methods, Object Shorthands & Classes</p>
+                <div class="author-info">
+                    <i class="bi bi-person-circle"></i> Mastering Modern JavaScript<br>
+                    <small>For Absolute Beginners to Intermediate Learners</small>
+                </div>
+
+                <input type="text" class="form-control search-box" id="searchToc" placeholder="Search topics...">
+                
+                <button class="btn btn-control" id="expandAll">Expand All</button>
+                <button class="btn btn-control" id="collapseAll">Collapse All</button>
+
+                <div class="toc-container mt-4">
+                    <h4 class="text-muted mb-3">Table of Contents</h4>
+                    <div class="toc-item active" data-target="#section-2-8">2.8 Array Methods (map, filter, reduce, forEach)</div>
+                    <div class="toc-item" data-target="#section-2-9">2.9 Object Methods and Shorthand</div>
+                    <div class="toc-item" data-target="#section-2-10">2.10 Classes and Inheritance</div>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="col-md-9 right-panel">
+                <!-- Section 2.8 -->
+                <section id="section-2-8">
+                    <h2>2.8 Array Methods (map, filter, reduce, forEach)</h2>
+                    <p>Functional array methods transform data without mutating the original array — essential for immutable programming patterns.</p>
+
+                    <details>
+                        <summary>Executive Summary</summary>
+                        <div>
+                            <ul>
+                                <li><strong>map()</strong>: Transform each element → returns new array of same size.</li>
+                                <li><strong>filter()</strong>: Select elements that pass a test → returns new array with subset.</li>
+                                <li><strong>reduce()</strong>: Accumulate values into single result (sum, object, etc.).</li>
+                                <li><strong>forEach()</strong>: Execute function for each element → no return value.</li>
+                            </ul>
+                            <p class="highlight">Use map/filter/reduce for transformations. Use forEach only for side effects (logging, DOM updates).</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Forensic Detail: The Big Four - Syntax & Behavior</summary>
+                        <div>
+                            <p>All four methods take a callback function with parameters: <code>(currentValue, index, array)</code></p>
+
+                            <div class="example-box">
+                                <pre><code>// Sample data
+const products = [
+    { id: 1, name: "Laptop", price: 999, category: "Electronics" },
+    { id: 2, name: "Book", price: 25, category: "Education" },
+    { id: 3, name: "Phone", price: 699, category: "Electronics" },
+    { id: 4, name: "Pen", price: 2, category: "Stationery" }
+];</code></pre>
+                            </div>
+
+                            <h4>1. map() - Transformation</h4>
+                            <div class="example-box">
+                                <pre><code>// ✅ Transform: Create new array with formatted prices
+const formattedPrices = products.map(product => ({
+    ...product,
+    price: \$\${product.price.toFixed(2)}
+}));
+
+// Result:
+// [
+//   { id: 1, name: "Laptop", price: "$999.00", category: "Electronics" },
+//   { id: 2, name: "Book", price: "$25.00", category: "Education" },
+//   ...
+// ]
+
+// ✅ Extract just names
+const names = products.map(product => product.name);
+// ["Laptop", "Book", "Phone", "Pen"]</code></pre>
+                            </div>
+
+                            <h4>2. filter() - Selection</h4>
+                            <div class="example-box">
+                                <pre><code>// ✅ Filter: Get only electronics
+const electronics = products.filter(product => product.category === "Electronics");
+
+// Result: 
+// [
+//   { id: 1, name: "Laptop", price: 999, category: "Electronics" },
+//   { id: 3, name: "Phone", price: 699, category: "Electronics" }
+// ]
+
+// ✅ Filter: Price > $50
+const expensive = products.filter(p => p.price > 50);
+
+// ✅ Filter: Multiple conditions
+const cheapElectronics = products.filter(
+    p => p.category === "Electronics" && p.price < 800
+);</code></pre>
+                            </div>
+
+                            <h4>3. reduce() - Accumulation</h4>
+                            <div class="example-box">
+                                <pre><code>// ✅ Reduce: Sum of all prices
+const totalCost = products.reduce((accumulator, current) => {
+    return accumulator + current.price;
+}, 0); // Initial value = 0
+
+// Result: 1725
+
+// ✅ Reduce: Build an object by category
+const groupedByCategory = products.reduce((acc, product) => {
+    if (!acc[product.category]) {
+        acc[product.category] = [];
+    }
+    acc[product.category].push(product);
+    return acc;
+}, {}); // Initial value = empty object
+
+// Result:
+// {
+//   Electronics: [{...}, {...}],
+//   Education: [{...}],
+//   Stationery: [{...}]
+// }
+
+// ✅ Reduce: Find max price
+const maxPrice = products.reduce((max, product) => 
+    product.price > max ? product.price : max, 0
+); // 999</code></pre>
+                            </div>
+
+                            <h4>4. forEach() - Side Effects</h4>
+                            <div class="example-box">
+                                <pre><code>// ✅ forEach: Log each product
+products.forEach(product => {
+    console.log(\`Product: \${product.name} - \$\${product.price}\`);
+});
+
+// ✅ forEach: Update DOM (side effect)
+products.forEach(product => {
+    const div = document.createElement('div');
+    div.textContent = \`\${product.name}: \$\${product.price}\`;
+    document.body.appendChild(div);
+});
+
+// ❌ DON'T use forEach for transformation!
+const doubled = [];
+products.forEach(p => doubled.push(p.price * 2)); // Avoid this!</code></pre>
+                            </div>
+
+                            <p><strong>Key Insight:</strong> <code>map</code>, <code>filter</code>, and <code>reduce</code> are pure functions — they don't change the original array. <code>forEach</code> is for side effects only.</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Origin Story: The Callback Revolution</summary>
+                        <div>
+                            <p>Before functional array methods, we used traditional loops:</p>
+
+                            <div class="example-box">
+                                <pre><code>// ❌ Pre-functional era: verbose and error-prone
+const prices = [];
+for (let i = 0; i < products.length; i++) {
+    if (products[i].category === "Electronics") {
+        prices.push(products[i].price * 1.1); // Add 10% tax
+    }
+}
+
+// This mixes filtering AND mapping in one loop!</code></pre>
+                            </div>
+
+                            <p>The functional approach separates concerns:</p>
+
+                            <div class="example-box">
+                                <pre><code>// ✅ Modern functional approach
+const electronics = products.filter(p => p.category === "Electronics");
+const taxedPrices = electronics.map(p => p.price * 1.1);
+
+// Each step has ONE responsibility!</code></pre>
+                            </div>
+
+                            <p>This makes code more readable, testable, and maintainable. It's the foundation of functional programming in JavaScript.</p>
+
+                            <p><strong>Real Impact:</strong> Libraries like Redux, React Hooks, and modern state management rely on these patterns.</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Deep Dive: Chaining Methods Together</summary>
+                        <div>
+                            <p>These methods can be chained together for complex transformations!</p>
+
+                            <div class="example-box">
+                                <pre><code>// ✅ Chain multiple operations
+const result = products
+    .filter(p => p.category === "Electronics")     // Step 1: Filter
+    .map(p => ({                                   // Step 2: Transform
+        name: p.name.toUpperCase(),
+        price: p.price * 1.08,                      // 8% tax
+        discounted: p.price > 500                  // Add boolean flag
+    }))
+    .sort((a, b) => b.price - a.price)             // Step 3: Sort descending
+    .slice(0, 2);                                  // Step 4: Take top 2
+
+// Result:
+// [
+//   { name: "LAPTOP", price: 1078.92, discounted: true },
+//   { name: "PHONE", price: 754.92, discounted: true }
+// ]</code></pre>
+                            </div>
+
+                            <p><strong>Why chain?</strong> Each method returns a new array, so you can call the next method immediately.</p>
+
+                            <h4>Performance Note:</h4>
+                            <p>Chaining creates intermediate arrays. For large datasets (>10K items), consider using <code>for...of</code> loops for better performance.</p>
+
+                            <h4>Common Mistakes</h4>
+                            <div class="example-box">
+                                <pre><code>// ❌ Mistake 1: Forgetting to return in map
+const doubled = [1, 2, 3].map(n => { n * 2 }); // Returns [undefined, undefined, undefined]
+// Fix: return n * 2 or remove braces: n => n * 2
+
+// ❌ Mistake 2: Using filter incorrectly
+const even = [1, 2, 3, 4].filter(n => n % 2); // Returns [2, 4] — works but confusing!
+// Better: n => n % 2 === 0
+
+// ❌ Mistake 3: Modifying original array in map
+const users = [{ name: "Alice" }, { name: "Bob" }];
+users.map(user => user.name = user.name.toUpperCase()); // BAD! Mutates original!
+
+// ✅ Correct:
+const upperUsers = users.map(user => ({ ...user, name: user.name.toUpperCase() }));</code></pre>
+                            </div>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Practical Examples: Real-World Applications</summary>
+                        <div>
+                            <h4>1. E-commerce Product Filtering</h4>
+                            <div class="example-box">
+                                <pre><code>// Given: Array of products with filters
+const filters = {
+    category: "Electronics",
+    minPrice: 500,
+    sortBy: "price"
+};
+
+const filteredProducts = products
+    .filter(p => 
+        (!filters.category || p.category === filters.category) &&
+        (!filters.minPrice || p.price >= filters.minPrice)
+    )
+    .sort((a, b) => 
+        filters.sortBy === "price" ? a.price - b.price : 
+        filters.sortBy === "name" ? a.name.localeCompare(b.name) : 0
+    );
+
+console.log(filteredProducts);</code></pre>
+                            </div>
+
+                            <h4>2. Data Processing for Analytics</h4>
+                            <div class="example-box">
+                                <pre><code>// Sales data
+const sales = [
+    { month: "Jan", revenue: 12000, expenses: 8000 },
+    { month: "Feb", revenue: 15000, expenses: 9000 },
+    { month: "Mar", revenue: 18000, expenses: 10000 }
+];
+
+// Calculate profit and find best month
+const profitData = sales.map(sale => ({
+    month: sale.month,
+    profit: sale.revenue - sale.expenses
+}));
+
+const bestMonth = profitData.reduce((best, current) => 
+    current.profit > best.profit ? current : best
+);
+
+console.log(\`Best month: \${bestMonth.month} with \$\${bestMonth.profit} profit\`);</code></pre>
+                            </div>
+
+                            <h4>3. Form Validation with Arrays</h4>
+                            <div class="example-box">
+                                <pre><code>// User form data
+const formData = {
+    email: "alice@example.com",
+    password: "abc123",
+    age: 17
+};
+
+// Validation rules
+const rules = [
+    { field: "email", validator: val => /\S+@\S+\.\S+/.test(val), message: "Invalid email" },
+    { field: "password", validator: val => val.length >= 8, message: "Password too short" },
+    { field: "age", validator: val => val >= 18, message: "Must be 18+" }
+];
+
+// Validate all fields
+const errors = rules
+    .map(rule => ({
+        field: rule.field,
+        isValid: rule.validator(formData[rule.field]),
+        message: rule.message
+    }))
+    .filter(rule => !rule.isValid); // Only keep invalid ones
+
+if (errors.length > 0) {
+    console.log("Validation errors:", errors);
+}</code></pre>
+                            </div>
+
+                            <h4>4. Game Score Processing</h4>
+                            <div class="example-box">
+                                <pre><code>// Player scores
+const scores = [
+    { player: "Alice", score: 85, level: 3 },
+    { player: "Bob", score: 92, level: 4 },
+    { player: "Charlie", score: 78, level: 2 },
+    { player: "Diana", score: 95, level: 4 }
+];
+
+// Top 3 players by score, with bonus points for high levels
+const leaderboard = scores
+    .filter(player => player.level >= 3) // Only level 3+
+    .map(player => ({
+        ...player,
+        adjustedScore: player.score + (player.level * 10)
+    }))
+    .sort((a, b) => b.adjustedScore - a.adjustedScore)
+    .slice(0, 3)
+    .map((player, index) => ({
+        rank: index + 1,
+        name: player.player,
+        score: player.adjustedScore
+    }));
+
+console.table(leaderboard);</code></pre>
+                            </div>
+
+                            <p><strong>Pro Tip:</strong> Always write array methods as pure functions — no external state changes. This makes them testable and predictable.</p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- Section 2.9 -->
+                <section id="section-2-9">
+                    <h2>2.9 Object Methods and Shorthand</h2>
+                    <p>Modern JavaScript provides powerful tools to create, manipulate, and inspect objects with minimal syntax.</p>
+
+                    <details>
+                        <summary>Executive Summary</summary>
+                        <div>
+                            <ul>
+                                <li><strong>Object Literal Shorthands</strong>: Simplify property creation from variables.</li>
+                                <li><strong>Object Destructuring</strong>: Extract properties into variables.</li>
+                                <li><strong>Object Methods</strong>: <code>Object.keys()</code>, <code>Object.values()</code>, <code>Object.entries()</code>.</li>
+                                <li><strong>Spread Operator</strong>: Copy/merge objects easily.</li>
+                            </ul>
+                            <p class="highlight">Shorthands and methods make object manipulation concise and readable — essential for React, APIs, and configuration.</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Forensic Detail: Object Literal Shorthands</summary>
+                        <div>
+                            <p>Before ES6, creating objects from variables was verbose:</p>
+
+                            <div class="example-box">
+                                <pre><code>// ❌ Pre-ES6: Repeating variable names
+const name = "Alice";
+const age = 25;
+const city = "NYC";
+
+const person = {
+    name: name,
+    age: age,
+    city: city
+};</code></pre>
+                            </div>
+
+                            <p>With shorthands — clean and elegant:</p>
+
+                            <div class="example-box">
+                                <pre><code>// ✅ ES6 Shorthand: Property names match variable names
+const name = "Alice";
+const age = 25;
+const city = "NYC";
+
+const person = {
+    name,      // Equivalent to name: name
+    age,       // Equivalent to age: age
+    city       // Equivalent to city: city
+};
+
+console.log(person); 
+// { name: "Alice", age: 25, city: "NYC" }</code></pre>
+                            </div>
+
+                            <p>Works with functions too:</p>
+
+                            <div class="example-box">
+                                <pre><code>// ❌ Old way
+const user = {
+    getName: function() {
+        return this.name;
+    },
+    getAge: function() {
+        return this.age;
+    }
+};
+
+// ✅ ES6 Method shorthand
+const user = {
+    name: "Alice",
+    age: 25,
+    getName() {           // No 'function' keyword!
+        return this.name;
+    },
+    getAge() {            // Clean!
+        return this.age;
+    },
+    greet() {             // Even cleaner!
+        return \`Hello, I'm \${this.name}\`;
+    }
+};</code></pre>
+                            </div>
+
+                            <p><strong>Key Insight:</strong> Shorthands work for both properties and methods — reduces boilerplate dramatically.</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Origin Story: The JSON Revolution</summary>
+                        <div>
+                            <p>Before these shorthands, JavaScript object literals were clunky:</p>
+
+                            <div class="example-box">
+                                <pre><code>// ❌ API response handling before ES6
+function createUserResponse(userData) {
+    return {
+        userId: userData.userId,
+        username: userData.username,
+        email: userData.email,
+        createdAt: userData.createdAt,
+        isActive: userData.isActive,
+        isAdmin: userData.isAdmin
+    };
+}</code></pre>
+                            </div>
+
+                            <p>With shorthands — beautiful symmetry:</p>
+
+                            <div class="example-box">
+                                <pre><code>// ✅ Modern API response
+function createUserResponse(userData) {
+    return {
+        userId,
+        username,
+        email,
+        createdAt,
+        isActive,
+        isAdmin
+    };
+}</code></pre>
+                            </div>
+
+                            <p>This pattern became standard in REST APIs and frontend frameworks because it mirrors data structures exactly — reducing bugs and improving readability.</p>
+
+                            <p><strong>Real Impact:</strong> Frameworks like React use this extensively in component props and state management.</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Deep Dive: Object Destructuring Deeply</summary>
+                        <div>
+                            <p>Destructuring extracts properties from objects into variables — opposite of object literal shorthand.</p>
+
+                            <div class="example-box">
+                                <pre><code>// Basic destructuring
+const user = {
+    name: "Alice",
+    age: 25,
+    address: {
+        street: "123 Main St",
+        city: "NYC"
+    }
+};
+
+// ✅ Extract individual properties
+const { name, age } = user;
+console.log(name, age); // "Alice", 25
+
+// ✅ Rename during destructuring
+const { name: userName, age: userAge } = user;
+console.log(userName, userAge); // "Alice", 25
+
+// ✅ Nested destructuring
+const { address: { street, city } } = user;
+console.log(street, city); // "123 Main St", "NYC"
+
+// ✅ With defaults
+const { country = "USA", zip = "00000" } = user.address;
+console.log(country, zip); // "USA", "00000" (defaults since not in object)
+
+// ✅ Combine with rest operator
+const { name, ...rest } = user;
+console.log(name); // "Alice"
+console.log(rest); // { age: 25, address: { ... } }</code></pre>
+                            </div>
+
+                            <h4>Function Parameter Destructuring</h4>
+                            <div class="example-box">
+                                <pre><code>// ✅ Clean function signatures
+function displayUser({ name, age, city = "Unknown" }) {
+    console.log(\`Name: \${name}, Age: \${age}, City: \${city}\`);
+}
+
+displayUser({ name: "Alice", age: 25 }); // "Name: Alice, Age: 25, City: Unknown"
+
+// ✅ Deep nested destructuring in parameters
+function processAddress({ 
+    street, 
+    city, 
+    country = "USA", 
+    coordinates: { lat, lng } 
+}) {
+    conso

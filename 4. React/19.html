@@ -1,0 +1,1192 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Module 4: State Management Solutions - Chapter 13</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a192f;
+      --cyan: #00f5ff;
+      --amber: #ffb347;
+      --text-light: #e6f1ff;
+      --border-light: #1a3b5c;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      font-family: 'Roboto', sans-serif;
+      overflow-x: hidden;
+    }
+
+    .left-panel {
+      position: fixed;
+      width: 300px;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 20px;
+      background-color: rgba(10, 25, 47, 0.9);
+      border-right: 1px solid var(--border-light);
+      z-index: 1000;
+    }
+
+    .right-panel {
+      margin-left: 300px;
+      padding: 30px;
+      height: 100vh;
+      overflow-y: auto;
+      background-color: var(--bg-dark);
+    }
+
+    h1, h2, h3, h4 {
+      color: var(--cyan);
+      font-weight: 600;
+    }
+
+    h1 {
+      border-bottom: 2px solid var(--amber);
+      padding-bottom: 10px;
+      margin-bottom: 25px;
+    }
+
+    h2 {
+      margin-top: 40px;
+      border-left: 4px solid var(--amber);
+      padding-left: 15px;
+    }
+
+    h3 {
+      color: var(--amber);
+      margin-top: 30px;
+    }
+
+    .toc-item {
+      margin: 8px 0;
+      padding: 6px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .toc-item:hover {
+      background-color: rgba(0, 245, 255, 0.1);
+    }
+
+    .toc-item.active {
+      background-color: rgba(0, 245, 255, 0.2);
+      border-left: 3px solid var(--cyan);
+    }
+
+    .search-box {
+      margin-bottom: 20px;
+      background-color: rgba(26, 59, 92, 0.5);
+      border: 1px solid var(--border-light);
+      color: var(--text-light);
+    }
+
+    .btn-control {
+      background-color: rgba(10, 25, 47, 0.7);
+      border: 1px solid var(--border-light);
+      color: var(--cyan);
+      margin-bottom: 15px;
+      font-size: 0.9rem;
+    }
+
+    .btn-control:hover {
+      background-color: rgba(0, 245, 255, 0.2);
+      color: var(--cyan);
+    }
+
+    details {
+      margin: 15px 0;
+      border-left: 1px solid var(--border-light);
+      padding-left: 15px;
+      background-color: rgba(10, 25, 47, 0.4);
+      border-radius: 0 5px 5px 0;
+    }
+
+    summary {
+      list-style: none;
+      cursor: pointer;
+      font-weight: bold;
+      color: var(--amber);
+      padding: 10px 15px;
+      background-color: rgba(0, 245, 255, 0.05);
+      border-radius: 5px;
+      margin-bottom: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    summary::before {
+      content: "▶ ";
+      font-size: 0.8em;
+    }
+
+    details[open] > summary::before {
+      content: "▼ ";
+    }
+
+    pre {
+      background-color: #0d1b2a !important;
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 15px;
+      overflow-x: auto;
+      margin: 15px 0;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    code {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.95rem;
+      color: var(--cyan);
+    }
+
+    .highlight {
+      color: var(--amber);
+      font-weight: bold;
+    }
+
+    .note {
+      background-color: rgba(255, 179, 71, 0.1);
+      border-left: 3px solid var(--amber);
+      padding: 12px 15px;
+      margin: 20px 0;
+      border-radius: 0 5px 5px 0;
+    }
+
+    .syntax {
+      background-color: rgba(0, 245, 255, 0.08);
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-weight: 500;
+      display: inline-block;
+      margin: 0 3px;
+    }
+
+    .author-info {
+      color: var(--amber);
+      font-style: italic;
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+
+    .footer-note {
+      margin-top: 60px;
+      text-align: center;
+      color: var(--amber);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border-light);
+      padding-top: 15px;
+    }
+
+    /* Smooth scrolling */
+    html {
+      scroll-behavior: smooth;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 991px) {
+      .left-panel {
+        width: 100%;
+        position: relative;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border-light);
+      }
+      .right-panel {
+        margin-left: 0;
+      }
+    }
+
+    /* Demo styling for state management examples */
+    .state-demo {
+      background-color: rgba(13, 27, 42, 0.6);
+      border: 1px dashed var(--border-light);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .context-btn {
+      background-color: #00f5ff;
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .context-btn:hover {
+      background-color: #00c0e6;
+      transform: translateY(-2px);
+    }
+
+    .redux-btn {
+      background-color: #764abc;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .redux-btn:hover {
+      background-color: #633daa;
+      transform: translateY(-2px);
+    }
+
+    .zustand-btn {
+      background-color: #4ade80;
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .zustand-btn:hover {
+      background-color: #34d399;
+      transform: translateY(-2px);
+    }
+
+    .comparison-table th, .comparison-table td {
+      border: 1px solid var(--border-light);
+      padding: 10px;
+    }
+
+    .comparison-table th {
+      background-color: rgba(0, 245, 255, 0.1);
+    }
+
+    .comparison-table tr:nth-child(even) {
+      background-color: rgba(26, 59, 92, 0.3);
+    }
+
+    .code-line {
+      display: block;
+      margin: 2px 0;
+    }
+
+    .state-badge {
+      display: inline-block;
+      background-color: var(--amber);
+      color: #000;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      margin-left: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container-fluid p-0">
+  <div class="row g-0">
+
+    <!-- Left Panel -->
+    <div class="col-md-3 left-panel">
+      <h1>Module 4</h1>
+      <h4>State Management Solutions</h4>
+      <p class="author-info">— Mastering React State with Clarity & Depth —</p>
+
+      <input type="text" class="form-control search-box" id="searchTOC" placeholder="Search topics..." />
+
+      <div class="d-grid gap-2">
+        <button class="btn btn-control" id="expandAll">Expand All</button>
+        <button class="btn btn-control" id="collapseAll">Collapse All</button>
+      </div>
+
+      <div class="toc">
+        <h5>Table of Contents</h5>
+        <div class="toc-item" data-target="#section-13-1">13.1 Context API Deep Dive</div>
+        <div class="toc-item" data-target="#section-13-2">13.2 Redux Fundamentals</div>
+        <div class="toc-item" data-target="#section-13-3">13.3 Redux Toolkit (RTK)</div>
+        <div class="toc-item" data-target="#section-13-4">13.4 Zustand</div>
+      </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="col-md-9 right-panel">
+
+      <!-- Section 13.1 -->
+      <section id="section-13-1">
+        <h2>13.1 Context API Deep Dive</h2>
+        
+        <details>
+          <summary>📌 Summary: The Built-in State Sharing Tool</summary>
+          <p>The Context API is React's native solution for sharing state across components without prop drilling. It's perfect for theme, user auth, or locale data that many components need.</p>
+          
+          <h3>🔹 Core Concepts</h3>
+          <ol>
+            <li><strong>Context:</strong> Creates a state container using <code>React.createContext()</code></li>
+            <li><strong>Provider:</strong> Wraps components to make state available downward</li>
+            <li><strong>Consumer:</strong> Components that read the context using <code>useContext()</code></li>
+          </ol>
+
+          <h3>⚡ Basic Syntax Example</h3>
+          <pre><code>
+// 1. Create Context
+import { createContext, useContext, useState } from 'react';
+
+const ThemeContext = createContext();
+
+// 2. Create Provider Component
+function ThemeProvider({ children }) {
+  const [theme, setTheme] = useState('light');
+
+  const toggleTheme = () =&gt; {
+    setTheme(prev =&gt; prev === 'light' ? 'dark' : 'light');
+  };
+
+  return (
+    &lt;ThemeContext.Provider value={{ theme, toggleTheme }}&gt;
+      {children}
+    &lt;/ThemeContext.Provider&gt;
+  );
+}
+
+// 3. Use Context in Child Components
+function Button() {
+  const { theme, toggleTheme } = useContext(ThemeContext);
+
+  return (
+    &lt;button onClick={toggleTheme} style={{
+      backgroundColor: theme === 'light' ? '#fff' : '#0a192f',
+      color: theme === 'light' ? '#000' : '#fff',
+      padding: '10px 20px',
+      border: 'none',
+      borderRadius: '5px',
+      cursor: 'pointer'
+    }}&gt;
+      Toggle {theme} Mode
+    &lt;/button&gt;
+  );
+}
+
+// 4. Wrap App with Provider
+function App() {
+  return (
+    &lt;ThemeProvider&gt;
+      &lt;div&gt;
+        &lt;Header /&gt;
+        &lt;Button /&gt;
+        &lt;Footer /&gt;
+      &lt;/div&gt;
+    &lt;/ThemeProvider&gt;
+  );
+}
+          </code></pre>
+
+          <h3>💡 Why This Matters</h3>
+          <ul>
+            <li>No more prop drilling through 5 layers of components</li>
+            <li>Perfect for global state like theme, language, auth status</li>
+            <li>Built into React — no external dependencies</li>
+            <li>Re-renders only components that use the context</li>
+          </ul>
+
+          <div class="note">
+            <strong>🧠 Mental Model:</strong> Think of Context as a global variable you can access from anywhere in your component tree — but it's still reactive and follows React's rules.
+          </div>
+        </details>
+
+        <details>
+          <summary>🧪 Deep Dive: How Context Works Internally</summary>
+          <p>Under the hood, Context uses React's reconciliation algorithm to broadcast changes.</p>
+
+          <h3>Pseudocode: What Happens When Value Changes</h3>
+          <pre><code>
+// Simplified internal logic:
+function updateContext(context, newValue) {
+  // 1. Mark all consumers of this context as needing update
+  for (let consumer of context.subscribers) {
+    consumer.needsUpdate = true;
+  }
+  
+  // 2. During next render, re-render only those consumers
+  // 3. Each consumer calls useContext() → gets new value
+  // 4. If value is object/array, React does shallow comparison
+  //    → So avoid creating new objects on every render!
+}
+
+// BAD: New object created on every render
+&lt;MyContext.Provider value={{ theme: theme, toggle: toggleTheme }}&gt;
+
+// GOOD: Memoize the value
+&lt;MyContext.Provider value={memoizedValue}&gt;
+  // where memoizedValue = useMemo(() =&gt; ({ theme, toggle }), [theme])
+&lt;/MyContext.Provider&gt;
+          </code></pre>
+
+          <h3>⚠️ Critical Pitfall: Unnecessary Re-renders</h3>
+          <pre><code>
+// ❌ BAD: Creates new object on every render → forces ALL consumers to re-render
+function ThemeProvider({ children }) {
+  const [theme, setTheme] = useState('light');
+  
+  // This creates a NEW object EVERY TIME the component renders!
+  const value = { theme, toggleTheme: () =&gt; setTheme(prev =&gt; prev === 'light' ? 'dark' : 'light') };
+  
+  return (
+    &lt;ThemeContext.Provider value={value}&gt;
+      {children}
+    &lt;/ThemeContext.Provider&gt;
+  );
+}
+
+// ✅ GOOD: Memoize the value object
+function ThemeProvider({ children }) {
+  const [theme, setTheme] = useState('light');
+  
+  const toggleTheme = () =&gt; {
+    setTheme(prev =&gt; prev === 'light' ? 'dark' : 'light');
+  };
+  
+  // Only recreates if theme changes
+  const value = React.useMemo(() =&gt; ({ theme, toggleTheme }), [theme]);
+  
+  return (
+    &lt;ThemeContext.Provider value={value}&gt;
+      {children}
+    &lt;/ThemeContext.Provider&gt;
+  );
+}
+          </code></pre>
+
+          <h3>🔥 Real-World Example: Auth Context</h3>
+          <pre><code>
+import { createContext, useContext, useState, useEffect } from 'react';
+
+const AuthContext = createContext();
+
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Simulate checking local storage on mount
+  useEffect(() =&gt; {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+    setLoading(false);
+  }, []);
+
+  const login = (userData) =&gt; {
+    setUser(userData);
+    localStorage.setItem('user', JSON.stringify(userData));
+  };
+
+  const logout = () =&gt; {
+    setUser(null);
+    localStorage.removeItem('user');
+  };
+
+  const value = {
+    user,
+    loading,
+    login,
+    logout
+  };
+
+  return (
+    &lt;AuthContext.Provider value={value}&gt;
+      {children}
+    &lt;/AuthContext.Provider&gt;
+  );
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
+  return context;
+}
+
+// Usage in any component
+function Profile() {
+  const { user, loading, logout } = useAuth();
+  
+  if (loading) return &lt;div&gt;Loading...&lt;/div&gt;;
+  
+  return user ? (
+    &lt;div&gt;
+      &lt;h3&gt;Welcome, {user.name}&lt;/h3&gt;
+      &lt;button onClick={logout}&gt;Logout&lt;/button&gt;
+    &lt;/div&gt;
+  ) : (
+    &lt;div&gt;Please log in&lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <div class="demo-card">
+            <h4>✅ Live Demo: Context Theme Toggle</h4>
+            <div style="display: flex; gap: 10px;">
+              <button class="context-btn">Toggle Theme</button>
+              <span style="color: var(--cyan);">Current: light mode</span>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 13.2 -->
+      <section id="section-13-2">
+        <h2>13.2 Redux Fundamentals</h2>
+        
+        <details>
+          <summary>📌 Summary: The Predictable State Container</summary>
+          <p>Redux is a state management library that enforces a strict pattern: <span class="highlight">State is immutable, changes are pure functions, and everything flows one way.</span></p>
+
+          <h3>🔹 The Three Principles</h3>
+          <ol>
+            <li><strong>Single Source of Truth:</strong> Global state lives in one store</li>
+            <li><strong>State is Read-Only:</strong> Only way to change state is by dispatching actions</li>
+            <li><strong>Changes are Pure Functions:</strong> Reducers take current state + action → return new state</li>
+          </ol>
+
+          <h3>⚡ Core Architecture Diagram</h3>
+          <pre><code>
+   ┌─────────────┐       ┌───────────┐       ┌────────────┐
+   │   Action    │──────▶│  Reducer  │──────▶│   Store    │
+   └─────────────┘       └───────────┘       └────────────┘
+         ▲                                         │
+         │                                         ▼
+         └───────────────────────────────────┐ ┌─────────────┐
+                                           │ │  Component  │
+                                           │ └─────────────┘
+                                           │     ▲
+                                           └─────┘
+                                     Dispatches Actions
+          </code></pre>
+
+          <h3>⚡ Basic Syntax Example</h3>
+          <pre><code>
+// 1. Define Action Types (constants)
+const INCREMENT = 'INCREMENT';
+const DECREMENT = 'DECREMENT';
+
+// 2. Define Action Creators
+const increment = () =&gt; ({ type: INCREMENT });
+const decrement = () =&gt; ({ type: DECREMENT });
+
+// 3. Define Reducer (pure function)
+const counterReducer = (state = { count: 0 }, action) =&gt; {
+  switch (action.type) {
+    case INCREMENT:
+      return { ...state, count: state.count + 1 };
+    case DECREMENT:
+      return { ...state, count: state.count - 1 };
+    default:
+      return state;
+  }
+};
+
+// 4. Create Store
+import { createStore } from 'redux';
+const store = createStore(counterReducer);
+
+// 5. Subscribe to updates
+store.subscribe(() =&gt; {
+  console.log('New state:', store.getState());
+});
+
+// 6. Dispatch Actions
+store.dispatch(increment()); // { count: 1 }
+store.dispatch(increment()); // { count: 2 }
+store.dispatch(decrement()); // { count: 1 }
+          </code></pre>
+
+          <h3>💡 Why Redux Was Revolutionary</h3>
+          <ul>
+            <li><strong>Predictability:</strong> Every change is traceable</li>
+            <li><strong>Debugging:</strong> Time-travel debugging possible</li>
+            <li><strong>Centralization:</strong> All state in one place</li>
+            <li><strong>Testing:</strong> Reducers are pure functions — easy to test</li>
+          </ul>
+
+          <div class="note">
+            <strong>🧠 Mental Model:</strong> Redux is like a bank account. You can't directly change your balance — you must submit a transaction (action), which is processed by a rulebook (reducer), resulting in a new statement (state).
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Deep Dive: Immutability and Pure Functions</summary>
+          <p>Redux relies on two critical JavaScript concepts:</p>
+
+          <h3>❌ Bad: Mutating State</h3>
+          <pre><code>
+// ❌ DON'T DO THIS
+const counterReducer = (state = { count: 0 }, action) =&gt; {
+  if (action.type === 'INCREMENT') {
+    state.count++; // ← MUTATES ORIGINAL STATE!
+    return state;
+  }
+  return state;
+};
+          </code></pre>
+
+          <h3>✅ Good: Immutable Updates</h3>
+          <pre><code>
+// ✅ DO THIS INSTEAD
+const counterReducer = (state = { count: 0 }, action) =&gt; {
+  if (action.type === 'INCREMENT') {
+    return { 
+      ...state,           // Spread existing state
+      count: state.count + 1  // Override specific property
+    };
+  }
+  return state;
+};
+          </code></pre>
+
+          <h3>🔥 Complex State Update Example</h3>
+          <pre><code>
+// State shape
+{
+  users: [
+    { id: 1, name: 'Alice', posts: [{ id: 101, title: 'Post 1' }] },
+    { id: 2, name: 'Bob', posts: [{ id: 102, title: 'Post 2' }] }
+  ]
+}
+
+// Adding a post to Bob
+const addPostToUser = (state, action) =&gt; {
+  return {
+    ...state,
+    users: state.users.map(user =&gt; {
+      if (user.id === action.userId) {
+        return {
+          ...user,
+          posts: [...user.posts, action.post]
+        };
+      }
+      return user;
+    })
+  };
+};
+
+// Action
+dispatch({
+  type: 'ADD_POST',
+  userId: 2,
+  post: { id: 103, title: 'New Post' }
+});
+          </code></pre>
+
+          <h3>🔍 Why Immutability Matters</h3>
+          <table class="table table-dark table-sm mt-3">
+            <thead>
+              <tr><th>Aspect</th><th>Mutated State</th><th>Immutable State</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Performance</td><td>Hard to optimize</td><td>Easy with React.memo</td></tr>
+              <tr><td>Debugging</td><td>Impossible to track changes</td><td>Time-travel debugging works</td></tr>
+              <tr><td>Reactivity</td><td>React won't detect change</td><td>React detects new reference</td></tr>
+              <tr><td>Collaboration</td><td>Unpredictable side effects</td><td>Clear, predictable flow</td></tr>
+            </tbody>
+          </table>
+
+          <div class="demo-card">
+            <h4>✅ Live Demo: Redux Counter</h4>
+            <div style="display: flex; gap: 10px;">
+              <button class="redux-btn">Increment</button>
+              <span style="color: var(--cyan);">Count: 0</span>
+              <button class="redux-btn">Decrement</button>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 13.3 -->
+      <section id="section-13-3">
+        <h2>13.3 Redux Toolkit (RTK)</h2>
+        
+        <details>
+          <summary>📌 Summary: Redux Made Simple</summary>
+          <p>Redux Toolkit is the official, opinionated toolset for efficient Redux development. It eliminates boilerplate and provides best practices out of the box.</p>
+
+          <h3>🔹 Key Features</h3>
+          <ul>
+            <li><strong>createSlice:</strong> Combines reducer + action creators</li>
+            <li><strong>configureStore:</strong> Pre-configured store with middleware</li>
+            <li><strong>createAsyncThunk:</strong> Handles async logic</li>
+            <li><strong>createEntityAdapter:</strong> Manages normalized state</li>
+          </ul>
+
+          <h3>⚡ Modern RTK Syntax</h3>
+          <pre><code>
+// 1. Install: npm install @reduxjs/toolkit react-redux
+
+// 2. Create Slice (combines reducer and actions)
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+
+const counterSlice = createSlice({
+  name: 'counter',
+  initialState: { count: 0 },
+  reducers: {
+    increment: (state) =&gt; {
+      state.count += 1;
+    },
+    decrement: (state) =&gt; {
+      state.count -= 1;
+    },
+    reset: (state) =&gt; {
+      state.count = 0;
+    }
+  },
+  extraReducers: (builder) =&gt; {
+    builder.addCase(fetchUser.fulfilled, (state, action) =&gt; {
+      state.user = action.payload;
+    });
+  }
+});
+
+export const { increment, decrement, reset } = counterSlice.actions;
+export default counterSlice.reducer;
+
+// 3. Configure Store
+import { configureStore } from '@reduxjs/toolkit';
+import counterReducer from './counterSlice';
+
+const store = configureStore({
+  reducer: {
+    counter: counterReducer
+  }
+});
+
+// 4. Provider
+import { Provider } from 'react-redux';
+import { store } from './store';
+
+function App() {
+  return (
+    &lt;Provider store={store}&gt;
+      &lt;AppContent /&gt;
+    &lt;/Provider&gt;
+  );
+}
+
+// 5. Use in Component
+import { useSelector, useDispatch } from 'react-redux';
+
+function Counter() {
+  const count = useSelector(state =&gt; state.counter.count);
+  const dispatch = useDispatch();
+
+  return (
+    &lt;div&gt;
+      &lt;p&gt;Count: {count}&lt;/p&gt;
+      &lt;button onClick={() =&gt; dispatch(increment())}&gt;Increment&lt;/button&gt;
+      &lt;button onClick={() =&gt; dispatch(decrement())}&gt;Decrement&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>💡 Why RTK Is Revolutionary</h3>
+          <table class="table table-dark table-sm mt-3">
+            <thead>
+              <tr><th>Traditional Redux</th><th>Redux Toolkit</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>100+ lines of boilerplate</td><td>20 lines of clean code</td></tr>
+              <tr><td>Manual immutability</td><td>Immutability handled automatically</td></tr>
+              <tr><td>Separate files for actions, reducers, types</td><td>All in one slice file</td></tr>
+              <tr><td>Manual middleware setup</td><td>Pre-configured with thunk</td></tr>
+              <tr><td>Complex setup</td><td>One line: <code>configureStore()</code></td></tr>
+            </tbody>
+          </table>
+
+          <h3>🔥 Async Operations with createAsyncThunk</h3>
+          <pre><code>
+// Fetch user data from API
+export const fetchUser = createAsyncThunk(
+  'users/fetchById',
+  async (userId, thunkAPI) =&gt; {
+    const response = await fetch(`/api/users/${userId}`);
+    if (!response.ok) {
+      return thunkAPI.rejectWithValue('Failed to fetch user');
+    }
+    return response.json();
+  }
+);
+
+// In slice
+const userSlice = createSlice({
+  name: 'user',
+  initialState: { data: null, loading: false, error: null },
+  reducers: {},
+  extraReducers: (builder) =&gt; {
+    builder
+      .addCase(fetchUser.pending, (state) =&gt; {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchUser.fulfilled, (state, action) =&gt; {
+        state.loading = false;
+        state.data = action.payload;
+      })
+      .addCase(fetchUser.rejected, (state, action) =&gt; {
+        state.loading = false;
+        state.error = action.payload;
+      });
+  }
+});
+          </code></pre>
+
+          <div class="note">
+            <strong>🌟 Pro Tip:</strong> RTK is now the <strong>official recommended way</strong> to use Redux. Never write vanilla Redux in new projects.
+          </div>
+        </details>
+
+        <details>
+          <summary>⚙️ Deep Dive: How RTK Enables Mutable Logic</summary>
+          <p>RTK uses <code>immer</code> under the hood — allowing you to write "mutable" code that becomes immutable.</p>
+
+          <h3>Behind the Scenes</h3>
+          <pre><code>
+// Your code (looks mutable)
+reducers: {
+  increment: (state) =&gt; {
+    state.count += 1; // ← Looks like mutation!
+  }
+}
+
+// What Immer actually does:
+// 1. Creates a proxy of the state
+// 2. Tracks all mutations during reducer execution
+// 3. Produces a completely new immutable state object
+// 4. Returns it to Redux
+// Result: You get clean code + full immutability benefits!
+          </code></pre>
+
+          <h3>📊 RTK vs Vanilla Redux Comparison</h3>
+          <pre><code>
+// 🚫 VANILLA REDUX — 5 files, 120 lines
+// actionTypes.js
+// actions.js
+// reducer.js
+// store.js
+// component.js
+
+// ✅ RTK — 1 file, 25 lines
+// counterSlice.js
+import { createSlice } from '@reduxjs/toolkit';
+
+export const counterSlice = createSlice({
+  name: 'counter',
+  initialState: { count: 0 },
+  reducers: {
+    increment: state =&gt; state.count++,
+    decrement: state =&gt; state.count--,
+  }
+});
+
+export const { increment, decrement } = counterSlice.actions;
+export default counterSlice.reducer;
+          </code></pre>
+
+          <div class="demo-card">
+            <h4>✅ Live Demo: RTK Counter</h4>
+            <div style="display: flex; gap: 10px;">
+              <button class="redux-btn">Increment (RTK)</button>
+              <span style="color: var(--cyan);">Count: 0</span>
+              <button class="redux-btn">Decrement (RTK)</button>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 13.4 -->
+      <section id="section-13-4">
+        <h2>13.4 Zustand</h2>
+        
+        <details>
+          <summary>📌 Summary: The Minimalist State Manager</summary>
+          <p>Zustand is a tiny (1KB), fast, and intuitive state management library that feels like hooks but scales to complex apps.</p>
+
+          <h3>🔹 Core Philosophy</h3>
+          <ul>
+            <li>No providers needed</li>
+            <li>No dispatches or actions</li>
+            <li>Just create a store and use it</li>
+            <li>Zero boilerplate</li>
+          </ul>
+
+          <h3>⚡ Basic Syntax</h3>
+          <pre><code>
+// 1. Install: npm install zustand
+
+// 2. Create a store (just a hook!)
+import { create } from 'zustand';
+
+const useCounterStore = create((set, get) =&gt; ({
+  count: 0,
+  increment: () =&gt; set((state) =&gt; ({ count: state.count + 1 })),
+  decrement: () =&gt; set((state) =&gt; ({ count: state.count - 1 })),
+  reset: () =&gt; set({ count: 0 }),
+  double: () =&gt; set((state) =&gt; ({ count: state.count * 2 }))
+}));
+
+// 3. Use in component
+import { useCounterStore } from './store';
+
+function Counter() {
+  const { count, increment, decrement, reset, double } = useCounterStore();
+
+  return (
+    &lt;div&gt;
+      &lt;p&gt;Count: {count}&lt;/p&gt;
+      &lt;button onClick={increment}&gt;Increment&lt;/button&gt;
+      &lt;button onClick={decrement}&gt;Decrement&lt;/button&gt;
+      &lt;button onClick={reset}&gt;Reset&lt;/button&gt;
+      &lt;button onClick={double}&gt;Double&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>💡 Why Zustand Is Brilliant</h3>
+          <ul>
+            <li><strong>Minimal:</strong> 1KB bundle size</li>
+            <li><strong>Simple:</strong> No actions, reducers, or dispatches</li>
+            <li><strong>Flexible:</strong> Works with any architecture</li>
+            <li><strong>Fast:</strong> No unnecessary re-renders</li>
+            <li><strong>Devtools:</strong> Built-in time-travel debugging</li>
+          </ul>
+
+          <h3>🔥 Advanced: Async Operations & Middleware</h3>
+          <pre><code>
+import { create } from 'zustand';
+
+// Async operations
+const useUserStore = create((set, get) =&gt; ({
+  user: null,
+  loading: false,
+  error: null,
+
+  fetchUser: async (id) =&gt; {
+    set({ loading: true, error: null });
+    try {
+      const response = await fetch(`/api/users/${id}`);
+      const data = await response.json();
+      set({ user: data, loading: false });
+    } catch (error) {
+      set({ error: error.message, loading: false });
+    }
+  },
+
+  logout: () =&gt; set({ user: null })
+}));
+
+// Middleware: Persist to localStorage
+import { persist } from 'zustand/middleware';
+
+const usePersistedStore = create(persist(
+  (set) =&gt; ({
+    theme: 'light',
+    toggleTheme: () =&gt; set((state) =&gt; ({ 
+      theme: state.theme === 'light' ? 'dark' : 'light' 
+    })),
+  }),
+  {
+    name: 'app-storage', // key in localStorage
+    partialize: (state) =&gt; ({ theme: state.theme }) // only persist theme
+  }
+));
+          </code></pre>
+
+          <h3>🎯 Zustand vs Redux Toolkit Comparison</h3>
+          <table class="table table-dark table-sm mt-3">
+            <thead>
+              <tr><th>Feature</th><th>Zustand</th><th>Redux Toolkit</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Bundle Size</td><td>~1KB</td><td>~10KB</td></tr>
+              <tr><td>Learning Curve</td><td>Very Easy</td><td>Medium</td></tr>
+              <tr><td>Boilerplate</td><td>None</td><td>Minimal (but exists)</td></tr>
+              <tr><td>DevTools</td><td>Yes (plugin)</td><td>Yes (built-in)</td></tr>
+              <tr><td>Async Handling</td><td>Plain async/await</td><td>createAsyncThunk</td></tr>
+              <tr><td>Immutability</td><td>Manual (you control)</td><td>Automatic (Immer)</td></tr>
+              <tr><td>Best For</td><td>Small to medium apps</td><td>Large, complex apps</td></tr>
+            </tbody>
+          </table>
+
+          <div class="note">
+            <strong>🧠 Mental Model:</strong> Zustand is like having a global variable, but with React hooks and automatic reactivity. No magic — just simple state that updates when you change it.
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Deep Dive: Custom Hooks with Zustand</summary>
+          <p>You can extract logic into reusable hooks while keeping the store decoupled.</p>
+
+          <h3>⚡ Creating Reusable Hooks</h3>
+          <pre><code>
+// store/userStore.js
+import { create } from 'zustand';
+
+export const useUserStore = create((set) =&gt; ({
+  user: null,
+  login: (userData) =&gt; set({ user: userData }),
+  logout: () =&gt; set({ user: null }),
+}));
+
+// hooks/useAuth.js
+import { useUserStore } from '../store/userStore';
+
+export function useAuth() {
+  const { user, login, logout } = useUserStore();
+  
+  const isAuthenticated = !!user;
+  
+  return {
+    user,
+    isAuthenticated,
+    login,
+    logout
+  };
+}
+
+// Component usage
+import { useAuth } from './hooks/useAuth';
+
+function Navbar() {
+  const { isAuthenticated, user, logout } = useAuth();
+  
+  return (
+    &lt;nav&gt;
+      {isAuthenticated ? (
+        &lt;div&gt;
+          Welcome, {user.name}!
+          &lt;button onClick={logout}&gt;Logout&lt;/button&gt;
+        &lt;/div&gt;
+      ) : (
+        &lt;button&gt;Login&lt;/button&gt;
+      )}
+    &lt;/nav&gt;
+  );
+}
+          </code></pre>
+
+          <h3>🔥 Performance Optimization</h3>
+          <pre><code>
+// By default, any state change re-renders ALL components using the store
+// To optimize, use selectors:
+
+const useCounter = create((set) =&gt; ({
+  count: 0,
+  double: 0,
+  increment: () =&gt; set((state) =&gt; ({
+    count: state.count + 1,
+    double: (state.count + 1) * 2
+  }))
+}));
+
+// Only re-renders when count changes
+const useCount = create((set) =&gt; ({
+  count: 0,
+  increment: () =&gt; set((state) =&gt; ({ count: state.count + 1 }))
+}));
+
+// Use selector to extract just what you need
+function Counter() {
+  const count = useCounter((state) =&gt; state.count); // Only re-renders when count changes
+  const double = useCounter((state) =&gt; state.double); // Only re-renders when double changes
+  
+  return (
+    &lt;div&gt;
+      Count: {count}, Double: {double}
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <div class="demo-card">
+            <h4>✅ Live Demo: Zustand Counter</h4>
+            <div style="display: flex; gap: 10px;">
+              <button class="zustand-btn">Increment (Zustand)</button>
+              <span style="color: var(--cyan);">Count: 0</span>
+              <button class="zustand-btn">Decrement (Zustand)</button>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <div class="footer-note">
+        📚 Next: 13.5 Jotai, 13.6 State Management Comparison, 13.7 When to Use Each Solution
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript Utilities -->
+<script>
+  // Expand/Collapse All
+  document.getElementById('expandAll').addEventListener('click', () => {
+    document.querySelectorAll('details').forEach(detail => detail.open = true);
+  });
+
+  document.getElementById('collapseAll').addEventListener('click', () => {
+    document.querySelectorAll('details').forEach(detail => detail.open = false);
+  });
+
+  // Smooth Scroll to TOC Item
+  document.querySelectorAll('.toc-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const targetId = item.getAttribute('data-target');
+      document.querySelector(targetId).scrollIntoView({ behavior: 'smooth' });
+      
+      // Highlight active item
+      document.querySelectorAll('.toc-item').forEach(el => el.classList.remove('active'));
+      item.classList.add('active');
+    });
+  });
+
+  // Search TOC
+  document.getElementById('searchTOC').addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase();
+    document.querySelectorAll('.toc-item').forEach(item => {
+      const text = item.textContent.toLowerCase();
+      item.style.display = text.includes(query) ? 'block' : 'none';
+    });
+  });
+
+  // Optional: Add highlight.js if needed (uncomment if CDN available)
+  /*
+  const script = document.createElement('script');
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js';
+  script.onload = () => {
+    document.querySelectorAll('pre code').forEach(block => hljs.highlightBlock(block));
+  };
+  document.head.appendChild(script);
+  */
+</script>
+
+<!-- Bootstrap JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
+```

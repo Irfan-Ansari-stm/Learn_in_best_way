@@ -1,0 +1,1843 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Module 4: React Router - Chapter 14</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a192f;
+      --cyan: #00f5ff;
+      --amber: #ffb347;
+      --text-light: #e6f1ff;
+      --border-light: #1a3b5c;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      font-family: 'Roboto', sans-serif;
+      overflow-x: hidden;
+    }
+
+    .left-panel {
+      position: fixed;
+      width: 300px;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 20px;
+      background-color: rgba(10, 25, 47, 0.9);
+      border-right: 1px solid var(--border-light);
+      z-index: 1000;
+    }
+
+    .right-panel {
+      margin-left: 300px;
+      padding: 30px;
+      height: 100vh;
+      overflow-y: auto;
+      background-color: var(--bg-dark);
+    }
+
+    h1, h2, h3, h4 {
+      color: var(--cyan);
+      font-weight: 600;
+    }
+
+    h1 {
+      border-bottom: 2px solid var(--amber);
+      padding-bottom: 10px;
+      margin-bottom: 25px;
+    }
+
+    h2 {
+      margin-top: 40px;
+      border-left: 4px solid var(--amber);
+      padding-left: 15px;
+    }
+
+    h3 {
+      color: var(--amber);
+      margin-top: 30px;
+    }
+
+    .toc-item {
+      margin: 8px 0;
+      padding: 6px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .toc-item:hover {
+      background-color: rgba(0, 245, 255, 0.1);
+    }
+
+    .toc-item.active {
+      background-color: rgba(0, 245, 255, 0.2);
+      border-left: 3px solid var(--cyan);
+    }
+
+    .search-box {
+      margin-bottom: 20px;
+      background-color: rgba(26, 59, 92, 0.5);
+      border: 1px solid var(--border-light);
+      color: var(--text-light);
+    }
+
+    .btn-control {
+      background-color: rgba(10, 25, 47, 0.7);
+      border: 1px solid var(--border-light);
+      color: var(--cyan);
+      margin-bottom: 15px;
+      font-size: 0.9rem;
+    }
+
+    .btn-control:hover {
+      background-color: rgba(0, 245, 255, 0.2);
+      color: var(--cyan);
+    }
+
+    details {
+      margin: 15px 0;
+      border-left: 1px solid var(--border-light);
+      padding-left: 15px;
+      background-color: rgba(10, 25, 47, 0.4);
+      border-radius: 0 5px 5px 0;
+    }
+
+    summary {
+      list-style: none;
+      cursor: pointer;
+      font-weight: bold;
+      color: var(--amber);
+      padding: 10px 15px;
+      background-color: rgba(0, 245, 255, 0.05);
+      border-radius: 5px;
+      margin-bottom: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    summary::before {
+      content: "▶ ";
+      font-size: 0.8em;
+    }
+
+    details[open] > summary::before {
+      content: "▼ ";
+    }
+
+    pre {
+      background-color: #0d1b2a !important;
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 15px;
+      overflow-x: auto;
+      margin: 15px 0;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    code {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.95rem;
+      color: var(--cyan);
+    }
+
+    .highlight {
+      color: var(--amber);
+      font-weight: bold;
+    }
+
+    .note {
+      background-color: rgba(255, 179, 71, 0.1);
+      border-left: 3px solid var(--amber);
+      padding: 12px 15px;
+      margin: 20px 0;
+      border-radius: 0 5px 5px 0;
+    }
+
+    .syntax {
+      background-color: rgba(0, 245, 255, 0.08);
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-weight: 500;
+      display: inline-block;
+      margin: 0 3px;
+    }
+
+    .author-info {
+      color: var(--amber);
+      font-style: italic;
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+
+    .footer-note {
+      margin-top: 60px;
+      text-align: center;
+      color: var(--amber);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border-light);
+      padding-top: 15px;
+    }
+
+    /* Smooth scrolling */
+    html {
+      scroll-behavior: smooth;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 991px) {
+      .left-panel {
+        width: 100%;
+        position: relative;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border-light);
+      }
+      .right-panel {
+        margin-left: 0;
+      }
+    }
+
+    /* Demo styling for routing examples */
+    .router-demo {
+      background-color: rgba(13, 27, 42, 0.6);
+      border: 1px dashed var(--border-light);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .nav-link {
+      display: inline-block;
+      padding: 10px 15px;
+      margin: 0 5px;
+      background-color: rgba(0, 245, 255, 0.1);
+      color: var(--cyan);
+      border-radius: 5px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+
+    .nav-link:hover {
+      background-color: var(--cyan);
+      color: #000;
+    }
+
+    .nav-link.active {
+      background-color: var(--amber);
+      color: #000;
+      font-weight: bold;
+    }
+
+    .route-path {
+      background-color: rgba(255, 179, 71, 0.1);
+      padding: 4px 8px;
+      border-radius: 3px;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.9rem;
+    }
+
+    .path-highlight {
+      color: var(--amber);
+      font-weight: bold;
+    }
+
+    .component-preview {
+      border: 1px solid var(--border-light);
+      border-radius: 5px;
+      padding: 15px;
+      margin: 15px 0;
+      background-color: rgba(10, 25, 47, 0.3);
+    }
+
+    .guard-example {
+      background-color: rgba(255, 179, 71, 0.1);
+      border: 1px solid var(--amber);
+      border-radius: 8px;
+      padding: 15px;
+      margin: 20px 0;
+    }
+
+    .auth-status {
+      display: inline-block;
+      padding: 5px 10px;
+      border-radius: 15px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      margin-left: 10px;
+    }
+
+    .auth-logged-in {
+      background-color: #00cc88;
+      color: #000;
+    }
+
+    .auth-logged-out {
+      background-color: #ff4757;
+      color: #fff;
+    }
+
+    .programmatic-btn {
+      background-color: var(--cyan);
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .programmatic-btn:hover {
+      background-color: #00c0e6;
+      transform: translateY(-2px);
+    }
+
+    .hook-demo {
+      background-color: rgba(13, 27, 42, 0.6);
+      border: 1px dashed var(--border-light);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .code-splitting-demo {
+      background-color: rgba(13, 27, 42, 0.6);
+      border: 1px dashed var(--border-light);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .lazy-component {
+      background-color: rgba(0, 245, 255, 0.05);
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      border-left: 3px solid var(--cyan);
+    }
+
+    .loading-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--cyan);
+      font-style: italic;
+    }
+
+    .bundle-analysis {
+      background-color: rgba(13, 27, 42, 0.6);
+      padding: 15px;
+      border-radius: 8px;
+      margin: 20px 0;
+      font-family: 'Roboto Mono', monospace;
+      white-space: pre;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container-fluid p-0">
+  <div class="row g-0">
+
+    <!-- Left Panel -->
+    <div class="col-md-3 left-panel">
+      <h1>Module 4</h1>
+      <h4>React Router</h4>
+      <p class="author-info">— Mastering Navigation with Clarity & Depth —</p>
+
+      <input type="text" class="form-control search-box" id="searchTOC" placeholder="Search topics..." />
+
+      <div class="d-grid gap-2">
+        <button class="btn btn-control" id="expandAll">Expand All</button>
+        <button class="btn btn-control" id="collapseAll">Collapse All</button>
+      </div>
+
+      <div class="toc">
+        <h5>Table of Contents</h5>
+        <div class="toc-item" data-target="#section-14-6">14.6 Route Guards and Protection</div>
+        <div class="toc-item" data-target="#section-14-7">14.7 Programmatic Navigation</div>
+        <div class="toc-item" data-target="#section-14-8">14.8 Router Hooks</div>
+        <div class="toc-item" data-target="#section-14-9">14.9 Code Splitting with Routes</div>
+      </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="col-md-9 right-panel">
+
+      <!-- Section 14.6 -->
+      <section id="section-14-6">
+        <h2>14.6 Route Guards and Protection</h2>
+        
+        <details>
+          <summary>📌 Summary: Controlling Access to Routes</summary>
+          <p>Route guards are components or functions that determine whether a user can access a particular route. They're essential for authentication, authorization, and protecting sensitive pages.</p>
+          
+          <h3>🔹 Types of Route Guards</h3>
+          <ul>
+            <li><strong>Authentication Guard:</strong> Checks if user is logged in</li>
+            <li><strong>Authorization Guard:</strong> Checks if user has required permissions</li>
+            <li><strong>Before Leave Guard:</strong> Asks for confirmation before leaving a page</li>
+          </ul>
+
+          <h3>⚡ Authentication Guard Pattern</h3>
+          <p>The most common guard pattern uses a wrapper component that redirects unauthenticated users.</p>
+          <pre><code>
+import { Navigate, Outlet } from 'react-router-dom';
+import { useAuth } from './hooks/useAuth';
+
+// AuthGuard protects routes that require authentication
+function AuthGuard() {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return &lt;div&gt;Loading...&lt;/div&gt;;
+  }
+
+  if (!isAuthenticated) {
+    // Redirect to login page
+    return &lt;Navigate to="/login" replace /&gt;;
+  }
+
+  // Render child routes if authenticated
+  return &lt;Outlet /&gt;;
+}
+
+// Usage in router
+function App() {
+  return (
+    &lt;Routes&gt;
+      &lt;Route path="/" element={&lt;Home /&gt;} /&gt;
+      &lt;Route path="/login" element={&lt;Login /&gt;} /&gt;
+      
+      &lt;!-- Protected routes wrapped with AuthGuard --&gt;
+      &lt;Route path="/dashboard" element={&lt;AuthGuard /&gt;} &gt;
+        &lt;Route index element={&lt;Dashboard /&gt;} /&gt;
+        &lt;Route path="profile" element={&lt;Profile /&gt;} /&gt;
+        &lt;Route path="settings" element={&lt;Settings /&gt;} /&gt;
+      &lt;/Route&gt;
+      
+      &lt;Route path="*" element={&lt;NotFound /&gt;} /&gt;
+    &lt;/Routes&gt;
+  );
+}
+          </code></pre>
+
+          <h3>💡 How It Works Internally</h3>
+          <ol>
+            <li>User visits <code>/dashboard</code></li>
+            <li>Router renders <code>AuthGuard</code></li>
+            <li>AuthGuard checks authentication status</li>
+            <li>If not authenticated → redirects to <code>/login</code></li>
+            <li>If authenticated → renders child routes via <code>&lt;Outlet /&gt;</code></li>
+          </ol>
+
+          <div class="note">
+            <strong>🧠 Mental Model:</strong> Think of an AuthGuard as a bouncer at a club. The bouncer (AuthGuard) checks your ID (authentication) before letting you enter the venue (protected routes).
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Advanced: Authorization Guard with Permissions</summary>
+          <p>For complex applications, you need to check specific permissions, not just authentication.</p>
+
+          <h3>⚡ Role-Based Authorization Guard</h3>
+          <pre><code>
+import { Navigate, Outlet } from 'react-router-dom';
+import { useAuth } from './hooks/useAuth';
+
+// PermissionGuard protects routes based on user roles
+function PermissionGuard({ allowedRoles }) {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return &lt;div&gt;Loading...&lt;/div&gt;;
+  }
+
+  // If no user, redirect to login
+  if (!user) {
+    return &lt;Navigate to="/login" replace /&gt;;
+  }
+
+  // Check if user has any of the allowed roles
+  const hasPermission = allowedRoles.some(role =&gt; user.roles.includes(role));
+
+  if (!hasPermission) {
+    // Redirect to unauthorized page or home
+    return &lt;Navigate to="/unauthorized" replace /&gt;;
+  }
+
+  // Allow access to protected route
+  return &lt;Outlet /&gt;;
+}
+
+// Usage
+function App() {
+  return (
+    &lt;Routes&gt;
+      &lt;Route path="/" element={&lt;Home /&gt;} /&gt;
+      &lt;Route path="/login" element={&lt;Login /&gt;} /&gt;
+      
+      &lt;!-- Admin-only routes --&gt;
+      &lt;Route path="/admin" element={&lt;PermissionGuard allowedRoles={['admin']} /&gt;} &gt;
+        &lt;Route index element={&lt;AdminDashboard /&gt;} /&gt;
+        &lt;Route path="users" element={&lt;UserManagement /&gt;} /&gt;
+        &lt;Route path="analytics" element={&lt;Analytics /&gt;} /&gt;
+      &lt;/Route&gt;
+      
+      &lt;!-- Editor-only routes --&gt;
+      &lt;Route path="/content" element={&lt;PermissionGuard allowedRoles={['editor', 'admin']} /&gt;} &gt;
+        &lt;Route index element={&lt;ContentDashboard /&gt;} /&gt;
+        &lt;Route path="posts" element={&lt;PostManagement /&gt;} /&gt;
+      &lt;/Route&gt;
+      
+      &lt;!-- Public routes --&gt;
+      &lt;Route path="/blog" element={&lt;Blog /&gt;} /&gt;
+      
+      &lt;Route path="*" element={&lt;NotFound /&gt;} /&gt;
+    &lt;/Routes&gt;
+  );
+}
+
+// Component using the guard
+function UserManagement() {
+  const { user } = useAuth();
+  
+  return (
+    &lt;div className="component-preview"&gt;
+      &lt;h2&gt;User Management&lt;/h2&gt;
+      &lt;p&gt;You have permission: {user.roles.join(', ')}&lt;/p&gt;
+      &lt;!-- Admin-specific UI here --&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>🔥 Real-World Example: E-commerce Admin Panel</h3>
+          <pre><code>
+import { Navigate, Outlet } from 'react-router-dom';
+import { useAuth } from './hooks/useAuth';
+
+// Comprehensive guard system
+function ProtectedRoute({ children, requiredRole, redirectTo = '/login' }) {
+  const { isAuthenticated, user, loading } = useAuth();
+
+  if (loading) {
+    return &lt;div&gt;Loading...&lt;/div&gt;;
+  }
+
+  if (!isAuthenticated) {
+    return &lt;Navigate to={redirectTo} replace /&gt;;
+  }
+
+  if (requiredRole && !user.roles.includes(requiredRole)) {
+    return &lt;Navigate to="/unauthorized" replace /&gt;;
+  }
+
+  return children;
+}
+
+// Usage in routes
+function App() {
+  return (
+    &lt;Routes&gt;
+      &lt;Route path="/" element={&lt;Home /&gt;} /&gt;
+      &lt;Route path="/login" element={&lt;Login /&gt;} /&gt;
+      &lt;Route path="/unauthorized" element={&lt;Unauthorized /&gt;} /&gt;
+      
+      &lt;!-- Public shop routes --&gt;
+      &lt;Route path="/shop" element={&lt;Shop /&gt;} /&gt;
+      
+      &lt;!-- Protected routes --&gt;
+      &lt;Route path="/account" element={
+        &lt;ProtectedRoute requiredRole={null}&gt;
+          &lt;AccountDashboard /&gt;
+        &lt;/ProtectedRoute&gt;
+      } /&gt;
+      
+      &lt;!-- Admin routes --&gt;
+      &lt;Route path="/admin" element={
+        &lt;ProtectedRoute requiredRole="admin"&gt;
+          &lt;AdminLayout /&gt;
+        &lt;/ProtectedRoute&gt;
+      } &gt;
+        &lt;Route index element={&lt;AdminDashboard /&gt;} /&gt;
+        &lt;Route path="users" element={&lt;UserManagement /&gt;} /&gt;
+        &lt;Route path="products" element={&lt;ProductManagement /&gt;} /&gt;
+        &lt;Route path="orders" element={&lt;OrderManagement /&gt;} /&gt;
+      &lt;/Route&gt;
+      
+      &lt;!-- Manager routes --&gt;
+      &lt;Route path="/manager" element={
+        &lt;ProtectedRoute requiredRole="manager"&gt;
+          &lt;ManagerDashboard /&gt;
+        &lt;/ProtectedRoute&gt;
+      } &gt;
+        &lt;Route index element={&lt;ManagerOverview /&gt;} /&gt;
+        &lt;Route path="reports" element={&lt;Reports /&gt;} /&gt;
+      &lt;/Route&gt;
+      
+      &lt;Route path="*" element={&lt;NotFound /&gt;} /&gt;
+    &lt;/Routes&gt;
+  );
+}
+          </code></pre>
+
+          <div class="guard-example">
+            <h4>✅ Live Demo: Authentication Status</h4>
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span>Current Status:</span>
+              <span class="auth-status auth-logged-in">Logged In</span>
+              <button class="programmatic-btn">Go to Dashboard</button>
+            </div>
+          </div>
+        </details>
+
+        <details>
+          <summary>⚙️ Deep Dive: Before Leave Guards (Prompt)</summary>
+          <p>Sometimes you want to warn users before they leave a page with unsaved changes.</p>
+
+          <h3>⚡ Using the Prompt Component</h3>
+          <pre><code>
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useState } from 'react';
+
+function EditForm() {
+  const [formData, setFormData] = useState({
+    title: '',
+    content: ''
+  });
+  const [isDirty, setIsDirty] = useState(false);
+
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Track form changes
+  const handleChange = (e) =&gt; {
+    const { name, value } = e.target;
+    setFormData(prev =&gt; ({ ...prev, [name]: value }));
+    setIsDirty(true);
+  };
+
+  // Handle navigation away from page
+  const handleNavigation = (location) =&gt; {
+    if (isDirty) {
+      const answer = window.confirm('You have unsaved changes. Are you sure you want to leave?');
+      if (answer) {
+        navigate(location.pathname);
+      }
+      return false; // Prevent navigation
+    }
+    return true;
+  };
+
+  // Use useEffect to hook into navigation
+  React.useEffect(() =&gt; {
+    const unblock = navigate.block((tx) =&gt; {
+      if (isDirty) {
+        return handleNavigation(tx.location);
+      }
+      return true;
+    });
+
+    return () =&gt; unblock();
+  }, [isDirty, navigate]);
+
+  return (
+    &lt;div className="component-preview"&gt;
+      &lt;h2&gt;Edit Post&lt;/h2&gt;
+      &lt;input 
+        type="text" 
+        name="title" 
+        value={formData.title} 
+        onChange={handleChange} 
+        placeholder="Title" 
+        className="form-control mb-2" 
+      /&gt;
+      &lt;textarea 
+        name="content" 
+        value={formData.content} 
+        onChange={handleChange} 
+        placeholder="Content" 
+        className="form-control mb-2" 
+        rows="5"
+      /&gt;
+      &lt;button onClick={() =&gt; navigate('/posts')} className="programmatic-btn"&gt;Save and Exit&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>⚠️ Modern Alternative: Custom Hook with usePrompt</h3>
+          <pre><code>
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+
+// Custom hook
+function usePrompt(message, when) {
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() =&gt; {
+    if (!when) return;
+
+    const handleBeforeUnload = (e) =&gt; {
+      e.preventDefault();
+      e.returnValue = message;
+      return message;
+    };
+
+    const handleNavigation = (nextLocation) =&gt; {
+      if (window.confirm(message)) {
+        navigate(nextLocation.pathname);
+      }
+      return false;
+    };
+
+    const unblock = navigate.block(handleNavigation);
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () =&gt; {
+      unblock();
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [message, when, navigate]);
+}
+
+// Usage in component
+function EditForm() {
+  const [formData, setFormData] = useState({ title: '', content: '' });
+  const [isDirty, setIsDirty] = useState(false);
+
+  const handleChange = (e) =&gt; {
+    const { name, value } = e.target;
+    setFormData(prev =&gt; ({ ...prev, [name]: value }));
+    setIsDirty(true);
+  };
+
+  // Activate prompt when form is dirty
+  usePrompt('You have unsaved changes. Are you sure you want to leave?', isDirty);
+
+  return (
+    &lt;div className="component-preview"&gt;
+      &lt;h2&gt;Edit Post&lt;/h2&gt;
+      &lt;input 
+        type="text" 
+        name="title" 
+        value={formData.title} 
+        onChange={handleChange} 
+        placeholder="Title" 
+        className="form-control mb-2" 
+      /&gt;
+      &lt;textarea 
+        name="content" 
+        value={formData.content} 
+        onChange={handleChange} 
+        placeholder="Content" 
+        className="form-control mb-2" 
+        rows="5"
+      /&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <div class="note">
+            <strong>🎯 Pro Tip:</strong> Always test your before-leave guards thoroughly. Users expect consistent behavior across browsers.
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 14.7 -->
+      <section id="section-14-7">
+        <h2>14.7 Programmatic Navigation</h2>
+        
+        <details>
+          <summary>📌 Summary: Navigating Without Links</summary>
+          <p>Programmatic navigation lets you change routes in response to events like button clicks, form submissions, or API responses — instead of relying on anchor tags.</p>
+
+          <h3>🔹 Core Concept: The Navigate Function</h3>
+          <p>Unlike declarative navigation with <code>&lt;Link&gt;</code>, programmatic navigation uses JavaScript functions triggered by events.</p>
+
+          <h3>⚡ Basic Syntax with useNavigate()</h3>
+          <pre><code>
+import { useNavigate } from 'react-router-dom';
+
+function LoginButton() {
+  const navigate = useNavigate(); // Hook returns navigate function
+
+  const handleLogin = () =&gt; {
+    // Simulate login process
+    setTimeout(() =&gt; {
+      // Navigate to dashboard after successful login
+      navigate('/dashboard'); // Pushes new entry to history stack
+    }, 1000);
+  };
+
+  const handleLogout = () =&gt; {
+    // Clear auth state
+    localStorage.removeItem('token');
+    
+    // Navigate to login page
+    navigate('/login', { replace: true }); // Replaces current entry
+  };
+
+  return (
+    &lt;div&gt;
+      &lt;button onClick={handleLogin} className="programmatic-btn"&gt;Login&lt;/button&gt;
+      &lt;button onClick={handleLogout} className="programmatic-btn"&gt;Logout&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>🔑 Understanding Navigation Modes</h3>
+          <table class="table table-dark table-sm mt-3">
+            <thead>
+              <tr><th>Method</th><th>Behavior</th><th>Use Case</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>navigate('/path')</code></td><td>Adds new entry to browser history</td><td>Normal navigation</td></tr>
+              <tr><td><code>navigate('/path', { replace: true })</code></td><td>Replaces current entry in history</td><td>Login/logout, redirects</td></tr>
+              <tr><td><code>navigate(-1)</code></td><td>Goes back one step</td><td>Back button functionality</td></tr>
+              <tr><td><code>navigate(1)</code></td><td>Goes forward one step</td><td>Forward button functionality</td></tr>
+              <tr><td><code>navigate(2)</code></td><td>Goes forward two steps</td><td>Complex navigation flows</td></tr>
+            </tbody>
+          </table>
+
+          <h3>🔥 Real-World Examples</h3>
+
+          <h4>1. Form Submission with Success Redirect</h4>
+          <pre><code>
+import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+
+function RegistrationForm() {
+  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [error, setError] = useState('');
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) =&gt; {
+    e.preventDefault();
+    setError('');
+
+    try {
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+
+      if (!response.ok) {
+        throw new Error('Registration failed');
+      }
+
+      // Success! Navigate to login page
+      navigate('/login', { 
+        replace: true, 
+        state: { message: 'Registration successful!' } 
+      });
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  return (
+    &lt;form onSubmit={handleSubmit} className="component-preview"&gt;
+      &lt;input 
+        type="email" 
+        value={formData.email} 
+        onChange={(e) =&gt; setFormData({...formData, email: e.target.value})} 
+        placeholder="Email" 
+        className="form-control mb-2" 
+        required 
+      /&gt;
+      &lt;input 
+        type="password" 
+        value={formData.password} 
+        onChange={(e) =&gt; setFormData({...formData, password: e.target.value})} 
+        placeholder="Password" 
+        className="form-control mb-2" 
+        required 
+      /&gt;
+      {error &amp;&amp; &lt;p className="text-danger"&gt;{error}&lt;/p&gt;}
+      &lt;button type="submit" className="programmatic-btn"&gt;Register&lt;/button&gt;
+    &lt;/form&gt;
+  );
+}
+          </code></pre>
+
+          <h4>2. Conditional Navigation Based on State</h4>
+          <pre><code>
+import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+
+function Dashboard() {
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+
+  // After fetching user data
+  useEffect(() =&gt; {
+    const fetchUser = async () =&gt; {
+      const userData = await getUserData();
+      setUser(userData);
+      
+      // If user is admin, go to admin panel
+      if (userData.role === 'admin') {
+        navigate('/admin');
+      }
+    };
+    
+    fetchUser();
+  }, []);
+
+  const handleAction = () =&gt; {
+    if (!user) {
+      navigate('/login'); // Redirect to login if not authenticated
+      return;
+    }
+    
+    if (user.isPremium) {
+      navigate('/premium-feature'); // Premium users get special feature
+    } else {
+      navigate('/upgrade'); // Non-premium users see upgrade page
+    }
+  };
+
+  return (
+    &lt;div className="component-preview"&gt;
+      &lt;h2&gt;Dashboard&lt;/h2&gt;
+      &lt;button onClick={handleAction} className="programmatic-btn"&gt;Perform Action&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h4>3. Navigation with State Data</h4>
+          <pre><code>
+import { useNavigate } from 'react-router-dom';
+
+function ProductList() {
+  const navigate = useNavigate();
+
+  const handleProductClick = (product) =&gt; {
+    navigate(`/product/${product.id}`, {
+      state: {
+        from: 'home',           // Where user came from
+        product: product,       // Pass product data directly
+        timestamp: Date.now()   // Timestamp
+      }
+    });
+  };
+
+  return (
+    &lt;div&gt;
+      {products.map(product =&gt; (
+        &lt;div 
+          key={product.id} 
+          onClick={() =&gt; handleProductClick(product)}
+          className="product-card"
+        &gt;
+          {product.name}
+        &lt;/div&gt;
+      ))}
+    &lt;/div&gt;
+  );
+}
+
+// ProductDetail.jsx
+import { useLocation } from 'react-router-dom';
+
+function ProductDetail() {
+  const location = useLocation();
+  const { state } = location;
+
+  // Get data passed through navigation state
+  const { product, from, timestamp } = state || {};
+
+  return (
+    &lt;div className="component-preview"&gt;
+      &lt;h2&gt;{product?.name}&lt;/h2&gt;
+      &lt;p&gt;From: {from}&lt;/p&gt;
+      &lt;p&gt;Timestamp: {new Date(timestamp).toLocaleString()}&lt;/p&gt;
+      &lt;!-- Display product details --&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <div class="note">
+            <strong>🧠 Mental Model:</strong> Think of programmatic navigation as calling a function that says "Go to this page now!" instead of clicking a link that says "I want to go here."
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Advanced: Navigation in Async Operations</summary>
+          <p>Handling navigation during asynchronous operations requires careful error handling.</p>
+
+          <h3>⚡ Robust Navigation with Loading States</h3>
+          <pre><code>
+import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+
+function LoginForm() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e) =&gt; {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      if (!response.ok) {
+        throw new Error('Invalid credentials');
+      }
+
+      const data = await response.json();
+      
+      // Store token
+      localStorage.setItem('token', data.token);
+      
+      // Navigate to dashboard
+      navigate('/dashboard', { replace: true });
+      
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    &lt;form onSubmit={handleSubmit} className="component-preview"&gt;
+      &lt;input 
+        type="email" 
+        value={email} 
+        onChange={(e) =&gt; setEmail(e.target.value)} 
+        placeholder="Email" 
+        className="form-control mb-2" 
+        required 
+      /&gt;
+      &lt;input 
+        type="password" 
+        value={password} 
+        onChange={(e) =&gt; setPassword(e.target.value)} 
+        placeholder="Password" 
+        className="form-control mb-2" 
+        required 
+      /&gt;
+      
+      {error &amp;&amp; &lt;p className="text-danger"&gt;{error}&lt;/p&gt;}
+      
+      &lt;button 
+        type="submit" 
+        disabled={loading}
+        className="programmatic-btn"
+      &gt;
+        {loading ? 'Logging in...' : 'Login'}
+      &lt;/button&gt;
+    &lt;/form&gt;
+  );
+}
+          </code></pre>
+
+          <h3>🔥 Navigation in Effect Hooks</h3>
+          <pre><code>
+import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+
+function AuthRedirect() {
+  const navigate = useNavigate();
+  const isAuthenticated = checkAuthStatus(); // Your auth check function
+
+  useEffect(() =&gt; {
+    if (isAuthenticated) {
+      // Redirect to dashboard on mount if authenticated
+      navigate('/dashboard', { replace: true });
+    } else {
+      // Redirect to login if not authenticated
+      navigate('/login', { replace: true });
+    }
+  }, [isAuthenticated, navigate]); // Dependency array ensures re-run when auth changes
+
+  // Render nothing while redirecting
+  return null;
+}
+
+// Usage in router
+function App() {
+  return (
+    &lt;Routes&gt;
+      &lt;Route path="/" element={&lt;AuthRedirect /&gt;} /&gt;
+      &lt;Route path="/login" element={&lt;Login /&gt;} /&gt;
+      &lt;Route path="/dashboard" element={&lt;Dashboard /&gt;} /&gt;
+    &lt;/Routes&gt;
+  );
+}
+          </code></pre>
+
+          <div class="demo-card">
+            <h4>✅ Live Demo: Programmatic Navigation</h4>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+              <button class="programmatic-btn">Go to Dashboard</button>
+              <button class="programmatic-btn">Go to Profile</button>
+              <button class="programmatic-btn">Go to Settings</button>
+            </div>
+            <div class="component-preview">
+              <p>Click the buttons above to navigate programmatically!</p>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 14.8 -->
+      <section id="section-14-8">
+        <h2>14.8 Router Hooks</h2>
+        
+        <details>
+          <summary>📌 Summary: Power Tools for Advanced Routing</summary>
+          <p>React Router provides several powerful hooks that give you fine-grained control over routing behavior beyond basic navigation.</p>
+
+          <h3>🔹 The Five Essential Router Hooks</h3>
+          <table class="table table-dark table-sm mt-3">
+            <thead>
+              <tr><th>Hook</th><th>What it Does</th><th>When to Use</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>useNavigate()</code></td><td>Returns function to navigate programmatically</td><td>Button clicks, form submissions</td></tr>
+              <tr><td><code>useLocation()</code></td><td>Returns current location object</td><td>Accessing URL parameters, query strings</td></tr>
+              <tr><td><code>useParams()</code></td><td>Returns object of dynamic route parameters</td><td>Fetching data by ID from URL</td></tr>
+              <tr><td><code>useRoutes()</code></td><td>Dynamic route configuration</td><td>Conditional routing, role-based menus</td></tr>
+              <tr><td><code>useMatch()</code></td><td>Checks if current location matches a pattern</td><td>Highlighting active nav items</td></tr>
+            </tbody>
+          </table>
+
+          <h3>⚡ useLocation(): Accessing Route Information</h3>
+          <pre><code>
+import { useLocation } from 'react-router-dom';
+
+function CurrentPath() {
+  const location = useLocation();
+
+  return (
+    &lt;div className="component-preview"&gt;
+      &lt;h3&gt;Current Location&lt;/h3&gt;
+      &lt;p&gt;Path: {location.pathname}&lt;/p&gt;
+      &lt;p&gt;Search: {location.search}&lt;/p&gt;
+      &lt;p&gt;Hash: {location.hash}&lt;/p&gt;
+      &lt;p&gt;State: {location.state ? JSON.stringify(location.state) : 'none'}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+
+// Example usage with query parameters:
+// URL: /search?q=react&amp;category=javascript
+function SearchResults() {
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  
+  const query = searchParams.get('q');
+  const category = searchParams.get('category');
+
+  return (
+    &lt;div className="component-preview"&gt;
+      &lt;h3&gt;Search Results&lt;/h3&gt;
+      &lt;p&gt;Query: {query}&lt;/p&gt;
+      &lt;p&gt;Category: {category}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>⚡ useParams(): Extracting Dynamic Parameters</h3>
+          <pre><code>
+import { useParams } from 'react-router-dom';
+
+function UserProfile() {
+  const { userId } = useParams(); // Extracts ':userId' from '/user/:userId'
+  
+  return (
+    &lt;div className="component-preview"&gt;
+      &lt;h3&gt;User Profile&lt;/h3&gt;
+      &lt;p&gt;Displaying profile for user: &lt;span className="parameter-badge"&gt;{userId}&lt;/span&gt;&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+
+// Multiple parameters
+function ProductDetail() {
+  const { productId, variantId } = useParams();
+  
+  return (
+    &lt;div className="component-preview"&gt;
+      &lt;h3&gt;Product Details&lt;/h3&gt;
+      &lt;p&gt;Product ID: &lt;span className="parameter-badge"&gt;{productId}&lt;/span&gt;&lt;/p&gt;
+      &lt;p&gt;Variant ID: &lt;span className="parameter-badge"&gt;{variantId || 'default'}&lt;/span&gt;&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>⚡ useMatch(): Detecting Active Routes</h3>
+          <p>Perfect for highlighting active navigation items without manually tracking state.</p>
+          <pre><code>
+import { useMatch, Link } from 'react-router-dom';
+
+function Navigation() {
+  const homeMatch = useMatch('/');
+  const aboutMatch = useMatch('/about');
+  const contactMatch = useMatch('/contact');
+
+  return (
+    &lt;nav style={{ backgroundColor: '#1a2b42', padding: '15px', marginBottom: '20px' }}&gt;
+      &lt;Link 
+        to="/" 
+        className={`nav-link ${homeMatch ? 'active' : ''}`} 
+      &gt;
+        Home
+      &lt;/Link&gt;
+      
+      &lt;Link 
+        to="/about" 
+        className={`nav-link ${aboutMatch ? 'active' : ''}`} 
+      &gt;
+        About
+      &lt;/Link&gt;
+      
+      &lt;Link 
+        to="/contact" 
+        className={`nav-link ${contactMatch ? 'active' : ''}`} 
+      &gt;
+        Contact
+      &lt;/Link&gt;
+    &lt;/nav&gt;
+  );
+}
+
+// For nested routes
+function Sidebar() {
+  const dashboardMatch = useMatch('/dashboard/*');
+  const settingsMatch = useMatch('/dashboard/settings');
+  const profileMatch = useMatch('/dashboard/profile');
+
+  return (
+    &lt;aside style={{ width: '200px', backgroundColor: '#0a192f', padding: '15px' }}&gt;
+      &lt;h3&gt;Dashboard&lt;/h3&gt;
+      
+      &lt;Link 
+        to="/dashboard" 
+        className={`nav-link ${dashboardMatch ? 'active' : ''}`} 
+      &gt;
+        Dashboard
+      &lt;/Link&gt;
+      
+      &lt;Link 
+        to="/dashboard/settings" 
+        className={`nav-link ${settingsMatch ? 'active' : ''}`} 
+      &gt;
+        Settings
+      &lt;/Link&gt;
+      
+      &lt;Link 
+        to="/dashboard/profile" 
+        className={`nav-link ${profileMatch ? 'active' : ''}`} 
+      &gt;
+        Profile
+      &lt;/Link&gt;
+    &lt;/aside&gt;
+  );
+}
+          </code></pre>
+
+          <h3>⚡ useRoutes(): Dynamic Route Configuration</h3>
+          <p>Advanced hook for creating routes dynamically based on conditions.</p>
+          <pre><code>
+import { useRoutes } from 'react-router-dom';
+
+function App() {
+  const userRole = getUserRole(); // 'admin', 'user', or null
+  
+  const routes = useRoutes([
+    { path: '/', element: &lt;Home /&gt; },
+    { path: '/login', element: &lt;Login /&gt; },
+    
+    // Conditional routes based on user role
+    ...(userRole === 'admin' ? [
+      { path: '/admin', element: &lt;AdminLayout /&gt; },
+      { path: '/admin/users', element: &lt;UserManagement /&gt; }
+    ] : []),
+    
+    ...(userRole === 'user' ? [
+      { path: '/user/dashboard', element: &lt;UserDashboard /&gt; },
+      { path: '/user/profile', element: &lt;UserProfile /&gt; }
+    ] : []),
+    
+    { path: '*', element: &lt;NotFound /&gt; }
+  ]);
+
+  return routes;
+}
+          </code></pre>
+
+          <div class="hook-demo">
+            <h4>✅ Live Demo: Router Hooks in Action</h4>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+              <a href="#" class="nav-link">/</a>
+              <a href="#" class="nav-link">/user/123</a>
+              <a href="#" class="nav-link">/search?q=test</a>
+            </div>
+            <div class="component-preview">
+              <h3>Current Path: /</h3>
+              <p>Parameters: None</p>
+              <p>Query String: None</p>
+              <p>Navigation State: None</p>
+            </div>
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Advanced: Creating Custom Router Hooks</summary>
+          <p>Combine multiple hooks to create reusable utility hooks for your application.</p>
+
+          <h3>⚡ Custom Hook: useQueryParams</h3>
+          <pre><code>
+import { useLocation } from 'react-router-dom';
+
+// Custom hook to work with URL query parameters
+function useQueryParams() {
+  const location = useLocation();
+  
+  return new URLSearchParams(location.search);
+}
+
+// Usage
+function SearchPage() {
+  const queryParams = useQueryParams();
+  
+  const query = queryParams.get('q');
+  const page = queryParams.get('page') || '1';
+  const sortBy = queryParams.get('sort') || 'relevance';
+  
+  const updateQuery = (newParams) =&gt; {
+    const newSearchParams = new URLSearchParams(queryParams.toString());
+    
+    Object.keys(newParams).forEach(key =&gt; {
+      if (newParams[key] === null || newParams[key] === undefined) {
+        newSearchParams.delete(key);
+      } else {
+        newSearchParams.set(key, newParams[key]);
+      }
+    });
+    
+    // Update URL without reloading
+    window.history.replaceState({}, '', `${location.pathname}?${newSearchParams}`);
+  };
+  
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Search Results&lt;/h2&gt;
+      &lt;p&gt;Query: {query}&lt;/p&gt;
+      &lt;p&gt;Page: {page}&lt;/p&gt;
+      &lt;p&gt;Sort by: {sortBy}&lt;/p&gt;
+      
+      &lt;button onClick={() =&gt; updateQuery({ page: '2' })}&gt;Next Page&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>⚡ Custom Hook: useActiveRoute</h3>
+          <pre><code>
+import { useLocation, useMatch } from 'react-router-dom';
+
+// Custom hook to determine if current route matches a pattern
+function useActiveRoute(pattern) {
+  const match = useMatch(pattern);
+  const location = useLocation();
+  
+  // Returns true if exact match or nested route match
+  if (pattern.endsWith('*')) {
+    return match !== null;
+  }
+  
+  return match !== null && location.pathname === pattern;
+}
+
+// Usage
+function Navigation() {
+  const isActiveHome = useActiveRoute('/');
+  const isActiveAbout = useActiveRoute('/about');
+  const isActiveDashboard = useActiveRoute('/dashboard/*');
+  
+  return (
+    &lt;nav&gt;
+      &lt;Link 
+        to="/" 
+        className={isActiveHome ? 'nav-link active' : 'nav-link'} 
+      &gt;
+        Home
+      &lt;/Link&gt;
+      
+      &lt;Link 
+        to="/about" 
+        className={isActiveAbout ? 'nav-link active' : 'nav-link'} 
+      &gt;
+        About
+      &lt;/Link&gt;
+      
+      &lt;Link 
+        to="/dashboard" 
+        className={isActiveDashboard ? 'nav-link active' : 'nav-link'} 
+      &gt;
+        Dashboard
+      &lt;/Link&gt;
+    &lt;/nav&gt;
+  );
+}
+          </code></pre>
+
+          <h3>⚡ Custom Hook: useAuthRedirect</h3>
+          <pre><code>
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from './hooks/useAuth';
+
+// Custom hook for automatic redirection based on auth state
+function useAuthRedirect() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { isAuthenticated, loading } = useAuth();
+
+  React.useEffect(() =&gt; {
+    if (loading) return;
+
+    const isAuthRoute = location.pathname.startsWith('/login') || 
+                       location.pathname.startsWith('/register');
+    
+    if (isAuthenticated &amp;&amp; isAuthRoute) {
+      // Already logged in, redirect to dashboard
+      navigate('/dashboard', { replace: true });
+    } else if (!isAuthenticated &amp;&amp; !isAuthRoute) {
+      // Not logged in, trying to access protected route
+      navigate('/login', { 
+        replace: true, 
+        state: { from: location.pathname } 
+      });
+    }
+  }, [isAuthenticated, loading, navigate, location]);
+
+  // Return current auth state for components
+  return { isAuthenticated, loading };
+}
+
+// Usage in App component
+function App() {
+  useAuthRedirect(); // Call once at root level
+  
+  return (
+    &lt;Routes&gt;
+      &lt;Route path="/" element={&lt;Home /&gt;} /&gt;
+      &lt;Route path="/login" element={&lt;Login /&gt;} /&gt;
+      &lt;Route path="/dashboard" element={&lt;Dashboard /&gt;} /&gt;
+      &lt;Route path="*" element={&lt;NotFound /&gt;} /&gt;
+    &lt;/Routes&gt;
+  );
+}
+          </code></pre>
+
+          <div class="note">
+            <strong>🌟 Pro Tip:</strong> Create custom hooks for repetitive routing patterns. This keeps your components clean and promotes code reuse.
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 14.9 -->
+      <section id="section-14-9">
+        <h2>14.9 Code Splitting with Routes</h2>
+        
+        <details>
+          <summary>📌 Summary: Load Only What You Need</summary>
+          <p>Code splitting divides your application's JavaScript bundle into smaller chunks that load only when needed. This dramatically improves initial load performance.</p>
+
+          <h3>🔹 The Problem: Large Bundles</h3>
+          <p>Without code splitting, your entire app loads at once — even if users never visit most pages.</p>
+          <pre><code>
+// ❌ BAD: All components bundled together
+import Home from './components/Home';
+import About from './components/About';
+import Dashboard from './components/Dashboard';
+import AdminPanel from './components/AdminPanel';
+import Products from './components/Products';
+import Checkout from './components/Checkout';
+
+// Bundle size: 2MB+
+// Users download everything even if they only visit homepage
+          </code></pre>
+
+          <h3>⚡ Solution: Lazy Loading with React.lazy()</h3>
+          <p>React.lazy() allows you to import components asynchronously.</p>
+          <pre><code>
+import { lazy, Suspense } from 'react';
+import { Routes, Route } from 'react-router-dom';
+
+// Lazy load components
+const Home = lazy(() =&gt; import('./components/Home'));
+const About = lazy(() =&gt; import('./components/About'));
+const Dashboard = lazy(() =&gt; import('./components/Dashboard'));
+const AdminPanel = lazy(() =&gt; import('./components/AdminPanel'));
+
+function App() {
+  return (
+    &lt;div className="App"&gt;
+      &lt;header&gt;
+        &lt;nav&gt;
+          &lt;a href="/" className="nav-link"&gt;Home&lt;/a&gt;
+          &lt;a href="/about" className="nav-link"&gt;About&lt;/a&gt;
+          &lt;a href="/dashboard" className="nav-link"&gt;Dashboard&lt;/a&gt;
+          &lt;a href="/admin" className="nav-link"&gt;Admin&lt;/a&gt;
+        &lt;/nav&gt;
+      &lt;/header&gt;
+
+      &lt;main&gt;
+        &lt;Suspense fallback={&lt;div&gt;Loading...&lt;/div&gt;}&gt;
+          &lt;Routes&gt;
+            &lt;Route path="/" element={&lt;Home /&gt;} /&gt;
+            &lt;Route path="/about" element={&lt;About /&gt;} /&gt;
+            &lt;Route path="/dashboard" element={&lt;Dashboard /&gt;} /&gt;
+            &lt;Route path="/admin" element={&lt;AdminPanel /&gt;} /&gt;
+          &lt;/Routes&gt;
+        &lt;/Suspense&gt;
+      &lt;/main&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>💡 Why This Matters</h3>
+          <ul>
+            <li><strong>Faster Initial Load:</strong> Smaller bundle = quicker first paint</li>
+            <li><strong>Better User Experience:</strong> No waiting for unused code</li>
+            <li><strong>Reduced Bandwidth:</strong> Users download only what they need</li>
+            <li><strong>Improved SEO:</strong> Search engines can crawl faster</li>
+            <li><strong>Lower Server Costs:</strong> Less data transferred per request</li>
+          </ul>
+
+          <h3>🔥 Real-World Example: E-commerce App</h3>
+          <pre><code>
+import { lazy, Suspense } from 'react';
+import { Routes, Route } from 'react-router-dom';
+
+// Lazy load route components
+const Home = lazy(() =&gt; import('./routes/Home'));
+const ProductCatalog = lazy(() =&gt; import('./routes/ProductCatalog'));
+const ProductDetail = lazy(() =&gt; import('./routes/ProductDetail'));
+const Cart = lazy(() =&gt; import('./routes/Cart'));
+const Checkout = lazy(() =&gt; import('./routes/Checkout'));
+const Admin = lazy(() =&gt; import('./routes/Admin'));
+const OrderHistory = lazy(() =&gt; import('./routes/OrderHistory'));
+
+// Loading component for better UX
+function LoadingSpinner() {
+  return (
+    &lt;div className="loading-state"&gt;
+      &lt;div className="spinner"&gt;&lt;/div&gt;
+      &lt;p&gt;Loading content...&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+
+function App() {
+  return (
+    &lt;div className="App"&gt;
+      &lt;header&gt;
+        &lt;nav&gt;
+          &lt;Link to="/" className="nav-link"&gt;Home&lt;/Link&gt;
+          &lt;Link to="/products" className="nav-link"&gt;Products&lt;/Link&gt;
+          &lt;Link to="/cart" className="nav-link"&gt;Cart&lt;/Link&gt;
+          &lt;Link to="/checkout" className="nav-link"&gt;Checkout&lt;/Link&gt;
+          &lt;Link to="/orders" className="nav-link"&gt;Orders&lt;/Link&gt;
+          &lt;Link to="/admin" className="nav-link"&gt;Admin&lt;/Link&gt;
+        &lt;/nav&gt;
+      &lt;/header&gt;
+
+      &lt;main&gt;
+        &lt;Suspense fallback={&lt;LoadingSpinner /&gt;}&gt;
+          &lt;Routes&gt;
+            &lt;Route path="/" element={&lt;Home /&gt;} /&gt;
+            
+            &lt;Route path="/products" element={&lt;ProductCatalog /&gt;} /&gt;
+            &lt;Route path="/products/:id" element={&lt;ProductDetail /&gt;} /&gt;
+            
+            &lt;Route path="/cart" element={&lt;Cart /&gt;} /&gt;
+            &lt;Route path="/checkout" element={&lt;Checkout /&gt;} /&gt;
+            
+            &lt;Route path="/orders" element={&lt;OrderHistory /&gt;} /&gt;
+            
+            &lt;Route path="/admin" element={&lt;Admin /&gt;} /&gt;
+            
+            &lt;Route path="*" element={&lt;NotFound /&gt;} /&gt;
+          &lt;/Routes&gt;
+        &lt;/Suspense&gt;
+      &lt;/main&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>🎯 Best Practices for Code Splitting</h3>
+          <ol>
+            <li><strong>Split at route boundaries:</strong> Each route gets its own chunk</li>
+            <li><strong>Don't split too finely:</strong> Avoid splitting small components</li>
+            <li><strong>Always provide fallback:</strong> Show loading state</li>
+            <li><strong>Test performance:</strong> Use React DevTools Profiler</li>
+            <li><strong>Consider critical paths:</strong> Don't lazy-load above-the-fold content</li>
+          </ol>
+
+          <div class="note">
+            <strong>🧠 Mental Model:</strong> Think of code splitting like a library. Instead of buying the entire encyclopedia (your whole app), you only rent the volume you need to read right now.
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Advanced: Route-Based Code Splitting with React Router v6.4+</summary>
+          <p>With React Router v6.4+, you can use the new <code>loader</code> and <code>action</code> APIs for even more sophisticated code splitting.</p>
+
+          <h3>⚡ Modern Approach with Route Loaders</h3>
+          <pre><code>
+import { createBrowserRouter } from 'react-router-dom';
+import { lazy } from 'react';
+
+// Define routes with lazy-loaded components
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: &lt;RootLayout /&gt;,
+    children: [
+      {
+        path: '/',
+        element: &lt;Home /&gt;,
+        loader: () =&gt; import('./routes/Home')
+      },
+      {
+        path: 'products',
+        element: &lt;ProductCatalog /&gt;,
+        loader: () =&gt; import('./routes/ProductCatalog'),
+        children: [
+          {
+            path: ':id',
+            element: &lt;ProductDetail /&gt;,
+            loader: () =&gt; import('./routes/ProductDetail')
+          }
+        ]
+      },
+      {
+        path: 'admin',
+        element: &lt;AdminLayout /&gt;,
+        loader: () =&gt; import('./routes/AdminLayout'),
+        children: [
+          {
+            path: 'users',
+            element: &lt;UserManagement /&gt;,
+            loader: () =&gt; import('./routes/UserManagement')
+          },
+          {
+            path: 'analytics',
+            element: &lt;Analytics /&gt;,
+            loader: () =&gt; import('./routes/Analytics')
+          }
+        ]
+      }
+    ]
+  }
+]);
+
+// In your RootLayout component
+function RootLayout() {
+  return (
+    &lt;div&gt;
+      &lt;Header /&gt;
+      &lt;main&gt;
+        &lt;Outlet /&gt;
+      &lt;/main&gt;
+    &lt;/div&gt;
+  );
+}
+
+// And render with RouterProvider
+import { RouterProvider } from 'react-router-dom';
+
+function App() {
+  return (
+    &lt;RouterProvider router={router} /&gt;
+  );
+}
+          </code></pre>
+
+          <h3>🔥 Combining with React Query for Data + Code Splitting</h3>
+          <pre><code>
+import { createBrowserRouter } from 'react-router-dom';
+import { lazy } from 'react';
+import { useQuery } from '@tanstack/react-query';
+
+const ProductCatalog = lazy(() =&gt; import('./routes/ProductCatalog'));
+
+function ProductCatalogLoader() {
+  return useQuery({
+    queryKey: ['products'],
+    queryFn: () =&gt; fetch('/api/products').then(res =&gt; res.json()),
+    staleTime: 5 * 60 * 1000 // 5 minutes
+  });
+}
+
+// In your route definition
+{
+  path: 'products',
+  element: &lt;ProductCatalog /&gt;,
+  loader: ProductCatalogLoader,
+  lazy: () =&gt; import('./routes/ProductCatalog')
+}
+          </code></pre>
+
+          <h3>📊 Bundle Analysis: Seeing the Impact</h3>
+          <pre><code>
+// Install webpack-bundle-analyzer
+npm install --save-dev webpack-bundle-analyzer
+
+// Add to webpack.config.js
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+
+module.exports = {
+  plugins: [
+    new BundleAnalyzerPlugin()
+  ]
+};
+
+// Run build and analyze
+npm run build
+# Opens interactive visualization of your bundle
+          </code></pre>
+
+          <div class="code-splitting-demo">
+            <h4>✅ Live Demo: Code Splitting in Action</h4>
+            <div class="lazy-component">
+              <h3>Product Catalog</h3>
+              <p>This component was loaded lazily when you navigated to this route.</p>
+              <p>Check your browser's Network tab to see the separate JS file being loaded.</p>
+            </div>
+          </div>
+
+          <div class="bundle-analysis">
+            {/* Simulated bundle analysis */}
+            Before Code Splitting:
+            main.js: 2.1 MB
+            
+            After Code Splitting:
+            main.js: 350 KB
+            products.js: 420 KB
+            cart.js: 280 KB
+            admin.js: 510 KB
+            checkout.js: 320 KB
+            orders.js: 190 KB
+            
+            Total downloaded on homepage: 350 KB (vs 2.1 MB before!)
+          </div>
+
+          <div class="note">
+            <strong>🌟 Final Wisdom:</strong> Code splitting isn't optional for production apps — it's essential. Start with route-based splitting, then optimize further with component-level splitting where appropriate.
+          </div>
+        </details>
+      </section>
+
+      <div class="footer-note">
+        📚 Next: Module 5 - HTTP Requests, API Integration, and Performance Optimization
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript Utilities -->
+<script>
+  // Expand/Collapse All
+  document.getElementById('expandAll').addEventListener('click', () => {
+    document.querySelectorAll('details').forEach(detail => detail.open = true);
+  });
+
+  document.getElementById('collapseAll').addEventListener('click', () => {
+    document.querySelectorAll('details').forEach(detail => detail.open = false);
+  });
+
+  // Smooth Scroll to TOC Item
+  document.querySelectorAll('.toc-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const targetId = item.getAttribute('data-target');
+      document.querySelector(targetId).scrollIntoView({ behavior: 'smooth' });
+      
+      // Highlight active item
+      document.querySelectorAll('.toc-item').forEach(el => el.classList.remove('active'));
+      item.classList.add('active');
+    });
+  });
+
+  // Search TOC
+  document.getElementById('searchTOC').addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase();
+    document.querySelectorAll('.toc-item').forEach(item => {
+      const text = item.textContent.toLowerCase();
+      item.style.display = text.includes(query) ? 'block' : 'none';
+    });
+  });
+
+  // Programmatic navigation demo
+  document.querySelectorAll('.programmatic-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      const parent = button.closest('.demo-card, .guard-example, .hook-demo');
+      if (parent) {
+        const preview = parent.querySelector('.component-preview');
+        if (preview) {
+          preview.innerHTML = `
+            <h3>Navigated Programmatically!</h3>
+            <p>You clicked: "${button.textContent}"</p>
+            <p>Now you're on a different route.</p>
+          `;
+        }
+      }
+    });
+  });
+
+  // Optional: Add highlight.js if needed (uncomment if CDN available)
+  /*
+  const script = document.createElement('script');
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js';
+  script.onload = () => {
+    document.querySelectorAll('pre code').forEach(block => hljs.highlightBlock(block));
+  };
+  document.head.appendChild(script);
+  */
+</script>
+
+<!-- Bootstrap JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
+```

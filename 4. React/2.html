@@ -1,0 +1,860 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript Core Concepts: Variables, Arrow Functions, Template Literals & Destructuring</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00d1ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --text-secondary: #b3cde6;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            background-color: rgba(10, 25, 47, 0.9);
+            border-right: 1px solid var(--cyan);
+            position: fixed;
+            height: 100vh;
+            width: 300px;
+            overflow-y: auto;
+            padding: 20px;
+            z-index: 1000;
+            box-shadow: 5px 0 15px rgba(0, 209, 255, 0.1);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        h1, h2, h3, h4 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--amber);
+            padding-bottom: 8px;
+            margin-top: 30px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            border-left: 6px solid var(--amber);
+            padding-left: 15px;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            border-left: 4px solid var(--amber);
+            padding-left: 12px;
+        }
+
+        h3 {
+            font-size: 1.4rem;
+            border-left: 3px solid var(--cyan);
+            padding-left: 10px;
+            margin-top: 25px;
+        }
+
+        .subtitle {
+            color: var(--amber);
+            font-style: italic;
+            margin-bottom: 25px;
+        }
+
+        .author-info {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 25px;
+            padding: 10px;
+            background-color: rgba(0, 209, 255, 0.05);
+            border-radius: 5px;
+            border-left: 3px solid var(--cyan);
+        }
+
+        .toc-item {
+            margin: 8px 0;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-secondary);
+        }
+
+        .toc-item:hover {
+            background-color: rgba(0, 209, 255, 0.1);
+            color: var(--cyan);
+        }
+
+        .toc-item.active {
+            background-color: rgba(0, 209, 255, 0.2);
+            color: var(--cyan);
+            border-left: 3px solid var(--amber);
+        }
+
+        .search-box {
+            width: 100%;
+            margin-bottom: 20px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-color: var(--cyan);
+            color: var(--text-light);
+        }
+
+        .btn-control {
+            background-color: rgba(0, 209, 255, 0.1);
+            border: 1px solid var(--cyan);
+            color: var(--cyan);
+            margin: 10px 0;
+            width: 100%;
+            padding: 8px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+
+        .btn-control:hover {
+            background-color: rgba(0, 209, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        pre code {
+            display: block;
+            padding: 16px;
+            overflow-x: auto;
+            background-color: #0f1e33;
+            border-left: 4px solid var(--amber);
+            border-radius: 5px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--text-light);
+            font-family: 'Courier New', Courier, monospace;
+            margin: 20px 0;
+        }
+
+        .code-keyword {
+            color: var(--amber);
+        }
+        .code-string {
+            color: #a5ff8f;
+        }
+        .code-comment {
+            color: #777;
+        }
+        .code-number {
+            color: #ff9e6d;
+        }
+
+        details {
+            margin: 20px 0;
+            border: 1px solid rgba(0, 209, 255, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        summary {
+            padding: 15px 20px;
+            background-color: rgba(0, 209, 255, 0.1);
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--cyan);
+            list-style: none;
+            font-size: 1.1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 209, 255, 0.1);
+        }
+
+        summary::before {
+            content: "▶ ";
+            font-size: 0.9rem;
+            transition: transform 0.3s ease;
+        }
+
+        details[open] summary::before {
+            transform: rotate(90deg);
+        }
+
+        details > div {
+            padding: 20px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 183, 77, 0.3);
+            font-weight: 500;
+        }
+
+        .example-box {
+            background-color: rgba(10, 25, 47, 0.5);
+            border-left: 4px solid var(--amber);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: #000;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 8px;
+        }
+
+        .footer-note {
+            color: var(--text-secondary);
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            border-top: 1px solid rgba(0, 209, 255, 0.1);
+            font-size: 0.9rem;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 992px) {
+            .left-panel {
+                width: 250px;
+            }
+            .right-panel {
+                margin-left: 250px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .left-panel {
+                position: relative;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--cyan);
+            }
+            .right-panel {
+                margin-left: 0;
+            }
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+            <!-- Left Panel -->
+            <div class="col-md-3 left-panel">
+                <h1>JavaScript Essentials</h1>
+                <p class="subtitle">Variables, Arrow Functions, Template Literals & Destructuring</p>
+                <div class="author-info">
+                    <i class="bi bi-person-circle"></i> Mastering JS Fundamentals<br>
+                    <small>For Absolute Beginners to Intermediate Learners</small>
+                </div>
+
+                <input type="text" class="form-control search-box" id="searchToc" placeholder="Search topics...">
+                
+                <button class="btn btn-control" id="expandAll">Expand All</button>
+                <button class="btn btn-control" id="collapseAll">Collapse All</button>
+
+                <div class="toc-container mt-4">
+                    <h4 class="text-muted mb-3">Table of Contents</h4>
+                    <div class="toc-item active" data-target="#section-2-1">2.1 Variables (let, const, var)</div>
+                    <div class="toc-item" data-target="#section-2-2">2.2 Arrow Functions</div>
+                    <div class="toc-item" data-target="#section-2-3">2.3 Template Literals</div>
+                    <div class="toc-item" data-target="#section-2-4">2.4 Destructuring Assignment</div>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="col-md-9 right-panel">
+                <!-- Section 2.1 -->
+                <section id="section-2-1">
+                    <h2>2.1 Variables (let, const, var)</h2>
+                    <p>Understanding variable declaration is foundational in JavaScript. The three keywords — <code>var</code>, <code>let</code>, and <code>const</code> — each behave differently and serve distinct purposes.</p>
+
+                    <details>
+                        <summary>Executive Summary</summary>
+                        <div>
+                            <ul>
+                                <li><strong>var</strong>: Function-scoped, hoisted, can be redeclared. Legacy keyword.</li>
+                                <li><strong>let</strong>: Block-scoped, hoisted but not initialized, can be reassigned.</li>
+                                <li><strong>const</strong>: Block-scoped, must be initialized, cannot be reassigned (but objects/arrays can be mutated).</li>
+                            </ul>
+                            <p class="highlight">Best Practice: Always use <code>const</code> by default. Use <code>let</code> only when you need reassignment. Avoid <code>var</code> in modern code.</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Forensic Detail: Scoping Rules</summary>
+                        <div>
+                            <p>Scoping determines where a variable is accessible. Let's compare:</p>
+
+                            <div class="example-box">
+                                <pre><code>// var - function scoped
+function exampleVar() {
+    if (true) {
+        var x = 10;
+    }
+    console.log(x); // ✅ Works: 10 (accessible outside if-block)
+}
+
+// let - block scoped
+function exampleLet() {
+    if (true) {
+        let y = 20;
+    }
+    console.log(y); // ❌ ReferenceError: y is not defined
+}</code></pre>
+                            </div>
+
+                            <p><strong>Key Insight:</strong> <code>var</code> ignores blocks (<code>{}</code>) while <code>let</code> and <code>const</code> respect them. This prevents accidental variable leaks and makes code more predictable.</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Origin Story: Why We Moved Away from var</summary>
+                        <div>
+                            <p>Before ES6 (2015), <code>var</code> was the only way to declare variables. But its behavior led to infamous bugs:</p>
+                            
+                            <div class="example-box">
+                                <pre><code>// Classic "var closure bug"
+for (var i = 0; i < 3; i++) {
+    setTimeout(() => console.log(i), 100);
+}
+// Output: 3, 3, 3 — not 0, 1, 2!</code></pre>
+                            </div>
+
+                            <p>This happened because <code>var</code> is function-scoped. All closures reference the same <code>i</code> variable, which ends up as 3 after the loop.</p>
+
+                            <p>With <code>let</code>, each iteration creates a new binding:</p>
+                            
+                            <div class="example-box">
+                                <pre><code>for (let i = 0; i < 3; i++) {
+    setTimeout(() => console.log(i), 100);
+}
+// Output: 0, 1, 2 — as expected!</code></pre>
+                            </div>
+
+                            <p>This breakthrough made JavaScript much safer for asynchronous programming.</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Deep Dive: Hoisting & TDZ</summary>
+                        <div>
+                            <p><strong>Hoisting</strong> means declarations are moved to the top of their scope during compilation.</p>
+
+                            <div class="example-box">
+                                <pre><code>console.log(a); // undefined (var is hoisted and initialized with undefined)
+console.log(b); // ❌ ReferenceError: Cannot access 'b' before initialization
+console.log(c); // ❌ ReferenceError: Cannot access 'c' before initialization
+
+var a = 5;
+let b = 10;
+const c = 20;</code></pre>
+                            </div>
+
+                            <p>The <strong>Temporal Dead Zone (TDZ)</strong> is the period between entering scope and initializing a <code>let</code>/<code>const</code> variable. Accessing it during TDZ throws an error.</p>
+
+                            <p><strong>Visual Timeline:</strong></p>
+                            <ol>
+                                <li>Code execution begins</li>
+                                <li><code>var</code> → created + initialized as <code>undefined</code></li>
+                                <li><code>let</code>/<code>const</code> → created but <em>not</em> initialized (TDZ)</li>
+                                <li>Assignment happens → variable becomes usable</li>
+                            </ol>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Practical Examples & Best Practices</summary>
+                        <div>
+                            <h4>When to Use Each?</h4>
+
+                            <div class="example-box">
+                                <pre><code>// ✅ GOOD: Use const for constants
+const PI = 3.14159;
+const user = { name: "Alice", age: 25 };
+
+// ✅ GOOD: Use let when value changes
+let count = 0;
+count++;
+count += 5;
+
+// ❌ BAD: Don't reassign const (unless mutating object/array)
+user.name = "Bob"; // ✅ OK — mutating object property
+user = { name: "Charlie" }; // ❌ Error: Assignment to constant variable
+
+// ❌ BAD: Never use var in modern JS
+var message = "Hello"; // Avoid — prefer const/let</code></pre>
+                            </div>
+
+                            <p><strong>Pro Tip:</strong> If you're unsure, start with <code>const</code>. If you get a reassignment error, then switch to <code>let</code>. This enforces immutability and reduces bugs.</p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- Section 2.2 -->
+                <section id="section-2-2">
+                    <h2>2.2 Arrow Functions</h2>
+                    <p>Arrow functions provide a concise syntax for writing functions and solve common issues with <code>this</code> context.</p>
+
+                    <details>
+                        <summary>Executive Summary</summary>
+                        <div>
+                            <ul>
+                                <li>Syntax: <code>() => {}</code> — shorter than <code>function()</code></li>
+                                <li>Implicit return for single expressions</li>
+                                <li>No own <code>this</code> — inherits from enclosing scope</li>
+                                <li>Cannot be used as constructors or with <code>arguments</code></li>
+                            </ul>
+                            <p class="highlight">Use arrow functions for short callbacks, functional programming, and when you need lexical <code>this</code>.</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Forensic Detail: Syntax Variations</summary>
+                        <div>
+                            <p>Arrow functions have multiple forms based on parameters and body structure:</p>
+
+                            <div class="example-box">
+                                <pre><code>// Traditional function
+function add(a, b) {
+    return a + b;
+}
+
+// Arrow function — full form
+const add = (a, b) => {
+    return a + b;
+};
+
+// Arrow function — implicit return (single expression)
+const add = (a, b) => a + b;
+
+// Single parameter — parentheses optional
+const square = x => x * x;
+
+// No parameters — empty parentheses required
+const greet = () => "Hello!";
+
+// Multiple parameters with destructuring
+const introduce = ({name, age}) => `${name} is ${age} years old`;</code></pre>
+                            </div>
+
+                            <p><strong>Remember:</strong> Implicit return only works when there’s no curly braces. For multi-line bodies, you MUST use <code>return</code>.</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Origin Story: The this Problem</summary>
+                        <div>
+                            <p>Before arrow functions, JavaScript developers struggled with <code>this</code> binding in callbacks:</p>
+
+                            <div class="example-box">
+                                <pre><code>// ❌ Problem: this refers to window/global in callback
+function Counter() {
+    this.count = 0;
+    
+    setInterval(function() {
+        this.count++; // ❌ 'this' is undefined or window!
+        console.log(this.count);
+    }, 1000);
+}
+
+// ✅ Solution: Arrow function inherits outer 'this'
+function Counter() {
+    this.count = 0;
+    
+    setInterval(() => {
+        this.count++; // ✅ 'this' refers to Counter instance!
+        console.log(this.count);
+    }, 1000);
+}</code></pre>
+                            </div>
+
+                            <p>Arrow functions don’t create their own <code>this</code>. Instead, they capture <code>this</code> from the surrounding scope — known as <strong>lexical scoping</strong>.</p>
+
+                            <p>This made React components, event handlers, and async code infinitely more reliable.</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Deep Dive: What Arrow Functions CANNOT Do</summary>
+                        <div>
+                            <h4>Limitations You Must Know</h4>
+
+                            <ol>
+                                <li><strong>No constructor usage</strong> — Can't use <code>new</code> with arrow functions</li>
+                                <li><strong>No arguments object</strong> — Use rest parameters instead</li>
+                                <li><strong>No prototype property</strong></li>
+                            </ol>
+
+                            <div class="example-box">
+                                <pre><code>// ❌ This will throw TypeError
+const Person = (name) => ({ name });
+const alice = new Person("Alice"); // ❌ Person is not a constructor
+
+// ✅ Use regular function for constructors
+function Person(name) {
+    this.name = name;
+}
+
+// ✅ Use rest parameters instead of arguments
+const sum = (...numbers) => {
+    return numbers.reduce((acc, n) => acc + n, 0);
+};
+sum(1, 2, 3, 4); // 10</code></pre>
+                            </div>
+
+                            <p><strong>Rule of Thumb:</strong> Use arrow functions for stateless, simple operations. Use traditional functions when you need <code>this</code> binding, constructors, or <code>arguments</code>.</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Practical Examples: Real-World Usage</summary>
+                        <div>
+                            <h4>Common Patterns</h4>
+
+                            <div class="example-box">
+                                <pre><code>// Array methods — clean and readable
+const numbers = [1, 2, 3, 4, 5];
+
+// Map
+const doubled = numbers.map(n => n * 2);
+
+// Filter
+const evens = numbers.filter(n => n % 2 === 0);
+
+// Reduce
+const sum = numbers.reduce((acc, n) => acc + n, 0);
+
+// Event listener
+button.addEventListener('click', () => {
+    console.log('Button clicked!');
+});
+
+// Async/await
+fetch('/api/data')
+    .then(response => response.json())
+    .then(data => console.log(data))
+    .catch(error => console.error(error));</code></pre>
+                            </div>
+
+                            <p>Arrow functions shine in functional programming patterns. They reduce visual noise and make intent clearer.</p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- Section 2.3 -->
+                <section id="section-2-3">
+                    <h2>2.3 Template Literals</h2>
+                    <p>Template literals (template strings) allow embedded expressions and multi-line strings using backticks (<code>`</code>).</p>
+
+                    <details>
+                        <summary>Executive Summary</summary>
+                        <div>
+                            <ul>
+                                <li>Use backticks: <code>`Hello ${name}`</code></li>
+                                <li>Embed expressions with <code>${...}</code></li>
+                                <li>Support multi-line strings without <code>\n</code></li>
+                                <li>Enable tagged templates for advanced parsing</li>
+                            </ul>
+                            <p class="highlight">Replace string concatenation with template literals for cleaner, more readable code.</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Forensic Detail: Expression Interpolation</summary>
+                        <div>
+                            <p>Before template literals, we concatenated strings like this:</p>
+
+                            <div class="example-box">
+                                <pre><code>// ❌ Old way — messy and unreadable
+var name = "Alice";
+var age = 25;
+var greeting = "Hello, my name is " + name + " and I am " + age + " years old.";
+
+// ✅ Modern way — clean and expressive
+const greeting = \`Hello, my name is \${name} and I am \${age} years old.\`;</code></pre>
+                            </div>
+
+                            <p>You can embed ANY valid JavaScript expression inside <code>\${}</code>:</p>
+
+                            <div class="example-box">
+                                <pre><code>const product = {
+    name: "Laptop",
+    price: 999
+};
+
+const receipt = \`
+Product: \${product.name}
+Price: \$\${product.price}
+Tax: \$\${product.price * 0.08}
+Total: \$\${product.price * 1.08}
+\`;
+
+console.log(receipt);</code></pre>
+                            </div>
+
+                            <p>Output:</p>
+                            <pre>
+Product: Laptop
+Price: $999
+Tax: $79.92
+Total: $1078.92
+                            </pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Origin Story: The Pain of Multi-line Strings</summary>
+                        <div>
+                            <p>Before template literals, creating multi-line strings required awkward line continuations:</p>
+
+                            <div class="example-box">
+                                <pre><code>// ❌ Pre-ES6 nightmare
+var html = '<div>\n' +
+           '  <h1>Title</h1>\n' +
+           '  <p>Content here</p>\n' +
+           '</div>';
+
+// ✅ With template literals — natural formatting
+const html = \`
+<div>
+  <h1>Title</h1>
+  <p>Content here</p>
+</div>
+\`;</code></pre>
+                            </div>
+
+                            <p>This wasn’t just about convenience — it reduced typos, improved readability, and made HTML/SQL generation much more maintainable.</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Deep Dive: Tagged Templates</summary>
+                        <div>
+                            <p>Tagged templates let you process template literals with a function — powerful for sanitization, localization, or DSLs.</p>
+
+                            <div class="example-box">
+                                <pre><code>// Custom tag function to escape HTML
+function html(strings, ...values) {
+    return strings.reduce((result, str, i) => {
+        const value = values[i] ? String(values[i]).replace(/[&<>"']/g, (char) => ({
+            '&': '&amp;',
+            '<': '<',
+            '>': '>',
+            '"': '&quot;',
+            "'": '&#39;'
+        })[char]) : '';
+        return result + str + value;
+    }, '');
+}
+
+const userInput = "<script>alert('XSS')</script>";
+const safeHtml = html\`Welcome, \${userInput}!\`;</code></pre>
+                            </div>
+
+                            <p>Now <code>safeHtml</code> outputs escaped text: <code>Welcome, <script>alert('XSS')</script>!</code></p>
+
+                            <p>Tagged templates are used in libraries like <code>styled-components</code> (React) and <code>graphql-tag</code> for domain-specific languages.</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Practical Examples & Anti-Patterns</summary>
+                        <div>
+                            <h4>✅ Good Usage</h4>
+                            <div class="example-box">
+                                <pre><code>// Dynamic URLs
+const userId = 123;
+const apiUrl = \`https://api.example.com/users/\${userId}/posts\`;
+
+// Formatted dates
+const now = new Date();
+const formatted = \`Today is \${now.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}\`;
+
+// Multiline logs
+console.log(\`
+User Session:
+  ID: \${session.id}
+  IP: \${session.ip}
+  Time: \${session.time}
+  Status: \${session.status.toUpperCase()}
+\`);</code></pre>
+                            </div>
+
+                            <h4>❌ Common Mistakes</h4>
+                            <div class="example-box">
+                                <pre><code>// ❌ Wrong: Mixing quotes
+const msg = \`He said "Hello"\`; // ✅ Fine
+const msg = \`He said 'Hello'\`; // ✅ Also fine
+const msg = \`He said \\"Hello\\" \`; // ❌ Overkill — unnecessary escaping
+
+// ❌ Forgetting backticks
+const name = "Alice";
+const greeting = "Hello, \${name}"; // ❌ Just literal string — no interpolation!
+
+// ✅ Correct
+const greeting = \`Hello, \${name}\`;</code></pre>
+                            </div>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- Section 2.4 -->
+                <section id="section-2-4">
+                    <h2>2.4 Destructuring Assignment</h2>
+                    <p>Destructuring allows you to extract values from arrays or properties from objects into distinct variables — reducing boilerplate and improving clarity.</p>
+
+                    <details>
+                        <summary>Executive Summary</summary>
+                        <div>
+                            <ul>
+                                <li>Object destructuring: <code>const {prop} = obj</code></li>
+                                <li>Array destructuring: <code>const [item] = arr</code></li>
+                                <li>Can rename, set defaults, and nest deeply</li>
+                                <li>Used heavily in React props, API responses, and config objects</li>
+                            </ul>
+                            <p class="highlight">Destructuring turns complex data access into one-liners. It’s one of the most productive ES6 features.</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Forensic Detail: Object Destructuring</summary>
+                        <div>
+                            <p>Traditional way to extract properties:</p>
+
+                            <div class="example-box">
+                                <pre><code>// ❌ Before destructuring
+const person = {
+    firstName: "John",
+    lastName: "Doe",
+    email: "john@example.com"
+};
+
+const firstName = person.firstName;
+const lastName = person.lastName;
+const email = person.email;</code></pre>
+                            </div>
+
+                            <p>With destructuring — clean and efficient:</p>
+
+                            <div class="example-box">
+                                <pre><code>// ✅ Modern approach
+const { firstName, lastName, email } = person;
+
+console.log(firstName); // "John"
+console.log(lastName);  // "Doe"</code></pre>
+                            </div>
+
+                            <p>You can also rename variables:</p>
+
+                            <div class="example-box">
+                                <pre><code>const { firstName: fn, lastName: ln } = person;
+console.log(fn); // "John" — renamed to fn</code></pre>
+                            </div>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Origin Story: The Rise of Configuration Objects</summary>
+                        <div>
+                            <p>Modern JavaScript APIs often pass configuration objects:</p>
+
+                            <div class="example-box">
+                                <pre><code>// ❌ Without destructuring
+function createUser(config) {
+    const username = config.username;
+    const role = config.role || 'user';
+    const isActive = config.isActive === true;
+    const avatar = config.avatar || '/default.png';
+    // ... 10 more lines
+}</code></pre>
+                            </div>
+
+                            <p>With destructuring — elegant and self-documenting:</p>
+
+                            <div class="example-box">
+                                <pre><code>// ✅ With destructuring
+function createUser({ 
+    username, 
+    role = 'user', 
+    isActive = true, 
+    avatar = '/default.png' 
+}) {
+    // Now all variables are ready!
+    console.log(username, role, isActive, avatar);
+}</code></pre>
+                            </div>
+
+                            <p>This pattern became standard in frameworks like React, Vue, and Node.js — making code more readable and less error-prone.</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Deep Dive: Nested & Default Destructuring</summary>
+                        <div>
+                            <h4>Nested Destructuring</h4>
+                            <div class="example-box">
+                                <pre><code>const user = {
+    name: "Alice",
+    address: {
+        street: "123 Main St",
+        city: "New York",
+        zip: {
+            code: "10001",
+            extension: "1234"
+        }
+    }
+};
+
+// Extract deeply nested values
+const { 
+    name,
+    address: { 
+        city, 
+        zip: { code } 
+    } 
+} = user;
+
+console.log(name, city, code); // Alice, New York, 10001</code></pre>
+                            </div>
+
+                            <h4>Default Values</h4>
+                            <div class="example-box">
+                                <pre><code>const settings = {
+    theme: "dark",
+    fontSize: 16
+};
+
+// Provide fallbacks if property is missing
+const { theme = "light", fontSize = 14, language = "en" } = settings;
+
+console.log(language); // "en" — defaulted since not in object</code></pre>
+                            </div>
+
+                            <h4>Combining with Rest</h4>
+                            <div class="example-box">
+                                <pre><code>const { name, ...rest } = user;
+console.log(name); // "Alice"
+console.log(rest); // { address: {...} } — everything else</c

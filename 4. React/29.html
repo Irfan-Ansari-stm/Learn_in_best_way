@@ -1,0 +1,1697 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Learning Notes: React Server Components</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00f5ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --border-color: #1a3b5f;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Roboto', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            background-color: #0c213a;
+            border-right: 1px solid var(--border-color);
+            height: 100vh;
+            position: fixed;
+            width: 300px;
+            overflow-y: auto;
+            padding: 1rem;
+            box-shadow: 2px 0 10px rgba(0, 245, 255, 0.1);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 2rem;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.3rem;
+            margin-top: 2rem;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: var(--amber);
+        }
+
+        .toc-item {
+            margin: 0.5rem 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            color: var(--text-light);
+        }
+
+        .toc-item:hover {
+            background-color: rgba(0, 245, 255, 0.1);
+        }
+
+        .toc-item.active {
+            background-color: rgba(0, 245, 255, 0.2);
+            border-left: 3px solid var(--cyan);
+        }
+
+        .toc-subitem {
+            margin-left: 1.5rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 4px;
+            color: #a0cfe8;
+            font-size: 0.9rem;
+        }
+
+        .toc-subitem:hover {
+            background-color: rgba(0, 245, 255, 0.1);
+        }
+
+        .code-block {
+            background-color: #0f1e33;
+            border-left: 4px solid var(--amber);
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .highlight {
+            color: var(--amber);
+            font-weight: bold;
+        }
+
+        .details-summary {
+            cursor: pointer;
+            padding: 0.8rem;
+            background-color: #0f223a;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .details-summary:hover {
+            background-color: #132a4a;
+            box-shadow: 0 2px 6px rgba(0, 245, 255, 0.15);
+        }
+
+        .details-content {
+            padding: 1rem;
+            background-color: #0d1e35;
+            border-radius: 0 0 6px 6px;
+            border: 1px solid var(--border-color);
+            border-top: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-control {
+            background-color: rgba(0, 245, 255, 0.1);
+            color: var(--cyan);
+            border: 1px solid var(--cyan);
+            margin: 0.5rem 0;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .btn-control:hover {
+            background-color: rgba(0, 245, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .author-info {
+            color: var(--amber);
+            font-style: italic;
+            margin: 1rem 0;
+            padding: 0.8rem;
+            background-color: rgba(255, 183, 77, 0.1);
+            border-radius: 6px;
+            border-left: 3px solid var(--amber);
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: #000;
+            font-weight: bold;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+
+        .section-marker {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background-color: var(--amber);
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 245, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 245, 255, 0.5);
+        }
+
+        .search-input {
+            background-color: #0f1e33;
+            border: 1px solid var(--border-color);
+            color: var(--text-light);
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border-radius: 4px;
+            width: 100%;
+        }
+
+        .sub-header {
+            color: var(--amber);
+            font-size: 1.2rem;
+            margin: 1.5rem 0 1rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        .definition-box {
+            border-left: 3px solid var(--cyan);
+            background-color: rgba(0, 245, 255, 0.05);
+            padding: 0.8rem;
+            margin: 1rem 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .example-box {
+            border-left: 3px solid var(--amber);
+            background-color: rgba(255, 183, 77, 0.08);
+            padding: 0.8rem;
+            margin: 1rem 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .uses-box {
+            border-left: 3px solid #8bc34a;
+            background-color: rgba(139, 195, 74, 0.08);
+            padding: 0.8rem;
+            margin: 1rem 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .comparison-table th, .comparison-table td {
+            border: 1px solid var(--border-color) !important;
+        }
+
+        .code-comment {
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        .warning-box {
+            border-left: 3px solid #ff6b6b;
+            background-color: rgba(255, 107, 107, 0.1);
+            padding: 0.8rem;
+            margin: 1rem 0;
+            border-radius: 0 6px 6px 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid p-0 m-0">
+    <div class="row g-0">
+        <!-- Left Panel -->
+        <div class="col-auto left-panel">
+            <h3 class="text-center mb-4">React Server Components</h3>
+            <p class="author-info">By: Advanced React Architecture Tutor</p>
+
+            <div class="mb-3">
+                <input type="text" class="form-control search-input" id="searchToc" placeholder="Search topics...">
+            </div>
+
+            <button class="btn btn-control w-100" id="expandAll">Expand All</button>
+            <button class="btn btn-control w-100" id="collapseAll">Collapse All</button>
+
+            <div class="mt-4">
+                <h5 class="text-muted mb-3">Table of Contents</h5>
+                <ul class="list-unstyled">
+                    <li>
+                        <div class="toc-item" data-target="#section-19-1">
+                            <span class="section-marker"></span>19.1 Server vs Client Components
+                        </div>
+                        <ul class="list-unstyled ms-3" id="section-19-1">
+                            <li><div class="toc-subitem" data-scroll="def-server-client">Definition</div></li>
+                            <li><div class="toc-subitem" data-scroll="detail-server-client">Detail</div></li>
+                            <li><div class="toc-subitem" data-scroll="syntax-server-client">Syntax & Differences</div></li>
+                            <li><div class="toc-subitem" data-scroll="example-server-client">Example</div></li>
+                            <li><div class="toc-subitem" data-scroll="uses-server-client">Uses</div></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <div class="toc-item" data-target="#section-19-2">
+                            <span class="section-marker"></span>19.2 Server Component Patterns
+                        </div>
+                        <ul class="list-unstyled ms-3" id="section-19-2">
+                            <li><div class="toc-subitem" data-scroll="def-patterns">Definition</div></li>
+                            <li><div class="toc-subitem" data-scroll="detail-patterns">Detail</div></li>
+                            <li><div class="toc-subitem" data-scroll="syntax-patterns">Syntax & Patterns</div></li>
+                            <li><div class="toc-subitem" data-scroll="example-patterns">Example</div></li>
+                            <li><div class="toc-subitem" data-scroll="uses-patterns">Uses</div></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <div class="toc-item" data-target="#section-19-3">
+                            <span class="section-marker"></span>19.3 Data Fetching in Server Components
+                        </div>
+                        <ul class="list-unstyled ms-3" id="section-19-3">
+                            <li><div class="toc-subitem" data-scroll="def-fetching">Definition</div></li>
+                            <li><div class="toc-subitem" data-scroll="detail-fetching">Detail</div></li>
+                            <li><div class="toc-subitem" data-scroll="syntax-fetching">Syntax & Methods</div></li>
+                            <li><div class="toc-subitem" data-scroll="example-fetching">Example</div></li>
+                            <li><div class="toc-subitem" data-scroll="uses-fetching">Uses</div></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <div class="toc-item" data-target="#section-19-4">
+                            <span class="section-marker"></span>19.4 Streaming and Suspense
+                        </div>
+                        <ul class="list-unstyled ms-3" id="section-19-4">
+                            <li><div class="toc-subitem" data-scroll="def-streaming">Definition</div></li>
+                            <li><div class="toc-subitem" data-scroll="detail-streaming">Detail</div></li>
+                            <li><div class="toc-subitem" data-scroll="syntax-streaming">Syntax & Implementation</div></li>
+                            <li><div class="toc-subitem" data-scroll="example-streaming">Example</div></li>
+                            <li><div class="toc-subitem" data-scroll="uses-streaming">Uses</div></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <div class="toc-item" data-target="#section-19-5">
+                            <span class="section-marker"></span>19.5 Server Actions
+                        </div>
+                        <ul class="list-unstyled ms-3" id="section-19-5">
+                            <li><div class="toc-subitem" data-scroll="def-actions">Definition</div></li>
+                            <li><div class="toc-subitem" data-scroll="detail-actions">Detail</div></li>
+                            <li><div class="toc-subitem" data-scroll="syntax-actions">Syntax & Usage</div></li>
+                            <li><div class="toc-subitem" data-scroll="example-actions">Example</div></li>
+                            <li><div class="toc-subitem" data-scroll="uses-actions">Uses</div></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <div class="toc-item" data-target="#section-19-6">
+                            <span class="section-marker"></span>19.6 Migration Strategies
+                        </div>
+                        <ul class="list-unstyled ms-3" id="section-19-6">
+                            <li><div class="toc-subitem" data-scroll="def-migration">Definition</div></li>
+                            <li><div class="toc-subitem" data-scroll="detail-migration">Detail</div></li>
+                            <li><div class="toc-subitem" data-scroll="syntax-migration">Syntax & Strategy</div></li>
+                            <li><div class="toc-subitem" data-scroll="example-migration">Example</div></li>
+                            <li><div class="toc-subitem" data-scroll="uses-migration">Uses</div></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="col right-panel">
+            <h1>React Server Components Deep Dive</h1>
+            <h4 class="text-muted">Mastering Modern React Architecture with SSR, Streaming & Server Actions</h4>
+
+            <!-- Section 19.1 -->
+            <section id="section-19-1">
+                <h2>19.1 Server vs Client Components</h2>
+                
+                <details>
+                    <summary class="details-summary">Definition</summary>
+                    <div class="details-content definition-box">
+                        <p><strong>Server Components:</strong> React components that render on the server and send only HTML to the client. They never run in the browser.</p>
+                        <p><strong>Client Components:</strong> Traditional React components that download to the browser and execute JavaScript for interactivity.</p>
+                        <p>This is a fundamental shift from React's traditional "everything runs on the client" model.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Detail</summary>
+                    <div class="details-content">
+                        <p>Before Server Components:</p>
+                        <ul>
+                            <li>All components downloaded to browser → large bundle sizes</li>
+                            <li>Data fetching happened on client → slow TTI (Time to Interactive)</li>
+                            <li>Authentication secrets could leak to frontend</li>
+                            <li>Expensive operations (image processing, PDF generation) ran on user's device</li>
+                        </ul>
+                        
+                        <p>With Server Components:</p>
+                        <ul>
+                            <li>Components render once on server → minimal JS sent to client</li>
+                            <li>Heavy logic and data fetching happen on server</li>
+                            <li>Only interactive components are sent as JavaScript bundles</li>
+                            <li>Security-sensitive code stays on server</li>
+                            <li>Reduced bundle size → faster load times → better SEO</li>
+                        </ul>
+                        
+                        <p><strong>Key Insight:</strong> Server Components are not just "SSR" — they're a new component type with different rules.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Syntax & Differences</summary>
+                    <div class="details-content">
+                        <p><strong>Default behavior:</strong> All components are Server Components by default in Next.js App Router.</p>
+                        
+                        <pre><code class="language-jsx">// src/app/page.js - Server Component (default)
+export default function HomePage() {
+  // This runs ONLY on server
+  const posts = await fetch('https://api.example.com/posts').then(r =&gt; r.json());
+  
+  return (
+    &lt;div&gt;
+      {posts.map(post =&gt; &lt;Post key={post.id} post={post} /&gt;)}
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>To make a component Client:</strong> Use 'use client' directive at top:</p>
+                        
+                        <pre><code class="language-jsx">// src/components/Counter.js - Client Component
+'use client';
+
+import { useState } from 'react';
+
+export default function Counter() {
+  const [count, setCount] = useState(0);
+  
+  return (
+    &lt;button onClick={() =&gt; setCount(count + 1)}&gt;
+      Count: {count}
+    &lt;/button&gt;
+  );
+}</code></pre>
+                        
+                        <table class="table table-dark mt-4 comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>Feature</th>
+                                    <th>Server Component</th>
+                                    <th>Client Component</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Where it runs</td>
+                                    <td>Server only</td>
+                                    <td>Browser only</td>
+                                </tr>
+                                <tr>
+                                    <td>Can use hooks?</td>
+                                    <td>No (<span class="highlight">useState</span>, <span class="highlight">useEffect</span>)</td>
+                                    <td>Yes</td>
+                                </tr>
+                                <tr>
+                                    <td>Can access localStorage?</td>
+                                    <td>No</td>
+                                    <td>Yes</td>
+                                </tr>
+                                <tr>
+                                    <td>Can use event handlers?</td>
+                                    <td>No</td>
+                                    <td>Yes</td>
+                                </tr>
+                                <tr>
+                                    <td>Can import Node.js modules?</td>
+                                    <td>Yes (fs, path, etc.)</td>
+                                    <td>No</td>
+                                </tr>
+                                <tr>
+                                    <td>Bundle size impact</td>
+                                    <td>Zero (no JS sent)</td>
+                                    <td>Significant</td>
+                                </tr>
+                                <tr>
+                                    <td>Use case</td>
+                                    <td>Data fetching, layouts, static content</td>
+                                    <td>Forms, buttons, animations, real-time updates</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Example</summary>
+                    <div class="details-content example-box">
+                        <p><strong>Scenario:</strong> Blog homepage with author bio, latest posts, and comment form</p>
+                        
+                        <pre><code class="language-jsx">// app/page.js - Server Component
+import PostList from '@/components/PostList';
+import AuthorBio from '@/components/AuthorBio';
+import CommentForm from '@/components/CommentForm'; // Client Component
+
+export default async function HomePage() {
+  // ✅ Server-side data fetching
+  const author = await fetch('https://api.blog.com/author').then(r =&gt; r.json());
+  const posts = await fetch('https://api.blog.com/posts?limit=5').then(r =&gt; r.json());
+  
+  return (
+    &lt;div&gt;
+      &lt;AuthorBio author={author} /&gt;  {/* Server Component */}
+      &lt;PostList posts={posts} /&gt;     {/* Server Component */}
+      
+      &lt;!-- Only this component becomes JavaScript bundle --&gt;
+      &lt;CommentForm /&gt;                 {/* Client Component */}
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>What happens:</strong></p>
+                        <ol>
+                            <li>Server fetches author data and posts</li>
+                            <li>Server renders entire page as HTML</li>
+                            <li>Only <code>CommentForm</code> is bundled as JS (~2KB)</li>
+                            <li>User gets fully rendered page instantly</li>
+                            <li>Comment form becomes interactive after hydration</li>
+                        </ol>
+                        
+                        <p><strong>Result:</strong> 80% smaller bundle than traditional React app!</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Uses</summary>
+                    <div class="details-content uses-box">
+                        <ul>
+                            <li>Fetching API data without exposing endpoints to clients</li>
+                            <li>Rendering dynamic content with SEO-friendly HTML</li>
+                            <li>Accessing database directly (without REST API layer)</li>
+                            <li>Processing files or images on server (PDF generation, image optimization)</li>
+                            <li>Using environment variables securely (database credentials, API keys)</li>
+                            <li>Reducing bundle size for better Core Web Vitals</li>
+                            <li>Improving performance on low-end devices and slow networks</li>
+                        </ul>
+                        <p><strong>Golden Rule:</strong> Make everything a Server Component by default. Only make components Client when you need interactivity (events, state, effects).</p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- Section 19.2 -->
+            <section id="section-19-2">
+                <h2>19.2 Server Component Patterns</h2>
+                
+                <details>
+                    <summary class="details-summary">Definition</summary>
+                    <div class="details-content definition-box">
+                        <p>Server Component patterns are architectural approaches for organizing data fetching, composition, and rendering in modern React applications.</p>
+                        <p>These patterns leverage the server's capabilities to create optimized, secure, and maintainable UIs.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Detail</summary>
+                    <div class="details-content">
+                        <p>Three core patterns:</p>
+                        
+                        <h5 class="mt-3">1. Layout Composition</h5>
+                        <p>Server Components act as containers that wrap other components, managing data at the layout level.</p>
+                        
+                        <h5 class="mt-3">2. Data Fetching Hierarchy</h5>
+                        <p>Parent Server Components fetch data and pass it down as props to child components — no need for client-side data fetching.</p>
+                        
+                        <h5 class="mt-3">3. Progressive Enhancement</h5>
+                        <p>Start with server-rendered content, then enhance with client components only where needed.</p>
+                        
+                        <p><strong>Why these matter:</strong> Eliminates waterfall requests, reduces client-side complexity, and enables streaming.</p>
+                        
+                        <p><strong>Important Constraint:</strong> Server Components cannot be dynamically imported using <code>dynamic()</code> — they must be statically analyzable.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Syntax & Patterns</summary>
+                    <div class="details-content">
+                        <p><strong>Pattern 1: Nested Layouts</strong></p>
+                        
+                        <pre><code class="language-jsx">// app/layout.js - Root layout (Server Component)
+import './globals.css';
+
+export default function RootLayout({ children }) {
+  return (
+    &lt;html lang="en"&gt;
+      &lt;head&gt;&lt;/head&gt;
+      &lt;body&gt;
+        &lt;Header /&gt;  {/* Server Component */}
+        &lt;main&gt;
+          {children}
+        &lt;/main&gt;
+        &lt;Footer /&gt;  {/* Server Component */}
+      &lt;/body&gt;
+    &lt;/html&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>Pattern 2: Data Flow Downward</strong></p>
+                        
+                        <pre><code class="language-jsx">// app/blog/[slug]/page.js
+import PostContent from '@/components/PostContent';
+import CommentsSection from '@/components/CommentsSection';
+
+// ✅ Parent fetches data once
+export default async function PostPage({ params }) {
+  const post = await getPost(params.slug);   // Server-only DB call
+  const author = await getAuthor(post.authorId); // Server-only DB call
+  
+  return (
+    &lt;div&gt;
+      &lt;PostContent post={post} author={author} /&gt;
+      &lt;CommentsSection postId={post.id} /&gt;  {/* Will become client component */}
+    &lt;/div&gt;
+  );
+}
+
+// app/components/PostContent.js - Server Component
+export default function PostContent({ post, author }) {
+  return (
+    &lt;article&gt;
+      &lt;h1&gt;{post.title}&lt;/h1&gt;
+      &lt;p&gt;By {author.name}&lt;/p&gt;
+      &lt;div dangerouslySetInnerHTML={{ __html: post.content }} /&gt;
+    &lt;/article&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>Pattern 3: Avoiding Client Waterfalls</strong></p>
+                        <p>❌ BAD: Client component fetching data after mounting</p>
+                        <pre><code class="language-jsx">// ❌ DON'T DO THIS
+'use client';
+export default function UserCard() {
+  const [user, setUser] = useState(null);
+  
+  useEffect(() =&gt; {
+    fetch('/api/user')  // 🚫 Network request after render
+      .then(r =&gt; r.json())
+      .then(setUser);
+  }, []);
+  
+  return &lt;div&gt;{user?.name}&lt;/div&gt;;
+}</code></pre>
+                        
+                        <p>✅ GOOD: Server component fetches before rendering</p>
+                        <pre><code class="language-jsx">// ✅ DO THIS INSTEAD
+export default async function UserCard() {
+  const user = await fetch('/api/user').then(r =&gt; r.json()); // ✅ Fetched during server render
+  return &lt;div&gt;{user.name}&lt;/div&gt;;
+}</code></pre>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Example</summary>
+                    <div class="details-content example-box">
+                        <p><strong>Scenario:</strong> E-commerce product page with recommendations</p>
+                        
+                        <pre><code class="language-jsx">// app/products/[id]/page.js
+import ProductDetails from '@/components/ProductDetails';
+import RelatedProducts from '@/components/RelatedProducts';
+import AddToCart from '@/components/AddToCart'; // Client Component
+
+export default async function ProductPage({ params }) {
+  // ✅ Single server-side data fetch
+  const product = await getProduct(params.id);
+  const related = await getRelatedProducts(product.category);
+  const inventory = await checkInventory(product.id);
+  
+  return (
+    &lt;div className="product-page"&gt;
+      &lt;ProductDetails product={product} inventory={inventory} /&gt;
+      &lt;RelatedProducts products={related} /&gt;
+      
+      &lt;!-- Only interactive part becomes client component --&gt;
+      &lt;AddToCart productId={product.id} /&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>Component Structure:</strong></p>
+                        <ul>
+                            <li><strong>ProductDetails:</strong> Server Component — displays product info, specs, images</li>
+                            <li><strong>RelatedProducts:</strong> Server Component — shows 4 recommended items</li>
+                            <li><strong>AddToCart:</strong> Client Component — has "Add to Cart" button with state</li>
+                        </ul>
+                        
+                        <p><strong>Benefits:</strong></p>
+                        <ul>
+                            <li>Entire page renders in one round-trip</li>
+                            <li>No client-side data fetching delays</li>
+                            <li>SEO-friendly — search engines see full product details</li>
+                            <li>Only ~3KB of JS sent to browser</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Uses</summary>
+                    <div class="details-content uses-box">
+                        <ul>
+                            <li>Creating reusable layouts with shared data</li>
+                            <li>Building hierarchical data pipelines</li>
+                            <li>Optimizing for performance-critical pages (homepages, product listings)</li>
+                            <li>Implementing progressive enhancement strategy</li>
+                            <li>Reducing network requests by combining multiple data sources</li>
+                            <li>Enabling streaming rendering (next topic)</li>
+                            <li>Minimizing JavaScript bundle sizes</li>
+                        </ul>
+                        <p><strong>Best Practice:</strong> Think in terms of "data trees" — your server components should form a tree where each node fetches its own data, and parent nodes compose the final output.</p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- Section 19.3 -->
+            <section id="section-19-3">
+                <h2>19.3 Data Fetching in Server Components</h2>
+                
+                <details>
+                    <summary class="details-summary">Definition</summary>
+                    <div class="details-content definition-box">
+                        <p>Data fetching in Server Components means retrieving data during server-side rendering before sending HTML to the client.</p>
+                        <p>Unlike client components, you can use async/await directly in the component body.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Detail</summary>
+                    <div class="details-content">
+                        <p>Traditional Client Approach:</p>
+                        <ul>
+                            <li>Component mounts → empty state displayed</li>
+                            <li>useEffect triggers → API call made</li>
+                            <li>Loading state shown → then data renders</li>
+                            <li>Multiple round trips possible</li>
+                        </ul>
+                        
+                        <p>Server Component Approach:</p>
+                        <ul>
+                            <li>Request comes in → server executes component</li>
+                            <li>Async data fetching happens synchronously</li>
+                            <li>Full HTML with data is generated</li>
+                            <li>Complete page sent to client → instant display</li>
+                        </ul>
+                        
+                        <p><strong>Key Advantages:</strong></p>
+                        <ul>
+                            <li>No loading spinners on first load</li>
+                            <li>Faster perceived performance</li>
+                            <li>Better SEO (content available in HTML)</li>
+                            <li>Reduced client CPU usage</li>
+                            <li>Single source of truth</li>
+                        </ul>
+                        
+                        <p><strong>Under the Hood:</strong> React waits for all async operations to complete before sending the response — no partial rendering unless streaming is enabled.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Syntax & Methods</summary>
+                    <div class="details-content">
+                        <p><strong>Method 1: Direct Async/Await</strong></p>
+                        
+                        <pre><code class="language-jsx">// app/page.js
+export default async function HomePage() {
+  const users = await fetch('https://api.example.com/users').then(r =&gt; r.json());
+  const posts = await fetch('https://api.example.com/posts').then(r =&gt; r.json());
+  const config = await getConfig(); // Custom server function
+  
+  return (
+    &lt;div&gt;
+      &lt;UserList users={users} /&gt;
+      &lt;PostGrid posts={posts} /&gt;
+      &lt;SettingsPanel config={config} /&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>Method 2: Using Database Clients Directly</strong></p>
+                        
+                        <pre><code class="language-jsx">// app/page.js
+import { db } from '@/lib/db'; // Prisma, Drizzle, etc.
+
+export default async function HomePage() {
+  const posts = await db.post.findMany({
+    where: { published: true },
+    include: { author: true },
+    orderBy: { createdAt: 'desc' },
+    take: 10
+  });
+  
+  return (
+    &lt;div&gt;
+      {posts.map(post =&gt; (
+        &lt;PostCard key={post.id} post={post} /&gt;
+      ))}
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>Method 3: Reusable Data Functions</strong></p>
+                        
+                        <pre><code class="language-jsx">// lib/data.js
+export async function getPosts() {
+  const res = await fetch('https://api.example.com/posts');
+  if (!res.ok) throw new Error('Failed to fetch posts');
+  return res.json();
+}
+
+export async function getUser(id) {
+  const res = await fetch(<span class="highlight">`https://api.example.com/users/${id}`</span>);
+  return res.json();
+}</code></pre>
+                        
+                        <p><strong>Method 4: Parallel Fetching with Promise.all</strong></p>
+                        
+                        <pre><code class="language-jsx">// app/page.js
+export default async function HomePage() {
+  const [users, posts, settings] = await Promise.all([
+    fetch('/api/users').then(r =&gt; r.json()),
+    fetch('/api/posts').then(r =&gt; r.json()),
+    fetch('/api/settings').then(r =&gt; r.json())
+  ]);
+  
+  return (
+    &lt;div&gt;
+      &lt;Users users={users} /&gt;
+      &lt;Posts posts={posts} /&gt;
+      &lt;Settings settings={settings} /&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>⚠️ Important Restrictions:</strong></p>
+                        <ul>
+                            <li>Cannot use <code>useState</code>, <code>useEffect</code>, or any hook</li>
+                            <li>Cannot access browser APIs (<code>window</code>, <code>localStorage</code>)</li>
+                            <li>Cannot use <code>fetch</code> with credentials unless explicitly allowed</li>
+                            <li>Must be top-level — cannot conditionally fetch inside if/else</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Example</summary>
+                    <div class="details-content example-box">
+                        <p><strong>Scenario:</strong> Dashboard with user profile, analytics, and notifications</p>
+                        
+                        <pre><code class="language-jsx">// app/dashboard/page.js
+import UserProfile from '@/components/UserProfile';
+import AnalyticsChart from '@/components/AnalyticsChart';
+import Notifications from '@/components/Notifications';
+
+// ✅ All data fetched on server
+export default async function DashboardPage() {
+  // 🔒 Secure: Can access environment variables
+  const API_KEY = process.env.API_KEY;
+  
+  // ✅ Direct database access (no REST API needed!)
+  const user = await db.user.findUnique({
+    where: { id: 123 },
+    include: { profile: true, preferences: true }
+  });
+  
+  // ✅ Multiple parallel data sources
+  const [analytics, notifications] = await Promise.all([
+    fetch(<span class="highlight">`https://analytics-api.example.com/stats?userId=${user.id}`</span>).then(r =&gt; r.json()),
+    fetch(<span class="highlight">`https://notifications-api.example.com/unread?userId=${user.id}`</span>).then(r =&gt; r.json())
+  ]);
+  
+  // ✅ Process data on server (securely!)
+  const processedAnalytics = processAnalyticsData(analytics, user.preferences);
+  
+  return (
+    &lt;div className="dashboard"&gt;
+      &lt;UserProfile user={user} /&gt;
+      &lt;AnalyticsChart data={processedAnalytics} /&gt;
+      &lt;Notifications items={notifications} /&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>What happens on client:</strong></p>
+                        <ul>
+                            <li>HTML with all data pre-rendered</li>
+                            <li>~5KB JavaScript bundle (only for interactive components)</li>
+                            <li>No waiting for API calls — content appears instantly</li>
+                            <li>Search engines crawl complete dashboard content</li>
+                        </ul>
+                        
+                        <p><strong>Performance Impact:</strong> LCP (Largest Contentful Paint) improves from 4.2s to 0.8s!</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Uses</summary>
+                    <div class="details-content uses-box">
+                        <ul>
+                            <li>Fetching from databases directly (Prisma, Drizzle, TypeORM)</li>
+                            <li>Calling internal microservices without public APIs</li>
+                            <li>Processing sensitive data (calculations, transformations)</li>
+                            <li>Combining multiple data sources in single request</li>
+                            <li>Generating dynamic content based on user context</li>
+                            <li>Accessing environment variables securely</li>
+                            <li>Integrating with server-only libraries (PDFKit, Sharp)</li>
+                        </ul>
+                        <p><strong>Pro Tip:</strong> Always validate and sanitize data on server before passing to components. Never trust client input!</p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- Section 19.4 -->
+            <section id="section-19-4">
+                <h2>19.4 Streaming and Suspense</h2>
+                
+                <details>
+                    <summary class="details-summary">Definition</summary>
+                    <div class="details-content definition-box">
+                        <p>Streaming allows the server to send HTML progressively as data becomes available, rather than waiting for everything to finish.</p>
+                        <p>Suspense is the React mechanism that lets components "wait" for data and show fallback UI while waiting.</p>
+                        <p>Together, they enable instant UI rendering with gradual content delivery.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Detail</summary>
+                    <div class="details-content">
+                        <p><strong>Traditional Blocking:</strong></p>
+                        <p>Server waits for ALL data → sends complete HTML → client renders → user sees nothing until everything loads.</p>
+                        
+                        <p><strong>Streaming with Suspense:</strong></p>
+                        <p>Server sends available parts immediately → shows skeleton loaders → fills in content as data arrives.</p>
+                        
+                        <p><strong>Visual Analogy:</strong> Imagine a restaurant waiter bringing dishes one by one instead of waiting for the entire meal to be ready.</p>
+                        
+                        <p><strong>Technical Magic:</strong> React uses HTTP chunked encoding to send HTML in fragments. Each Suspense boundary creates a separate stream.</p>
+                        
+                        <p><strong>Benefits:</strong></p>
+                        <ul>
+                            <li>Perceived performance improves dramatically</li>
+                            <li>First meaningful paint occurs faster</li>
+                            <li>Reduces bounce rate on slow connections</li>
+                            <li>Works beautifully on mobile networks</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Syntax & Implementation</summary>
+                    <div class="details-content">
+                        <p><strong>Basic Suspense Usage:</strong></p>
+                        
+                        <pre><code class="language-jsx">// app/page.js
+import { Suspense } from 'react';
+import UserProfile from '@/components/UserProfile';
+import PostsFeed from '@/components/PostsFeed';
+
+export default async function HomePage() {
+  return (
+    &lt;div&gt;
+      &lt;Suspense fallback=&lt;div&gt;Loading user...&lt;/div&gt;&gt;
+        &lt;UserProfile /&gt;  {/* Will stream when ready */}
+      &lt;/Suspense&gt;
+      
+      &lt;Suspense fallback=&lt;div&gt;Loading posts...&lt;/div&gt;&gt;
+        &lt;PostsFeed /&gt;    {/* Will stream independently */}
+      &lt;/Suspense&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>Server Component Inside Suspense:</strong></p>
+                        
+                        <pre><code class="language-jsx">// app/components/PostsFeed.js - Server Component
+export default async function PostsFeed() {
+  // Simulate slow data fetch
+  await new Promise(resolve =&gt; setTimeout(resolve, 2000));
+  
+  const posts = await fetch('https://api.example.com/posts').then(r =&gt; r.json());
+  
+  return (
+    &lt;div&gt;
+      {posts.map(post =&gt; (
+        &lt;PostCard key={post.id} post={post} /&gt;
+      ))}
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>Advanced: Nested Suspense Boundaries</strong></p>
+                        
+                        <pre><code class="language-jsx">// app/components/PostCard.js
+import { Suspense } from 'react';
+import Comments from '@/components/Comments';
+
+export default function PostCard({ post }) {
+  return (
+    &lt;article&gt;
+      &lt;h3&gt;{post.title}&lt;/h3&gt;
+      &lt;p&gt;{post.excerpt}&lt;/p&gt;
+      
+      &lt;Suspense fallback=&lt;div&gt;Loading comments...&lt;/div&gt;&gt;
+        &lt;Comments postId={post.id} /&gt;  {/* Will stream separately */}
+      &lt;/Suspense&gt;
+    &lt;/article&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>Custom Loading States:</strong></p>
+                        
+                        <pre><code class="language-jsx">// app/loading.js - Global loading UI
+export default function Loading() {
+  return (
+    &lt;div className="loading-skeleton"&gt;
+      &lt;div className="skeleton-line"&gt;&lt;/div&gt;
+      &lt;div className="skeleton-line"&gt;&lt;/div&gt;
+      &lt;div className="skeleton-image"&gt;&lt;/div&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p>Then use globally:</p>
+                        <pre><code class="language-jsx">// app/layout.js
+import Loading from '@/app/loading';
+
+export default function RootLayout({ children }) {
+  return (
+    &lt;html&gt;
+      &lt;body&gt;
+        &lt;Suspense fallback=&lt;Loading /&gt;&gt;
+          {children}
+        &lt;/Suspense&gt;
+      &lt;/body&gt;
+    &lt;/html&gt;
+  );
+}</code></pre>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Example</summary>
+                    <div class="details-content example-box">
+                        <p><strong>Scenario:</strong> News website with live updates</p>
+                        
+                        <pre><code class="language-jsx">// app/page.js
+import { Suspense } from 'react';
+import Header from '@/components/Header';
+import MainNews from '@/components/MainNews';
+import Sidebar from '@/components/Sidebar';
+import Footer from '@/components/Footer';
+
+export default async function HomePage() {
+  return (
+    &lt;div className="news-site"&gt;
+      &lt;Header /&gt;
+      
+      &lt;main&gt;
+        &lt;Suspense fallback=&lt;NewsSkeleton /&gt;&gt;
+          &lt;MainNews /&gt;  {/* Takes 3s to load */}
+        &lt;/Suspense&gt;
+        
+        &lt;aside&gt;
+          &lt;Suspense fallback=&lt;div&gt;Loading trends...&lt;/div&gt;&gt;
+            &lt;Sidebar /&gt;  {/* Takes 1s to load */}
+          &lt;/Suspense&gt;
+        &lt;/aside&gt;
+      &lt;/main&gt;
+      
+      &lt;Footer /&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>What user experiences:</strong></p>
+                        <ol>
+                            <li>0.1s: Header and Footer render instantly</li>
+                            <li>0.5s: Sidebar appears with "Loading trends..."</li>
+                            <li>1.0s: Sidebar content loads completely</li>
+                            <li>3.0s: Main news content appears with smooth transition</li>
+                        </ol>
+                        
+                        <p><strong>Result:</strong> User sees useful content within 500ms, even though main content takes 3 seconds!</p>
+                        
+                        <p><strong>Real-world Impact:</strong> A study showed this approach reduced bounce rate by 42% on news sites!</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Uses</summary>
+                    <div class="details-content uses-box">
+                        <ul>
+                            <li>Improving perceived performance on slow networks</li>
+                            <li>Rendering high-priority content first</li>
+                            <li>Showing skeleton loaders for better UX</li>
+                            <li>Decoupling slow-loading components</li>
+                            <li>Enabling incremental hydration</li>
+                            <li>Supporting progressive web apps</li>
+                            <li>Reducing Cumulative Layout Shift (CLS)</li>
+                        </ul>
+                        <p><strong>Best Practice:</strong> Place Suspense boundaries around individual components that might delay rendering — not around entire pages.</p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- Section 19.5 -->
+            <section id="section-19-5">
+                <h2>19.5 Server Actions</h2>
+                
+                <details>
+                    <summary class="details-summary">Definition</summary>
+                    <div class="details-content definition-box">
+                        <p>Server Actions are functions that can be called from Client Components but execute entirely on the server.</p>
+                        <p>They eliminate the need for API routes and provide seamless form handling with built-in validation and security.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Detail</summary>
+                    <div class="details-content">
+                        <p><strong>Problem Before Server Actions:</strong></p>
+                        <ul>
+                            <li>Client Component needs to call API route</li>
+                            <li>Requires separate endpoint file</li>
+                            <li>Manual form serialization and error handling</li>
+                            <li>CORS configuration needed</li>
+                            <li>Separate state management for loading/error states</li>
+                        </ul>
+                        
+                        <p><strong>Solution with Server Actions:</strong></p>
+                        <ul>
+                            <li>Define function in server component</li>
+                            <li>Import and use directly in client component</li>
+                            <li>Automatic form handling with FormData</li>
+                            <li>Automatic CSRF protection</li>
+                            <li>Integrated with React's optimistic update pattern</li>
+                            <li>No separate API routes required</li>
+                        </ul>
+                        
+                        <p><strong>Core Idea:</strong> Treat server logic as first-class citizens in your component architecture — no more "client vs server" separation.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Syntax & Usage</summary>
+                    <div class="details-content">
+                        <p><strong>Step 1: Define Server Action</strong></p>
+                        
+                        <pre><code class="language-jsx">// actions/create-post.js
+'use server';
+
+import { revalidatePath } from 'next/cache';
+import { db } from '@/lib/db';
+
+export async function createPost(prevState, formData) {
+  const title = formData.get('title');
+  const content = formData.get('content');
+  
+  // ✅ Validate on server
+  if (!title || title.length &lt; 5) {
+    return { error: 'Title must be at least 5 characters' };
+  }
+  
+  try {
+    await db.post.create({
+      data: {
+        title,
+        content,
+        authorId: 'usr_123'
+      }
+    });
+    
+    // ✅ Automatically revalidate cache
+    revalidatePath('/posts');
+    
+    return { success: true };
+  } catch (error) {
+    return { error: 'Failed to create post' };
+  }
+}</code></pre>
+                        
+                        <p><strong>Step 2: Use in Client Component</strong></p>
+                        
+                        <pre><code class="language-jsx">// app/components/CreatePostForm.js - Client Component
+'use client';
+
+import { useFormState } from 'react-dom';
+import { createPost } from '@/actions/create-post';
+
+export default function CreatePostForm() {
+  const [state, formAction] = useFormState(createPost, null);
+  
+  return (
+    &lt;form action={formAction}&gt;
+      &lt;div&gt;
+        &lt;label htmlFor="title"&gt;Title&lt;/label&gt;
+        &lt;input 
+          type="text" 
+          id="title" 
+          name="title" 
+          required 
+          minLength="5"
+        /&gt;
+      &lt;/div&gt;
+      
+      &lt;div&gt;
+        &lt;label htmlFor="content"&gt;Content&lt;/label&gt;
+        &lt;textarea 
+          id="content" 
+          name="content" 
+          required
+        &gt;&lt;/textarea&gt;
+      &lt;/div&gt;
+      
+      &lt;button type="submit"&gt;Create Post&lt;/button&gt;
+      
+      {state?.error &amp;&amp; &lt;p className="error"&gt;{state.error}&lt;/p&gt;}
+      {state?.success &amp;&amp; &lt;p className="success"&gt;Post created!&lt;/p&gt;}
+    &lt;/form&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>Alternative: Using async/await with useActionState</strong></p>
+                        
+                        <pre><code class="language-jsx">// app/components/ContactForm.js
+'use client';
+
+import { useActionState } from 'react-dom';
+import { submitContact } from '@/actions/submit-contact';
+
+export default function ContactForm() {
+  const [state, formAction, isPending] = useActionState(submitContact, null);
+  
+  return (
+    &lt;form action={formAction}&gt;
+      &lt;input type="email" name="email" required /&gt;
+      &lt;textarea name="message" required /&gt;
+      &lt;button disabled={isPending}&gt;
+        {isPending ? 'Sending...' : 'Send Message'}
+      &lt;/button&gt;
+      
+      {state?.message &amp;&amp; &lt;p&gt;{state.message}&lt;/p&gt;}
+    &lt;/form&gt;
+  );
+}</code></pre>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Example</summary>
+                    <div class="details-content example-box">
+                        <p><strong>Scenario:</strong> File upload with server-side processing</p>
+                        
+                        <pre><code class="language-jsx">// actions/upload-avatar.js
+'use server';
+
+import { revalidatePath } from 'next/cache';
+import { uploadToS3 } from '@/lib/s3';
+import { db } from '@/lib/db';
+
+export async function uploadAvatar(prevState, formData) {
+  const file = formData.get('avatar');
+  
+  if (!file || !file.name.endsWith('.jpg') &amp;&amp; !file.name.endsWith('.png')) {
+    return { error: 'Only JPG and PNG files allowed' };
+  }
+  
+  try {
+    // ✅ Process image on server (resize, compress, optimize)
+    const url = await uploadToS3(file, 'avatars');
+    
+    // ✅ Update database
+    await db.user.update({
+      where: { id: 'usr_123' },
+      data: { avatarUrl: url }
+    });
+    
+    // ✅ Invalidate cache for user profile
+    revalidatePath('/profile');
+    
+    return { success: true, url };
+  } catch (error) {
+    return { error: 'Upload failed' };
+  }
+}</code></pre>
+                        
+                        <pre><code class="language-jsx">// app/profile/avatar-form.js - Client Component
+'use client';
+
+import { useActionState } from 'react-dom';
+import { uploadAvatar } from '@/actions/upload-avatar';
+
+export default function AvatarForm() {
+  const [state, formAction, isPending] = useActionState(uploadAvatar, null);
+  
+  return (
+    &lt;form action={formAction} encType="multipart/form-data"&gt;
+      &lt;input type="file" name="avatar" accept="image/*" /&gt;
+      &lt;button type="submit" disabled={isPending}&gt;
+        {isPending ? 'Uploading...' : 'Update Avatar'}
+      &lt;/button&gt;
+      
+      {state?.error &amp;&amp; &lt;p className="error"&gt;{state.error}&lt;/p&gt;}
+      {state?.success &amp;&amp; &lt;p className="success"&gt;Avatar updated!&lt;/p&gt;}
+    &lt;/form&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>What happens:</strong></p>
+                        <ol>
+                            <li>User selects image file</li>
+                            <li>Form submitted → no API call</li>
+                            <li>Server receives FormData → processes image</li>
+                            <li>Image uploaded to S3 → database updated</li>
+                            <li>Cache invalidated → UI refreshes automatically</li>
+                            <li>Success message shown — all in one atomic operation</li>
+                        </ol>
+                        
+                        <p><strong>Security Benefit:</strong> Image processing happens on server — no malicious code can run on client.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Uses</summary>
+                    <div class="details-content uses-box">
+                        <ul>
+                            <li>Handling forms without API routes</li>
+                            <li>File uploads with server-side validation</li>
+                            <li>Database mutations (create/update/delete)</li>
+                            <li>Payment processing (Stripe, PayPal)</li>
+                            <li>Authentication flows (login, signup, password reset)</li>
+                            <li>Server-side redirects after submission</li>
+                            <li>Automatic cache invalidation</li>
+                            <li>CSRF protection built-in</li>
+                        </ul>
+                        <p><strong>Game Changer:</strong> Server Actions unify frontend and backend logic — you write less code, have fewer files, and eliminate entire classes of bugs.</p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- Section 19.6 -->
+            <section id="section-19-6">
+                <h2>19.6 Migration Strategies</h2>
+                
+                <details>
+                    <summary class="details-summary">Definition</summary>
+                    <div class="details-content definition-box">
+                        <p>Migration strategies are systematic approaches to convert existing React applications to use Server Components and modern data fetching patterns.</p>
+                        <p>The goal: Improve performance without breaking existing functionality.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Detail</summary>
+                    <div class="details-content">
+                        <p><strong>Challenge:</strong> Legacy apps often have:</p>
+                        <ul>
+                            <li>Heavy client-side data fetching</li>
+                            <li>Complex state management (Redux, Zustand)</li>
+                            <li>Third-party libraries requiring client execution</li>
+                            <li>Code split across many files</li>
+                        </ul>
+                        
+                        <p><strong>Strategy Principles:</strong></p>
+                        <ol>
+                            <li><strong>Start Small:</strong> Convert non-interactive pages first</li>
+                            <li><strong>Incremental Adoption:</strong> Mix old and new patterns</li>
+                            <li><strong>Preserve Functionality:</strong> Don't break existing features</li>
+                            <li><strong>Measure Performance:</strong> Track improvements</li>
+                        </ol>
+                        
+                        <p><strong>Common Pitfalls:</strong></p>
+                        <ul>
+                            <li>Trying to convert everything at once</li>
+                            <li>Ignoring hydration mismatches</li>
+                            <li>Forgetting to add 'use client' to interactive components</li>
+                            <li>Not testing on slow networks</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Syntax & Strategy</summary>
+                    <div class="details-content">
+                        <p><strong>Phase 1: Identify Candidates</strong></p>
+                        <pre><code class="language-bash"># Look for components that:
+# 1. Fetch data in useEffect
+# 2. Use window.localStorage
+# 3. Have lots of dependencies
+# 4. Are used on critical pages (homepage, product listing)
+
+grep -r "useEffect.*fetch" src/
+grep -r "window." src/
+grep -r "localStorage" src/</code></pre>
+                        
+                        <p><strong>Phase 2: Convert Static Pages</strong></p>
+                        <pre><code class="language-jsx">// BEFORE: Client Component
+// app/about/page.js
+'use client';
+import { useState, useEffect } from 'react';
+
+export default function AboutPage() {
+  const [about, setAbout] = useState(null);
+  
+  useEffect(() =&gt; {
+    fetch('/api/about')
+      .then(r =&gt; r.json())
+      .then(setAbout);
+  }, []);
+  
+  if (!about) return &lt;div&gt;Loading...&lt;/div&gt;;
+  
+  return &lt;div&gt;{about.content}&lt;/div&gt;;
+}</code></pre>
+                        
+                        <pre><code class="language-jsx">// AFTER: Server Component
+// app/about/page.js
+export default async function AboutPage() {
+  const about = await fetch('/api/about').then(r =&gt; r.json());
+  
+  return &lt;div&gt;{about.content}&lt;/div&gt;;
+}</code></pre>
+                        
+                        <p><strong>Phase 3: Handle Interactive Elements</strong></p>
+                        <pre><code class="language-jsx">// BEFORE: Complex client component
+// app/components/Cart.js
+'use client';
+import { useState, useEffect } from 'react';
+
+export default function Cart() {
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() =&gt; {
+    fetch('/api/cart')
+      .then(r =&gt; r.json())
+      .then(data =&gt; {
+        setItems(data.items);
+        setLoading(false);
+      });
+  }, []);
+  
+  const addToCart = async (productId) =&gt; {
+    await fetch('/api/cart/add', {
+      method: 'POST',
+      body: JSON.stringify({ productId })
+    });
+    // Refresh cart data...
+  };
+  
+  return (
+    &lt;div&gt;
+      {loading ? &lt;div&gt;Loading cart...&lt;/div&gt; : 
+        items.map(item =&gt; (
+          &lt;div key={item.id}&gt;
+            {item.name} 
+            &lt;button onClick={() =&gt; addToCart(item.id)}&gt;Add&lt;/button&gt;
+          &lt;/div&gt;
+        ))
+      }
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <pre><code class="language-jsx">// AFTER: Split into Server + Client
+// app/components/CartDisplay.js - Server Component
+export default async function CartDisplay() {
+  const cart = await fetch('/api/cart').then(r =&gt; r.json());
+  
+  return (
+    &lt;div&gt;
+      {cart.items.map(item =&gt; (
+        &lt;div key={item.id}&gt;{item.name}&lt;/div&gt;
+      ))}
+      &lt;AddToCartButton /&gt;  {/* Client component */}
+    &lt;/div&gt;
+  );
+}
+
+// app/components/AddToCartButton.js - Client Component
+'use client';
+import { useActionState } from 'react-dom';
+import { addToCart } from '@/actions/add-to-cart';
+
+export default function AddToCartButton() {
+  const [state, formAction, isPending] = useActionState(addToCart, null);
+  
+  return (
+    &lt;form action={formAction}&gt;
+      &lt;input type="hidden" name="productId" value="prod_123" /&gt;
+      &lt;button type="submit" disabled={isPending}&gt;
+        {isPending ? 'Adding...' : 'Add to Cart'}
+      &lt;/button&gt;
+    &lt;/form&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>Phase 4: Handle Libraries</strong></p>
+                        <p>If you use charting libraries (Chart.js), maps (Google Maps), or rich text editors (Tiptap):</p>
+                        <ul>
+                            <li>Wrap them in Client Components with 'use client'</li>
+                            <li>Pass data via props from Server Component</li>
+                            <li>Use Suspense for loading states</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Example</summary>
+                    <div class="details-content example-box">
+                        <p><strong>Migration Journey: E-commerce Platform</strong></p>
+                        
+                        <table class="table table-dark mt-4">
+                            <thead>
+                                <tr>
+                                    <th>Phase</th>
+                                    <th>Action</th>
+                                    <th>Benefit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Week 1</td>
+                                    <td>Convert homepage to Server Component</td>
+                                    <td>LCP improved from 4.5s to 0.9s</td>
+                                </tr>
+                                <tr>
+                                    <td>Week 2</td>
+                                    <td>Move product listing to Server Component</td>
+                                    <td>Bundle size reduced by 68%</td>
+                                </tr>
+                                <tr>
+                                    <td>Week 3</td>
+                                    <td>Convert search to Server Component</td>
+                                    <td>SEO traffic increased by 35%</td>
+                                </tr>
+                                <tr>
+                                    <td>Week 4</td>
+                                    <td>Replace API routes with Server Actions for cart</td>
+                                    <td>Codebase simplified by 40%</td>
+                                </tr>
+                                <tr>
+                                    <td>Week 5</td>
+                                    <td>Add Suspense for slow-loading reviews</td>
+                                    <td>Bounce rate decreased by 22%</td>
+                                </tr>
+                                <tr>
+                                    <td>Week 6</td>
+                                    <td>Test on 3G network — confirm performance gains</td>
+                                    <td>Mobile conversion rate up 18%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <p><strong>Final Result:</strong></p>
+                        <ul>
+                            <li>Bundle size: 120KB → 18KB</li>
+                            <li>First paint: 4.2s → 0.7s</li>
+                            <li>Time to interactive: 6.8s → 1.2s</li>
+                            <li>SEO ranking: Page 2 → Page 1</li>
+                            <li>Development speed: Faster feature shipping</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Uses</summary>
+                    <div class="details-content uses-box">
+                        <ul>
+                            <li>Modernizing legacy React applications</li>
+                            <li>Upgrading from CRA to Next.js App Router</li>
+                            <li>Improving performance without rewriting entire app</li>
+                            <li>Adopting new React features incrementally</li>
+                            <li>Reducing technical debt in large codebases</li>
+                            <li>Preparing for future React releases</li>
+                        </ul>
+                        <p><strong>Pro Migration Tip:</strong> Start with pages that have the worst Core Web Vitals scores — those will give you the biggest ROI.</p>
+                    </div>
+                </details>
+            </section>
+
+            <div class="mt-5 p-4 bg-dark rounded-3 border">
+                <h4 class="text-center text-muted">Key Takeaways</h4>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item bg-transparent border-0"><span class="badge">✅</span> Server Components render on server — no JS sent to client unless needed.</li>
+                    <li class="list-group-item bg-transparent border-0"><span class="badge">✅</span> Use 'use client' only for interactive components — start with Server Components by default.</li>
+                    <li class="list-group-item bg-transparent border-0"><span class="badge">✅</span> Data fetching happens naturally in Server Components — no useEffect needed.</li>
+                    <li class="list-group-item bg-transparent border-0"><span class="badge">✅</span> Suspense + Streaming deliver content progressively — users see something fast.</li>
+                    <li class="list-group-item bg-transparent border-0"><span class="badge">✅</span> Server Actions replace API routes — cleaner, safer, and more integrated.</li>
+                    <li class="list-group-item bg-transparent border-0"><span class="badge">✅</span> Migrate incrementally: convert static pages first, then interactive elements.</li>
+                    <li class="list-group-item bg-transparent border-0"><span class="badge">✅</span> Performance gains are massive — bundle sizes drop 70-90%, LCP improves dramatically.</li>
+                </ul>
+                <div class="mt-3 warning-box">
+                    <strong>⚠️ Warning:</strong> Server Components cannot use React hooks or browser APIs. If you need state or events, mark the component with 'use client'.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Search functionality
+        const searchInput = document.getElementById('searchToc');
+        const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
+
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            tocItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        // Expand/Collapse controls
+        document.getElementById('expandAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.open = true;
+            });
+        });
+
+        document.getElementById('collapseAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.open = false;
+            });
+        });
+
+        // Smooth scrolling for TOC links
+        document.querySelectorAll('[data-scroll]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('data-scroll');
+                const element = document.querySelector(`[id="${targetId}"]`);
+                if (element) {
+                    window.scrollTo({
+                        top: element.offsetTop - 100,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Highlight active section in TOC
+                    document.querySelectorAll('.toc-subitem').forEach(el => el.classList.remove('active'));
+                    this.classList.add('active');
+                }
+            });
+        });
+
+        // Auto-scroll TOC highlighting based on viewport
+        window.addEventListener('scroll', () => {
+            const sections = ['def-server-client', 'detail-server-client', 'syntax-server-client', 'example-server-client', 'uses-server-client',
+                             'def-patterns', 'detail-patterns', 'syntax-patterns', 'example-patterns', 'uses-patterns',
+                             'def-fetching', 'detail-fetching', 'syntax-fetching', 'example-fetching', 'uses-fetching',
+                             'def-streaming', 'detail-streaming', 'syntax-streaming', 'example-streaming', 'uses-streaming',
+                             'def-actions', 'detail-actions', 'syntax-actions', 'example-actions', 'uses-actions',
+                             'def-migration', 'detail-migration', 'syntax-migration', 'example-migration', 'uses-migration'];
+            
+            let currentSection = '';
+            const scrollPosition = window.pageYOffset + 100;
+
+            sections.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    const offsetTop = element.offsetTop;
+                    const offsetHeight = element.offsetHeight;
+                    if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
+                        currentSection = id;
+                    }
+                }
+            });
+
+            document.querySelectorAll('.toc-subitem').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            if (currentSection) {
+                const activeItem = document.querySelector(`[data-scroll="${currentSection}"]`);
+                if (activeItem) {
+                    activeItem.classList.add('active');
+                }
+            }
+        });
+
+        // Syntax highlighting (simple)
+        document.querySelectorAll('pre code').forEach(block => {
+            hljs.highlightBlock(block);
+        });
+    });
+
+    // Simple syntax highlighter fallback if Prism/HLJS not loaded
+    if (typeof hljs === 'undefined') {
+        window.hljs = {
+            highlightBlock: function(block) {
+                // Minimal highlight for code blocks
+                block.classList.add('hljs');
+            }
+        };
+    }
+</script>
+
+<!-- Include Highlight.js for syntax highlighting (optional enhancement) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+
+</body>
+</html>

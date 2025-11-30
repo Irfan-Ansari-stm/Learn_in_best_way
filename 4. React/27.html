@@ -1,0 +1,4352 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Module 4: Advanced Testing - Chapter 18</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a192f;
+      --cyan: #00f5ff;
+      --amber: #ffb347;
+      --text-light: #e6f1ff;
+      --border-light: #1a3b5c;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      font-family: 'Roboto', sans-serif;
+      overflow-x: hidden;
+    }
+
+    .left-panel {
+      position: fixed;
+      width: 300px;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 20px;
+      background-color: rgba(10, 25, 47, 0.9);
+      border-right: 1px solid var(--border-light);
+      z-index: 1000;
+    }
+
+    .right-panel {
+      margin-left: 300px;
+      padding: 30px;
+      height: 100vh;
+      overflow-y: auto;
+      background-color: var(--bg-dark);
+    }
+
+    h1, h2, h3, h4 {
+      color: var(--cyan);
+      font-weight: 600;
+    }
+
+    h1 {
+      border-bottom: 2px solid var(--amber);
+      padding-bottom: 10px;
+      margin-bottom: 25px;
+    }
+
+    h2 {
+      margin-top: 40px;
+      border-left: 4px solid var(--amber);
+      padding-left: 15px;
+    }
+
+    h3 {
+      color: var(--amber);
+      margin-top: 30px;
+    }
+
+    .toc-item {
+      margin: 8px 0;
+      padding: 6px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .toc-item:hover {
+      background-color: rgba(0, 245, 255, 0.1);
+    }
+
+    .toc-item.active {
+      background-color: rgba(0, 245, 255, 0.2);
+      border-left: 3px solid var(--cyan);
+    }
+
+    .search-box {
+      margin-bottom: 20px;
+      background-color: rgba(26, 59, 92, 0.5);
+      border: 1px solid var(--border-light);
+      color: var(--text-light);
+    }
+
+    .btn-control {
+      background-color: rgba(10, 25, 47, 0.7);
+      border: 1px solid var(--border-light);
+      color: var(--cyan);
+      margin-bottom: 15px;
+      font-size: 0.9rem;
+    }
+
+    .btn-control:hover {
+      background-color: rgba(0, 245, 255, 0.2);
+      color: var(--cyan);
+    }
+
+    details {
+      margin: 15px 0;
+      border-left: 1px solid var(--border-light);
+      padding-left: 15px;
+      background-color: rgba(10, 25, 47, 0.4);
+      border-radius: 0 5px 5px 0;
+    }
+
+    summary {
+      list-style: none;
+      cursor: pointer;
+      font-weight: bold;
+      color: var(--amber);
+      padding: 10px 15px;
+      background-color: rgba(0, 245, 255, 0.05);
+      border-radius: 5px;
+      margin-bottom: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    summary::before {
+      content: "▶ ";
+      font-size: 0.8em;
+    }
+
+    details[open] > summary::before {
+      content: "▼ ";
+    }
+
+    pre {
+      background-color: #0d1b2a !important;
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 15px;
+      overflow-x: auto;
+      margin: 15px 0;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    code {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.95rem;
+      color: var(--cyan);
+    }
+
+    .highlight {
+      color: var(--amber);
+      font-weight: bold;
+    }
+
+    .note {
+      background-color: rgba(255, 179, 71, 0.1);
+      border-left: 3px solid var(--amber);
+      padding: 12px 15px;
+      margin: 20px 0;
+      border-radius: 0 5px 5px 0;
+    }
+
+    .syntax {
+      background-color: rgba(0, 245, 255, 0.08);
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-weight: 500;
+      display: inline-block;
+      margin: 0 3px;
+    }
+
+    .author-info {
+      color: var(--amber);
+      font-style: italic;
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+
+    .footer-note {
+      margin-top: 60px;
+      text-align: center;
+      color: var(--amber);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border-light);
+      padding-top: 15px;
+    }
+
+    /* Smooth scrolling */
+    html {
+      scroll-behavior: smooth;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 991px) {
+      .left-panel {
+        width: 100%;
+        position: relative;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border-light);
+      }
+      .right-panel {
+        margin-left: 0;
+      }
+    }
+
+    /* Demo styling for testing examples */
+    .testing-demo {
+      background-color: rgba(13, 27, 42, 0.6);
+      border: 1px dashed var(--border-light);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .test-result {
+      margin: 15px 0;
+      padding: 15px;
+      border-radius: 8px;
+      border-left: 3px solid var(--amber);
+    }
+
+    .test-pass {
+      background-color: rgba(0, 204, 136, 0.1);
+      border-color: #00cc88;
+    }
+
+    .test-fail {
+      background-color: rgba(255, 71, 87, 0.1);
+      border-color: #ff4757;
+    }
+
+    .test-code {
+      background-color: rgba(10, 25, 47, 0.8);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 15px;
+      margin: 15px 0;
+      font-family: 'Roboto Mono', monospace;
+      white-space: pre-wrap;
+    }
+
+    .test-comment {
+      color: #666;
+      font-style: italic;
+      margin: 5px 0;
+    }
+
+    .test-assertion {
+      background-color: rgba(0, 245, 255, 0.1);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: bold;
+      margin: 0 3px;
+    }
+
+    .test-step {
+      margin: 10px 0;
+      padding: 10px;
+      border-left: 3px solid var(--cyan);
+      background-color: rgba(0, 245, 255, 0.05);
+      border-radius: 0 5px 5px 0;
+    }
+
+    .test-step strong {
+      color: var(--cyan);
+    }
+
+    .testing-pattern {
+      background-color: rgba(13, 27, 42, 0.6);
+      border: 1px dashed var(--border-light);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .testing-table th, .testing-table td {
+      border: 1px solid var(--border-light);
+      padding: 10px;
+    }
+
+    .testing-table th {
+      background-color: rgba(0, 245, 255, 0.1);
+    }
+
+    .testing-table tr:nth-child(even) {
+      background-color: rgba(26, 59, 92, 0.3);
+    }
+
+    .component-preview {
+      background-color: rgba(10, 25, 47, 0.3);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 15px;
+      margin: 15px 0;
+    }
+
+    .hook-test {
+      background-color: rgba(13, 27, 42, 0.6);
+      border: 1px dashed var(--border-light);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .mock-data {
+      background-color: rgba(10, 25, 47, 0.8);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 15px;
+      margin: 15px 0;
+      font-family: 'Roboto Mono', monospace;
+    }
+
+    .test-badge {
+      display: inline-block;
+      background-color: var(--amber);
+      color: #000;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      margin-left: 8px;
+    }
+
+    .test-type {
+      display: inline-block;
+      background-color: rgba(0, 245, 255, 0.1);
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      margin-left: 8px;
+    }
+
+    .testing-diagram {
+      background-color: rgba(13, 27, 42, 0.6);
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+      font-family: 'Roboto Mono', monospace;
+      line-height: 1.6;
+    }
+
+    .testing-tip {
+      background-color: rgba(255, 179, 71, 0.1);
+      border-left: 3px solid var(--amber);
+      padding: 15px;
+      border-radius: 0 5px 5px 0;
+      margin: 15px 0;
+    }
+
+    .testing-tip strong {
+      color: var(--amber);
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      margin: 15px 0;
+    }
+
+    .test-btn {
+      background-color: var(--cyan);
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .test-btn:hover {
+      background-color: #00c0e6;
+      transform: translateY(-2px);
+    }
+
+    .test-btn.pass {
+      background-color: #00cc88;
+      color: #000;
+    }
+
+    .test-btn.pass:hover {
+      background-color: #00aa77;
+    }
+
+    .test-btn.fail {
+      background-color: #ff4757;
+      color: #fff;
+    }
+
+    .test-btn.fail:hover {
+      background-color: #e03b4c;
+    }
+
+    .code-line {
+      display: block;
+      margin: 2px 0;
+    }
+
+    .test-output {
+      background-color: rgba(10, 25, 47, 0.8);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 15px;
+      margin: 15px 0;
+      font-family: 'Roboto Mono', monospace;
+      white-space: pre;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .test-success {
+      color: #00cc88;
+      font-weight: bold;
+    }
+
+    .test-error {
+      color: #ff4757;
+      font-weight: bold;
+    }
+
+    .test-warning {
+      color: #ffb347;
+      font-weight: bold;
+    }
+
+    .dependency-badge {
+      background-color: rgba(0, 245, 255, 0.2);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      margin: 0 3px;
+    }
+
+    .ci-cd-diagram {
+      background-color: rgba(13, 27, 42, 0.6);
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+      font-family: 'Roboto Mono', monospace;
+      line-height: 1.6;
+    }
+
+    .ci-step {
+      margin: 15px 0;
+      padding: 15px;
+      border-left: 3px solid var(--amber);
+      background-color: rgba(255, 179, 71, 0.1);
+      border-radius: 0 5px 5px 0;
+    }
+
+    .ci-step strong {
+      color: var(--amber);
+    }
+
+    .coverage-chart {
+      background-color: rgba(13, 27, 42, 0.6);
+      border: 1px dashed var(--border-light);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      min-height: 150px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      color: var(--cyan);
+    }
+
+    .coverage-badge {
+      display: inline-block;
+      background-color: var(--amber);
+      color: #000;
+      padding: 5px 12px;
+      border-radius: 15px;
+      font-size: 0.9rem;
+      margin: 5px;
+    }
+
+    .e2e-screenshot {
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      margin: 15px 0;
+      max-width: 100%;
+    }
+
+    .context-provider {
+      background-color: rgba(13, 27, 42, 0.6);
+      border: 1px dashed var(--border-light);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .router-testing {
+      background-color: rgba(13, 27, 42, 0.6);
+      border: 1px dashed var(--border-light);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .integration-testing {
+      background-color: rgba(13, 27, 42, 0.6);
+      border: 1px dashed var(--border-light);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .mock-visual {
+      background-color: rgba(13, 27, 42, 0.6);
+      border: 1px dashed var(--border-light);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+      font-family: 'Roboto Mono', monospace;
+    }
+
+    .mock-arrow {
+      color: var(--amber);
+      margin: 0 5px;
+    }
+
+    .coverage-overview {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin: 20px 0;
+    }
+
+    .coverage-item {
+      background-color: rgba(13, 27, 42, 0.6);
+      border: 1px dashed var(--border-light);
+      border-radius: 8px;
+      padding: 15px;
+      text-align: center;
+    }
+
+    .coverage-percentage {
+      font-size: 2rem;
+      font-weight: bold;
+      color: var(--cyan);
+      margin: 10px 0;
+    }
+
+    .coverage-label {
+      color: var(--text-light);
+      font-size: 0.9rem;
+    }
+
+    .coverage-progress {
+      height: 10px;
+      background-color: rgba(26, 59, 92, 0.5);
+      border-radius: 5px;
+      margin: 10px 0;
+      overflow: hidden;
+    }
+
+    .coverage-bar {
+      height: 100%;
+      background-color: var(--cyan);
+      transition: width 0.5s ease;
+    }
+
+    .cypress-screenshot {
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      margin: 15px 0;
+      max-width: 100%;
+    }
+
+    .playwright-video {
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      margin: 15px 0;
+      max-width: 100%;
+    }
+
+    .ci-pipeline {
+      background-color: rgba(13, 27, 42, 0.6);
+      border: 1px dashed var(--border-light);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .ci-stage {
+      display: inline-block;
+      background-color: rgba(0, 245, 255, 0.1);
+      padding: 10px 15px;
+      border-radius: 5px;
+      margin: 0 5px;
+      font-weight: bold;
+      color: var(--cyan);
+      border: 1px solid var(--border-light);
+    }
+
+    .ci-stage.success {
+      background-color: rgba(0, 204, 136, 0.1);
+      border-color: #00cc88;
+      color: #00cc88;
+    }
+
+    .ci-stage.failed {
+      background-color: rgba(255, 71, 87, 0.1);
+      border-color: #ff4757;
+      color: #ff4757;
+    }
+
+    .ci-separator {
+      margin: 0 10px;
+      color: var(--text-light);
+    }
+  </style>
+</head>
+<body>
+
+<div class="container-fluid p-0">
+  <div class="row g-0">
+
+    <!-- Left Panel -->
+    <div class="col-md-3 left-panel">
+      <h1>Module 4</h1>
+      <h4>Advanced Testing</h4>
+      <p class="author-info">— Mastering Advanced Testing with Clarity & Depth —</p>
+
+      <input type="text" class="form-control search-box" id="searchTOC" placeholder="Search topics..." />
+
+      <div class="d-grid gap-2">
+        <button class="btn btn-control" id="expandAll">Expand All</button>
+        <button class="btn btn-control" id="collapseAll">Collapse All</button>
+      </div>
+
+      <div class="toc">
+        <h5>Table of Contents</h5>
+        <div class="toc-item" data-target="#section-18-1">18.1 Mocking in Tests</div>
+        <div class="toc-item" data-target="#section-18-2">18.2 Testing API Calls</div>
+        <div class="toc-item" data-target="#section-18-3">18.3 Testing Context and Providers</div>
+        <div class="toc-item" data-target="#section-18-4">18.4 Testing Router Components</div>
+        <div class="toc-item" data-target="#section-18-5">18.5 Integration Testing</div>
+        <div class="toc-item" data-target="#section-18-6">18.6 End-to-End Testing with Cypress/Playwright</div>
+        <div class="toc-item" data-target="#section-18-7">18.7 Test Coverage and Reporting</div>
+        <div class="toc-item" data-target="#section-18-8">18.8 Continuous Integration Testing</div>
+      </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="col-md-9 right-panel">
+
+      <!-- Section 18.1 -->
+      <section id="section-18-1">
+        <h2>18.1 Mocking in Tests</h2>
+        
+        <details>
+          <summary>📌 Summary: Controlling External Dependencies</summary>
+          <p>Mocking is the art of replacing external dependencies with controlled versions to make tests faster, more reliable, and deterministic.</p>
+          
+          <h3>🔹 Why Mock?</h3>
+          <ul>
+            <li><strong>Speed:</strong> No network calls or database queries</li>
+            <li><strong>Reliability:</strong> Tests don't fail due to external issues</li>
+            <li><strong>Control:</strong> Simulate edge cases and error conditions</li>
+            <li><strong>Isolation:</strong> Test one unit at a time</li>
+            <li><strong>Reproducibility:</strong> Same results every time</li>
+          </ul>
+
+          <h3>⚡ Common Mocking Targets</h3>
+          <table class="table table-dark testing-table">
+            <thead>
+              <tr><th>Target</th><th>Why Mock</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>API calls</td><td>Avoid network latency and failures</td></tr>
+              <tr><td>Database queries</td><td>Fast tests, no setup required</td></tr>
+              <tr><td>Third-party libraries</td><td>Control behavior, avoid costs</td></tr>
+              <tr><td>Timers (setTimeout, setInterval)</td><td>Instant test execution</td></tr>
+              <tr><td>LocalStorage/SessionStorage</td><td>Prevent side effects</td></tr>
+              <tr><td>Date/time functions</td><td>Consistent test results</td></tr>
+              <tr><td>File system operations</td><td>Platform independence</td></tr>
+              <tr><td>Web APIs (geolocation, notifications)</td><td>Simulate user interactions</td></tr>
+            </tbody>
+          </table>
+
+          <h3>🔥 Mocking Techniques</h3>
+
+          <h4>1. Jest Mock Functions</h4>
+          <pre><code>
+// api.js
+export const fetchUser = async (id) =&gt; {
+  const response = await fetch(\`/api/users/\${id}\`);
+  return response.json();
+};
+
+// api.test.js
+import { fetchUser } from './api';
+
+// Mock the entire module
+jest.mock('./api');
+
+test('fetches user data successfully', async () =&gt; {
+  // Mock implementation
+  fetchUser.mockResolvedValue({ id: 1, name: 'John' });
+  
+  const user = await fetchUser(1);
+  
+  expect(user).toEqual({ id: 1, name: 'John' });
+  expect(fetchUser).toHaveBeenCalledWith(1);
+});
+
+// Mock specific implementation
+test('handles fetch error', async () =&gt; {
+  fetchUser.mockRejectedValue(new Error('Network error'));
+  
+  await expect(fetchUser(1)).rejects.toThrow('Network error');
+});
+          </code></pre>
+
+          <h4>2. Mocking Modules with jest.mock()</h4>
+          <pre><code>
+// hooks/useAuth.js
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+export function useAuth() {
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+
+  const login = async (credentials) =&gt; {
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credentials)
+      });
+      
+      if (!response.ok) throw new Error('Login failed');
+      
+      const userData = await response.json();
+      setUser(userData);
+      navigate('/dashboard');
+    } catch (error) {
+      throw error;
+    }
+  };
+
+  return { user, login };
+}
+
+// useAuth.test.js
+import { renderHook, act } from '@testing-library/react-hooks';
+import { useAuth } from './useAuth';
+import { useNavigate } from 'react-router-dom';
+
+// Mock react-router-dom
+jest.mock('react-router-dom', () =&gt; ({
+  useNavigate: jest.fn()
+}));
+
+// Mock fetch globally
+global.fetch = jest.fn();
+
+describe('useAuth hook', () =&gt; {
+  beforeEach(() =&gt; {
+    // Reset mocks before each test
+    useNavigate.mockClear();
+    fetch.mockClear();
+  });
+
+  test('logs in successfully and navigates', async () =&gt; {
+    // Arrange
+    const mockNavigate = jest.fn();
+    useNavigate.mockReturnValue(mockNavigate);
+    
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: () =&gt; Promise.resolve({ id: 1, name: 'John' })
+    });
+
+    const { result } = renderHook(() =&gt; useAuth());
+
+    // Act
+    await act(async () =&gt; {
+      await result.current.login({ email: 'john@example.com', password: 'password' });
+    });
+
+    // Assert
+    expect(fetch).toHaveBeenCalledWith('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'john@example.com', password: 'password' })
+    });
+    
+    expect(mockNavigate).toHaveBeenCalledWith('/dashboard');
+    expect(result.current.user).toEqual({ id: 1, name: 'John' });
+  });
+
+  test('handles login error', async () =&gt; {
+    // Arrange
+    const mockNavigate = jest.fn();
+    useNavigate.mockReturnValue(mockNavigate);
+    
+    fetch.mockRejectedValueOnce(new Error('Invalid credentials'));
+
+    const { result } = renderHook(() =&gt; useAuth());
+
+    // Act & Assert
+    await expect(
+      act(async () =&gt; {
+        await result.current.login({ email: 'invalid', password: 'wrong' });
+      })
+    ).rejects.toThrow('Invalid credentials');
+
+    expect(fetch).toHaveBeenCalled();
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+});
+          </code></pre>
+
+          <h4>3. Mocking Date and Time</h4>
+          <pre><code>
+// utils/dateUtils.js
+export function formatDate(date) {
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+}
+
+// dateUtils.test.js
+import { formatDate } from './dateUtils';
+
+describe('formatDate', () =&gt; {
+  beforeEach(() =&gt; {
+    // Mock date
+    jest.useFakeTimers();
+  });
+
+  afterEach(() =&gt; {
+    jest.useRealTimers();
+  });
+
+  test('formats date correctly', () =&gt; {
+    // Set fixed date
+    jest.setSystemTime(new Date('2023-10-15T00:00:00Z'));
+    
+    const formatted = formatDate(new Date());
+    
+    expect(formatted).toBe('October 15, 2023');
+  });
+
+  test('works with different dates', () =&gt; {
+    // Set different fixed date
+    jest.setSystemTime(new Date('2023-01-01T00:00:00Z'));
+    
+    const formatted = formatDate(new Date());
+    
+    expect(formatted).toBe('January 1, 2023');
+  });
+});
+          </code></pre>
+
+          <h4>4. Mocking Local Storage</h4>
+          <pre><code>
+// hooks/useLocalStorage.js
+export function useLocalStorage(key, initialValue) {
+  const [storedValue, setStoredValue] = useState(() =&gt; {
+    try {
+      const item = window.localStorage.getItem(key);
+      return item ? JSON.parse(item) : initialValue;
+    } catch (error) {
+      console.error(error);
+      return initialValue;
+    }
+  });
+
+  const setValue = (value) =&gt; {
+    try {
+      setStoredValue(value);
+      window.localStorage.setItem(key, JSON.stringify(value));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  return [storedValue, setValue];
+}
+
+// useLocalStorage.test.js
+import { renderHook, act } from '@testing-library/react-hooks';
+import { useLocalStorage } from './useLocalStorage';
+
+describe('useLocalStorage', () =&gt; {
+  beforeEach(() =&gt; {
+    // Clear localStorage before each test
+    localStorage.clear();
+  });
+
+  test('returns initial value when key not found', () =&gt; {
+    const { result } = renderHook(() =&gt; useLocalStorage('test-key', 'initial-value'));
+    
+    expect(result.current[0]).toBe('initial-value');
+  });
+
+  test('sets and retrieves value from localStorage', () =&gt; {
+    const { result } = renderHook(() =&gt; useLocalStorage('test-key', 'initial-value'));
+    
+    act(() =&gt; {
+      result.current[1]('new-value');
+    });
+    
+    expect(localStorage.getItem('test-key')).toBe(JSON.stringify('new-value'));
+    expect(result.current[0]).toBe('new-value');
+  });
+
+  test('handles localStorage errors gracefully', () =&gt; {
+    // Mock localStorage.setItem to throw an error
+    const originalSetItem = localStorage.setItem;
+    localStorage.setItem = jest.fn().mockImplementation(() =&gt; {
+      throw new Error('Storage error');
+    });
+
+    const { result } = renderHook(() =&gt; useLocalStorage('test-key', 'initial-value'));
+    
+    act(() =&gt; {
+      result.current[1]('new-value');
+    });
+    
+    // Should still work without crashing
+    expect(result.current[0]).toBe('new-value');
+    
+    // Restore original
+    localStorage.setItem = originalSetItem;
+  });
+});
+          </code></pre>
+
+          <h3>💡 Best Practices for Mocking</h3>
+          <table class="table table-dark testing-table">
+            <thead>
+              <tr><th>Practice</th><th>Why</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Use jest.mock() for modules</td><td>Automatically mocks entire modules</td></tr>
+              <tr><td>Mock only what you need</td><td>Don't over-mock - test real behavior where possible</td></tr>
+              <tr><td>Reset mocks between tests</td><td>Prevent test pollution with beforeEach/jest.clearAllMocks()</td></tr>
+              <tr><td>Test both success and failure paths</td><td>Ensure your code handles errors properly</td></tr>
+              <tr><td>Use descriptive mock names</td><td>Make it clear what's being mocked</td></tr>
+              <tr><td>Keep mocks simple</td><td>Complex mocks are hard to maintain</td></tr>
+              <tr><td>Don't mock implementation details</td><td>Focus on behavior, not internal structure</td></tr>
+              <tr><td>Use manual mocks for complex scenarios</td><td>Create __mocks__ directory for custom implementations</td></tr>
+            </tbody>
+          </table>
+
+          <div class="mock-visual">
+            <h4>🔍 Mocking Visual Diagram</h4>
+            <pre><code>
+┌──────────────────────┐       ┌──────────────────────┐
+│     Your Component   │       │      External API    │
+│                      │       │                      │
+│  Uses fetch()        │──────▶│  Real server call    │
+│                      │       │  Slow, unreliable    │
+└─────────┬────────────┘       └──────────────────────┘
+          │
+          ▼
+┌──────────────────────┐       ┌──────────────────────┐
+│     Your Component   │       │      Mocked API      │
+│                      │       │                      │
+│  Uses fetch()        │──────▶│  Fast, predictable   │
+│                      │       │  Controlled output   │
+└──────────────────────┘       └──────────────────────┘
+          </code></pre>
+          </div>
+
+          <div class="note">
+            <strong>🧠 Mental Model:</strong> Think of mocking as putting a puppet in place of a real person. You control exactly what the puppet says and does, making the test environment predictable and reliable.
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Deep Dive: Manual Mocks and Module Mocking</summary>
+          <p>For complex scenarios, create manual mocks that provide sophisticated behavior.</p>
+
+          <h3>⚡ Manual Mocks with __mocks__ Directory</h3>
+          <pre><code>
+// services/apiClient.js
+import axios from 'axios';
+
+export const apiClient = axios.create({
+  baseURL: '/api/v1',
+  timeout: 10000
+});
+
+export const getUser = (id) =&gt; apiClient.get(\`/users/\${id}\`);
+export const getPosts = (userId) =&gt; apiClient.get(\`/users/\${userId}/posts\`);
+
+// __mocks__/services/apiClient.js
+import { getUser as realGetUser, getPosts as realGetPosts } from '../services/apiClient';
+
+// Create a mock implementation
+const mockUsers = [
+  { id: 1, name: 'John Doe', email: 'john@example.com' },
+  { id: 2, name: 'Jane Smith', email: 'jane@example.com' }
+];
+
+const mockPosts = [
+  { id: 101, title: 'First Post', userId: 1 },
+  { id: 102, title: 'Second Post', userId: 1 },
+  { id: 103, title: 'Third Post', userId: 2 }
+];
+
+// Mock implementation for getUser
+export const getUser = jest.fn((id) =&gt; {
+  const user = mockUsers.find(u =&gt; u.id === parseInt(id));
+  return Promise.resolve({ data: user });
+});
+
+// Mock implementation for getPosts
+export const getPosts = jest.fn((userId) =&gt; {
+  const posts = mockPosts.filter(p =&gt; p.userId === parseInt(userId));
+  return Promise.resolve({ data: posts });
+});
+
+// Original implementation for reference
+export const originalGetUser = realGetUser;
+export const originalGetPosts = realGetPosts;
+
+// service.test.js
+import { getUser, getPosts } from '../services/apiClient';
+
+describe('API Client', () =&gt; {
+  beforeEach(() =&gt; {
+    // Reset mocks before each test
+    getUser.mockClear();
+    getPosts.mockClear();
+  });
+
+  test('getUser returns user data', async () =&gt; {
+    const user = await getUser(1);
+    
+    expect(getUser).toHaveBeenCalledWith(1);
+    expect(user.data).toEqual({
+      id: 1,
+      name: 'John Doe',
+      email: 'john@example.com'
+    });
+  });
+
+  test('getPosts returns posts for user', async () =&gt; {
+    const posts = await getPosts(1);
+    
+    expect(getPosts).toHaveBeenCalledWith(1);
+    expect(posts.data).toHaveLength(2);
+    expect(posts.data[0].title).toBe('First Post');
+  });
+
+  test('getUser returns null for invalid id', async () =&gt; {
+    const user = await getUser(999);
+    
+    expect(getUser).toHaveBeenCalledWith(999);
+    expect(user.data).toBeNull();
+  });
+});
+          </code></pre>
+
+          <h3>🔥 Mocking Third-Party Libraries</h3>
+          <pre><code>
+// components/GoogleMap.jsx
+import React from 'react';
+import { LoadScript } from '@react-google-maps/api';
+
+function GoogleMap({ center }) {
+  return (
+    &lt;LoadScript
+      googleMapsApiKey="YOUR_API_KEY"
+      libraries={["places"]}
+    &gt;
+      &lt;div style={{ width: '100%', height: '400px' }}&gt;
+        {/* Map will be rendered here */}
+      &lt;/div&gt;
+    &lt;/LoadScript&gt;
+  );
+}
+
+export default GoogleMap;
+
+// GoogleMap.test.jsx
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import GoogleMap from './GoogleMap';
+
+// Mock the library
+jest.mock('@react-google-maps/api', () =&gt; ({
+  LoadScript: ({ children }) =&gt; children,
+}));
+
+describe('GoogleMap Component', () =&gt; {
+  test('renders map component', () =&gt; {
+    render(&lt;GoogleMap center={{ lat: 40.7128, lng: -74.006 }} /&gt;);
+
+    // Since we're mocking LoadScript, we can test the child element
+    expect(screen.getByTestId('map-container')).toBeInTheDocument();
+  });
+});
+          </code></pre>
+
+          <h3>⚡ Mocking Async Operations with setTimeout</h3>
+          <pre><code>
+// hooks/useDebounce.js
+import { useState, useEffect } from 'react';
+
+export function useDebounce(value, delay) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() =&gt; {
+    const handler = setTimeout(() =&gt; {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () =&gt; clearTimeout(handler);
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
+// useDebounce.test.js
+import { renderHook, act } from '@testing-library/react-hooks';
+import { useDebounce } from './useDebounce';
+
+describe('useDebounce', () =&gt; {
+  beforeEach(() =&gt; {
+    jest.useFakeTimers();
+  });
+
+  afterEach(() =&gt; {
+    jest.useRealTimers();
+  });
+
+  test('returns initial value immediately', () =&gt; {
+    const { result } = renderHook(() =&gt; useDebounce('initial', 1000));
+    
+    expect(result.current).toBe('initial');
+  });
+
+  test('debounces value changes', () =&gt; {
+    const { result } = renderHook(({ value }) =&gt; useDebounce(value, 1000), {
+      initialProps: { value: 'first' }
+    });
+
+    // Change value
+    act(() =&gt; {
+      result.current = 'second'; // This won't work directly
+    });
+
+    // Actually, we need to re-render:
+    const { rerender } = renderHook(({ value }) =&gt; useDebounce(value, 1000), {
+      initialProps: { value: 'first' }
+    });
+
+    // Change value
+    rerender({ value: 'second' });
+    
+    // Value should still be old after immediate change
+    expect(rerender.result.current).toBe('first');
+    
+    // Fast forward time
+    act(() =&gt; {
+      jest.advanceTimersByTime(1000);
+    });
+    
+    // Now value should be updated
+    expect(rerender.result.current).toBe('second');
+  });
+
+  test('clears timeout when value changes before delay', () =&gt; {
+    const { rerender } = renderHook(({ value }) =&gt; useDebounce(value, 1000), {
+      initialProps: { value: 'first' }
+    });
+    
+    // Change value after 500ms
+    act(() =&gt; {
+      jest.advanceTimersByTime(500);
+    });
+    
+    rerender({ value: 'second' });
+    
+    // Advance past 1000ms
+    act(() =&gt; {
+      jest.advanceTimersByTime(1000);
+    });
+    
+    // Should now be 'second', not 'first'
+    expect(rerender.result.current).toBe('second');
+  });
+});
+          </code></pre>
+
+          <div class="testing-tip">
+            <strong>🌟 Pro Tip:</strong> Always test your mocks! If you're mocking something complex, write separate tests to ensure your mock behaves exactly like the real thing.
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 18.2 -->
+      <section id="section-18-2">
+        <h2>18.2 Testing API Calls</h2>
+        
+        <details>
+          <summary>📌 Summary: Ensuring Your App Communicates Correctly with Backend Services</summary>
+          <p>Testing API calls ensures your application correctly interacts with backend services under various conditions.</p>
+
+          <h3>🔹 Testing Philosophy</h3>
+          <p>When testing API calls, focus on:</p>
+          <ul>
+            <li><strong>Request structure:</strong> Are we sending the right data in the right format?</li>
+            <li><strong>Response handling:</strong> Do we handle success and error responses correctly?</li>
+            <li><strong>Error recovery:</strong> Do we handle network failures gracefully?</li>
+            <li><strong>Side effects:</strong> Do we update state correctly based on API responses?</li>
+          </ul>
+
+          <h3>⚡ Testing Fetch API Calls</h3>
+          <pre><code>
+// hooks/useUser.js
+import { useState, useEffect } from 'react';
+
+export function useUser(userId) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() =&gt; {
+    const fetchUser = async () =&gt; {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await fetch(\`/api/users/\${userId}\`, {
+          method: 'GET',
+          headers: {
+            'Authorization': \`Bearer \${localStorage.getItem('token')}\`,
+            'Accept': 'application/json'
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(\`HTTP error! status: \${response.status}\`);
+        }
+        
+        const userData = await response.json();
+        setUser(userData);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (userId) {
+      fetchUser();
+    }
+  }, [userId]);
+
+  return { user, loading, error };
+}
+
+// useUser.test.js
+import { renderHook, act } from '@testing-library/react-hooks';
+import { useUser } from './useUser';
+
+// Mock localStorage
+const mockLocalStorage = {
+  getItem: jest.fn(),
+  setItem: jest.fn(),
+  removeItem: jest.fn()
+};
+
+// Mock fetch globally
+global.fetch = jest.fn();
+
+describe('useUser hook', () =&gt; {
+  beforeEach(() =&gt; {
+    // Reset mocks before each test
+    jest.clearAllMocks();
+    Object.defineProperty(window, 'localStorage', {
+      value: mockLocalStorage,
+      writable: true
+    });
+  });
+
+  test('does nothing if userId is null', () =&gt; {
+    const { result } = renderHook(() =&gt; useUser(null));
+    
+    expect(result.current.user).toBeNull();
+    expect(result.current.loading).toBe(true);
+    expect(result.current.error).toBeNull();
+    
+    // fetch was never called
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
+  test('fetches user data successfully', async () =&gt; {
+    // Arrange
+    const mockToken = 'abc123';
+    const mockUserId = 123;
+    const mockUser = { id: mockUserId, name: 'John Doe', email: 'john@example.com' };
+    
+    mockLocalStorage.getItem.mockReturnValue(mockToken);
+    
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: () =&gt; Promise.resolve(mockUser)
+    });
+
+    const { result } = renderHook(() =&gt; useUser(mockUserId));
+
+    // Initial state
+    expect(result.current.loading).toBe(true);
+    expect(result.current.user).toBeNull();
+    expect(result.current.error).toBeNull();
+
+    // Wait for data to load
+    await act(async () =&gt; {
+      // The effect runs automatically
+    });
+
+    // Final state
+    expect(result.current.loading).toBe(false);
+    expect(result.current.user).toEqual(mockUser);
+    expect(result.current.error).toBeNull();
+    
+    // Verify fetch was called with correct parameters
+    expect(fetch).toHaveBeenCalledWith(`/api/users/${mockUserId}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${mockToken}`,
+        'Accept': 'application/json'
+      }
+    });
+  });
+
+  test('handles unauthorized access (401)', async () =&gt; {
+    // Arrange
+    const mockUserId = 123;
+    
+    fetch.mockResolvedValueOnce({
+      ok: false,
+      status: 401,
+      statusText: 'Unauthorized'
+    });
+
+    const { result } = renderHook(() =&gt; useUser(mockUserId));
+
+    // Wait for error
+    await act(async () =&gt; {
+      // The effect runs automatically
+    });
+
+    // Final state
+    expect(result.current.loading).toBe(false);
+    expect(result.current.user).toBeNull();
+    expect(result.current.error).toBe('HTTP error! status: 401');
+    
+    // Verify fetch was called
+    expect(fetch).toHaveBeenCalled();
+  });
+
+  test('handles network errors', async () =&gt; {
+    // Arrange
+    const mockUserId = 123;
+    
+    fetch.mockRejectedValueOnce(new Error('Network connection failed'));
+
+    const { result } = renderHook(() =&gt; useUser(mockUserId));
+
+    // Wait for error
+    await act(async () =&gt; {
+      // The effect runs automatically
+    });
+
+    // Final state
+    expect(result.current.loading).toBe(false);
+    expect(result.current.user).toBeNull();
+    expect(result.current.error).toBe('Network connection failed');
+    
+    // Verify fetch was called
+    expect(fetch).toHaveBeenCalled();
+  });
+
+  test('uses token from localStorage', () =&gt; {
+    const mockToken = 'xyz789';
+    const mockUserId = 123;
+    
+    mockLocalStorage.getItem.mockReturnValue(mockToken);
+    
+    const { result } = renderHook(() =&gt; useUser(mockUserId));
+    
+    // Trigger effect
+    act(() =&gt; {});
+    
+    // Verify token was retrieved
+    expect(mockLocalStorage.getItem).toHaveBeenCalledWith('token');
+  });
+});
+          </code></pre>
+
+          <h3>🔥 Testing Axios API Calls</h3>
+          <pre><code>
+// services/api.js
+import axios from 'axios';
+
+const apiClient = axios.create({
+  baseURL: '/api/v1',
+  timeout: 10000
+});
+
+// Add auth token interceptor
+apiClient.interceptors.request.use(
+  config =&gt; {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = \`Bearer \${token}\`;
+    }
+    return config;
+  },
+  error =&gt; {
+    return Promise.reject(error);
+  }
+);
+
+export const apiClient = apiClient;
+
+export const login = async (credentials) =&gt; {
+  const response = await apiClient.post('/auth/login', credentials);
+  return response.data;
+};
+
+export const register = async (userData) =&gt; {
+  const response = await apiClient.post('/auth/register', userData);
+  return response.data;
+};
+
+export const getCurrentUser = async () =&gt; {
+  const response = await apiClient.get('/auth/me');
+  return response.data;
+};
+
+// api.test.js
+import { login, register, getCurrentUser } from './services/api';
+import axios from 'axios';
+
+// Mock axios
+jest.mock('axios');
+
+describe('API Service', () =&gt; {
+  beforeEach(() =&gt; {
+    // Reset mocks before each test
+    jest.clearAllMocks();
+    
+    // Mock localStorage
+    const mockLocalStorage = {
+      getItem: jest.fn(),
+      setItem: jest.fn(),
+      removeItem: jest.fn()
+    };
+    
+    Object.defineProperty(window, 'localStorage', {
+      value: mockLocalStorage,
+      writable: true
+    });
+  });
+
+  test('login sends correct data and returns user', async () =&gt; {
+    // Arrange
+    const mockCredentials = { email: 'john@example.com', password: 'password123' };
+    const mockResponse = { token: 'abc123', user: { id: 1, name: 'John' } };
+    
+    axios.post.mockResolvedValueOnce({ data: mockResponse });
+
+    // Act
+    const result = await login(mockCredentials);
+
+    // Assert
+    expect(axios.post).toHaveBeenCalledWith('/auth/login', mockCredentials);
+    expect(result).toEqual(mockResponse);
+  });
+
+  test('login includes authorization header', async () =&gt; {
+    // Arrange
+    const mockToken = 'xyz789';
+    const mockCredentials = { email: 'john@example.com', password: 'password123' };
+    
+    localStorage.getItem.mockReturnValue(mockToken);
+    
+    const mockResponse = { token: 'abc123', user: { id: 1, name: 'John' } };
+    axios.post.mockResolvedValueOnce({ data: mockResponse });
+
+    // Act
+    await login(mockCredentials);
+
+    // Assert
+    expect(axios.post).toHaveBeenCalledWith('/auth/login', mockCredentials, {
+      headers: {
+        Authorization: `Bearer ${mockToken}`
+      }
+    });
+  });
+
+  test('register creates new user', async () =&gt; {
+    // Arrange
+    const mockUserData = {
+      name: 'John Doe',
+      email: 'john@example.com',
+      password: 'password123'
+    };
+    
+    const mockResponse = { token: 'abc123', user: { id: 1, name: 'John' } };
+    axios.post.mockResolvedValueOnce({ data: mockResponse });
+
+    // Act
+    const result = await register(mockUserData);
+
+    // Assert
+    expect(axios.post).toHaveBeenCalledWith('/auth/register', mockUserData);
+    expect(result).toEqual(mockResponse);
+  });
+
+  test('getCurrentUser gets current user profile', async () =&gt; {
+    // Arrange
+    const mockToken = 'xyz789';
+    const mockUser = { id: 1, name: 'John', email: 'john@example.com' };
+    
+    localStorage.getItem.mockReturnValue(mockToken);
+    
+    axios.get.mockResolvedValueOnce({ data: mockUser });
+
+    // Act
+    const result = await getCurrentUser();
+
+    // Assert
+    expect(axios.get).toHaveBeenCalledWith('/auth/me', {
+      headers: {
+        Authorization: `Bearer ${mockToken}`
+      }
+    });
+    expect(result).toEqual(mockUser);
+  });
+
+  test('handles login error', async () =&gt; {
+    // Arrange
+    const mockCredentials = { email: 'john@example.com', password: 'password123' };
+    
+    axios.post.mockRejectedValueOnce({
+      response: {
+        data: { message: 'Invalid credentials' },
+        status: 401
+      }
+    });
+
+    // Act & Assert
+    await expect(login(mockCredentials)).rejects.toEqual({
+      response: {
+        data: { message: 'Invalid credentials' },
+        status: 401
+      }
+    });
+  });
+
+  test('handles registration error', async () =&gt; {
+    // Arrange
+    const mockUserData = {
+      name: 'John Doe',
+      email: 'john@example.com',
+      password: 'password123'
+    };
+    
+    axios.post.mockRejectedValueOnce({
+      response: {
+        data: { message: 'Email already exists' },
+        status: 409
+      }
+    });
+
+    // Act & Assert
+    await expect(register(mockUserData)).rejects.toEqual({
+      response: {
+        data: { message: 'Email already exists' },
+        status: 409
+      }
+    });
+  });
+});
+          </code></pre>
+
+          <h3>🔥 Testing API Hooks with Custom Hooks</h3>
+          <pre><code>
+// hooks/useApi.js
+import { useState, useEffect } from 'react';
+
+export function useApi(url, options = {}) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() =&gt; {
+    const fetchData = async () =&gt; {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await fetch(url, {
+          ...options,
+          headers: {
+            'Content-Type': 'application/json',
+            ...options.headers
+          }
+        });
+        
+        if (!response.ok) {
+          throw new Error(\`HTTP error! status: \${response.status}\`);
+        }
+        
+        const jsonData = await response.json();
+        setData(jsonData);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (url) {
+      fetchData();
+    }
+  }, [url, options]);
+
+  return { data, loading, error };
+}
+
+// hooks/useApi.test.js
+import { renderHook, act } from '@testing-library/react-hooks';
+import { useApi } from './useApi';
+
+// Mock fetch globally
+global.fetch = jest.fn();
+
+describe('useApi hook', () =&gt; {
+  beforeEach(() =&gt; {
+    jest.clearAllMocks();
+  });
+
+  test('fetches data successfully', async () =&gt; {
+    // Arrange
+    const mockUrl = '/api/users';
+    const mockOptions = { method: 'GET' };
+    const mockData = [{ id: 1, name: 'John' }];
+    
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: () =&gt; Promise.resolve(mockData)
+    });
+
+    const { result } = renderHook(() =&gt; useApi(mockUrl, mockOptions));
+
+    // Initial state
+    expect(result.current.loading).toBe(true);
+    expect(result.current.data).toBeNull();
+    expect(result.current.error).toBeNull();
+
+    // Wait for data
+    await act(async () =&gt; {
+      // Effect runs automatically
+    });
+
+    // Final state
+    expect(result.current.loading).toBe(false);
+    expect(result.current.data).toEqual(mockData);
+    expect(result.current.error).toBeNull();
+    
+    // Verify fetch was called with correct parameters
+    expect(fetch).toHaveBeenCalledWith(mockUrl, mockOptions);
+  });
+
+  test('handles GET request with query parameters', async () =&gt; {
+    // Arrange
+    const mockUrl = '/api/posts?category=react';
+    const mockData = [{ id: 1, title: 'React Tutorial' }];
+    
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: () =&gt; Promise.resolve(mockData)
+    });
+
+    const { result } = renderHook(() =&gt; useApi(mockUrl));
+
+    // Wait for data
+    await act(async () =&gt; {
+      // Effect runs automatically
+    });
+
+    // Verify fetch was called with URL including query params
+    expect(fetch).toHaveBeenCalledWith(mockUrl, undefined);
+  });
+
+  test('handles POST request with body', async () =&gt; {
+    // Arrange
+    const mockUrl = '/api/posts';
+    const mockOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title: 'New Post' })
+    };
+    const mockData = { id: 1, title: 'New Post' };
+    
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: () =&gt; Promise.resolve(mockData)
+    });
+
+    const { result } = renderHook(() =&gt; useApi(mockUrl, mockOptions));
+
+    // Wait for data
+    await act(async () =&gt; {
+      // Effect runs automatically
+    });
+
+    // Verify fetch was called with correct parameters
+    expect(fetch).toHaveBeenCalledWith(mockUrl, mockOptions);
+  });
+
+  test('handles HTTP error response', async () =&gt; {
+    // Arrange
+    const mockUrl = '/api/users';
+    const mockData = { error: 'Not found' };
+    
+    fetch.mockResolvedValueOnce({
+      ok: false,
+      status: 404,
+      statusText: 'Not Found',
+      json: () =&gt; Promise.resolve(mockData)
+    });
+
+    const { result } = renderHook(() =&gt; useApi(mockUrl));
+
+    // Wait for error
+    await act(async () =&gt; {
+      // Effect runs automatically
+    });
+
+    // Final state
+    expect(result.current.loading).toBe(false);
+    expect(result.current.data).toBeNull();
+    expect(result.current.error).toBe('HTTP error! status: 404');
+  });
+
+  test('handles network error', async () =&gt; {
+    // Arrange
+    const mockUrl = '/api/users';
+    
+    fetch.mockRejectedValueOnce(new Error('Network connection failed'));
+
+    const { result } = renderHook(() =&gt; useApi(mockUrl));
+
+    // Wait for error
+    await act(async () =&gt; {
+      // Effect runs automatically
+    });
+
+    // Final state
+    expect(result.current.loading).toBe(false);
+    expect(result.current.data).toBeNull();
+    expect(result.current.error).toBe('Network connection failed');
+  });
+
+  test('does not fetch if url is falsy', () =&gt; {
+    const { result } = renderHook(() =&gt; useApi(null));
+    
+    expect(result.current.loading).toBe(true);
+    expect(result.current.data).toBeNull();
+    expect(result.current.error).toBeNull();
+    
+    // fetch was never called
+    expect(fetch).not.toHaveBeenCalled();
+  });
+});
+          </code></pre>
+
+          <div class="note">
+            <strong>🧠 Mental Model:</strong> Think of API testing as verifying that your app speaks the right language to the backend. You're checking that requests have the correct format, and responses are handled appropriately.
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Deep Dive: Testing API Call Patterns</summary>
+          <p>Learn to test common API patterns used in production applications.</p>
+
+          <h3>🔥 Testing Pagination</h3>
+          <pre><code>
+// hooks/usePaginatedData.js
+import { useState, useEffect } from 'react';
+
+export function usePaginatedData(apiUrl, itemsPerPage = 10) {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+
+  useEffect(() =&gt; {
+    const fetchPage = async () =&gt; {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await fetch(\`\${apiUrl}?page=\${page}&amp;limit=\${itemsPerPage}\`);
+        
+        if (!response.ok) {
+          throw new Error(\`HTTP error! status: \${response.status}\`);
+        }
+        
+        const result = await response.json();
+        setData(result.items);
+        setTotalPages(result.totalPages);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchPage();
+  }, [apiUrl, page, itemsPerPage]);
+
+  return { data, loading, error, page, totalPages, setPage };
+}
+
+// usePaginatedData.test.js
+import { renderHook, act } from '@testing-library/react-hooks';
+import { usePaginatedData } from './usePaginatedData';
+
+// Mock fetch globally
+global.fetch = jest.fn();
+
+describe('usePaginatedData hook', () =&gt; {
+  beforeEach(() =&gt; {
+    jest.clearAllMocks();
+  });
+
+  test('fetches first page of data', async () =&gt; {
+    // Arrange
+    const mockUrl = '/api/posts';
+    const mockItemsPerPage = 10;
+    const mockPage = 1;
+    const mockData = { 
+      items: [{ id: 1, title: 'Post 1' }, { id: 2, title: 'Post 2' }],
+      totalPages: 5
+    };
+    
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: () =&gt; Promise.resolve(mockData)
+    });
+
+    const { result } = renderHook(() =&gt; usePaginatedData(mockUrl, mockItemsPerPage));
+
+    // Wait for data
+    await act(async () =&gt; {
+      // Effect runs automatically
+    });
+
+    // Verify fetch was called with correct parameters
+    expect(fetch).toHaveBeenCalledWith(\`\${mockUrl}?page=\${mockPage}&amp;limit=\${mockItemsPerPage}\`);
+    
+    // Verify returned values
+    expect(result.current.data).toEqual(mockData.items);
+    expect(result.current.totalPages).toBe(mockData.totalPages);
+    expect(result.current.page).toBe(mockPage);
+  });
+
+  test('fetches second page when page changes', async () =&gt; {
+    // Arrange
+    const mockUrl = '/api/posts';
+    const mockItemsPerPage = 10;
+    const mockPage1 = 1;
+    const mockPage2 = 2;
+    const mockData1 = { 
+      items: [{ id: 1, title: 'Post 1' }, { id: 2, title: 'Post 2' }],
+      totalPages: 5
+    };
+    const mockData2 = { 
+      items: [{ id: 3, title: 'Post 3' }, { id: 4, title: 'Post 4' }],
+      totalPages: 5
+    };
+    
+    fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () =&gt; Promise.resolve(mockData1)
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () =&gt; Promise.resolve(mockData2)
+      });
+
+    const { result, rerender } = renderHook(
+      ({ apiUrl, itemsPerPage }) =&gt; usePaginatedData(apiUrl, itemsPerPage),
+      { initialProps: { apiUrl: mockUrl, itemsPerPage: mockItemsPerPage } }
+    );
+
+    // First page
+    await act(async () =&gt; {
+      // Effect runs automatically
+    });
+
+    // Change page
+    act(() =&gt; {
+      result.current.setPage(mockPage2);
+    });
+
+    // Second page
+    await act(async () =&gt; {
+      // Effect runs automatically
+    });
+
+    // Verify fetch was called with correct parameters for page 2
+    expect(fetch).toHaveBeenNthCalledWith(2, \`\${mockUrl}?page=\${mockPage2}&amp;limit=\${mockItemsPerPage}\`);
+    
+    // Verify returned values for page 2
+    expect(result.current.data).toEqual(mockData2.items);
+    expect(result.current.page).toBe(mockPage2);
+  });
+
+  test('resets page to 1 when apiUrl changes', async () =&gt; {
+    // Arrange
+    const mockUrl1 = '/api/posts';
+    const mockUrl2 = '/api/comments';
+    const mockItemsPerPage = 10;
+    const mockPage = 3;
+    const mockData1 = { 
+      items: [{ id: 1, title: 'Post 1' }],
+      totalPages: 5
+    };
+    const mockData2 = { 
+      items: [{ id: 1, text: 'Comment 1' }],
+      totalPages: 3
+    };
+    
+    fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () =&gt; Promise.resolve(mockData1)
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () =&gt; Promise.resolve(mockData2)
+      });
+
+    const { result, rerender } = renderHook(
+      ({ apiUrl, itemsPerPage }) =&gt; usePaginatedData(apiUrl, itemsPerPage),
+      { initialProps: { apiUrl: mockUrl1, itemsPerPage: mockItemsPerPage } }
+    );
+
+    // First page
+    await act(async () =&gt; {
+      // Effect runs automatically
+    });
+
+    // Change page to 3
+    act(() =&gt; {
+      result.current.setPage(mockPage);
+    });
+
+    // Change apiUrl
+    rerender({ apiUrl: mockUrl2, itemsPerPage: mockItemsPerPage });
+
+    // Wait for new data
+    await act(async () =&gt; {
+      // Effect runs automatically
+    });
+
+    // Verify page reset to 1 when apiUrl changed
+    expect(fetch).toHaveBeenNthCalledWith(2, \`\${mockUrl2}?page=1&amp;limit=\${mockItemsPerPage}\`);
+    expect(result.current.page).toBe(1);
+  });
+});
+          </code></pre>
+
+          <h3>🔥 Testing Debounced API Calls</h3>
+          <pre><code>
+// hooks/useSearch.js
+import { useState, useEffect } from 'react';
+
+export function useSearch(searchTerm, delay = 500) {
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  useEffect(() =&gt; {
+    let timeoutId;
+    
+    if (searchTerm.length &gt; 0) {
+      setLoading(true);
+      setError(null);
+      
+      timeoutId = setTimeout(async () =&gt; {
+        try {
+          const response = await fetch(\`/api/search?q=\${encodeURIComponent(searchTerm)}\`);
+          
+          if (!response.ok) {
+            throw new Error(\`HTTP error! status: \${response.status}\`);
+          }
+          
+          const data = await response.json();
+          setResults(data.results);
+        } catch (err) {
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      }, delay);
+    } else {
+      setResults([]);
+    }
+
+    return () =&gt; {
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [searchTerm, delay]);
+
+  return { results, loading, error };
+}
+
+// useSearch.test.js
+import { renderHook, act } from '@testing-library/react-hooks';
+import { useSearch } from './useSearch';
+
+// Mock fetch globally
+global.fetch = jest.fn();
+
+describe('useSearch hook', () =&gt; {
+  beforeEach(() =&gt; {
+    jest.useFakeTimers();
+    jest.clearAllMocks();
+  });
+
+  afterEach(() =&gt; {
+    jest.useRealTimers();
+  });
+
+  test('fetches results when search term changes', async () =&gt; {
+    // Arrange
+    const mockSearchTerm = 'react';
+    const mockResults = [{ id: 1, name: 'React Tutorial' }];
+    
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: () =&gt; Promise.resolve({ results: mockResults })
+    });
+
+    const { result } = renderHook(() =&gt; useSearch(mockSearchTerm));
+
+    // Wait for debounce
+    act(() =&gt; {
+      jest.advanceTimersByTime(500);
+    });
+
+    // Verify fetch was called
+    expect(fetch).toHaveBeenCalledWith(\`/api/search?q=\${encodeURIComponent(mockSearchTerm)}\`);
+    
+    // Verify results
+    expect(result.current.results).toEqual(mockResults);
+    expect(result.current.loading).toBe(false);
+  });
+
+  test('does not fetch if search term is empty', () =&gt; {
+    // Arrange
+    const { result } = renderHook(() =&gt; useSearch(''));
+
+    // Verify no fetch occurred
+    expect(fetch).not.toHaveBeenCalled();
+    expect(result.current.results).toEqual([]);
+    expect(result.current.loading).toBe(false);
+  });
+
+  test('cleans up previous timeout when search term changes', async () =&gt; {
+    // Arrange
+    const mockSearchTerm1 = 'react';
+    const mockSearchTerm2 = 'javascript';
+    const mockResults1 = [{ id: 1, name: 'React Tutorial' }];
+    const mockResults2 = [{ id: 1, name: 'JavaScript Guide' }];
+    
+    fetch
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () =&gt; Promise.resolve({ results: mockResults1 })
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: () =&gt; Promise.resolve({ results: mockResults2 })
+      });
+
+    const { result } = renderHook(() =&gt; useSearch(mockSearchTerm1));
+
+    // Change search term before first timeout completes
+    act(() =&gt; {
+      jest.advanceTimersByTime(200); // Only 200ms passed
+    });
+    
+    // Change search term
+    act(() =&gt; {
+      result.current.searchTerm = mockSearchTerm2;
+    });
+
+    // Advance timer past debounce period
+    act(() =&gt; {
+      jest.advanceTimersByTime(300); // Total 500ms now
+    });
+
+    // Verify only second request was made
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(fetch).toHaveBeenCalledWith(\`/api/search?q=\${encodeURIComponent(mockSearchTerm2)}\`);
+    
+    // Verify results from second request
+    expect(result.current.results).toEqual(mockResults2);
+  });
+
+  test('handles search error gracefully', async () =&gt; {
+    // Arrange
+    const mockSearchTerm = 'react';
+    const mockError = new Error('Network connection failed');
+    
+    fetch.mockRejectedValueOnce(mockError);
+
+    const { result } = renderHook(() =&gt; useSearch(mockSearchTerm));
+
+    // Wait for debounce
+    act(() =&gt; {
+      jest.advanceTimersByTime(500);
+    });
+
+    // Verify error handling
+    expect(result.current.results).toEqual([]);
+    expect(result.current.loading).toBe(false);
+    expect(result.current.error).toBe('Network connection failed');
+  });
+});
+          </code></pre>
+
+          <div class="testing-tip">
+            <strong>🎯 Final Wisdom:</strong> When testing API calls, focus on the contract between your frontend and backend. Don't test the API itself—test that your code makes the right requests and handles responses correctly.
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 18.3 -->
+      <section id="section-18-3">
+        <h2>18.3 Testing Context and Providers</h2>
+        
+        <details>
+          <summary>📌 Summary: Ensuring Context Works Correctly Across Your Application</summary>
+          <p>Context providers manage global state in React. Testing them ensures they provide the correct values and behave as expected.</p>
+
+          <h3>🔹 Testing Philosophy</h3>
+          <p>When testing context providers, focus on:</p>
+          <ul>
+            <li><strong>Initial state:</strong> Is the provider initialized correctly?</li>
+            <li><strong>Values provided:</strong> Are the correct values available to consumers?</li>
+            <li><strong>Update functionality:</strong> Do update functions work as expected?</li>
+            <li><strong>Error handling:</strong> Does the provider handle errors gracefully?</li>
+            <li><strong>Consumer behavior:</strong> Do components using the context behave correctly?</li>
+          </ul>
+
+          <h3>⚡ Testing Simple Context Provider</h3>
+          <pre><code>
+// context/AuthContext.js
+import React, { createContext, useContext, useState } from 'react';
+
+const AuthContext = createContext();
+
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // Simulate loading user from localStorage
+  React.useEffect(() =&gt; {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+    setLoading(false);
+  }, []);
+
+  const login = (userData) =&gt; {
+    localStorage.setItem('user', JSON.stringify(userData));
+    setUser(userData);
+  };
+
+  const logout = () =&gt; {
+    localStorage.removeItem('user');
+    setUser(null);
+  };
+
+  const value = { user, loading, login, logout };
+
+  return (
+    &lt;AuthContext.Provider value={value}&gt;
+      {children}
+    &lt;/AuthContext.Provider&gt;
+  );
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
+  return context;
+}
+
+// context/AuthContext.test.js
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import { AuthProvider, useAuth } from './AuthContext';
+
+// Mock localStorage
+const mockLocalStorage = {
+  getItem: jest.fn(),
+  setItem: jest.fn(),
+  removeItem: jest.fn()
+};
+
+// Helper to render component with provider
+const renderWithProvider = (component) =&gt; {
+  return render(
+    &lt;AuthProvider&gt;
+      {component}
+    &lt;/AuthProvider&gt;
+  );
+};
+
+describe('AuthProvider', () =&gt; {
+  beforeEach(() =&gt; {
+    // Reset mocks before each test
+    jest.clearAllMocks();
+    Object.defineProperty(window, 'localStorage', {
+      value: mockLocalStorage,
+      writable: true
+    });
+  });
+
+  test('throws error if used outside provider', () =&gt; {
+    const useAuthOutsideProvider = () =&gt; {
+      const context = useAuth();
+      return context;
+    };
+
+    expect(useAuthOutsideProvider).toThrow('useAuth must be used within AuthProvider');
+  });
+
+  test('provides initial state', () =&gt; {
+    // Render component that uses context
+    const TestComponent = () =&gt; {
+      const { user, loading } = useAuth();
+      return (
+        &lt;div&gt;
+          &lt;p&gt;User: {user ? user.name : 'none'}&lt;/p&gt;
+          &lt;p&gt;Loading: {loading.toString()}&lt;/p&gt;
+        &lt;/div&gt;
+      );
+    };
+
+    renderWithProvider(&lt;TestComponent /&gt;);
+
+    // Initial state
+    expect(screen.getByText(/user: none/i)).toBeInTheDocument();
+    expect(screen.getByText(/loading: true/i)).toBeInTheDocument();
+  });
+
+  test('loads user from localStorage on mount', () =&gt; {
+    // Arrange
+    const mockUser = { id: 1, name: 'John Doe', email: 'john@example.com' };
+    mockLocalStorage.getItem.mockReturnValue(JSON.stringify(mockUser));
+
+    // Render component
+    const TestComponent = () =&gt; {
+      const { user, loading } = useAuth();
+      return (
+        &lt;div&gt;
+          &lt;p&gt;User: {user ? user.name : 'none'}&lt;/p&gt;
+          &lt;p&gt;Loading: {loading.toString()}&lt;/p&gt;
+        &lt;/div&gt;
+      );
+    };
+
+    renderWithProvider(&lt;TestComponent /&gt;);
+
+    // After effect runs
+    // We need to wait for the effect to run
+    // In this case, since it's synchronous, we can check immediately
+    expect(screen.getByText(/user: John Doe/i)).toBeInTheDocument();
+    expect(screen.getByText(/loading: false/i)).toBeInTheDocument();
+  });
+
+  test('calls login function', () =&gt; {
+    // Arrange
+    const mockUser = { id: 1, name: 'John Doe', email: 'john@example.com' };
+
+    // Render component
+    const TestComponent = () =&gt; {
+      const { login } = useAuth();
+      
+      React.useEffect(() =&gt; {
+        login(mockUser);
+      }, [login]);
+
+      return &lt;div&gt;Test Component&lt;/div&gt;;
+    };
+
+    renderWithProvider(&lt;TestComponent /&gt;);
+
+    // Verify localStorage was called
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith(
+      'user', 
+      JSON.stringify(mockUser)
+    );
+  });
+
+  test('calls logout function', () =&gt; {
+    // Arrange
+    const mockUser = { id: 1, name: 'John Doe', email: 'john@example.com' };
+    mockLocalStorage.getItem.mockReturnValue(JSON.stringify(mockUser));
+
+    // Render component
+    const TestComponent = () =&gt; {
+      const { logout } = useAuth();
+      
+      React.useEffect(() =&gt; {
+        logout();
+      }, [logout]);
+
+      return &lt;div&gt;Test Component&lt;/div&gt;;
+    };
+
+    renderWithProvider(&lt;TestComponent /&gt;);
+
+    // Verify localStorage was called
+    expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('user');
+  });
+
+  test('updates user state after login', () =&gt; {
+    // Arrange
+    const mockUser = { id: 1, name: 'John Doe', email: 'john@example.com' };
+    
+    // Render component
+    const TestComponent = () =&gt; {
+      const { user, login } = useAuth();
+      
+      React.useEffect(() =&gt; {
+        login(mockUser);
+      }, [login]);
+
+      return (
+        &lt;div&gt;
+          &lt;p&gt;Current user: {user ? user.name : 'none'}&lt;/p&gt;
+        &lt;/div&gt;
+      );
+    };
+
+    renderWithProvider(&lt;TestComponent /&gt;);
+
+    // After effect runs
+    expect(screen.getByText(/current user: John Doe/i)).toBeInTheDocument();
+  });
+
+  test('clears user state after logout', () =&gt; {
+    // Arrange
+    const mockUser = { id: 1, name: 'John Doe', email: 'john@example.com' };
+    mockLocalStorage.getItem.mockReturnValue(JSON.stringify(mockUser));
+
+    // Render component
+    const TestComponent = () =&gt; {
+      const { user, logout } = useAuth();
+      
+      React.useEffect(() =&gt; {
+        logout();
+      }, [logout]);
+
+      return (
+        &lt;div&gt;
+          &lt;p&gt;Current user: {user ? user.name : 'none'}&lt;/p&gt;
+        &lt;/div&gt;
+      );
+    };
+
+    renderWithProvider(&lt;TestComponent /&gt;);
+
+    // After effect runs
+    expect(screen.getByText(/current user: none/i)).toBeInTheDocument();
+  });
+});
+          </code></pre>
+
+          <h3>🔥 Testing Complex Context Provider</h3>
+          <pre><code>
+// context/AppContext.js
+import React, { createContext, useContext, useState, useEffect } from 'react';
+
+const AppContext = createContext();
+
+export function AppProvider({ children }) {
+  const [theme, setTheme] = useState('light');
+  const [language, setLanguage] = useState('en');
+  const [notifications, setNotifications] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Load preferences from localStorage
+  useEffect(() =&gt; {
+    const savedTheme = localStorage.getItem('theme');
+    const savedLanguage = localStorage.getItem('language');
+    
+    if (savedTheme) setTheme(savedTheme);
+    if (savedLanguage) setLanguage(savedLanguage);
+    
+    setLoading(false);
+  }, []);
+
+  // Save theme to localStorage when it changes
+  useEffect(() =&gt; {
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  // Save language to localStorage when it changes
+  useEffect(() =&gt; {
+    localStorage.setItem('language', language);
+  }, [language]);
+
+  const toggleTheme = () =&gt; {
+    setTheme(prev =&gt; prev === 'light' ? 'dark' : 'light');
+  };
+
+  const setAppLanguage = (lang) =&gt; {
+    setLanguage(lang);
+  };
+
+  const addNotification = (message, type = 'info') =&gt; {
+    const notification = {
+      id: Date.now(),
+      message,
+      type,
+      timestamp: new Date().toISOString()
+    };
+    setNotifications(prev =&gt; [...prev, notification]);
+  };
+
+  const removeNotification = (id) =&gt; {
+    setNotifications(prev =&gt; prev.filter(n =&gt; n.id !== id));
+  };
+
+  const clearNotifications = () =&gt; {
+    setNotifications([]);
+  };
+
+  const value = {
+    theme,
+    language,
+    notifications,
+    loading,
+    toggleTheme,
+    setAppLanguage,
+    addNotification,
+    removeNotification,
+    clearNotifications
+  };
+
+  return (
+    &lt;AppContext.Provider value={value}&gt;
+      {children}
+    &lt;/AppContext.Provider&gt;
+  );
+}
+
+export function useApp() {
+  const context = useContext(AppContext);
+  if (!context) {
+    throw new Error('useApp must be used within AppProvider');
+  }
+  return context;
+}
+
+// context/AppContext.test.js
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import { AppProvider, useApp } from './AppContext';
+
+// Mock localStorage
+const mockLocalStorage = {
+  getItem: jest.fn(),
+  setItem: jest.fn(),
+  removeItem: jest.fn()
+};
+
+// Helper to render component with provider
+const renderWithProvider = (component) =&gt; {
+  return render(
+    &lt;AppProvider&gt;
+      {component}
+    &lt;/AppProvider&gt;
+  );
+};
+
+describe('AppProvider', () =&gt; {
+  beforeEach(() =&gt; {
+    // Reset mocks before each test
+    jest.clearAllMocks();
+    Object.defineProperty(window, 'localStorage', {
+      value: mockLocalStorage,
+      writable: true
+    });
+  });
+
+  test('throws error if used outside provider', () =&gt; {
+    const useAppOutsideProvider = () =&gt; {
+      const context = useApp();
+      return context;
+    };
+
+    expect(useAppOutsideProvider).toThrow('useApp must be used within AppProvider');
+  });
+
+  test('loads theme and language from localStorage on mount', () =&gt; {
+    // Arrange
+    mockLocalStorage.getItem
+      .mockReturnValueOnce('dark')
+      .mockReturnValueOnce('es');
+
+    // Render component
+    const TestComponent = () =&gt; {
+      const { theme, language, loading } = useApp();
+      return (
+        &lt;div&gt;
+          &lt;p&gt;Theme: {theme}&lt;/p&gt;
+          &lt;p&gt;Language: {language}&lt;/p&gt;
+          &lt;p&gt;Loading: {loading.toString()}&lt;/p&gt;
+        &lt;/div&gt;
+      );
+    };
+
+    renderWithProvider(&lt;TestComponent /&gt;);
+
+    // After effect runs
+    expect(screen.getByText(/theme: dark/i)).toBeInTheDocument();
+    expect(screen.getByText(/language: es/i)).toBeInTheDocument();
+    expect(screen.getByText(/loading: false/i)).toBeInTheDocument();
+    
+    // Verify localStorage was read
+    expect(mockLocalStorage.getItem).toHaveBeenCalledWith('theme');
+    expect(mockLocalStorage.getItem).toHaveBeenCalledWith('language');
+  });
+
+  test('saves theme to localStorage when toggled', () =&gt; {
+    // Arrange
+    const TestComponent = () =&gt; {
+      const { toggleTheme } = useApp();
+      
+      React.useEffect(() =&gt; {
+        toggleTheme();
+      }, [toggleTheme]);
+
+      return &lt;div&gt;Test Component&lt;/div&gt;;
+    };
+
+    renderWithProvider(&lt;TestComponent /&gt;);
+
+    // Verify theme was saved
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('theme', 'dark');
+  });
+
+  test('saves language to localStorage when changed', () =&gt; {
+    // Arrange
+    const TestComponent = () =&gt; {
+      const { setAppLanguage } = useApp();
+      
+      React.useEffect(() =&gt; {
+        setAppLanguage('fr');
+      }, [setAppLanguage]);
+
+      return &lt;div&gt;Test Component&lt;/div&gt;;
+    };
+
+    renderWithProvider(&lt;TestComponent /&gt;);
+
+    // Verify language was saved
+    expect(mockLocalStorage.setItem).toHaveBeenCalledWith('language', 'fr');
+  });
+
+  test('adds notification', () =&gt; {
+    // Arrange
+    const TestComponent = () =&gt; {
+      const { addNotification } = useApp();
+      
+      React.useEffect(() =&gt; {
+        addNotification('Welcome!', 'success');
+      }, [addNotification]);
+
+      return &lt;div&gt;Test Component&lt;/div&gt;;
+    };
+
+    renderWithProvider(&lt;TestComponent /&gt;);
+
+    // We can't directly test state, but we can verify the function was called
+    // To test state, we need to render a consumer component
+  });
+
+  test('removes notification', () =&gt; {
+    // Arrange
+    const mockNotification = { id: 1, message: 'Test', type: 'info', timestamp: new Date().toISOString() };
+    
+    // Render component that adds notification first
+    const TestComponent = () =&gt; {
+      const { addNotification, removeNotification } = useApp();
+      
+      React.useEffect(() =&gt; {
+        addNotification('Test', 'info');
+        removeNotification(1);
+      }, [addNotification, removeNotification]);
+
+      return &lt;div&gt;Test Component&lt;/div&gt;;
+    };
+
+    renderWithProvider(&lt;TestComponent /&gt;);
+    
+    // We need a way to inspect the state... Let's create a better test
+  });
+
+  test('full notification cycle', () =&gt; {
+    // This requires a consumer component to observe state changes
+    
+    const NotificationDisplay = () =&gt; {
+      const { notifications, addNotification, removeNotification, clearNotifications } = useApp();
+      
+      return (
+        &lt;div&gt;
+          {notifications.map(n =&gt; (
+            &lt;div key={n.id}&gt;{n.message}&lt;/div&gt;
+          ))}
+          &lt;button onClick={() =&gt; addNotification('New')} &gt;Add&lt;/button&gt;
+          &lt;button onClick={() =&gt; removeNotification(1)} &gt;Remove 1&lt;/button&gt;
+          &lt;button onClick={() =&gt; clearNotifications()} &gt;Clear&lt;/button&gt;
+        &lt;/div&gt;
+      );
+    };
+
+    renderWithProvider(&lt;NotificationDisplay /&gt;);
+
+    // Initial state
+    expect(screen.queryByText(/new/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/test/i)).not.toBeInTheDocument();
+
+    // Add notification
+    const addButton = screen.getByRole('button', { name: /add/i });
+    fireEvent.click(addButton);
+    
+    expect(screen.getByText(/new/i)).toBeInTheDocument();
+
+    // Remove notification
+    const removeButton = screen.getByRole('button', { name: /remove 1/i });
+    fireEvent.click(removeButton);
+    
+    expect(screen.queryByText(/new/i)).not.toBeInTheDocument();
+  });
+
+  test('clears all notifications', () =&gt; {
+    // Similar to above, but testing clearNotifications
+    const NotificationDisplay = () =&gt; {
+      const { notifications, addNotification, clearNotifications } = useApp();
+      
+      React.useEffect(() =&gt; {
+        addNotification('Message 1');
+        addNotification('Message 2');
+        clearNotifications();
+      }, [addNotification, clearNotifications]);
+
+      return (
+        &lt;div&gt;
+          {notifications.map(n =&gt; (
+            &lt;div key={n.id}&gt;{n.message}&lt;/div&gt;
+          ))}
+        &lt;/div&gt;
+      );
+    };
+
+    renderWithProvider(&lt;NotificationDisplay /&gt;);
+
+    // After effect runs
+    expect(screen.queryByText(/message 1/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/message 2/i)).not.toBeInTheDocument();
+  });
+});
+          </code></pre>
+
+          <h3>🔥 Testing Context with Multiple Consumers</h3>
+          <pre><code>
+// context/ThemeContext.js
+import React, { createContext, useContext, useState } from 'react';
+
+const ThemeContext = createContext();
+
+export function ThemeProvider({ children }) {
+  const [theme, setTheme] = useState('light');
+
+  const toggleTheme = () =&gt; {
+    setTheme(prev =&gt; prev === 'light' ? 'dark' : 'light');
+  };
+
+  const value = { theme, toggleTheme };
+
+  return (
+    &lt;ThemeContext.Provider value={value}&gt;
+      {children}
+    &lt;/ThemeContext.Provider&gt;
+  );
+}
+
+export function useTheme() {
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error('useTheme must be used within ThemeProvider');
+  }
+  return context;
+}
+
+// components/Header.jsx
+import React from 'react';
+import { useTheme } from '../context/ThemeContext';
+
+function Header() {
+  const { theme, toggleTheme } = useTheme();
+
+  return (
+    &lt;header style={{ backgroundColor: theme === 'dark' ? '#1a2b42' : '#f8f9fa' }}>
+      &lt;h1&gt;My App&lt;/h1&gt;
+      &lt;button onClick={toggleTheme}&gt;
+        Toggle {theme === 'light' ? 'Dark' : 'Light'} Mode
+      &lt;/button&gt;
+    &lt;/header&gt;
+  );
+}
+
+// components/Footer.jsx
+import React from 'react';
+import { useTheme } from '../context/ThemeContext';
+
+function Footer() {
+  const { theme } = useTheme();
+
+  return (
+    &lt;footer style={{ backgroundColor: theme === 'dark' ? '#1a2b42' : '#f8f9fa' }}>
+      &lt;p&gt;© 2023 My App&lt;/p&gt;
+    &lt;/footer&gt;
+  );
+}
+
+// context/ThemeContext.test.js
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { ThemeProvider, useTheme } from './ThemeContext';
+
+// Helper to render component with provider
+const renderWithProvider = (component) =&gt; {
+  return render(
+    &lt;ThemeProvider&gt;
+      {component}
+    &lt;/ThemeProvider&gt;
+  );
+};
+
+describe('ThemeProvider', () =&gt; {
+  test('provides theme context to consumers', () =&gt; {
+    // Test that both Header and Footer receive the same context
+    const TestComponent = () =&gt; {
+      const { theme } = useTheme();
+      return (
+        &lt;div&gt;
+          &lt;Header /&gt;
+          &lt;Footer /&gt;
+          &lt;p&gt;Current theme: {theme}&lt;/p&gt;
+        &lt;/div&gt;
+      );
+    };
+
+    renderWithProvider(&lt;TestComponent /&gt;);
+
+    // Both Header and Footer should show the same theme
+    expect(screen.getByText(/current theme: light/i)).toBeInTheDocument();
+  });
+
+  test('toggles theme consistently across all consumers', () =&gt; {
+    // Render multiple components that use the context
+    const TestComponent = () =&gt; {
+      const { theme, toggleTheme } = useTheme();
+      
+      return (
+        &lt;div&gt;
+          &lt;Header /&gt;
+          &lt;Footer /&gt;
+          &lt;p&gt;Current theme: {theme}&lt;/p&gt;
+          &lt;button onClick={toggleTheme}&gt;Toggle Theme&lt;/button&gt;
+        &lt;/div&gt;
+      );
+    };
+
+    renderWithProvider(&lt;TestComponent /&gt;);
+
+    // Initial state
+    expect(screen.getByText(/current theme: light/i)).toBeInTheDocument();
+
+    // Toggle theme
+    const toggleButton = screen.getByRole('button', { name: /toggle theme/i });
+    fireEvent.click(toggleButton);
+
+    // Updated state
+    expect(screen.getByText(/current theme: dark/i)).toBeInTheDocument();
+  });
+
+  test('maintains consistent theme state', () =&gt; {
+    // Render multiple instances of the same component
+    const ThemedComponent = () =&gt; {
+      const { theme } = useTheme();
+      return &lt;p&gt;Theme: {theme}&lt;/p&gt;;
+    };
+
+    const TestComponent = () =&gt; {
+      return (
+        &lt;div&gt;
+          &lt;ThemedComponent /&gt;
+          &lt;ThemedComponent /&gt;
+          &lt;ThemedComponent /&gt;
+        &lt;/div&gt;
+      );
+    };
+
+    renderWithProvider(&lt;TestComponent /&gt;);
+
+    // All three components should have the same theme
+    const themeElements = screen.getAllByText(/theme: light/i);
+    expect(themeElements).toHaveLength(3);
+  });
+
+  test('updates all consumers when theme changes', () =&gt; {
+    const ThemedComponent = () =&gt; {
+      const { theme } = useTheme();
+      return &lt;p&gt;Theme: {theme}&lt;/p&gt;;
+    };
+
+    const TestComponent = () =&gt; {
+      const { toggleTheme } = useTheme();
+      
+      return (
+        &lt;div&gt;
+          &lt;ThemedComponent /&gt;
+          &lt;ThemedComponent /&gt;
+          &lt;button onClick={toggleTheme}&gt;Toggle Theme&lt;/button&gt;
+        &lt;/div&gt;
+      );
+    };
+
+    renderWithProvider(&lt;TestComponent /&gt;);
+
+    // Initial state
+    const initialThemes = screen.getAllByText(/theme: light/i);
+    expect(initialThemes).toHaveLength(2);
+
+    // Toggle theme
+    const toggleButton = screen.getByRole('button', { name: /toggle theme/i });
+    fireEvent.click(toggleButton);
+
+    // Updated state
+    const updatedThemes = screen.getAllByText(/theme: dark/i);
+    expect(updatedThemes).toHaveLength(2);
+  });
+});
+          </code></pre>
+
+          <div class="note">
+            <strong>🧠 Mental Model:</strong> Think of context providers as broadcast towers. They send signals (values) to all receivers (consumers) within their range. Testing ensures the signal is sent correctly and received properly by everyone.
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Deep Dive: Testing Context with Custom Hooks and State Management</summary>
+          <p>Combine context with custom hooks for advanced testing scenarios.</p>
+
+          <h3>🔥 Testing Context with Redux-like Pattern</h3>
+          <pre><code>
+// context/UserContext.js
+import React, { createContext, useContext, useReducer } from 'react';
+
+const UserContext = createContext();
+
+const initialState = {
+  user: null,
+  loading: true,
+  error: null
+};
+
+const userReducer = (state, action) =&gt; {
+  switch (action.type) {
+    case 'LOGIN_REQUEST':
+      return { ...state, loading: true, error: null };
+    case 'LOGIN_SUCCESS':
+      return { ...state, loading: false, user: action.payload, error: null };
+    case 'LOGIN_FAILURE':
+      return { ...state, loading: false, error: action.payload };
+    case 'LOGOUT':
+      return { ...state, loading: false, user: null, error: null };
+    default:
+      return state;
+  }
+};
+
+export function UserProvider({ children }) {
+  const [state, dispatch] = useReducer(userReducer, initialState);
+
+  const login = async (credentials) =&gt; {
+    dispatch({ type: 'LOGIN_REQUEST' });
+    
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(credentials)
+      });
+      
+      if (!response.ok) {
+        throw new Error('Login failed');
+      }
+      
+      const userData = await response.json();
+      dispatch({ type: 'LOGIN_SUCCESS', payload: userData });
+    } catch (error) {
+      dispatch({ type: 'LOGIN_FAILURE', payload: error.message });
+    }
+  };
+
+  const logout = () =&gt; {
+    dispatch({ type: 'LOGOUT' });
+  };
+
+  const value = { state, login, logout };
+
+  return (
+    &lt;UserContext.Provider value={value}&gt;
+      {children}
+    &lt;/UserContext.Provider&gt;
+  );
+}
+
+export function useUser() {
+  const context = useContext(UserContext);
+  if (!context) {
+    throw new Error('useUser must be used within UserProvider');
+  }
+  return context;
+}
+
+// context/UserContext.test.js
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { UserProvider, useUser } from './UserContext';
+
+// Mock fetch globally
+global.fetch = jest.fn();
+
+describe('UserProvider', () =&gt; {
+  beforeEach(() =&gt; {
+    jest.clearAllMocks();
+  });
+
+  test('provides initial state', () =&gt; {
+    const TestComponent = () =&gt; {
+      const { state } = useUser();
+      return (
+        &lt;div&gt;
+          &lt;p&gt;Loading: {state.loading.toString()}&lt;/p&gt;
+          &lt;p&gt;User: {state.user ? 'yes' : 'no'}&lt;/p&gt;
+          &lt;p&gt;Error: {state.error || 'none'}&lt;/p&gt;
+        &lt;/div&gt;
+      );
+    };
+
+    render(
+      &lt;UserProvider&gt;
+        &lt;TestComponent /&gt;
+      &lt;/UserProvider&gt;
+    );
+
+    expect(screen.getByText(/loading: true/i)).toBeInTheDocument();
+    expect(screen.getByText(/user: no/i)).toBeInTheDocument();
+    expect(screen.getByText(/error: none/i)).toBeInTheDocument();
+  });
+
+  test('handles login request', async () =&gt; {
+    const mockCredentials = { email: 'john@example.com', password: 'password123' };
+    const mockUser = { id: 1, name: 'John Doe', email: 'john@example.com' };
+    
+    fetch.mockResolvedValueOnce({
+      ok: true,
+      json: () =&gt; Promise.resolve(mockUser)
+    });
+
+    const TestComponent = () =&gt; {
+      const { state, login } = useUser();
+      
+      React.useEffect(() =&gt; {
+        login(mockCredentials);
+      }, [login]);
+
+      return (
+        &lt;div&gt;
+          &lt;p&gt;Loading: {state.loading.toString()}&lt;/p&gt;
+          &lt;p&gt;User: {state.user ? state.user.name : 'none'}&lt;/p&gt;
+          &lt;p&gt;Error: {state.error || 'none'}&lt;/p&gt;
+        &lt;/div&gt;
+      );
+    };
+
+    render(
+      &lt;UserProvider&gt;
+        &lt;TestComponent /&gt;
+      &lt;/UserProvider&gt;
+    );
+
+    // Initial state
+    expect(screen.getByText(/loading: true/i)).toBeInTheDocument();
+    expect(screen.getByText(/user: none/i)).toBeInTheDocument();
+    expect(screen.getByText(/error: none/i)).toBeInTheDocument();
+
+    // After async operation
+    // We need to wait for the async operation to complete
+    // In React Testing Library, we can use waitFor
+    await screen.findByText(/loading: false/i);
+    
+    expect(screen.getByText(/loading: false/i)).toBeInTheDocument();
+    expect(screen.getByText(/user: John Doe/i)).toBeInTheDocument();
+    expect(screen.getByText(/error: none/i)).toBeInTheDocument();
+    
+    // Verify fetch was called
+    expect(fetch).toHaveBeenCalledWith('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(mockCredentials)
+    });
+  });
+
+  test('handles login failure', async () =&gt; {
+    const mockCredentials = { email: 'john@example.com', password: 'password123' };
+    
+    fetch.mockRejectedValueOnce(new Error('Network connection failed'));
+
+    const TestComponent = () =&gt; {
+      const { state, login } = useUser();
+      
+      React.useEffect(() =&gt; {
+        login(mockCredentials);
+      }, [login]);
+
+      return (
+        &lt;div&gt;
+          &lt;p&gt;Loading: {state.loading.toString()}&lt;/p&gt;
+          &lt;p&gt;Error: {state.error || 'none'}&lt;/p&gt;
+        &lt;/div&gt;
+      );
+    };
+
+    render(
+      &lt;UserProvider&gt;
+        &lt;TestComponent /&gt;
+      &lt;/UserProvider&gt;
+    );
+
+    // Initial state
+    expect(screen.getByText(/loading: true/i)).toBeInTheDocument();
+    expect(screen.getByText(/error: none/i)).toBeInTheDocument();
+
+    // After async operation
+    await screen.findByText(/loading: false/i);
+    
+    expect(screen.getByText(/loading: false/i)).toBeInTheDocument();
+    expect(screen.getByText(/error: Network connection failed/i)).toBeInTheDocument();
+  });
+
+  test('handles logout', () =&gt; {
+    // First, simulate login
+    const mockUser = { id: 1, name: 'John Doe', email: 'john@example.com' };
+    
+    const TestComponent = () =&gt; {
+      const { state, login, logout } = useUser();
+      
+      React.useEffect(() =&gt; {
+        // Simulate login
+        login({ email: 'john@example.com', password: 'password123' });
+      }, [login]);
+
+      return (
+        &lt;div&gt;
+          &lt;button onClick={logout}&gt;Logout&lt;/button&gt;
+          &lt;p&gt;User: {state.user ? state.user.name : 'none'}&lt;/p&gt;
+        &lt;/div&gt;
+      );
+    };
+
+    render(
+      &lt;UserProvider&gt;
+        &lt;TestComponent /&gt;
+      &lt;/UserProvider&gt;
+    );
+
+    // Wait for login
+    const mockFetch = global.fetch;
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: () =&gt; Promise.resolve(mockUser)
+    });
+
+    // Wait for login to complete
+    screen.findByText(/user: john doe/i);
+
+    // Now click logout button
+    const logoutButton = screen.getByRole('button', { name: /logout/i });
+    fireEvent.click(logoutButton);
+
+    // Verify state updated
+    expect(screen.getByText(/user: none/i)).toBeInTheDocument();
+  });
+});
+          </code></pre>
+
+          <h3>🔥 Testing Context with Multiple Providers</h3>
+          <pre><code>
+// context/ThemeContext.js
+import React, { createContext, useContext } from 'react';
+
+const ThemeContext = createContext();
+
+export function ThemeProvider({ children, defaultTheme = 'light' }) {
+  const [theme, setTheme] = React.useState(defaultTheme);
+
+  const toggleTheme = () =&gt; {
+    setTheme(prev =&gt; prev === 'light' ? 'dark' : 'light');
+  };
+
+  const value = { theme, toggleTheme };
+
+  return (
+    &lt;ThemeContext.Provider value={value}&gt;
+      {children}
+    &lt;/ThemeContext.Provider&gt;
+  );
+}
+
+export function useTheme() {
+  const context = useContext(ThemeContext);
+  if (!context) {
+    throw new Error('useTheme must be used within ThemeProvider');
+  }
+  return context;
+}
+
+// context/LanguageContext.js
+import React, { createContext, useContext } from 'react';
+
+const LanguageContext = createContext();
+
+export function LanguageProvider({ children, defaultLanguage = 'en' }) {
+  const [language, setLanguage] = React.useState(defaultLanguage);
+
+  const setAppLanguage = (lang) =&gt; {
+    setLanguage(lang);
+  };
+
+  const value = { language, setAppLanguage };
+
+  return (
+    &lt;LanguageContext.Provider value={value}&gt;
+      {children}
+    &lt;/LanguageContext.Provider&gt;
+  );
+}
+
+export function useLanguage() {
+  const context = useContext(LanguageContext);
+  if (!context) {
+    throw new Error('useLanguage must be used within LanguageProvider');
+  }
+  return context;
+}
+
+// App.js
+import React from 'react';
+import { ThemeProvider } from './context/ThemeContext';
+import { LanguageProvider } from './context/LanguageContext';
+
+function App() {
+  return (
+    &lt;ThemeProvider defaultTheme="dark"&gt;
+      &lt;LanguageProvider defaultLanguage="es"&gt;
+        &lt;Header /&gt;
+        &lt;MainContent /&gt;
+        &lt;Footer /&gt;
+      &lt;/LanguageProvider&gt;
+    &lt;/ThemeProvider&gt;
+  );
+}
+
+// components/Header.jsx
+import React from 'react';
+import { useTheme } from '../context/ThemeContext';
+import { useLanguage } from '../context/LanguageContext';
+
+function Header() {
+  const { theme } = useTheme();
+  const { language } = useLanguage();
+
+  return (
+    &lt;header style={{ 
+      backgroundColor: theme === 'dark' ? '#1a2b42' : '#f8f9fa',
+      color: theme === 'dark' ? '#e6f1ff' : '#333'
+    }}&gt;
+      &lt;h1&gt;My App&lt;/h1&gt;
+      &lt;p&gt;Language: {language}&lt;/p&gt;
+    &lt;/header&gt;
+  );
+}
+
+// context/MultipleProviders.test.js
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import { ThemeProvider } from './ThemeContext';
+import { LanguageProvider } from './LanguageContext';
+import { Header } from '../components/Header';
+
+describe('Multiple Providers', () =&gt; {
+  test('combines theme and language contexts', () =&gt; {
+    render(
+      &lt;ThemeProvider defaultTheme="dark"&gt;
+        &lt;LanguageProvider defaultLanguage="es"&gt;
+          &lt;Header /&gt;
+        &lt;/LanguageProvider&gt;
+      &lt;/ThemeProvider&gt;
+    );
+
+    // Both contexts should be available
+    expect(screen.getByText(/language: es/i)).toBeInTheDocument();
+    
+    // We can't directly test the theme color, but we can test the logic
+    // by rendering a component that uses both contexts
+  });
+
+  test('allows overriding defaults', () =&gt; {
+    render(
+      &lt;ThemeProvider defaultTheme="light"&gt;
+        &lt;LanguageProvider defaultLanguage="fr"&gt;
+          &lt;Header /&gt;
+        &lt;/LanguageProvider&gt;
+      &lt;/ThemeProvider&gt;
+    );
+
+    expect(screen.getByText(/language: fr/i)).toBeInTheDocument();
+  });
+
+  test('can nest providers', () =&gt; {
+    // This tests that providers can be nested
+    const TestComponent = () =&gt; {
+      const { theme } = useTheme();
+      const { language } = useLanguage();
+      
+      return (
+        &lt;div&gt;
+          &lt;p&gt;Theme: {theme}&lt;/p&gt;
+          &lt;p&gt;Language: {language}&lt;/p&gt;
+        &lt;/div&gt;
+      );
+    };
+
+    render(
+      &lt;ThemeProvider defaultTheme="dark"&gt;
+        &lt;LanguageProvider defaultLanguage="de"&gt;
+          &lt;TestComponent /&gt;
+        &lt;/LanguageProvider&gt;
+      &lt;/ThemeProvider&gt;
+    );
+
+    expect(screen.getByText(/theme: dark/i)).toBeInTheDocument();
+    expect(screen.getByText(/language: de/i)).toBeInTheDocument();
+  });
+});
+          </code></pre>
+
+          <div class="testing-tip">
+            <strong>🌟 Pro Tip:</strong> When testing multiple contexts, always test the combination. A component might work with one context but break when combined with another.
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 18.4 -->
+      <section id="section-18-4">
+        <h2>18.4 Testing Router Components</h2>
+        
+        <details>
+          <summary>📌 Summary: Ensuring Navigation Works Correctly Throughout Your Application</summary>
+          <p>Testing router components ensures your navigation works correctly, routes render the right components, and route parameters are handled properly.</p>
+
+          <h3>🔹 Testing Philosophy</h3>
+          <p>When testing routing, focus on:</p>
+          <ul>
+            <li><strong>Route matching:</strong> Does the correct component render for a given path?</li>
+            <li><strong>Navigation:</strong> Do links and programmatic navigation work?</li>
+            <li><strong>Parameters:</strong> Are route parameters extracted and used correctly?</li>
+            <li><strong>Nested routes:</strong> Do parent/child routes work together?</li>
+            <li><strong>Protected routes:</strong> Do authentication guards work correctly?</li>
+            <li><strong>URL history:</strong> Does the browser history behave as expected?</li>
+          </ul>
+
+          <h3>⚡ Testing Basic Routing</h3>
+          <pre><code>
+// App.jsx
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Home from './components/Home';
+import About from './components/About';
+import Contact from './components/Contact';
+
+function App() {
+  return (
+    &lt;Router&gt;
+      &lt;Routes&gt;
+        &lt;Route path="/" element={&lt;Home /&gt;} /&gt;
+        &lt;Route path="/about" element={&lt;About /&gt;} /&gt;
+        &lt;Route path="/contact" element={&lt;Contact /&gt;} /&gt;
+        &lt;Route path="*" element={&lt;div&gt;404 Not Found&lt;/div&gt;} /&gt;
+      &lt;/Routes&gt;
+    &lt;/Router&gt;
+  );
+}
+
+export default App;
+
+// components/Home.jsx
+import React from 'react';
+
+function Home() {
+  return &lt;div&gt;&lt;h1&gt;Home Page&lt;/h1&gt;&lt;/div&gt;;
+}
+
+export default Home;
+
+// components/About.jsx
+import React from 'react';
+
+function About() {
+  return &lt;div&gt;&lt;h1&gt;About Page&lt;/h1&gt;&lt;/div&gt;;
+}
+
+export default About;
+
+// components/Contact.jsx
+import React from 'react';
+
+function Contact() {
+  return &lt;div&gt;&lt;h1&gt;Contact Page&lt;/h1&gt;&lt;/div&gt;;
+}
+
+export default Contact;
+
+// App.test.js
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import App from './App';
+
+// Mock components
+jest.mock('./components/Home', () =&gt; () =&gt; &lt;div&gt;Home Component&lt;/div&gt;);
+jest.mock('./components/About', () =&gt; () =&gt; &lt;div&gt;About Component&lt;/div&gt;);
+jest.mock('./components/Contact', () =&gt; () =&gt; &lt;div&gt;Contact Component&lt;/div&gt;);
+
+describe('App Router', () =&gt; {
+  test('renders home component on root path', () =&gt; {
+    render(
+      &lt;MemoryRouter initialEntries={['/']} &gt;
+        &lt;App /&gt;
+      &lt;/MemoryRouter&gt;
+    );
+
+    expect(screen.getByText(/home component/i)).toBeInTheDocument();
+  });
+
+  test('renders about component on /about path', () =&gt; {
+    render(
+      &lt;MemoryRouter initialEntries={['/about']} &gt;
+        &lt;App /&gt;
+      &lt;/MemoryRouter&gt;
+    );
+
+    expect(screen.getByText(/about component/i)).toBeInTheDocument();
+  });
+
+  test('renders contact component on /contact path', () =&gt; {
+    render(
+      &lt;MemoryRouter initialEntries={['/contact']} &gt;
+        &lt;App /&gt;
+      &lt;/MemoryRouter&gt;
+    );
+
+    expect(screen.getByText(/contact component/i)).toBeInTheDocument();
+  });
+
+  test('renders 404 component on unknown path', () =&gt; {
+    render(
+      &lt;MemoryRouter initialEntries={['/unknown']} &gt;
+        &lt;App /&gt;
+      &lt;/MemoryRouter&gt;
+    );
+
+    expect(screen.getByText(/404 not found/i)).toBeInTheDocument();
+  });
+
+  test('renders home component on multiple paths', () =&gt; {
+    // Test that navigating between routes works
+    const { container } = render(
+      &lt;MemoryRouter initialEntries={['/about']} &gt;
+        &lt;App /&gt;
+      &lt;/MemoryRouter&gt;
+    );
+
+    // Initially on about page
+    expect(screen.getByText(/about component/i)).toBeInTheDocument();
+
+    // Navigate to home
+    const link = container.querySelector('a[href="/"]');
+    if (link) {
+      link.click();
+    }
+
+    // Now on home page
+    expect(screen.getByText(/home component/i)).toBeInTheDocument();
+  });
+});
+          </code></pre>
+
+          <h3>🔥 Testing Dynamic Routes and Parameters</h3>
+          <pre><code>
+// App.jsx
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Home from './components/Home';
+import UserProfile from './components/UserProfile';
+
+function App() {
+  return (
+    &lt;Router&gt;
+      &lt;Routes&gt;
+        &lt;Route path="/" element={&lt;Home /&gt;} /&gt;
+        &lt;Route path="/user/:userId" element={&lt;UserProfile /&gt;} /&gt;
+        &lt;Route path="*" element={&lt;div&gt;404 Not Found&lt;/div&gt;} /&gt;
+      &lt;/Routes&gt;
+    &lt;/Router&gt;
+  );
+}
+
+export default App;
+
+// components/UserProfile.jsx
+import React from 'react';
+import { useParams } from 'react-router-dom';
+
+function UserProfile() {
+  const { userId } = useParams();
+
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;User Profile&lt;/h1&gt;
+      &lt;p&gt;User ID: {userId}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default UserProfile;
+
+// App.test.js
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import App from './App';
+
+// Mock components
+jest.mock('./components/Home', () =&gt; () =&gt; &lt;div&gt;Home Component&lt;/div&gt;);
+jest.mock('./components/UserProfile', () =&gt; () =&gt; &lt;div&gt;User Profile Component&lt;/div&gt;);
+
+describe('Dynamic Routes', () =&gt; {
+  test('extracts userId parameter from URL', () =&gt; {
+    // We need to test the actual UserProfile component
+    const UserProfileMock = ({ userId }) =&gt; (
+      &lt;div&gt;
+        &lt;h1&gt;User Profile&lt;/h1&gt;
+        &lt;p&gt;User ID: {userId}&lt;/p&gt;
+      &lt;/div&gt;
+    );
+
+    // Import the real component
+    import('./components/UserProfile').then(module =&gt; {
+      // Override the mock
+      module.UserProfile = UserProfileMock;
+    });
+
+    render(
+      &lt;MemoryRouter initialEntries={['/user/123']} &gt;
+        &lt;App /&gt;
+      &lt;/MemoryRouter&gt;
+    );
+
+    expect(screen.getByText(/user id: 123/i)).toBeInTheDocument();
+  });
+
+  test('handles different user IDs', () =&gt; {
+    const UserProfileMock = ({ userId }) =&gt; (
+      &lt;div&gt;
+        &lt;h1&gt;User Profile&lt;/h1&gt;
+        &lt;p&gt;User ID: {userId}&lt;/p&gt;
+      &lt;/div&gt;
+    );
+
+    // Override the mock
+    jest.mock('./components/UserProfile', () =&gt; () =&gt; &lt;UserProfileMock userId="456" /&gt;);
+
+    render(
+      &lt;MemoryRouter initialEntries={['/user/456']} &gt;
+        &lt;App /&gt;
+      &lt;/MemoryRouter&gt;
+    );
+
+    expect(screen.getByText(/user id: 456/i)).toBeInTheDocument();
+  });
+
+  test('handles special characters in user IDs', () =&gt; {
+    const UserProfileMock = ({ userId }) =&gt; (
+      &lt;div&gt;
+        &lt;h1&gt;User Profile&lt;/h1&gt;
+        &lt;p&gt;User ID: {userId}&lt;/p&gt;
+      &lt;/div&gt;
+    );
+
+    jest.mock('./components/UserProfile', () =&gt; () =&gt; &lt;UserProfileMock userId="abc-123" /&gt;);
+
+    render(
+      &lt;MemoryRouter initialEntries={['/user/abc-123']} &gt;
+        &lt;App /&gt;
+      &lt;/MemoryRouter&gt;
+    );
+
+    expect(screen.getByText(/user id: abc-123/i)).toBeInTheDocument();
+  });
+
+  test('handles missing userId parameter', () =&gt; {
+    const UserProfileMock = ({ userId }) =&gt; (
+      &lt;div&gt;
+        &lt;h1&gt;User Profile&lt;/h1&gt;
+        &lt;p&gt;User ID: {userId}&lt;/p&gt;
+      &lt;/div&gt;
+    );
+
+    jest.mock('./components/UserProfile', () =&gt; () =&gt; &lt;UserProfileMock userId={undefined} /&gt;);
+
+    render(
+      &lt;MemoryRouter initialEntries={['/user/']} &gt;
+        &lt;App /&gt;
+      &lt;/MemoryRouter&gt;
+    );
+
+    expect(screen.getByText(/user id: undefined/i)).toBeInTheDocument();
+  });
+});
+          </code></pre>
+
+          <h3>🔥 Testing Nested Routes</h3>
+          <pre><code>
+// App.jsx
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Dashboard from './components/Dashboard';
+import Users from './components/Users';
+import UserDetail from './components/UserDetail';
+
+function App() {
+  return (
+    &lt;Router&gt;
+      &lt;Routes&gt;
+        &lt;Route path="/" element={&lt;Dashboard /&gt;} /&gt;
+        &lt;Route path="/admin" element={&lt;Dashboard /&gt;} /&gt;
+        &lt;Route path="/users" element={&lt;Users /&gt;} &gt;
+          &lt;Route index element={&lt;div&gt;Users List&lt;/div&gt;} /&gt;
+          &lt;Route path=":userId" element={&lt;UserDetail /&gt;} /&gt;
+        &lt;/Route&gt;
+        &lt;Route path="*" element={&lt;div&gt;404 Not Found&lt;/div&gt;} /&gt;
+      &lt;/Routes&gt;
+    &lt;/Router&gt;
+  );
+}
+
+export default App;
+
+// components/Users.jsx
+import React from 'react';
+import { Outlet } from 'react-router-dom';
+
+function Users() {
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;Users Management&lt;/h1&gt;
+      &lt;Outlet /&gt; {/* This renders child routes */}
+    &lt;/div&gt;
+  );
+}
+
+export default Users;
+
+// components/UserDetail.jsx
+import React from 'react';
+import { useParams } from 'react-router-dom';
+
+function UserDetail() {
+  const { userId } = useParams();
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;User Detail&lt;/h2&gt;
+      &lt;p&gt;Viewing user: {userId}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default UserDetail;
+
+// App.test.js
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import App from './App';
+
+// Mock components
+jest.mock('./components/Dashboard', () =&gt; () =&gt; &lt;div&gt;Dashboard Component&lt;/div&gt;);
+jest.mock('./components/Users', () =&gt; () =&gt; &lt;div&gt;Users Component&lt;/div&gt;);
+jest.mock('./components/UserDetail', () =&gt; () =&gt; &lt;div&gt;User Detail Component&lt;/div&gt;);
+
+describe('Nested Routes', () =&gt; {
+  test('renders users list on /users path', () =&gt; {
+    render(
+      &lt;MemoryRouter initialEntries={['/users']} &gt;
+        &lt;App /&gt;
+      &lt;/MemoryRouter&gt;
+    );
+
+    // Parent route
+    expect(screen.getByText(/users component/i)).toBeInTheDocument();
+    
+    // Child route (index)
+    expect(screen.getByText(/users list/i)).toBeInTheDocument();
+  });
+
+  test('renders user detail on /users/:userId path', () =&gt; {
+    render(
+      &lt;MemoryRouter initialEntries={['/users/123']} &gt;
+        &lt;App /&gt;
+      &lt;/MemoryRouter&gt;
+    );
+
+    // Parent route
+    expect(screen.getByText(/users component/i)).toBeInTheDocument();
+    
+    // Child route
+    expect(screen.getByText(/user detail component/i)).toBeInTheDocument();
+  });
+
+  test('handles nested route parameters', () =&gt; {
+    const UserDetailMock = ({ userId }) =&gt; (
+      &lt;div&gt;
+        &lt;h2&gt;User Detail&lt;/h2&gt;
+        &lt;p&gt;Viewing user: {userId}&lt;/p&gt;
+      &lt;/div&gt;
+    );
+
+    jest.mock('./components/UserDetail', () =&gt; () =&gt; &lt;UserDetailMock userId="456" /&gt;);
+
+    render(
+      &lt;MemoryRouter initialEntries={['/users/456']} &gt;
+        &lt;App /&gt;
+      &lt;/MemoryRouter&gt;
+    );
+
+    // Parent route
+    expect(screen.getByText(/users component/i)).toBeInTheDocument();
+    
+    // Child route with parameter
+    expect(screen.getByText(/viewing user: 456/i)).toBeInTheDocument();
+  });
+
+  test('shows 404 for non-existent nested route', () =&gt; {
+    render(
+      &lt;MemoryRouter initialEntries={['/users/123/extra']} &gt;
+        &lt;App /&gt;
+      &lt;/MemoryRouter&gt;
+    );
+
+    expect(screen.getByText(/404 not found/i)).toBeInTheDocument();
+  });
+});
+          </code></pre>
+
+          <h3>🔥 Testing Protected Routes</h3>
+          <pre><code>
+// components/PrivateRoute.jsx
+import React from 'react';
+import { Navigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+
+function PrivateRoute({ children }) {
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return &lt;div&gt;Loading...&lt;/div&gt;;
+  }
+
+  if (!user) {
+    return &lt;Navigate to="/login" replace /&gt;;
+  }
+
+  return children;
+}
+
+export default PrivateRoute;
+
+// App.jsx
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Home from './components/Home';
+import Login from './components/Login';
+import Dashboard from './components/Dashboard';
+import PrivateRoute from './components/PrivateRoute';
+
+function App() {
+  return (
+    &lt;Router&gt;
+      &lt;Routes&gt;
+        &lt;Route path="/" element={&lt;Home /&gt;} /&gt;
+        &lt;Route path="/login" element={&lt;Login /&gt;} /&gt;
+        &lt;Route path="/dashboard" element={
+          &lt;PrivateRoute&gt;
+            &lt;Dashboard /&gt;
+          &lt;/PrivateRoute&gt;
+        } /&gt;
+        &lt;Route path="*" element={&lt;div&gt;404 Not Found&lt;/div&gt;} /&gt;
+      &lt;/Routes&gt;
+    &lt;/Router&gt;
+  );
+}
+
+export default App;
+
+// context/AuthContext.js
+import React, { createContext, useContext, useState } from 'react';
+
+const AuthContext = createContext();
+
+export function AuthProvider({ children }) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  React.useEffect(() =&gt; {
+    // Simulate loading from localStorage
+    setTimeout(() =&gt; {
+      setLoading(false);
+    }, 100);
+  }, []);
+
+  const login = (userData) =&gt; {
+    setUser(userData);
+  };
+
+  const logout = () =&gt; {
+    setUser(null);
+  };
+
+  const value = { user, loading, login, logout };
+
+  return (
+    &lt;AuthContext.Provider value={value}&gt;
+      {children}
+    &lt;/AuthContext.Provider&gt;
+  );
+}
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
+  return context;
+}
+
+// App.test.js
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import App from './App';
+import { AuthProvider } from './context/AuthContext';
+
+// Mock components
+jest.mock('./components/Home', () =&gt; () =&gt; &lt;div&gt;Home Component&lt;/div&gt;);
+jest.mock('./components/Login', () =&gt; () =&gt; &lt;div&gt;Login Component&lt;/div&gt;);
+jest.mock('./components/Dashboard', () =&gt; () =&gt; &lt;div&gt;Dashboard Component&lt;/div&gt;);
+
+describe('Protected Routes', () =&gt; {
+  test('redirects to login when not authenticated', () =&gt; {
+    render(
+      &lt;AuthProvider&gt;
+        &lt;MemoryRouter initialEntries={['/dashboard']} &gt;
+          &lt;App /&gt;
+        &lt;/MemoryRouter&gt;
+      &lt;/AuthProvider&gt;
+    );
+
+    // Should redirect to login
+    expect(screen.getByText(/login component/i)).toBeInTheDocument();
+  });
+
+  test('shows dashboard when authenticated', () =&gt; {
+    const mockUser = { id: 1, name: 'John Doe' };
+
+    render(
+      &lt;AuthProvider&gt;
+        &lt;MemoryRouter initialEntries={['/dashboard']} &gt;
+          &lt;App /&gt;
+        &lt;/MemoryRouter&gt;
+      &lt;/AuthProvider&gt;
+    );
+
+    // Wait for loading to finish
+    // We need to wait for the loading state to change
+    // In this case, we're using setTimeout, so we need to advance timers
+    // For simplicity, we'll just wait for the component to render
+
+    // Since our AuthProvider sets loading to false after 100ms,
+    // we need to use jest.useFakeTimers() and jest.advanceTimersByTime(100)
+    
+    // But for this example, let's modify the test to handle it differently
+    // We'll use a different approach
+  });
+
+  test('shows dashboard when authenticated (with proper timing)', () =&gt; {
+    const mockUser = { id: 1, name: 'John Doe' };
+
+    // Use fake timers
+    jest.useFakeTimers();
+
+    render(
+      &lt;AuthProvider&gt;
+        &lt;MemoryRouter initialEntries={['/dashboard']} &gt;
+          &lt;App /&gt;
+        &lt;/MemoryRouter&gt;
+      &lt;/AuthProvider&gt;
+    );
+
+    // Check initial state
+    expect(screen.queryByText(/dashboard component/i)).not.toBeInTheDocument();
+    
+    // Advance timer to trigger loading completion
+    jest.advanceTimersByTime(100);
+    
+    // Now we should see the dashboard
+    expect(screen.getByText(/dashboard component/i)).toBeInTheDocument();
+  });
+
+  test('redirects to login when authenticated but path is protected', () =&gt; {
+    const mockUser = { id: 1, name: 'John Doe' };
+
+    jest.useFakeTimers();
+
+    // Render with user already logged in
+    const { container } = render(
+      &lt;AuthProvider&gt;
+        &lt;MemoryRouter initialEntries={['/dashboard']} &gt;
+          &lt;App /&gt;
+        &lt;/MemoryRouter&gt;
+      &lt;/AuthProvider&gt;
+    );
+
+    // Advance timer to trigger loading completion
+    jest.advanceTimersByTime(100);
+    
+    // Now we should see the dashboard
+    expect(screen.getByText(/dashboard component/i)).toBeInTheDocument();
+  });
+
+  test('redirects to login when authentication state changes', () =&gt; {
+    const mockUser = { id: 1, name: 'John Doe' };
+
+    jest.useFakeTimers();
+
+    // Render with user logged in
+    const { container } = render(
+      &lt;AuthProvider&gt;
+        &lt;MemoryRouter initialEntries={['/dashboard']} &gt;
+          &lt;App /&gt;
+        &lt;/MemoryRouter&gt;
+      &lt;/AuthProvider&gt;
+    );
+
+    // Advance timer to trigger loading completion
+    jest.advanceTimersByTime(100);
+    
+    // Now we should see the dashboard
+    expect(screen.getByText(/dashboard component/i)).toBeInTheDocument();
+
+    // Now log out
+    // We need to access the context to do this
+    // This requires a different approach - let's use a custom render function
+  });
+});
+          </code></pre>
+
+          <h3>🔥 Testing Programmatic Navigation</h3>
+          <pre><code>
+// components/Button.jsx
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+
+function Button({ to, children }) {
+  const navigate = useNavigate();
+
+  const handleClick = () =&gt; {
+    navigate(to);
+  };
+
+  return (
+    &lt;button onClick={handleClick}&gt;
+      {children}
+    &lt;/button&gt;
+  );
+}
+
+export default Button;
+
+// components/Profile.jsx
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+
+function Profile() {
+  const navigate = useNavigate();
+
+  const handleLogout = () =&gt; {
+    // Clear session
+    localStorage.removeItem('token');
+    
+    // Navigate to login
+    navigate('/login', { replace: true });
+  };
+
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;Profile&lt;/h1&gt;
+      &lt;button onClick={handleLogout}&gt;Logout&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default Profile;
+
+// components/Button.test.js
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import Button from './Button';
+
+// Mock useNavigate
+jest.mock('react-router-dom', () =&gt; ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: jest.fn()
+}));
+
+describe('Button with Navigation', () =&gt; {
+  test('navigates to specified path when clicked', () =&gt; {
+    const mockNavigate = jest.fn();
+    require('react-router-dom').useNavigate.mockReturnValue(mockNavigate);
+
+    render(
+      &lt;MemoryRouter&gt;
+        &lt;Button to="/about"&gt;About&lt;/Button&gt;
+      &lt;/MemoryRouter&gt;
+    );
+
+    const button = screen.getByText(/about/i);
+    fireEvent.click(button);
+
+    expect(mockNavigate).toHaveBeenCalledWith('/about');
+  });
+
+  test('navigates with replace option', () =&gt; {
+    const mockNavigate = jest.fn();
+    require('react-router-dom').useNavigate.mockReturnValue(mockNavigate);
+
+    render(
+      &lt;MemoryRouter&gt;
+        &lt;Button to="/login"&gt;Login&lt;/Button&gt;
+      &lt;/MemoryRouter&gt;
+    );
+
+    const button = screen.getByText(/login/i);
+    fireEvent.click(button);
+
+    expect(mockNavigate).toHaveBeenCalledWith('/login');
+  });
+});
+
+// components/Profile.test.js
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import Profile from './Profile';
+
+// Mock useNavigate
+jest.mock('react-router-dom', () =&gt; ({
+  ...jest.requireActual('react-router-dom'),
+  useNavigate: jest.fn()
+}));
+
+describe('Profile Component', () =&gt; {
+  test('navigates to login on logout', () =&gt; {
+    const mockNavigate = jest.fn();
+    require('react-router-dom').useNavigate.mockReturnValue(mockNavigate);
+
+    // Mock localStorage
+    const mockLocalStorage = {
+      removeItem: jest.fn()
+    };
+    
+    Object.defineProperty(window, 'localStorage', {
+      value: mockLocalStorage,
+      writable: true
+    });
+
+    render(
+      &lt;MemoryRouter&gt;
+        &lt;Profile /&gt;
+      &lt;/MemoryRouter&gt;
+    );
+
+    const logoutButton = screen.getByText(/logout/i);
+    fireEvent.click(logoutButton);
+
+    // Verify localStorage was cleared
+    expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('token');
+    
+    // Verify navigation
+    expect(mockNavigate).toHaveBeenCalledWith('/login', { replace: true });
+  });
+});
+          </code></pre>
+
+          <div class="note">
+            <strong>🧠 Mental Model:</strong> Think of routing as a train system. Each route is a track, and the router is the station master who directs trains (components) to the right destinations based on tickets (URLs).
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Deep Dive: Testing Router with Mock History</summary>
+          <p>For advanced testing, you can mock the history object directly.</p>
+
+          <h3>⚡ Mocking History Directly</h3>
+          <pre><code>
+// components/Navbar.jsx
+import React from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+
+function Navbar() {
+  const location = useLocation();
+  const navigate = useNavigate();
+
+  const isActive = (path) =&gt; location.pathname === path;
+
+  return (
+    &lt;nav&gt;
+      &lt;ul&gt;
+        &lt;li&gt;
+          &lt;button 
+            onClick={() =&gt; navigate('/')} 
+            className={isActive('/') ? 'active' : ''}
+          &gt;
+            Home
+          &lt;/button&gt;
+        &lt;/li&gt;
+        &lt;li&gt;
+          &lt;button 
+            onClick={() =&gt; navigate('/about')} 
+            className={isActive('/about') ? 'active' : ''}
+          &gt;
+            About
+          &lt;/button&gt;
+        &lt;/li&gt;
+        &lt;li&gt;
+          &lt;button 
+            onClick={() =&gt; navigate('/contact')} 
+            className={isActive('/contact') ? 'active' : ''}
+          &gt;
+            Contact
+          &lt;/button&gt;
+        &lt;/li&gt;
+      &lt;/ul&gt;
+    &lt;/nav&gt;
+  );
+}
+
+export default Navbar;
+
+// components/Navbar.test.js
+import React from 'react';
+import { render, screen, fireEvent } from '@testing-library/react';
+import { MemoryRouter, createMemoryHistory } from 'react-router-dom';
+import Navbar from './Navbar';
+
+describe('Navbar Component', () =&gt; {
+  test('highlights active route', () =&gt; {
+    // Create custom history
+    const history = createMemoryHistory({ initialEntries: ['/about'] });
+    
+    render(
+      &lt;MemoryRouter navigator={history}&gt;
+        &lt;Navbar /&gt;
+      &lt;/MemoryRouter&gt;
+    );
+
+    // About link should be active
+    expect(screen.getByText(/about/i)).toHaveClass('active');
+    
+    // Home and contact should not be active
+    expect(screen.getByText(/home/i)).not.toHaveClass('active');
+    expect(screen.getByText(/contact/i)).not.toHaveClass('active');
+  });
+
+  test('navigates to different routes', () =&gt; {
+    const history = createMemoryHistory({ initialEntries: ['/'] });
+    
+    render(
+      &lt;MemoryRouter navigator={history}&gt;
+        &lt;Navbar /&gt;
+      &lt;/MemoryRouter&gt;
+    );
+
+    // Click about link
+    const aboutButton = screen.getByText(/about/i);
+    fireEvent.click(aboutButton);
+
+    // Verify navigation occurred
+    expect(history.location.pathname).toBe('/about');
+    
+    // Click contact link
+    const contactButton = screen.getByText(/contact/i);
+    fireEvent.click(contactButton);
+
+    // Verify navigation occurred
+    expect(history.location.pathname).toBe('/contact');
+  });
+
+  test('updates active class on route change', () =&gt; {
+    const history = createMemoryHistory({ initialEntries: ['/'] });
+    
+    const { container } = render(
+      &lt;MemoryRouter navigator={history}&gt;
+        &lt;Navbar /&gt;
+      &lt;/MemoryRouter&gt;
+    );
+
+    // Initial state
+    expect(container.querySelector('.active')).toHaveTextContent('Home');
+    
+    // Navigate to about
+    const aboutButton = screen.getByText(/about/i);
+    fireEvent.click(aboutButton);
+    
+    // New active class
+    expect(container.querySelector('.active')).toHaveTextContent('About');
+    
+    // Navigate to contact
+    const contactButton = screen.getByText(/contact/i);
+    fireEvent.click(contactButton);
+    
+    // New active class
+    expect(container.querySelector('.active')).toHaveTextContent('Contact');
+  });
+});
+          </code></pre>
+
+          <h3>🔥 Testing Route Guards with Authentication</h3>
+          <pre><code>
+// components/PrivateRoute.jsx
+import React from 'react';
+import { Navigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+
+function PrivateRoute({ children }) {
+  const { user, loading } = useAuth();
+  const location = useLocation();
+
+  if (loading) {
+    return &lt;div&gt;Loading...&lt;/div&gt;;
+  }
+
+  if (!user) {
+    // Store current location so we can redirect back after login
+    return &lt;Navigate to="/login" state={{ from: location }} replace /&gt;;
+  }
+
+  return children;
+}
+
+export default PrivateRoute;
+
+// components/PrivateRoute.test.js
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import { MemoryRouter, createMemoryHistory } from 'react-router-dom';
+import PrivateRoute from './PrivateRoute';
+import { AuthProvider } from '../context/AuthContext';
+
+// Mock AuthProvider
+jest.mock('../context/AuthContext', () =&gt; {
+  const originalModule = jest.requireActual('../context/AuthContext');
+  
+  return {
+    ...originalModule,
+    useAuth: jest.fn()
+  };
+});
+
+describe('PrivateRoute Component', () =&gt; {
+  test('renders children when authenticated', () =&gt; {
+    // Mock auth context
+    require('../context/AuthContext').useAuth.mockReturnValue({
+      user: { id: 1, name: 'John' },
+      loading: false
+    });
+
+    render(
+      &lt;AuthProvider&gt;
+        &lt;MemoryRouter initialEntries={['/dashboard']} &gt;
+          &lt;PrivateRoute&gt;
+            &lt;div&gt;Protected Content&lt;/div&gt;
+          &lt;/PrivateRoute&gt;
+        &lt;/MemoryRouter&gt;
+      &lt;/AuthProvider&gt;
+    );
+
+    expect(screen.getByText(/protected content/i)).toBeInTheDocument();
+  });
+
+  test('redirects to login when not authenticated', () =&gt; {
+    // Mock auth context
+    require('../context/AuthContext').useAuth.mockReturnValue({
+      user: null,
+      loading: false
+    });
+
+    render(
+      &lt;AuthProvider&gt;
+        &lt;MemoryRouter initialEntries={['/dashboard']} &gt;
+          &lt;PrivateRoute&gt;
+            &lt;div&gt;Protected Content&lt;/div&gt;
+          &lt;/PrivateRoute&gt;
+        &lt;/MemoryRouter&gt;
+      &lt;/AuthProvider&gt;
+    );
+
+    // Should redirect to login
+    expect(screen.getByText(/login/i)).toBeInTheDocument();
+  });
+
+  test('preserves destination in state when redirecting', () =&gt; {
+    // Mock auth context
+    require('../context/AuthContext').useAuth.mockReturnValue({
+      user: null,
+      loading: false
+    });
+
+    // Create history with initial location
+    const history = createMemoryHistory({ initialEntries: ['/dashboard'] });
+    
+    render(
+      &lt;AuthProvider&gt;
+        &lt;MemoryRouter navigator={history} &gt;
+          &lt;PrivateRoute&gt;
+            &lt;div&gt;Protected Content&lt;/div&gt;
+          &lt;/PrivateRoute&gt;
+        &lt;/MemoryRouter&gt;
+      &lt;/AuthProvider&gt;
+    );
+
+    // Should redirect to login
+    expect(screen.getByText(/login/i)).toBeInTheDocument();
+    
+    // Verify the state contains the original location
+    // We need to access the history object
+    expect(history.location.state).toEqual({ from: '/dashboard' });
+  });
+
+  test('handles loading state', () =&gt; {
+    // Mock auth context
+    require('../context/AuthContext').useAuth.mockReturnValue({
+      user: null,
+      loading: true
+    });
+
+    render(
+      &lt;AuthProvider&gt;
+        &lt;MemoryRouter initialEntries={['/dashboard']} &gt;
+          &lt;PrivateRoute&gt;
+            &lt;div&gt;Protected Content&lt;/div&gt;
+          &lt;/PrivateRoute&gt;
+        &lt;/MemoryRouter&gt;
+      &lt;/AuthProvider&gt;
+    );
+
+    // Should show loading indicator
+    expect(screen.getByText(/loading.../i)).toBeInTheDocument();
+  });
+});
+          </code></pre>
+
+          <div class="testing-tip">
+            <strong>🎯 Final Wisdom:</strong> When testing routing, focus on the user experience. Does the application navigate correctly? Does it show the right content? Does it handle errors gracefully? These are the questions that matter most.
+          </div>
+        </details>
+      </section>
+
+      </div>
+      </div>
+      </div>
+    </body>
+    </html>
+    

@@ -1,0 +1,928 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript Core Concepts: Classes and Inheritance</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00d1ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --text-secondary: #b3cde6;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            background-color: rgba(10, 25, 47, 0.9);
+            border-right: 1px solid var(--cyan);
+            position: fixed;
+            height: 100vh;
+            width: 300px;
+            overflow-y: auto;
+            padding: 20px;
+            z-index: 1000;
+            box-shadow: 5px 0 15px rgba(0, 209, 255, 0.1);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        h1, h2, h3, h4 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--amber);
+            padding-bottom: 8px;
+            margin-top: 30px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            border-left: 6px solid var(--amber);
+            padding-left: 15px;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            border-left: 4px solid var(--amber);
+            padding-left: 12px;
+        }
+
+        h3 {
+            font-size: 1.4rem;
+            border-left: 3px solid var(--cyan);
+            padding-left: 10px;
+            margin-top: 25px;
+        }
+
+        .subtitle {
+            color: var(--amber);
+            font-style: italic;
+            margin-bottom: 25px;
+        }
+
+        .author-info {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 25px;
+            padding: 10px;
+            background-color: rgba(0, 209, 255, 0.05);
+            border-radius: 5px;
+            border-left: 3px solid var(--cyan);
+        }
+
+        .toc-item {
+            margin: 8px 0;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-secondary);
+        }
+
+        .toc-item:hover {
+            background-color: rgba(0, 209, 255, 0.1);
+            color: var(--cyan);
+        }
+
+        .toc-item.active {
+            background-color: rgba(0, 209, 255, 0.2);
+            color: var(--cyan);
+            border-left: 3px solid var(--amber);
+        }
+
+        .search-box {
+            width: 100%;
+            margin-bottom: 20px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-color: var(--cyan);
+            color: var(--text-light);
+        }
+
+        .btn-control {
+            background-color: rgba(0, 209, 255, 0.1);
+            border: 1px solid var(--cyan);
+            color: var(--cyan);
+            margin: 10px 0;
+            width: 100%;
+            padding: 8px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+
+        .btn-control:hover {
+            background-color: rgba(0, 209, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        pre code {
+            display: block;
+            padding: 16px;
+            overflow-x: auto;
+            background-color: #0f1e33;
+            border-left: 4px solid var(--amber);
+            border-radius: 5px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--text-light);
+            font-family: 'Courier New', Courier, monospace;
+            margin: 20px 0;
+        }
+
+        .code-keyword {
+            color: var(--amber);
+        }
+        .code-string {
+            color: #a5ff8f;
+        }
+        .code-comment {
+            color: #777;
+        }
+        .code-number {
+            color: #ff9e6d;
+        }
+        .code-operator {
+            color: #ffcc66;
+        }
+        .code-method {
+            color: #00d1ff;
+        }
+
+        details {
+            margin: 20px 0;
+            border: 1px solid rgba(0, 209, 255, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        summary {
+            padding: 15px 20px;
+            background-color: rgba(0, 209, 255, 0.1);
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--cyan);
+            list-style: none;
+            font-size: 1.1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 209, 255, 0.1);
+        }
+
+        summary::before {
+            content: "▶ ";
+            font-size: 0.9rem;
+            transition: transform 0.3s ease;
+        }
+
+        details[open] summary::before {
+            transform: rotate(90deg);
+        }
+
+        details > div {
+            padding: 20px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 183, 77, 0.3);
+            font-weight: 500;
+        }
+
+        .example-box {
+            background-color: rgba(10, 25, 47, 0.5);
+            border-left: 4px solid var(--amber);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: #000;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 8px;
+        }
+
+        .footer-note {
+            color: var(--text-secondary);
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            border-top: 1px solid rgba(0, 209, 255, 0.1);
+            font-size: 0.9rem;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 992px) {
+            .left-panel {
+                width: 250px;
+            }
+            .right-panel {
+                margin-left: 250px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .left-panel {
+                position: relative;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--cyan);
+            }
+            .right-panel {
+                margin-left: 0;
+            }
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+            <!-- Left Panel -->
+            <div class="col-md-3 left-panel">
+                <h1>JavaScript Essentials</h1>
+                <p class="subtitle">Classes and Inheritance</p>
+                <div class="author-info">
+                    <i class="bi bi-person-circle"></i> Mastering OOP in JavaScript<br>
+                    <small>For Absolute Beginners to Intermediate Learners</small>
+                </div>
+
+                <input type="text" class="form-control search-box" id="searchToc" placeholder="Search topics...">
+                
+                <button class="btn btn-control" id="expandAll">Expand All</button>
+                <button class="btn btn-control" id="collapseAll">Collapse All</button>
+
+                <div class="toc-container mt-4">
+                    <h4 class="text-muted mb-3">Table of Contents</h4>
+                    <div class="toc-item active" data-target="#section-2-10">2.10 Classes and Inheritance</div>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="col-md-9 right-panel">
+                <!-- Section 2.10 -->
+                <section id="section-2-10">
+                    <h2>2.10 Classes and Inheritance</h2>
+                    <p>ES6 classes provide a clean, intuitive syntax for object-oriented programming in JavaScript — making complex code structures readable and maintainable.</p>
+
+                    <details>
+                        <summary>Executive Summary</summary>
+                        <div>
+                            <ul>
+                                <li><strong>Class</strong>: Blueprint for creating objects with properties and methods.</li>
+                                <li><strong>Constructor</strong>: Special method called when creating a new instance.</li>
+                                <li><strong>Inheritance</strong>: Child class extends parent class using <code>extends</code>.</li>
+                                <li><strong>Super</strong>: Access parent class methods and constructor.</li>
+                                <li><strong>Getters/Setters</strong>: Control property access with custom logic.</li>
+                                <li><strong>Private Fields</strong>: Denoted by <code>#</code> — inaccessible from outside class.</li>
+                            </ul>
+                            <p class="highlight">Classes are syntactic sugar over JavaScript's prototype system — they make OOP accessible without hiding JavaScript's underlying mechanics.</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Forensic Detail: Class Syntax Breakdown</summary>
+                        <div>
+                            <p>Before ES6, JavaScript used function constructors and prototypes:</p>
+
+                            <div class="example-box">
+                                <pre><code>// ❌ Before ES6: Function Constructor + Prototype
+function Animal(name) {
+    this.name = name;
+}
+
+Animal.prototype.speak = function() {
+    console.log(\`\${this.name} makes a noise.\`);
+};
+
+const dog = new Animal("Rex");
+dog.speak(); // "Rex makes a noise."</code></pre>
+                            </div>
+
+                            <p>Modern ES6 class syntax is cleaner and more intuitive:</p>
+
+                            <div class="example-box">
+                                <pre><code>// ✅ ES6 Class Syntax
+class Animal {
+    constructor(name) {
+        this.name = name;
+    }
+    
+    speak() {
+        console.log(\`\${this.name} makes a noise.\`);
+    }
+    
+    // Static method (called on class, not instance)
+    static speciesCount() {
+        return Animal.speciesCount || 0;
+    }
+}
+
+const dog = new Animal("Rex");
+dog.speak(); // "Rex makes a noise."</code></pre>
+                            </div>
+
+                            <p><strong>Key Differences:</strong></p>
+                            <ul>
+                                <li>No need for <code>prototype</code> keyword — methods are automatically added to prototype</li>
+                                <li>Constructor is mandatory for initialization</li>
+                                <li>Method definitions don't need <code>function</code> keyword</li>
+                                <li>Static methods use <code>static</code> keyword</li>
+                                <li>Class declarations are hoisted but not initialized — temporal dead zone applies</li>
+                            </ul>
+
+                            <p><strong>Important Note:</strong> Classes are not "new" in JavaScript — they're just a better syntax for the existing prototype-based inheritance system.</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Origin Story: The Prototype Confusion</summary>
+                        <div>
+                            <p>Before classes, JavaScript's prototype system confused developers:</p>
+
+                            <div class="example-box">
+                                <pre><code>// ❌ Complex prototype chaining
+function Vehicle(make, model) {
+    this.make = make;
+    this.model = model;
+}
+
+Vehicle.prototype.start = function() {
+    console.log(\`\${this.make} \${this.model} starting...\`);
+};
+
+function Car(make, model, doors) {
+    Vehicle.call(this, make, model); // Call parent constructor
+    this.doors = doors;
+}
+
+Car.prototype = Object.create(Vehicle.prototype);
+Car.prototype.constructor = Car;
+
+Car.prototype.drive = function() {
+    console.log(\`\${this.make} \${this.model} driving with \${this.doors} doors\`);
+};</code></pre>
+                            </div>
+
+                            <p>With classes — elegant and readable:</p>
+
+                            <div class="example-box">
+                                <pre><code>// ✅ Modern ES6 Classes
+class Vehicle {
+    constructor(make, model) {
+        this.make = make;
+        this.model = model;
+    }
+    
+    start() {
+        console.log(\`\${this.make} \${this.model} starting...\`);
+    }
+}
+
+class Car extends Vehicle {
+    constructor(make, model, doors) {
+        super(make, model); // Call parent constructor
+        this.doors = doors;
+    }
+    
+    drive() {
+        console.log(\`\${this.make} \${this.model} driving with \${this.doors} doors\`);
+    }
+}
+
+const myCar = new Car("Toyota", "Camry", 4);
+myCar.start(); // "Toyota Camry starting..."
+myCar.drive(); // "Toyota Camry driving with 4 doors"</code></pre>
+                            </div>
+
+                            <p>The <code>super()</code> call replaces the awkward <code>Parent.call(this, ...)</code> pattern.</p>
+
+                            <p><strong>Real Impact:</strong> Frameworks like React used class components (though hooks now dominate) and many backend systems rely on class-based architecture.</p>
+
+                            <p><strong>Why This Matters:</strong> Classes help organize complex applications by grouping related data and behavior together — making code easier to understand, test, and maintain.</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Deep Dive: Inheritance Hierarchy & Super</summary>
+                        <div>
+                            <p>Classes support multi-level inheritance and method overriding.</p>
+
+                            <div class="example-box">
+                                <pre><code>class Animal {
+    constructor(name) {
+        this.name = name;
+        this.health = 100;
+    }
+    
+    speak() {
+        console.log(\`\${this.name} makes a sound\`);
+    }
+    
+    heal() {
+        this.health += 10;
+        console.log(\`\${this.name} healed! Health: \${this.health}\`);
+    }
+}
+
+class Dog extends Animal {
+    constructor(name, breed) {
+        super(name); // Must call super() before 'this'
+        this.breed = breed;
+    }
+    
+    speak() {
+        super.speak(); // Call parent method
+        console.log(\`\${this.name} barks!\`);
+    }
+    
+    fetch() {
+        console.log(\`\${this.name} fetched the ball!\`);
+    }
+}
+
+class RobotDog extends Dog {
+    constructor(name, breed, batteryLife) {
+        super(name, breed);
+        this.batteryLife = batteryLife;
+    }
+    
+    speak() {
+        super.speak(); // Calls Dog.speak(), which calls Animal.speak()
+        console.log(\`\${this.name} beeps! Battery: \${this.batteryLife}%\`);
+    }
+    
+    heal() {
+        this.batteryLife = 100;
+        console.log(\`\${this.name} recharged! Battery: 100%\`);
+    }
+}
+
+const robotDog = new RobotDog("Buddy", "Robo-Poodle", 75);
+robotDog.speak();
+// "Buddy makes a sound"
+// "Buddy barks!"
+// "Buddy beeps! Battery: 75%"
+
+robotDog.heal();
+// "Buddy recharged! Battery: 100%"</code></pre>
+                            </div>
+
+                            <p><strong>Important Rules:</strong></p>
+                            <ol>
+                                <li>Always call <code>super()</code> in child constructors before using <code>this</code></li>
+                                <li>Methods can be overridden — child version replaces parent version</li>
+                                <li>Use <code>super.method()</code> to access parent implementation</li>
+                                <li>Static methods can also be inherited and overridden</li>
+                                <li>Private fields (see below) cannot be accessed by subclasses</li>
+                            </ol>
+
+                            <p><strong>Pro Tip:</strong> Use inheritance when there's a clear "is-a" relationship (Dog is an Animal). Use composition ("has-a") when you want to reuse functionality without inheritance.</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Deep Dive: Getters, Setters & Private Fields</summary>
+                        <div>
+                            <p>Modern classes support getters/setters for controlled property access and private fields.</p>
+
+                            <div class="example-box">
+                                <pre><code>class BankAccount {
+    #balance = 0; // ✅ Private field (only accessible within class)
+    
+    constructor(initialDeposit = 0) {
+        this.deposit(initialDeposit);
+    }
+    
+    // Getter - read-only access
+    get balance() {
+        return this.#balance;
+    }
+    
+    // Setter - controlled modification
+    set deposit(amount) {
+        if (amount < 0) {
+            throw new Error("Cannot deposit negative amount");
+        }
+        this.#balance += amount;
+    }
+    
+    withdraw(amount) {
+        if (amount < 0 || amount > this.#balance) {
+            throw new Error("Insufficient funds");
+        }
+        this.#balance -= amount;
+    }
+    
+    // Static method
+    static interestRate = 0.02;
+}
+
+const account = new BankAccount(1000);
+console.log(account.balance); // 1000 — getter accessed like property
+account.deposit = 500;        // setter used like assignment
+console.log(account.balance); // 1500
+
+// account.#balance = 100;     // ❌ Error: Cannot access private field
+// account.balance = 2000;     // ❌ Error: No setter for balance</code></pre>
+                            </div>
+
+                            <p><strong>Private Fields:</strong> Denoted by <code>#</code> prefix — completely inaccessible from outside the class. Even <code>Object.keys()</code> won't show them!</p>
+
+                            <p><strong>Getters/Setters:</strong> Make properties behave like normal properties while adding logic behind the scenes. They're perfect for validation, computed values, or side effects.</p>
+
+                            <div class="example-box">
+                                <pre><code>class Person {
+    constructor(firstName, lastName) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+    }
+    
+    // Computed property via getter
+    get fullName() {
+        return \`\${this.firstName} \${this.lastName}\`;
+    }
+    
+    set fullName(name) {
+        const parts = name.split(' ');
+        this.firstName = parts[0];
+        this.lastName = parts[1] || '';
+    }
+    
+    // Method that uses getter internally
+    introduce() {
+        console.log(\`Hi, I'm \${this.fullName}\`);
+    }
+}
+
+const person = new Person("Alice", "Smith");
+console.log(person.fullName); // "Alice Smith"
+person.fullName = "Bob Johnson";
+console.log(person.firstName); // "Bob"
+console.log(person.lastName); // "Johnson"</code></pre>
+                            </div>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Practical Examples: Real-World Applications</summary>
+                        <div>
+                            <h4>1. E-commerce Product System</h4>
+                            <div class="example-box">
+                                <pre><code>class Product {
+    constructor(name, price, category) {
+        this.name = name;
+        this.price = price;
+        this.category = category;
+        this.inStock = true;
+    }
+    
+    getPrice() {
+        return this.price;
+    }
+    
+    applyDiscount(percent) {
+        this.price *= (1 - percent / 100);
+        return this; // Enable method chaining
+    }
+    
+    toString() {
+        return \`\${this.name} (\$\${this.price})\`;
+    }
+}
+
+class Book extends Product {
+    constructor(name, price, isbn, pages) {
+        super(name, price, "Book");
+        this.isbn = isbn;
+        this.pages = pages;
+    }
+    
+    toString() {
+        return \`\${super.toString()} - \${this.pages} pages (ISBN: \${this.isbn})\`;
+    }
+}
+
+class Electronic extends Product {
+    constructor(name, price, warrantyMonths) {
+        super(name, price, "Electronic");
+        this.warrantyMonths = warrantyMonths;
+    }
+    
+    extendWarranty(months) {
+        this.warrantyMonths += months;
+        return this;
+    }
+}
+
+// Usage
+const book = new Book("JavaScript Guide", 49.99, "978-1234567890", 320);
+const laptop = new Electronic("MacBook Pro", 1999, 12);
+
+console.log(book.toString());
+// "JavaScript Guide ($49.99) - 320 pages (ISBN: 978-1234567890)"
+
+laptop.applyDiscount(15).extendWarranty(12);
+console.log(laptop.getPrice()); // 1699.15</code></pre>
+                            </div>
+
+                            <h4>2. Game Character System</h4>
+                            <div class="example-box">
+                                <pre><code>class Character {
+    constructor(name, health = 100, mana = 50) {
+        this.name = name;
+        this.health = health;
+        this.mana = mana;
+        this.level = 1;
+        this.experience = 0;
+    }
+    
+    takeDamage(damage) {
+        this.health -= damage;
+        if (this.health < 0) this.health = 0;
+        return this;
+    }
+    
+    gainExperience(exp) {
+        this.experience += exp;
+        this.checkLevelUp();
+        return this;
+    }
+    
+    checkLevelUp() {
+        if (this.experience >= this.level * 100) {
+            this.level++;
+            this.health += 20;
+            this.mana += 10;
+            console.log(\`\${this.name} leveled up to \${this.level}!\`);
+        }
+    }
+}
+
+class Mage extends Character {
+    constructor(name, manaBonus = 30) {
+        super(name, 80, 80 + manaBonus);
+        this.spellPower = 1.5;
+    }
+    
+    castSpell(target, spellName) {
+        if (this.mana < 10) {
+            console.log(\`\${this.name} out of mana!\`);
+            return;
+        }
+        
+        this.mana -= 10;
+        const damage = Math.floor(10 * this.spellPower);
+        target.takeDamage(damage);
+        console.log(\`\${this.name} casts \${spellName} for \${damage} damage!\`);
+    }
+}
+
+class Warrior extends Character {
+    constructor(name, armor = 5) {
+        super(name, 150, 30);
+        this.armor = armor;
+    }
+    
+    attack(target) {
+        const damage = 15 + Math.floor(Math.random() * 10);
+        target.takeDamage(damage);
+        console.log(\`\${this.name} attacks for \${damage} damage!\`);
+    }
+    
+    defend() {
+        this.armor += 2;
+        console.log(\`\${this.name} raises shield! Armor: \${this.armor}\`);
+    }
+}
+
+// Usage
+const wizard = new Mage("Gandalf");
+const knight = new Warrior("Aragorn");
+
+wizard.castSpell(knight, "Fireball");
+knight.attack(wizard);
+knight.defend();
+wizard.gainExperience(150); // Level up!</code></pre>
+                            </div>
+
+                            <h4>3. Form Validation System</h4>
+                            <div class="example-box">
+                                <pre><code>class Validator {
+    constructor() {
+        this.errors = [];
+    }
+    
+    addError(message) {
+        this.errors.push(message);
+        return this;
+    }
+    
+    isValid() {
+        return this.errors.length === 0;
+    }
+}
+
+class EmailValidator extends Validator {
+    validate(email) {
+        if (!email) this.addError("Email is required");
+        else if (!/\S+@\S+\.\S+/.test(email)) this.addError("Invalid email format");
+        return this;
+    }
+}
+
+class PasswordValidator extends Validator {
+    validate(password) {
+        if (!password) this.addError("Password is required");
+        else if (password.length < 8) this.addError("Password must be at least 8 characters");
+        else if (!/[A-Z]/.test(password)) this.addError("Password needs uppercase letter");
+        else if (!/[0-9]/.test(password)) this.addError("Password needs number");
+        return this;
+    }
+}
+
+// Usage
+const validateForm = (email, password) => {
+    const emailValid = new EmailValidator().validate(email);
+    const passwordValid = new PasswordValidator().validate(password);
+    
+    const errors = [...emailValid.errors, ...passwordValid.errors];
+    
+    if (errors.length > 0) {
+        console.error("Validation failed:", errors);
+        return false;
+    }
+    
+    console.log("Form valid!");
+    return true;
+};
+
+validateForm("alice@example.com", "MyPass123"); // true
+validateForm("", ""); // false with 2 errors</code></pre>
+                            </div>
+
+                            <h4>4. DOM Component System</h4>
+                            <div class="example-box">
+                                <pre><code>class Component {
+    constructor(selector) {
+        this.element = document.querySelector(selector);
+        if (!this.element) {
+            throw new Error(\`Element \${selector} not found\`);
+        }
+    }
+    
+    hide() {
+        this.element.style.display = 'none';
+        return this;
+    }
+    
+    show() {
+        this.element.style.display = '';
+        return this;
+    }
+    
+    setText(text) {
+        this.element.textContent = text;
+        return this;
+    }
+}
+
+class Button extends Component {
+    constructor(selector, onClick) {
+        super(selector);
+        this.onClick = onClick;
+        this.element.addEventListener('click', () => this.onClick());
+    }
+    
+    disable() {
+        this.element.disabled = true;
+        this.element.style.opacity = '0.5';
+        return this;
+    }
+    
+    enable() {
+        this.element.disabled = false;
+        this.element.style.opacity = '1';
+        return this;
+    }
+}
+
+class Modal extends Component {
+    constructor(selector, title) {
+        super(selector);
+        this.title = title;
+        this.setupTitle();
+    }
+    
+    setupTitle() {
+        const header = this.element.querySelector('.modal-header');
+        if (header) {
+            header.textContent = this.title;
+        }
+    }
+    
+    open() {
+        this.show();
+        this.element.classList.add('open');
+        return this;
+    }
+    
+    close() {
+        this.hide();
+        this.element.classList.remove('open');
+        return this;
+    }
+}
+
+// Usage
+const button = new Button('#submit-btn', () => alert('Submitted!'));
+button.disable();
+
+const modal = new Modal('#myModal', 'Welcome');
+modal.open().setText('Hello World');</code></pre>
+                            </div>
+
+                            <p><strong>Pro Tips:</strong></p>
+                            <ul>
+                                <li>Use classes for complex objects with behavior (not just data containers)</li>
+                                <li>Prefer composition over inheritance when possible</li>
+                                <li>Keep constructors simple — move complex logic to separate methods</li>
+                                <li>Use private fields (#) for internal state protection</li>
+                                <li>Return <code>this</code> from methods to enable method chaining</li>
+                                <li>Use getters/setters for computed properties or validation</li>
+                            </ul>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Common Mistakes & Best Practices</summary>
+                        <div>
+                            <h4>❌ Common Mistakes</h4>
+                            
+                            <div class="example-box">
+                                <pre><code>// ❌ Forgetting super() in constructor
+class Dog extends Animal {
+    constructor(name, breed) {
+        // Missing super(name)! Will throw ReferenceError
+        this.breed = breed;
+    }
+}
+
+// ❌ Using arrow functions as methods
+class MyClass {
+    constructor() {
+        this.value = 42;
+    }
+    
+    getValue() {
+        return this.value;
+    }
+    
+    // ❌ WRONG: Arrow function loses 'this' binding
+    getThisValue = () => this.value; // Works, but creates property on instance
+}
+
+// ❌ Trying to access private fields from outside
+class Secret {
+    #secret = "hidden";
+}
+
+const obj = new Secret();
+console.log(obj.#secret); // ❌ SyntaxError</code></pre>
+                            </div>
+
+                            <h4>✅ Best Practices</h4>
+                            
+                            <div class="example-box">
+                                <pre><code>// ✅ Good: Clear, focused classes
+class User {
+    constructor(nam

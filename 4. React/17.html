@@ -1,0 +1,1189 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chapter 12: Styling React Applications</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a192f;
+      --cyan: #00f5ff;
+      --amber: #ffb347;
+      --text-light: #e6f1ff;
+      --border-light: #1a3b5c;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      font-family: 'Roboto', sans-serif;
+      overflow-x: hidden;
+    }
+
+    .left-panel {
+      position: fixed;
+      width: 300px;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 20px;
+      background-color: rgba(10, 25, 47, 0.9);
+      border-right: 1px solid var(--border-light);
+      z-index: 1000;
+    }
+
+    .right-panel {
+      margin-left: 300px;
+      padding: 30px;
+      height: 100vh;
+      overflow-y: auto;
+      background-color: var(--bg-dark);
+    }
+
+    h1, h2, h3, h4 {
+      color: var(--cyan);
+      font-weight: 600;
+    }
+
+    h1 {
+      border-bottom: 2px solid var(--amber);
+      padding-bottom: 10px;
+      margin-bottom: 25px;
+    }
+
+    h2 {
+      margin-top: 40px;
+      border-left: 4px solid var(--amber);
+      padding-left: 15px;
+    }
+
+    h3 {
+      color: var(--amber);
+      margin-top: 30px;
+    }
+
+    .toc-item {
+      margin: 8px 0;
+      padding: 6px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .toc-item:hover {
+      background-color: rgba(0, 245, 255, 0.1);
+    }
+
+    .toc-item.active {
+      background-color: rgba(0, 245, 255, 0.2);
+      border-left: 3px solid var(--cyan);
+    }
+
+    .search-box {
+      margin-bottom: 20px;
+      background-color: rgba(26, 59, 92, 0.5);
+      border: 1px solid var(--border-light);
+      color: var(--text-light);
+    }
+
+    .btn-control {
+      background-color: rgba(10, 25, 47, 0.7);
+      border: 1px solid var(--border-light);
+      color: var(--cyan);
+      margin-bottom: 15px;
+      font-size: 0.9rem;
+    }
+
+    .btn-control:hover {
+      background-color: rgba(0, 245, 255, 0.2);
+      color: var(--cyan);
+    }
+
+    details {
+      margin: 15px 0;
+      border-left: 1px solid var(--border-light);
+      padding-left: 15px;
+      background-color: rgba(10, 25, 47, 0.4);
+      border-radius: 0 5px 5px 0;
+    }
+
+    summary {
+      list-style: none;
+      cursor: pointer;
+      font-weight: bold;
+      color: var(--amber);
+      padding: 10px 15px;
+      background-color: rgba(0, 245, 255, 0.05);
+      border-radius: 5px;
+      margin-bottom: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    summary::before {
+      content: "▶ ";
+      font-size: 0.8em;
+    }
+
+    details[open] > summary::before {
+      content: "▼ ";
+    }
+
+    pre {
+      background-color: #0d1b2a !important;
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 15px;
+      overflow-x: auto;
+      margin: 15px 0;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    code {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.95rem;
+      color: var(--cyan);
+    }
+
+    .highlight {
+      color: var(--amber);
+      font-weight: bold;
+    }
+
+    .note {
+      background-color: rgba(255, 179, 71, 0.1);
+      border-left: 3px solid var(--amber);
+      padding: 12px 15px;
+      margin: 20px 0;
+      border-radius: 0 5px 5px 0;
+    }
+
+    .syntax {
+      background-color: rgba(0, 245, 255, 0.08);
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-weight: 500;
+      display: inline-block;
+      margin: 0 3px;
+    }
+
+    .author-info {
+      color: var(--amber);
+      font-style: italic;
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+
+    .footer-note {
+      margin-top: 60px;
+      text-align: center;
+      color: var(--amber);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border-light);
+      padding-top: 15px;
+    }
+
+    /* Smooth scrolling */
+    html {
+      scroll-behavior: smooth;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 991px) {
+      .left-panel {
+        width: 100%;
+        position: relative;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border-light);
+      }
+      .right-panel {
+        margin-left: 0;
+      }
+    }
+
+    /* Demo styling for components */
+    .demo-card {
+      background-color: rgba(13, 27, 42, 0.6);
+      border: 1px dashed var(--border-light);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .css-module-btn {
+      background-color: #2d4a6e;
+      border: 1px solid var(--cyan);
+      color: var(--cyan);
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .css-module-btn:hover {
+      background-color: var(--cyan);
+      color: #000;
+    }
+
+    .styled-component-btn {
+      background: linear-gradient(135deg, #ff8c00, #ffa726);
+      border: none;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 4px 8px rgba(255, 179, 71, 0.3);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .styled-component-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 12px rgba(255, 179, 71, 0.4);
+    }
+
+    .emotion-btn {
+      background-color: #1a3b5c;
+      border: 2px solid var(--cyan);
+      color: var(--cyan);
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.3s ease;
+    }
+
+    .emotion-btn:hover {
+      background-color: var(--cyan);
+      color: #000;
+    }
+
+    .theme-switch {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin: 15px 0;
+    }
+
+    .theme-toggle {
+      width: 50px;
+      height: 24px;
+      background-color: #3a5a7f;
+      border-radius: 12px;
+      position: relative;
+      cursor: pointer;
+    }
+
+    .theme-toggle::after {
+      content: '';
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: white;
+      top: 2px;
+      left: 2px;
+      transition: transform 0.3s ease;
+    }
+
+    .theme-toggle.active::after {
+      transform: translateX(26px);
+    }
+
+    .theme-label {
+      font-size: 0.9rem;
+    }
+
+    .css-in-js-demo {
+      background-color: rgba(0, 245, 255, 0.05);
+      padding: 15px;
+      border-radius: 8px;
+      border-left: 3px solid var(--cyan);
+      margin: 15px 0;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container-fluid p-0">
+  <div class="row g-0">
+
+    <!-- Left Panel -->
+    <div class="col-md-3 left-panel">
+      <h1>Chapter 12</h1>
+      <h4>Styling React Applications</h4>
+      <p class="author-info">— Mastering Modern CSS with Depth & Clarity —</p>
+
+      <input type="text" class="form-control search-box" id="searchTOC" placeholder="Search topics..." />
+
+      <div class="d-grid gap-2">
+        <button class="btn btn-control" id="expandAll">Expand All</button>
+        <button class="btn btn-control" id="collapseAll">Collapse All</button>
+      </div>
+
+      <div class="toc">
+        <h5>Table of Contents</h5>
+        <div class="toc-item" data-target="#section-12-1">12.1 CSS Modules</div>
+        <div class="toc-item" data-target="#section-12-2">12.2 Styled-components</div>
+        <div class="toc-item" data-target="#section-12-3">12.3 Emotion</div>
+        <div class="toc-item" data-target="#section-12-4">12.4 CSS-in-JS Patterns</div>
+      </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="col-md-9 right-panel">
+
+      <!-- Section 12.1 -->
+      <section id="section-12-1">
+        <h2>12.1 CSS Modules</h2>
+        
+        <details>
+          <summary>📌 Summary: Scoped CSS Without JavaScript</summary>
+          <p>CSS Modules are a build-time system that automatically scopes your CSS classes to avoid naming collisions. You write regular CSS, but it gets transformed into unique class names at compile time.</p>
+          
+          <h3>🔹 How It Works</h3>
+          <ol>
+            <li>You create a file like <code>Button.module.css</code></li>
+            <li>Import it as a JavaScript object: <code>import styles from './Button.module.css'</code></li>
+            <li>Use classes as object properties: <code>&lt;button className={styles.button}&gt;</code></li>
+            <li>Webpack/Vite transforms <code>.button</code> into something like <code>_Button_button_12abc</code></li>
+          </ol>
+
+          <h3>⚡ Syntax Example</h3>
+          <pre><code>
+/* Button.module.css */
+.button {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.primary {
+  background-color: #00f5ff;
+  color: #000;
+}
+
+.secondary {
+  background-color: #3a5a7f;
+  color: #fff;
+}
+
+.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+          </code></pre>
+
+          <pre><code>
+// Button.jsx
+import styles from './Button.module.css';
+
+function Button({ children, variant = 'primary', disabled = false }) {
+  return (
+    &lt;button 
+      className={`${styles.button} ${styles[variant]} ${disabled ? styles.disabled : ''}`}
+      disabled={disabled}
+    &gt;
+      {children}
+    &lt;/button&gt;
+  );
+}
+
+export default Button;
+          </code></pre>
+
+          <h3>💡 Why This Is Brilliant</h3>
+          <ul>
+            <li><strong>No naming conflicts:</strong> Two components can have a <code>.button</code> class without collision</li>
+            <li><strong>Zero runtime overhead:</strong> Compiled away — pure CSS in production</li>
+            <li><strong>Familiar syntax:</strong> Write standard CSS you already know</li>
+            <li><strong>Tooling support:</strong> Works with Webpack, Vite, Create React App</li>
+          </ul>
+
+          <div class="note">
+            <strong>🧠 Mental Model:</strong> Think of CSS Modules as a "CSS compiler" that renames your classes to be globally unique while keeping your code clean.
+          </div>
+        </details>
+
+        <details>
+          <summary>🧪 Deep Dive: How CSS Modules Handle Class Composition</summary>
+          <p>CSS Modules supports composition — combining multiple classes into one.</p>
+
+          <h3>⚡ Composition Example</h3>
+          <pre><code>
+/* Button.module.css */
+.base {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.primary {
+  composes: base; /* ← Inherit all styles from .base */
+  background-color: #00f5ff;
+  color: #000;
+}
+
+.large {
+  composes: base; /* ← Reusable base styles */
+  font-size: 18px;
+  padding: 16px 32px;
+}
+
+.success {
+  composes: primary; /* ← Inherits from primary, then overrides */
+  background-color: #00cc88;
+}
+          </code></pre>
+
+          <pre><code>
+// Component usage
+&lt;button className={styles.primary}&gt;Primary Button&lt;/button&gt;
+&lt;button className={styles.large}&gt;Large Button&lt;/button&gt;
+&lt;button className={styles.success}&gt;Success Button&lt;/button&gt;
+          </code></pre>
+
+          <h3>🔍 What Gets Compiled</h3>
+          <p>After compilation, the HTML becomes:</p>
+          <pre><code>
+&lt;button class="_Button_base_1a2b3 _Button_primary_4c5d6"&gt;Primary Button&lt;/button&gt;
+&lt;button class="_Button_base_1a2b3 _Button_large_7e8f9"&gt;Large Button&lt;/button&gt;
+&lt;button class="_Button_base_1a2b3 _Button_primary_4c5d6 _Button_success_0g1h2"&gt;Success Button&lt;/button&gt;
+          </code></pre>
+
+          <h3>⚠️ Common Pitfalls</h3>
+          <ul>
+            <li>Don't use <code>:global()</code> unless you need global styles — it defeats the purpose</li>
+            <li>Class names must be valid CSS identifiers (no hyphens in variable names)</li>
+            <li>Can't use dynamic class names directly: <code>{styles[myVar]}</code> works, but <code>{styles.${myVar}}</code> doesn't</li>
+          </ul>
+
+          <div class="demo-card">
+            <h4>✅ Live Demo: CSS Module Button</h4>
+            <button class="css-module-btn">I'm a CSS Module Button!</button>
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 12.2 -->
+      <section id="section-12-2">
+        <h2>12.2 Styled-components</h2>
+        
+        <details>
+          <summary>📌 Summary: Write CSS as JavaScript Components</summary>
+          <p>Styled-components lets you write actual CSS inside your JavaScript using tagged template literals. Each component gets its own unique class name automatically.</p>
+
+          <h3>🔹 Core Philosophy</h3>
+          <p>"Component-scoped styles are better than global styles." — styled-components makes this philosophy effortless.</p>
+
+          <h3>⚡ Basic Syntax</h3>
+          <pre><code>
+import styled from 'styled-components';
+
+// Create a component with embedded CSS
+const Button = styled.button`
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+
+  background-color: #00f5ff;
+  color: #000;
+
+  &:hover {
+    background-color: #00c0e6;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 245, 255, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+// Use it like any other component
+function App() {
+  return (
+    &lt;div&gt;
+      &lt;Button&gt;Click Me&lt;/Button&gt;
+      &lt;Button disabled&gt;Disabled&lt;/Button&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>💡 Why This Is Powerful</h3>
+          <ul>
+            <li><strong>Automatic scoping:</strong> No class name conflicts</li>
+            <li><strong>Dynamic styling:</strong> Pass props to change styles</li>
+            <li><strong>Server-side rendering:</strong> Built-in support</li>
+            <li><strong>Theming:</strong> Built-in context-based theming</li>
+          </ul>
+
+          <h3>🔥 Dynamic Styling with Props</h3>
+          <pre><code>
+const Button = styled.button`
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+
+  background-color: ${props => props.primary ? '#00f5ff' : '#3a5a7f'};
+  color: ${props => props.primary ? '#000' : '#fff'};
+
+  &:hover {
+    background-color: ${props => props.primary ? '#00c0e6' : '#2d4a6e'};
+  }
+
+  // Size variants
+  ${props => props.large && `
+    font-size: 18px;
+    padding: 16px 32px;
+  `}
+`;
+
+// Usage
+&lt;Button primary&gt;Primary Button&lt;/Button&gt;
+&lt;Button large&gt;Large Button&lt;/Button&gt;
+&lt;Button primary large&gt;Big Primary Button&lt;/Button&gt;
+          </code></pre>
+
+          <h3>🎨 Theming with styled-components</h3>
+          <pre><code>
+import { ThemeProvider } from 'styled-components';
+
+const theme = {
+  colors: {
+    primary: '#00f5ff',
+    secondary: '#3a5a7f',
+    success: '#00cc88'
+  },
+  spacing: {
+    small: '8px',
+    medium: '16px',
+    large: '24px'
+  }
+};
+
+const Button = styled.button`
+  padding: ${props => props.theme.spacing.medium};
+  background-color: ${props => props.theme.colors.primary};
+  color: #000;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+`;
+
+function App() {
+  return (
+    &lt;ThemeProvider theme={theme}&gt;
+      &lt;Button&gt;Styled Button&lt;/Button&gt;
+    &lt;/ThemeProvider&gt;
+  );
+}
+          </code></pre>
+
+          <div class="note">
+            <strong>🧠 Mental Model:</strong> styled-components turns CSS into a React component. The component *is* the style.
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Advanced: Extending Components & Nested Selectors</summary>
+          <p>styled-components allows you to extend existing styled components — no CSS inheritance needed!</p>
+
+          <h3>⚡ Component Extension</h3>
+          <pre><code>
+const BaseButton = styled.button`
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+`;
+
+const PrimaryButton = styled(BaseButton)`
+  background-color: #00f5ff;
+  color: #000;
+  
+  &:hover {
+    background-color: #00c0e6;
+  }
+`;
+
+const OutlineButton = styled(BaseButton)`
+  background-color: transparent;
+  border: 2px solid #00f5ff;
+  color: #00f5ff;
+  
+  &:hover {
+    background-color: rgba(0, 245, 255, 0.1);
+  }
+`;
+          </code></pre>
+
+          <h3>🔥 Nested Components</h3>
+          <pre><code>
+const Card = styled.div`
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  
+  // Target child elements within this component
+  h3 {
+    color: #00f5ff;
+    margin-top: 0;
+  }
+  
+  p {
+    color: #ccc;
+  }
+  
+  // Target sibling elements
+  + div {
+    margin-top: 20px;
+  }
+`;
+
+function MyCard() {
+  return (
+    &lt;Card&gt;
+      &lt;h3&gt;Title&lt;/h3&gt;
+      &lt;p&gt;This is a card with nested styles.&lt;/p&gt;
+    &lt;/Card&gt;
+  );
+}
+          </code></pre>
+
+          <h3>⚡ Style Objects vs Template Literals</h3>
+          <p>While template literals are preferred, you can also use objects:</p>
+          <pre><code>
+const Button = styled.button({
+  padding: '12px 24px',
+  backgroundColor: '#00f5ff',
+  color: '#000',
+  borderRadius: '6px',
+  border: 'none',
+  cursor: 'pointer',
+
+  // For pseudo-selectors, use strings
+  ':hover': {
+    backgroundColor: '#00c0e6'
+  }
+});
+          </code></pre>
+
+          <div class="demo-card">
+            <h4>✅ Live Demo: Styled-component Button</h4>
+            <button class="styled-component-btn">I'm a Styled-component Button!</button>
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 12.3 -->
+      <section id="section-12-3">
+        <h2>12.3 Emotion</h2>
+        
+        <details>
+          <summary>📌 Summary: The High-Performance CSS-in-JS Library</summary>
+          <p>Emotion is a performant CSS-in-JS library with excellent server-side rendering and zero-runtime overhead options. It's faster than styled-components and more flexible than CSS Modules.</p>
+
+          <h3>🔹 Two Ways to Use Emotion</h3>
+          <ol>
+            <li><strong>css prop:</strong> Inline styles via JSX attribute</li>
+            <li><strong>styled:</strong> Like styled-components, but with better performance</li>
+          </ol>
+
+          <h3>⚡ Using the css prop (Recommended)</h3>
+          <pre><code>
+import { css } from '@emotion/react';
+
+const buttonStyle = css`
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  background-color: #00f5ff;
+  color: #000;
+
+  &:hover {
+    background-color: #00c0e6;
+    transform: translateY(-2px);
+  }
+`;
+
+function Button({ children }) {
+  return (
+    &lt;button css={buttonStyle}&gt;
+      {children}
+    &lt;/button&gt;
+  );
+}
+          </code></pre>
+
+          <h3>⚡ Dynamic css prop with props</h3>
+          <pre><code>
+import { css } from '@emotion/react';
+
+function Button({ variant = 'primary', size = 'medium', children }) {
+  const buttonStyles = css`
+    padding: ${size === 'large' ? '16px 32px' : '12px 24px'};
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    
+    background-color: ${variant === 'primary' ? '#00f5ff' : '#3a5a7f'};
+    color: ${variant === 'primary' ? '#000' : '#fff'};
+
+    &:hover {
+      background-color: ${variant === 'primary' ? '#00c0e6' : '#2d4a6e'};
+    }
+  `;
+
+  return (
+    &lt;button css={buttonStyles}&gt;
+      {children}
+    &lt;/button&gt;
+  );
+}
+          </code></pre>
+
+          <h3>⚡ Using styled API (like styled-components)</h3>
+          <pre><code>
+import { styled } from '@emotion/react';
+
+const Button = styled('button')`
+  padding: 12px 24px;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  background-color: #00f5ff;
+  color: #000;
+
+  &:hover {
+    background-color: #00c0e6;
+  }
+`;
+
+// Or with props
+const Button = styled('button')(({ primary, large }) =&gt; ({
+  padding: large ? '16px 32px' : '12px 24px',
+  backgroundColor: primary ? '#00f5ff' : '#3a5a7f',
+  color: primary ? '#000' : '#fff',
+  border: 'none',
+  borderRadius: '6px',
+  fontSize: '16px',
+  cursor: 'pointer',
+  '&:hover': {
+    backgroundColor: primary ? '#00c0e6' : '#2d4a6e'
+  }
+}));
+          </code></pre>
+
+          <h3>💡 Why Emotion Wins</h3>
+          <table class="table table-dark table-sm mt-3">
+            <thead>
+              <tr><th>Feature</th><th>Emotion</th><th>Styled-components</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Bundle Size</td><td>Smaller</td><td>Larger</td></tr>
+              <tr><td>Performance</td><td>Faster</td><td>Good</td></tr>
+              <tr><td>SSR Support</td><td>Excellent</td><td>Good</td></tr>
+              <tr><td>API Flexibility</td><td>css prop + styled</td><td>styled only</td></tr>
+              <tr><td>Developer Experience</td><td>Very good</td><td>Excellent</td></tr>
+              <tr><td>Debugging</td><td>Clear class names</td><td>Hashed names</td></tr>
+            </tbody>
+          </table>
+
+          <h3>🔥 Theming with Emotion</h3>
+          <pre><code>
+import { ThemeProvider } from '@emotion/react';
+
+const theme = {
+  colors: {
+    primary: '#00f5ff',
+    secondary: '#3a5a7f',
+    success: '#00cc88'
+  },
+  spacing: {
+    xs: '4px',
+    sm: '8px',
+    md: '16px',
+    lg: '24px'
+  }
+};
+
+const Button = styled('button')`
+  padding: ${props => props.theme.spacing.md};
+  background-color: ${props => props.theme.colors.primary};
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+`;
+
+function App() {
+  return (
+    &lt;ThemeProvider theme={theme}&gt;
+      &lt;Button&gt;Theme Button&lt;/Button&gt;
+    &lt;/ThemeProvider&gt;
+  );
+}
+          </code></pre>
+
+          <div class="demo-card">
+            <h4>✅ Live Demo: Emotion Button</h4>
+            <button class="emotion-btn">I'm an Emotion Button!</button>
+          </div>
+        </details>
+
+        <details>
+          <summary>⚙️ Deep Dive: Emotion's Zero-Runtime Mode</summary>
+          <p>Emotion has a special mode called "zero-runtime" that compiles CSS at build time — eliminating the need for JavaScript to apply styles at runtime!</p>
+
+          <h3>⚡ Setup in vite.config.js</h3>
+          <pre><code>
+// vite.config.js
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import { vitePluginAsmCss } from '@emotion/babel-plugin';
+
+export default defineConfig({
+  plugins: [
+    react({
+      babel: {
+        plugins: [
+          ['@emotion/babel-plugin', { sourceMap: true, autoLabel: 'dev-only' }]
+        ]
+      }
+    })
+  ]
+});
+          </code></pre>
+
+          <h3>What Happens?</h3>
+          <ul>
+            <li>During build: <code>css={...}</code> gets converted to static class names</li>
+            <li>Production bundle: No emotion runtime included!</li>
+            <li>Result: Performance equals CSS Modules, with the flexibility of CSS-in-JS</li>
+          </ul>
+
+          <div class="note">
+            <strong>🌟 Pro Tip:</strong> Use Emotion with zero-runtime mode for maximum performance. It's the best of both worlds: CSS Modules' speed + CSS-in-JS' flexibility.
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 12.4 -->
+      <section id="section-12-4">
+        <h2>12.4 CSS-in-JS Patterns</h2>
+        
+        <details>
+          <summary>📌 Summary: Design Patterns for Professional CSS-in-JS</summary>
+          <p>Using CSS-in-JS isn't just about syntax — it's about architecture. Here are battle-tested patterns used by top teams.</p>
+
+          <h3>🔹 Pattern 1: Atomic Styles with Object Syntax</h3>
+          <p>Break UI into tiny, reusable style objects — perfect for design systems.</p>
+
+          <pre><code>
+// styles/atomic.js
+export const spacing = {
+  xs: '4px',
+  sm: '8px',
+  md: '16px',
+  lg: '24px',
+  xl: '32px'
+};
+
+export const radius = {
+  sm: '4px',
+  md: '8px',
+  lg: '12px'
+};
+
+export const colors = {
+  primary: '#00f5ff',
+  secondary: '#3a5a7f',
+  success: '#00cc88',
+  danger: '#ff4757',
+  text: '#e6f1ff',
+  bg: '#0a192f'
+};
+
+export const typography = {
+  h1: {
+    fontSize: '2rem',
+    fontWeight: '700',
+    lineHeight: '1.2'
+  },
+  button: {
+    fontSize: '1rem',
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em'
+  }
+};
+
+// Usage
+import { colors, spacing, typography } from './styles/atomic';
+
+const Button = styled.button`
+  padding: ${spacing.md};
+  background-color: ${colors.primary};
+  color: ${colors.text};
+  border: none;
+  border-radius: ${radius.md};
+  ${typography.button}
+`;
+          </code></pre>
+
+          <h3>🔹 Pattern 2: Compound Components</h3>
+          <p>Create components that work together — like a Card with Header and Body.</p>
+
+          <pre><code>
+import { styled } from '@emotion/react';
+
+const CardContainer = styled.div`
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+`;
+
+const CardHeader = styled.div`
+  background-color: #0a192f;
+  color: #00f5ff;
+  padding: 16px;
+  border-bottom: 1px solid #3a5a7f;
+`;
+
+const CardBody = styled.div`
+  padding: 16px;
+  color: #ccc;
+`;
+
+const CardFooter = styled.div`
+  background-color: #0a192f;
+  padding: 16px;
+  border-top: 1px solid #3a5a7f;
+  text-align: right;
+`;
+
+// Usage
+function UserProfileCard() {
+  return (
+    &lt;CardContainer&gt;
+      &lt;CardHeader&gt;User Profile&lt;/CardHeader&gt;
+      &lt;CardBody&gt;
+        &lt;p&gt;Name: John Doe&lt;/p&gt;
+        &lt;p&gt;Email: john@example.com&lt;/p&gt;
+      &lt;/CardBody&gt;
+      &lt;CardFooter&gt;
+        &lt;Button&gt;Edit&lt;/Button&gt;
+      &lt;/CardFooter&gt;
+    &lt;/CardContainer&gt;
+  );
+}
+          </code></pre>
+
+          <h3>🔹 Pattern 3: Hook-Based Style Generation</h3>
+          <p>Generate styles dynamically based on component state or props using custom hooks.</p>
+
+          <pre><code>
+import { css } from '@emotion/react';
+
+// Custom hook
+function useButtonStyle(variant, size) {
+  return css`
+    padding: ${size === 'large' ? '16px 32px' : '12px 24px'};
+    background-color: ${variant === 'primary' ? '#00f5ff' : '#3a5a7f'};
+    color: ${variant === 'primary' ? '#000' : '#fff'};
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background-color: ${variant === 'primary' ? '#00c0e6' : '#2d4a6e'};
+      transform: translateY(-1px);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  `;
+}
+
+// Component
+function Button({ variant = 'primary', size = 'medium', children }) {
+  const buttonStyle = useButtonStyle(variant, size);
+
+  return (
+    &lt;button css={buttonStyle}&gt;
+      {children}
+    &lt;/button&gt;
+  );
+}
+          </code></pre>
+
+          <h3>🔹 Pattern 4: Global Styles with Theme Provider</h3>
+          <p>Apply consistent base styles across your entire app.</p>
+
+          <pre><code>
+import { Global, ThemeProvider } from '@emotion/react';
+
+const theme = {
+  colors: {
+    primary: '#00f5ff',
+    secondary: '#3a5a7f',
+    text: '#e6f1ff',
+    bg: '#0a192f'
+  },
+  fonts: {
+    main: "'Roboto', sans-serif",
+    mono: "'Roboto Mono', monospace"
+  }
+};
+
+const GlobalStyles = () =&gt; (
+  &lt;Global
+    styles={`
+      * {
+        box-sizing: border-box;
+      }
+      
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: ${theme.fonts.main};
+        background-color: ${theme.colors.bg};
+        color: ${theme.colors.text};
+      }
+      
+      h1, h2, h3 {
+        color: ${theme.colors.primary};
+      }
+      
+      a {
+        color: ${theme.colors.primary};
+        text-decoration: none;
+      }
+      
+      a:hover {
+        text-decoration: underline;
+      }
+    `}
+  /&gt;
+);
+
+function App() {
+  return (
+    &lt;ThemeProvider theme={theme}&gt;
+      &lt;GlobalStyles /&gt;
+      &lt;!-- Your app content --&gt;
+    &lt;/ThemeProvider&gt;
+  );
+}
+          </code></pre>
+
+          <h3>💡 Pattern Selection Guide</h3>
+          <table class="table table-dark table-sm mt-3">
+            <thead>
+              <tr><th>Use Case</th><th>Best Pattern</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Design System</td><td>Atomic Styles + Theme</td></tr>
+              <tr><td>Complex Layouts</td><td>Compound Components</td></tr>
+              <tr><td>Reusable Components</td><td>Hook-Based Styles</td></tr>
+              <tr><td>App-wide Base Styles</td><td>Global Styles</td></tr>
+              <tr><td>Performance-Critical Apps</td><td>Emotion + zero-runtime</td></tr>
+              <tr><td>Team Collaboration</td><td>Consistent pattern + documentation</td></tr>
+            </tbody>
+          </table>
+
+          <div class="css-in-js-demo">
+            <h4>🎯 Final Wisdom: Choose Your Weapon Wisely</h4>
+            <ul>
+              <li><strong>For beginners:</strong> Start with CSS Modules — simple, predictable, no magic</li>
+              <li><strong>For teams:</strong> Use Emotion with zero-runtime — best balance of power and performance</li>
+              <li><strong>For rapid prototyping:</strong> Styled-components — great DX, slightly heavier</li>
+              <li><strong>Avoid:</strong> Mixing global CSS with CSS-in-JS unless absolutely necessary</li>
+            </ul>
+          </div>
+        </details>
+      </section>
+
+      <div class="footer-note">
+        📚 Next: Tailwind CSS with React, Responsive Design, Theming Systems & Animation Libraries
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript Utilities -->
+<script>
+  // Expand/Collapse All
+  document.getElementById('expandAll').addEventListener('click', () => {
+    document.querySelectorAll('details').forEach(detail => detail.open = true);
+  });
+
+  document.getElementById('collapseAll').addEventListener('click', () => {
+    document.querySelectorAll('details').forEach(detail => detail.open = false);
+  });
+
+  // Smooth Scroll to TOC Item
+  document.querySelectorAll('.toc-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const targetId = item.getAttribute('data-target');
+      document.querySelector(targetId).scrollIntoView({ behavior: 'smooth' });
+      
+      // Highlight active item
+      document.querySelectorAll('.toc-item').forEach(el => el.classList.remove('active'));
+      item.classList.add('active');
+    });
+  });
+
+  // Search TOC
+  document.getElementById('searchTOC').addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase();
+    document.querySelectorAll('.toc-item').forEach(item => {
+      const text = item.textContent.toLowerCase();
+      item.style.display = text.includes(query) ? 'block' : 'none';
+    });
+  });
+
+  // Optional: Add highlight.js if needed (uncomment if CDN available)
+  /*
+  const script = document.createElement('script');
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js';
+  script.onload = () => {
+    document.querySelectorAll('pre code').forEach(block => hljs.highlightBlock(block));
+  };
+  document.head.appendChild(script);
+  */
+</script>
+
+<!-- Bootstrap JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
+```

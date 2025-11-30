@@ -1,0 +1,2690 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter 23: Next.js Fundamentals</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00d1ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --text-muted: #a0b8d8;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            background-color: #0c213d;
+            border-right: 1px solid rgba(0, 209, 255, 0.1);
+            height: 100vh;
+            position: fixed;
+            width: 300px;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid rgba(0, 209, 255, 0.2);
+            padding-bottom: 8px;
+            margin-top: 30px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin-top: 40px;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            margin-top: 35px;
+        }
+
+        .subtitle {
+            color: var(--amber);
+            font-style: italic;
+            margin-bottom: 25px;
+        }
+
+        .author-info {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        .toc-item {
+            margin: 8px 0;
+            padding: 6px 10px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .toc-item:hover {
+            background-color: rgba(0, 209, 255, 0.1);
+            color: var(--cyan);
+        }
+
+        .toc-item.active {
+            background-color: rgba(0, 209, 255, 0.2);
+            color: var(--cyan);
+            border-left: 3px solid var(--cyan);
+        }
+
+        .toc-subitem {
+            margin-left: 20px;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            padding: 4px 10px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .toc-subitem:hover {
+            background-color: rgba(0, 209, 255, 0.1);
+            color: var(--cyan);
+        }
+
+        .search-input {
+            background-color: #153350;
+            border: 1px solid rgba(0, 209, 255, 0.3);
+            color: var(--text-light);
+            margin-bottom: 20px;
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+
+        .btn-control {
+            background-color: rgba(0, 209, 255, 0.1);
+            border: 1px solid rgba(0, 209, 255, 0.3);
+            color: var(--cyan);
+            margin: 10px 0;
+            padding: 6px 12px;
+            font-size: 0.9rem;
+            border-radius: 5px;
+        }
+
+        .btn-control:hover {
+            background-color: rgba(0, 209, 255, 0.2);
+            color: var(--cyan);
+        }
+
+        .details-container {
+            margin-bottom: 30px;
+            border-left: 3px solid var(--amber);
+            border-radius: 0 8px 8px 0;
+            overflow: hidden;
+        }
+
+        .details-container summary {
+            list-style: none;
+            cursor: pointer;
+            padding: 15px;
+            background-color: rgba(255, 183, 77, 0.1);
+            color: var(--amber);
+            font-weight: bold;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0;
+        }
+
+        .details-container summary:hover {
+            background-color: rgba(255, 183, 77, 0.2);
+        }
+
+        .details-container summary::before {
+            content: "▶";
+            font-size: 0.8rem;
+            transition: transform 0.3s ease;
+        }
+
+        .details-container[open] summary::before {
+            content: "▼";
+            transform: rotate(90deg);
+        }
+
+        .details-container > div {
+            padding: 15px;
+            background-color: #0f2540;
+            border-radius: 0 0 8px 8px;
+            margin-top: 0;
+            border: 1px solid rgba(255, 183, 77, 0.1);
+        }
+
+        pre code {
+            display: block;
+            padding: 16px;
+            overflow-x: auto;
+            background-color: #0a192f;
+            border-radius: 8px;
+            border-left: 4px solid var(--amber);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #e6f1ff;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 15px 0;
+        }
+
+        code {
+            background-color: rgba(255, 183, 77, 0.1);
+            color: var(--amber);
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+        }
+
+        .highlight {
+            background-color: rgba(0, 209, 255, 0.15);
+            padding: 10px;
+            border-left: 3px solid var(--cyan);
+            margin: 20px 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .formula {
+            background-color: rgba(0, 209, 255, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-family: 'Cambria Math', serif;
+            text-align: center;
+            color: var(--cyan);
+            font-size: 1.1rem;
+        }
+
+        .use-case {
+            background-color: rgba(255, 183, 77, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 3px solid var(--amber);
+        }
+
+        .example-box {
+            background-color: rgba(10, 25, 47, 0.8);
+            border: 1px solid rgba(0, 209, 255, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: #000;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 8px;
+        }
+
+        .nav-link {
+            color: var(--text-muted) !important;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--cyan) !important;
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 991px) {
+            .left-panel {
+                width: 250px;
+            }
+            .right-panel {
+                margin-left: 250px;
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .left-panel {
+                position: relative;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid rgba(0, 209, 255, 0.1);
+            }
+            .right-panel {
+                margin-left: 0;
+                padding: 15px;
+            }
+        }
+
+        .section-marker {
+            position: absolute;
+            top: -100px;
+            visibility: hidden;
+        }
+
+        /* Copy button styling */
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 209, 255, 0.2);
+            color: #00d1ff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            z-index: 10;
+        }
+
+        pre {
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Left Panel -->
+            <div class="col-md-3 left-panel">
+                <h1>Chapter 23</h1>
+                <h3 class="subtitle">Next.js Fundamentals</h3>
+                <p class="author-info">By: React Mastery Tutor | For Advanced Students</p>
+
+                <input type="text" class="form-control search-input" id="searchToc" placeholder="Search topics...">
+                
+                <button class="btn btn-sm btn-control w-100 mb-2" id="expandAll">Expand All</button>
+                <button class="btn btn-sm btn-control w-100 mb-3" id="collapseAll">Collapse All</button>
+
+                <div id="tocContainer">
+                    <div class="toc-item" data-target="23-1">23.1 Next.js Introduction and Setup</div>
+                    <div class="toc-subitem" data-target="23-1-1">• What is Next.js?</div>
+                    <div class="toc-subitem" data-target="23-1-2">• Creating a Project</div>
+                    <div class="toc-subitem" data-target="23-1-3">• File Structure Overview</div>
+                    
+                    <div class="toc-item" data-target="23-2">23.2 File-based Routing</div>
+                    <div class="toc-subitem" data-target="23-2-1">• Pages Directory</div>
+                    <div class="toc-subitem" data-target="23-2-2">• Dynamic Routes</div>
+                    <div class="toc-subitem" data-target="23-2-3">• Nested Routing</div>
+                    <div class="toc-subitem" data-target="23-2-4">• Catch-all Routes</div>
+                    
+                    <div class="toc-item" data-target="23-3">23.3 Pages and Layouts</div>
+                    <div class="toc-subitem" data-target="23-3-1">• Page Components</div>
+                    <div class="toc-subitem" data-target="23-3-2">• Root Layout</div>
+                    <div class="toc-subitem" data-target="23-3-3">• Nested Layouts</div>
+                    <div class="toc-subitem" data-target="23-3-4">• Shared Components</div>
+                    
+                    <div class="toc-item" data-target="23-4">23.4 Static Site Generation (SSG)</div>
+                    <div class="toc-subitem" data-target="23-4-1">• getStaticProps</div>
+                    <div class="toc-subitem" data-target="23-4-2">• getStaticPaths</div>
+                    <div class="toc-subitem" data-target="23-4-3">• revalidate Property</div>
+                    <div class="toc-subitem" data-target="23-4-4">• Incremental Static Regeneration</div>
+                    
+                    <div class="toc-item" data-target="23-5">23.5 Server-Side Rendering (SSR)</div>
+                    <div class="toc-subitem" data-target="23-5-1">• getServerSideProps</div>
+                    <div class="toc-subitem" data-target="23-5-2">• When to Use SSR</div>
+                    <div class="toc-subitem" data-target="23-5-3">• Data Fetching Comparison</div>
+                    
+                    <div class="toc-item" data-target="23-6">23.6 API Routes</div>
+                    <div class="toc-subitem" data-target="23-6-1">• Creating API Endpoints</div>
+                    <div class="toc-subitem" data-target="23-6-2">• Handling Requests</div>
+                    <div class="toc-subitem" data-target="23-6-3">• Middleware Integration</div>
+                    <div class="toc-subitem" data-target="23-6-4">• Testing API Routes</div>
+                    
+                    <div class="toc-item" data-target="23-7">23.7 Image Optimization</div>
+                    <div class="toc-subitem" data-target="23-7-1">• next/image Component</div>
+                    <div class="toc-subitem" data-target="23-7-2">• Remote Images</div>
+                    <div class="toc-subitem" data-target="23-7-3">• Placeholder & Loading</div>
+                    <div class="toc-subitem" data-target="23-7-4">• Custom Domains</div>
+                    
+                    <div class="toc-item" data-target="23-8">23.8 Deployment with Vercel</div>
+                    <div class="toc-subitem" data-target="23-8-1">• Vercel CLI</div>
+                    <div class="toc-subitem" data-target="23-8-2">• GitHub Integration</div>
+                    <div class="toc-subitem" data-target="23-8-3">• Environment Variables</div>
+                    <div class="toc-subitem" data-target="23-8-4">• Preview Deployments</div>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="col-md-9 right-panel">
+                <div class="section-marker" id="23-1"></div>
+                <h2>23.1 Next.js Introduction and Setup</h2>
+                <p>Next.js is a React framework that enables server-side rendering, static site generation, and other advanced features out of the box, making it the most popular choice for production React applications.</p>
+
+                <div class="details-container">
+                    <summary>Definition</summary>
+                    <div>
+                        Next.js is a React framework developed by Vercel that provides a complete solution for building modern web applications with features like server-side rendering, static site generation, API routes, image optimization, and more—all without needing additional configuration.
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Detail</summary>
+                    <div>
+                        <p>Traditional React apps are client-side rendered (CSR), meaning the browser downloads JavaScript and then renders the page. This can lead to slower initial load times and poor SEO.</p>
+                        
+                        <p>Next.js solves this by providing:</p>
+                        <ul>
+                            <li><strong>Server-Side Rendering (SSR):</strong> Render pages on the server before sending to client</li>
+                            <li><strong>Static Site Generation (SSG):</strong> Generate HTML at build time for maximum performance</li>
+                            <li><strong>File-based routing:</strong> No need for react-router; pages are created by file structure</li>
+                            <li><strong>Built-in optimization:</strong> Automatic code splitting, image optimization, and more</li>
+                        </ul>
+                        
+                        <p>Next.js handles the complex configuration so you can focus on building your application.</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Syntax</summary>
+                    <div>
+                        <pre><code># Create a new Next.js project using npm
+npm create next-app@latest my-next-app
+
+# Or using yarn
+yarn create next-app my-next-app
+
+# Or using pnpm
+pnpm create next-app my-next-app</code></pre>
+                        
+                        <p>During setup, you'll be prompted to choose options:</p>
+                        <ul>
+                            <li>Would you like to use TypeScript? → Yes/No</li>
+                            <li>Would you like to use ESLint? → Yes/No</li>
+                            <li>Would you like to use Tailwind CSS? → Yes/No</li>
+                            <li>Would you like to use `src/` directory? → Yes/No</li>
+                            <li>Would you like to use App Router? → Yes/No (Recommended for new projects)</li>
+                        </ul>
+                        
+                        <p>For this course, we'll use the <strong>App Router</strong> (Next.js 13+), which uses React Server Components and a new file structure.</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Example</summary>
+                    <div class="example-box">
+                        <p>After running the creation command, your project structure will look like this:</p>
+                        
+                        <pre><code>my-next-app/
+├── app/
+│   ├── layout.js          ← Root layout
+│   ├── page.js            ← Home page
+│   └── about/
+│       └── page.js        ← About page
+├── public/
+│   └── next.svg           ← Static assets
+├── src/
+│   └── components/        ← Reusable components
+├── package.json
+├── next.config.js         ← Configuration file
+└── README.md</code></pre>
+                        
+                        <p>The <code>app</code> directory is the heart of Next.js 13+ App Router. Every file inside becomes a route automatically.</p>
+                        
+                        <p>Start the development server:</p>
+                        <pre><code>cd my-next-app
+npm run dev</code></pre>
+                        
+                        <p>Visit <a href="http://localhost:3000" target="_blank">http://localhost:3000</a> to see your first Next.js page!</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Uses</summary>
+                    <div class="use-case">
+                        <ul>
+                            <li><strong>E-commerce sites:</strong> Fast loading with SSG for product listings</li>
+                            <li><strong>Blogs:</strong> Perfect for content-heavy sites with SSG</li>
+                            <li><strong>Enterprise applications:</strong> SSR for dynamic, personalized content</li>
+                            <li><strong>Marketing websites:</strong> Optimized for SEO and performance</li>
+                            <li><strong>API-driven applications:</strong> Built-in API routes eliminate backend complexity</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Why Next.js over plain React?</summary>
+                    <div>
+                        <table class="table table-dark table-striped mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Feature</th>
+                                    <th>Plain React</th>
+                                    <th>Next.js</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Routing</td>
+                                    <td>React Router (manual setup)</td>
+                                    <td>File-based (automatic)</td>
+                                </tr>
+                                <tr>
+                                    <td>Server-Side Rendering</td>
+                                    <td>Requires custom configuration</td>
+                                    <td>Native support</td>
+                                </tr>
+                                <tr>
+                                    <td>Static Site Generation</td>
+                                    <td>Requires external tools</td>
+                                    <td>Native support</td>
+                                </tr>
+                                <tr>
+                                    <td>Image Optimization</td>
+                                    <td>Manual implementation</td>
+                                    <td>built-in next/image</td>
+                                </tr>
+                                <tr>
+                                    <td>API Routes</td>
+                                    <td>Separate backend needed</td>
+                                    <td>Integrated API endpoints</td>
+                                </tr>
+                                <tr>
+                                    <td>Deployment</td>
+                                    <td>Manual process</td>
+                                    <td>One-click to Vercel</td>
+                                </tr>
+                                <tr>
+                                    <td>SEO</td>
+                                    <td>Poor without extra work</td>
+                                    <td>Excellent out-of-the-box</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="section-marker" id="23-2"></div>
+                <h2>23.2 File-based Routing</h2>
+                <p>Next.js eliminates the need for traditional routing libraries by using the file system as the API for defining routes.</p>
+
+                <div class="details-container">
+                    <summary>Definition</summary>
+                    <div>
+                        File-based routing is a convention where URLs in a Next.js application are automatically generated based on the file structure within the <code>app</code> directory. Each folder and file represents a route path.
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Detail</summary>
+                    <div>
+                        <p>In Next.js 13+, the App Router uses the <code>app</code> directory as the source of truth for routing. Here's how it works:</p>
+                        
+                        <ul>
+                            <li><code>app/page.js</code> → <code>/</code> (home page)</li>
+                            <li><code>app/about/page.js</code> → <code>/about</code></li>
+                            <li><code>app/blog/post/page.js</code> → <code>/blog/post</code></li>
+                            <li><code>app/dashboard/settings/page.js</code> → <code>/dashboard/settings</code></li>
+                        </ul>
+                        
+                        <p>Every route must have a <code>page.js</code> file (or <code>page.jsx</code>) to render content. The file structure mirrors the URL structure exactly.</p>
+                        
+                        <p>This approach eliminates routing configuration files and makes navigation intuitive—just create a file, and it becomes a route!</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Syntax</summary>
+                    <div>
+                        <pre><code>// app/page.js - Home page
+export default function HomePage() {
+  return &lt;h1&gt;Welcome to My Website&lt;/h1&gt;;
+}
+
+// app/about/page.js - About page
+export default function AboutPage() {
+  return &lt;h1&gt;About Us&lt;/h1&gt;;
+}
+
+// app/contact/page.js - Contact page
+export default function ContactPage() {
+  return &lt;h1&gt;Contact Us&lt;/h1&gt;;
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Example</summary>
+                    <div class="example-box">
+                        <p><strong>Project Structure:</strong></p>
+                        <pre><code>app/
+├── page.js                 ← / (Home)
+├── about/
+│   └── page.js             ← /about
+├── blog/
+│   ├── page.js             ← /blog
+│   └── [slug]/             ← Dynamic route
+│       └── page.js         ← /blog/:slug
+├── dashboard/
+│   ├── page.js             ← /dashboard
+│   └── settings/
+│       └── page.js         ← /dashboard/settings
+├── users/
+│   └── [...all]/           ← Catch-all route
+│       └── page.js         ← /users/a/b/c/d</code></pre>
+                        
+                        <p><strong>Creating the About Page:</strong></p>
+                        <pre><code>// app/about/page.js
+export default function AboutPage() {
+  return (
+    &lt;div style={{ padding: '2rem' }}&gt;
+      &lt;h1&gt;About Our Company&lt;/h1&gt;
+      &lt;p&gt;We build amazing web applications using Next.js.&lt;/p&gt;
+      &lt;a href="/"&gt;← Back to Home&lt;/a&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p>Now visit <code>http://localhost:3000/about</code> to see your page!</p>
+                        
+                        <p><strong>Linking between pages:</strong></p>
+                        <pre><code>// app/layout.js
+import Link from 'next/link';
+
+export default function RootLayout({ children }) {
+  return (
+    &lt;html&gt;
+      &lt;body&gt;
+        &lt;nav style={{ padding: '1rem', backgroundColor: '#0f2540' }}&gt;
+          &lt;Link href="/" style={{ marginRight: '1rem', color: '#00d1ff' }}&gt;Home&lt;/Link&gt;
+          &lt;Link href="/about" style={{ marginRight: '1rem', color: '#00d1ff' }}&gt;About&lt;/Link&gt;
+          &lt;Link href="/blog" style={{ color: '#00d1ff' }}&gt;Blog&lt;/Link&gt;
+        &lt;/nav&gt;
+        {children}
+      &lt;/body&gt;
+    &lt;/html&gt;
+  );
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Nested Routing</summary>
+                    <div>
+                        <p>Nested routing allows you to create hierarchical layouts with shared components.</p>
+                        
+                        <pre><code>// app/dashboard/layout.js
+export default function DashboardLayout({ children }) {
+  return (
+    &lt;div style={{ padding: '2rem' }}&gt;
+      &lt;h2&gt;Dashboard Navigation&lt;/h2&gt;
+      &lt;nav style={{ marginBottom: '2rem' }}&gt;
+        &lt;ul style={{ display: 'flex', gap: '1rem' }}&gt;
+          &lt;li&gt;&lt;a href="/dashboard" style={{ color: '#00d1ff' }}&gt;Overview&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href="/dashboard/profile" style={{ color: '#00d1ff' }}&gt;Profile&lt;/a&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;a href="/dashboard/settings" style={{ color: '#00d1ff' }}&gt;Settings&lt;/a&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/nav&gt;
+      {children}
+    &lt;/div&gt;
+  );
+}
+
+// app/dashboard/page.js
+export default function DashboardPage() {
+  return &lt;h3&gt;Dashboard Overview&lt;/h3&gt;;
+}
+
+// app/dashboard/profile/page.js
+export default function ProfilePage() {
+  return &lt;h3&gt;User Profile&lt;/h3&gt;;
+}
+
+// app/dashboard/settings/page.js
+export default function SettingsPage() {
+  return &lt;h3&gt;Account Settings&lt;/h3&gt;;
+}</code></pre>
+                        
+                        <p>Now <code>/dashboard</code>, <code>/dashboard/profile</code>, and <code>/dashboard/settings</code> all share the same navigation layout!</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Dynamic Routes</summary>
+                    <div>
+                        <p>Dynamic routes capture URL parameters using square brackets <code>[param]</code>.</p>
+                        
+                        <pre><code>// app/blog/[slug]/page.js
+export default function BlogPost({ params }) {
+  const { slug } = params;
+  
+  return (
+    &lt;div style={{ padding: '2rem' }}&gt;
+      &lt;h1&gt;Blog Post: {slug}&lt;/h1&gt;
+      &lt;p&gt;This is the post about {slug}.&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p>Now these URLs all work:</p>
+                        <ul>
+                            <li><code>/blog/my-first-post</code> → slug = "my-first-post"</li>
+                            <li><code>/blog/how-to-react</code> → slug = "how-to-react"</li>
+                            <li><code>/blog/nextjs-tutorial</code> → slug = "nextjs-tutorial"</li>
+                        </ul>
+                        
+                        <p>You can also use multiple parameters:</p>
+                        <pre><code>// app/posts/[year]/[month]/[day]/page.js
+export default function PostPage({ params }) {
+  const { year, month, day } = params;
+  
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;Post from {year}-{month}-{day}&lt;/h1&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p>URL: <code>/posts/2023/12/25</code> → year="2023", month="12", day="25"</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Catch-all Routes</summary>
+                    <div>
+                        <p>Catch-all routes capture any number of URL segments using triple dots <code>[...all]</code>.</p>
+                        
+                        <pre><code>// app/users/[...all]/page.js
+export default function UserPage({ params }) {
+  const { all } = params;
+  
+  // all will be an array of path segments
+  console.log(all); // ['/john', 'profile', 'settings'] for /users/john/profile/settings
+  
+  return (
+    &lt;div style={{ padding: '2rem' }}&gt;
+      &lt;h1&gt;User Path: {all.join(' / ') }&lt;/h1&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p>This is perfect for CMS systems or user profile paths where the URL structure can vary:</p>
+                        <ul>
+                            <li><code>/users/john</code></li>
+                            <li><code>/users/john/profile</code></li>
+                            <li><code>/users/john/profile/settings</code></li>
+                            <li><code>/users/john/profile/settings/edit</code></li>
+                        </ul>
+                        
+                        <p>Also supports optional catch-all routes with double brackets <code>[[...all]]</code> to handle cases where no segments exist.</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Uses</summary>
+                    <div class="use-case">
+                        <ul>
+                            <li><strong>Blogs:</strong> Dynamic routes for individual posts</li>
+                            <li><strong>E-commerce:</strong> Product pages with unique URLs</li>
+                            <li><strong>User profiles:</strong> /user/:username</li>
+                            <li><strong>Documentation sites:</strong> Hierarchical content structures</li>
+                            <li><strong>Multi-tenant apps:</strong> /company/:id/dashboard</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="section-marker" id="23-3"></div>
+                <h2>23.3 Pages and Layouts</h2>
+                <p>Next.js introduces a powerful component-based architecture for managing page structure and shared UI elements through layouts.</p>
+
+                <div class="details-container">
+                    <summary>Definition</summary>
+                    <div>
+                        In Next.js, a <strong>layout</strong> is a React component that wraps multiple pages, providing a consistent structure (like headers, footers, navigation) while allowing each page to render its unique content.
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Detail</summary>
+                    <div>
+                        <p>Next.js 13+ introduced the App Router, which fundamentally changes how layouts work compared to the older Pages Router.</p>
+                        
+                        <p>Key concepts:</p>
+                        <ul>
+                            <li><strong>Root Layout:</strong> The outermost layout that wraps the entire application</li>
+                            <li><strong>Nested Layouts:</strong> Layouts that wrap specific sections of the app</li>
+                            <li><strong>Page:</strong> The component that renders the main content of a route</li>
+                            <li><strong>Shared Components:</strong> Reusable UI elements used across multiple layouts/pages</li>
+                        </ul>
+                        
+                        <p>Layouts are defined in <code>layout.js</code> files and automatically apply to all child routes within their directory.</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Syntax</summary>
+                    <div>
+                        <pre><code>// app/layout.js - Root Layout
+export default function RootLayout({ children }) {
+  return (
+    &lt;html lang="en"&gt;
+      &lt;head&gt;
+        &lt;meta charSet="utf-8" /&gt;
+        &lt;meta name="viewport" content="width=device-width, initial-scale=1" /&gt;
+        &lt;title&gt;My Next.js App&lt;/title&gt;
+      &lt;/head&gt;
+      &lt;body&gt;
+        &lt;header&gt;Header Content&lt;/header&gt;
+        {children}  {/* This is where each page's content renders */}
+        &lt;footer&gt;Footer Content&lt;/footer&gt;
+      &lt;/body&gt;
+    &lt;/html&gt;
+  );
+}
+
+// app/page.js - Home Page
+export default function HomePage() {
+  return (
+    &lt;main&gt;
+      &lt;h1&gt;Welcome to My Website&lt;/h1&gt;
+      &lt;p&gt;This is the home page content.&lt;/p&gt;
+    &lt;/main&gt;
+  );
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Example</summary>
+                    <div class="example-box">
+                        <p><strong>Complete Example with Nested Layouts:</strong></p>
+                        
+                        <pre><code>// app/layout.js - Root Layout
+export default function RootLayout({ children }) {
+  return (
+    &lt;html lang="en"&gt;
+      &lt;head&gt;
+        &lt;title&gt;My Next.js App&lt;/title&gt;
+      &lt;/head&gt;
+      &lt;body&gt;
+        &lt;nav style={{ 
+          display: 'flex', 
+          justifyContent: 'space-around', 
+          padding: '1rem', 
+          backgroundColor: '#0f2540',
+          color: '#00d1ff'
+        }}&gt;
+          &lt;a href="/"&gt;Home&lt;/a&gt;
+          &lt;a href="/about"&gt;About&lt;/a&gt;
+          &lt;a href="/dashboard"&gt;Dashboard&lt;/a&gt;
+        &lt;/nav&gt;
+        {children}
+        &lt;footer style={{ 
+          textAlign: 'center', 
+          padding: '1rem', 
+          backgroundColor: '#0f2540',
+          color: '#00d1ff',
+          marginTop: '2rem'
+        }}&gt;
+          © 2023 My Company
+        &lt;/footer&gt;
+      &lt;/body&gt;
+    &lt;/html&gt;
+  );
+}</code></pre>
+                        
+                        <pre><code>// app/dashboard/layout.js - Dashboard Layout
+export default function DashboardLayout({ children }) {
+  return (
+    &lt;div style={{ padding: '2rem' }}&gt;
+      &lt;h2 style={{ color: '#00d1ff' }}&gt;Dashboard&lt;/h2&gt;
+      &lt;nav style={{ 
+        display: 'flex', 
+        gap: '1rem', 
+        marginBottom: '2rem' 
+      }}&gt;
+        &lt;a href="/dashboard" style={{ color: '#00d1ff' }}&gt;Overview&lt;/a&gt;
+        &lt;a href="/dashboard/profile" style={{ color: '#00d1ff' }}&gt;Profile&lt;/a&gt;
+        &lt;a href="/dashboard/settings" style={{ color: '#00d1ff' }}&gt;Settings&lt;/a&gt;
+      &lt;/nav&gt;
+      {children}
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <pre><code>// app/dashboard/page.js - Dashboard Overview
+export default function DashboardPage() {
+  return (
+    &lt;div&gt;
+      &lt;h3&gt;Welcome to Your Dashboard!&lt;/h3&gt;
+      &lt;p&gt;Here you can manage your account settings.&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <pre><code>// app/dashboard/profile/page.js - Profile Page
+export default function ProfilePage() {
+  return (
+    &lt;div&gt;
+      &lt;h3&gt;Your Profile&lt;/h3&gt;
+      &lt;p&gt;Edit your personal information here.&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>Result:</strong> All dashboard pages share the same header and navigation, but each has unique content!</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Nested Layouts Deep Dive</summary>
+                    <div>
+                        <p>Nested layouts allow you to create hierarchical UI structures:</p>
+                        
+                        <pre><code>app/
+├── layout.js                  ← Root layout (applies to everything)
+├── page.js                    ← Home page
+├── dashboard/
+│   ├── layout.js              ← Dashboard layout (applies to all sub-routes)
+│   ├── page.js                ← /dashboard
+│   ├── profile/
+│   │   ├── layout.js          ← Profile layout (applies to profile sub-routes)
+│   │   ├── page.js            ← /dashboard/profile
+│   │   └── settings/
+│   │       ├── layout.js      ← Settings layout (applies to settings sub-routes)
+│   │       └── page.js        ← /dashboard/profile/settings
+└── blog/
+    ├── layout.js              ← Blog layout
+    ├── page.js                ← /blog
+    └── [slug]/page.js         ← /blog/:slug</code></pre>
+                        
+                        <p>Each level inherits from its parent, creating a clean separation of concerns.</p>
+                        
+                        <p><strong>Important:</strong> You can access props in nested layouts:</p>
+                        <pre><code>// app/dashboard/layout.js
+export default function DashboardLayout({ children }) {
+  // You can fetch data here!
+  const user = await fetch('/api/user').then(res =&gt; res.json());
+  
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;Welcome, {user.name}!&lt;/h1&gt;
+      {children}
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p>This is possible because Next.js supports <strong>React Server Components</strong> by default in App Router!</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Shared Components</summary>
+                    <div>
+                        <p>Reusable components live outside the <code>app</code> directory to avoid being treated as routes.</p>
+                        
+                        <pre><code>app/
+├── layout.js
+├── page.js
+└── ...
+src/
+├── components/
+│   ├── Header.js
+│   ├── Footer.js
+│   ├── Navbar.js
+│   └── Button.js
+├── lib/
+│   └── api.js
+└── utils/
+    └── helpers.js</code></pre>
+                        
+                        <p>Usage example:</p>
+                        <pre><code>// src/components/Header.js
+'use client'; // Required if using hooks like useState/useEffect
+
+import Link from 'next/link';
+
+export default function Header() {
+  return (
+    &lt;header style={{ padding: '1rem', backgroundColor: '#0f2540', color: '#00d1ff' }}&gt;
+      &lt;nav style={{ display: 'flex', justifyContent: 'space-around' }}&gt;
+        &lt;Link href="/" style={{ color: '#00d1ff', textDecoration: 'none' }}&gt;Home&lt;/Link&gt;
+        &lt;Link href="/about" style={{ color: '#00d1ff', textDecoration: 'none' }}&gt;About&lt;/Link&gt;
+        &lt;Link href="/contact" style={{ color: '#00d1ff', textDecoration: 'none' }}&gt;Contact&lt;/Link&gt;
+      &lt;/nav&gt;
+    &lt;/header&gt;
+  );
+}</code></pre>
+                        
+                        <pre><code>// app/layout.js
+import Header from '@/components/Header';
+import Footer from '@/components/Footer';
+
+export default function RootLayout({ children }) {
+  return (
+    &lt;html lang="en"&gt;
+      &lt;body&gt;
+        &lt;Header /&gt;
+        {children}
+        &lt;Footer /&gt;
+      &lt;/body&gt;
+    &lt;/html&gt;
+  );
+}</code></pre>
+                        
+                        <p>Note the <code>@/</code> alias for the <code>src</code> directory—you need to configure this in <code>tsconfig.json</code> or <code>jsconfig.json</code>:</p>
+                        <pre><code>{/*
+  jsconfig.json
+*/}
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"]
+    }
+  },
+  "include": ["src/**/*"]
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Uses</summary>
+                    <div class="use-case">
+                        <ul>
+                            <li><strong>Consistent navigation:</strong> Header/footer across all pages</li>
+                            <li><strong>Authentication wrappers:</strong> Protect routes with login checks</li>
+                            <li><strong>Theme providers:</strong> Wrap entire app in context providers</li>
+                            <li><strong>Modular design:</strong> Separate concerns between different sections</li>
+                            <li><strong>Performance optimization:</strong> Only re-render changed parts of the UI</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="section-marker" id="23-4"></div>
+                <h2>23.4 Static Site Generation (SSG)</h2>
+                <p>Static Site Generation creates HTML files at build time, resulting in blazing-fast performance and excellent SEO.</p>
+
+                <div class="details-container">
+                    <summary>Definition</summary>
+                    <div>
+                        Static Site Generation (SSG) is a technique where Next.js generates HTML pages at build time based on data, rather than rendering them on every request. These pre-built pages are served directly from a CDN.
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Detail</summary>
+                    <div>
+                        <p>SSG is ideal for content that doesn't change frequently: blogs, marketing pages, documentation, product catalogs.</p>
+                        
+                        <p>How it works:</p>
+                        <ol>
+                            <li>At build time, Next.js runs your page component</li>
+                            <li>If you export <code>getStaticProps</code>, it executes and fetches data</li>
+                            <li>Next.js generates HTML files for each page</li>
+                            <li>These files are stored and served from a CDN</li>
+                            <li>Users receive pre-rendered HTML instantly</li>
+                        </ol>
+                        
+                        <p>Benefits:</p>
+                        <ul>
+                            <li><strong>Speed:</strong> Instant page loads (no JavaScript waiting)</li>
+                            <li><strong>SEO:</strong> Search engines crawl fully rendered HTML</li>
+                            <li><strong>Cost:</strong> Serve from cheap static hosting (Vercel, Netlify)</li>
+                            <li><strong>Security:</strong> No server-side code execution</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Syntax</summary>
+                    <div>
+                        <pre><code>// app/blog/[slug]/page.js
+import { notFound } from 'next/navigation';
+
+export default async function BlogPost({ params }) {
+  const { slug } = params;
+  
+  // Fetch data at build time
+  const post = await fetch(
+    https://jsonplaceholder.typicode.com/posts/${slug}
+  ).then(res =&gt; res.json());
+  
+  if (!post) {
+    notFound(); // Return 404 page
+  }
+  
+  return (
+    &lt;article style={{ padding: '2rem' }}&gt;
+      &lt;h1&gt;{post.title}&lt;/h1&gt;
+      &lt;p&gt;{post.body}&lt;/p&gt;
+    &lt;/article&gt;
+  );
+}</code></pre>
+                        
+                        <p>But wait—this won't generate static pages! We need to tell Next.js which paths to generate.</p>
+                        
+                        <pre><code>// app/blog/[slug]/page.js
+import { notFound } from 'next/navigation';
+
+// This function runs ONLY at build time
+export async function generateStaticParams() {
+  const posts = await fetch(
+    'https://jsonplaceholder.typicode.com/posts'
+  ).then(res =&gt; res.json());
+  
+  return posts.map(post =&gt; ({
+    slug: post.id.toString()
+  }));
+}
+
+export default async function BlogPost({ params }) {
+  const { slug } = params;
+  
+  const post = await fetch(
+    https://jsonplaceholder.typicode.com/posts/${slug}
+  ).then(res =&gt; res.json());
+  
+  if (!post) {
+    notFound();
+  }
+  
+  return (
+    &lt;article style={{ padding: '2rem' }}&gt;
+      &lt;h1&gt;{post.title}&lt;/h1&gt;
+      &lt;p&gt;{post.body}&lt;/p&gt;
+    &lt;/article&gt;
+  );
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Example</summary>
+                    <div class="example-box">
+                        <p><strong>Real-world example: Blog with 100+ posts</strong></p>
+                        
+                        <pre><code>// app/blog/[slug]/page.js
+import { notFound } from 'next/navigation';
+
+// Get all possible slugs at build time
+export async function generateStaticParams() {
+  const response = await fetch('https://jsonplaceholder.typicode.com/posts');
+  const posts = await response.json();
+  
+  return posts.slice(0, 10).map(post =&gt; ({
+    slug: post.id.toString()
+  }));
+}
+
+export default async function BlogPost({ params }) {
+  const { slug } = params;
+  
+  const response = await fetch(
+    https://jsonplaceholder.typicode.com/posts/${slug}
+  );
+  
+  if (!response.ok) {
+    notFound();
+  }
+  
+  const post = await response.json();
+  
+  return (
+    &lt;div style={{ 
+      maxWidth: '800px', 
+      margin: '0 auto', 
+      padding: '2rem',
+      fontFamily: 'system-ui'
+    }}&gt;
+      &lt;h1 style={{ color: '#00d1ff' }}&gt;{post.title}&lt;/h1&gt;
+      &lt;div style={{ 
+        color: '#a0b8d8', 
+        lineHeight: '1.6', 
+        fontSize: '1.1rem' 
+      }}&gt;
+        {post.body}
+      &lt;/div&gt;
+      &lt;hr style={{ margin: '2rem 0' }}/&gt;
+      &lt;p style={{ color: '#ffb74d' }}&gt;Post ID: {post.id}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>Build output:</strong></p>
+                        <pre><code>dist/
+├── app/
+│   ├── blog/
+│   │   ├── 1/
+│   │   │   └── page.html
+│   │   ├── 2/
+│   │   │   └── page.html
+│   │   ├── 3/
+│   │   │   └── page.html
+│   │   └── ... (up to 10)
+│   └── page.html
+└── ...</code></pre>
+                        
+                        <p>When you run <code>npm run build</code>, Next.js generates 10 HTML files—one for each blog post!</p>
+                        
+                        <p>Deploy to Vercel, and your blog serves these static files instantly from global CDN points!</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>revalidate Property</summary>
+                    <div>
+                        <p>Revalidation allows you to update static content after build time—this is called <strong>Incremental Static Regeneration (ISR)</strong>.</p>
+                        
+                        <pre><code>// app/blog/[slug]/page.js
+import { notFound } from 'next/navigation';
+
+export async function generateStaticParams() {
+  const response = await fetch('https://jsonplaceholder.typicode.com/posts');
+  const posts = await response.json();
+  
+  return posts.slice(0, 10).map(post =&gt; ({
+    slug: post.id.toString()
+  }));
+}
+
+// Add revalidate option
+export const dynamicParams = false;
+
+export default async function BlogPost({ params }) {
+  const { slug } = params;
+  
+  // Revalidate every 60 seconds
+  const response = await fetch(
+    https://jsonplaceholder.typicode.com/posts/${slug},
+    { next: { revalidate: 60 } }
+  );
+  
+  if (!response.ok) {
+    notFound();
+  }
+  
+  const post = await response.json();
+  
+  return (
+    &lt;div style={{ 
+      maxWidth: '800px', 
+      margin: '0 auto', 
+      padding: '2rem',
+      fontFamily: 'system-ui'
+    }}&gt;
+      &lt;h1 style={{ color: '#00d1ff' }}&gt;{post.title}&lt;/h1&gt;
+      &lt;div style={{ 
+        color: '#a0b8d8', 
+        lineHeight: '1.6', 
+        fontSize: '1.1rem' 
+      }}&gt;
+        {post.body}
+      &lt;/div&gt;
+      &lt;hr style={{ margin: '2rem 0' }}/&gt;
+      &lt;p style={{ color: '#ffb74d' }}&gt;Last updated: {new Date().toLocaleTimeString()}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p>Now, even though the page was built statically, it will refresh every 60 seconds if someone visits it!</p>
+                        
+                        <p>If no one visits for hours, the old version stays cached. But when someone visits after 60s, Next.js:</p>
+                        <ol>
+                            <li>Serves the stale cache immediately</li>
+                            <li>Regenerates the page in background</li>
+                            <li>Updates the cache with fresh data</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Incremental Static Regeneration</summary>
+                    <div>
+                        <p>Incremental Static Regeneration (ISR) is the combination of SSG + revalidation.</p>
+                        
+                        <p><strong>Why ISR matters:</strong></p>
+                        <ul>
+                            <li>You get the speed of static sites</li>
+                            <li>You get the freshness of dynamic sites</li>
+                            <li>No need to rebuild entire site when content changes</li>
+                            <li>Perfect for e-commerce, news sites, blogs</li>
+                        </ul>
+                        
+                        <p>Compare to traditional approaches:</p>
+                        <table class="table table-dark table-striped mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Approach</th>
+                                    <th>Build Time</th>
+                                    <th>Update Speed</th>
+                                    <th>Scalability</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>SSG (no revalidate)</td>
+                                    <td>Slow (full rebuild)</td>
+                                    <td>Very slow (manual rebuild)</td>
+                                    <td>High</td>
+                                </tr>
+                                <tr>
+                                    <td>SSR</td>
+                                    <td>Fast</td>
+                                    <td>Instant</td>
+                                    <td>Low (server load)</td>
+                                </tr>
+                                <tr>
+                                    <td>ISR</td>
+                                    <td>Fast (only initial build)</td>
+                                    <td>Fast (on first visit after timeout)</td>
+                                    <td>Extremely High</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Uses</summary>
+                    <div class="use-case">
+                        <ul>
+                            <li><strong>Blogs:</strong> Posts rarely change, perfect for SSG</li>
+                            <li><strong>E-commerce:</strong> Product listings with periodic inventory updates</li>
+                            <li><strong>Documentation:</strong> Content rarely changes, needs fast loading</li>
+                            <li><strong>Marketing sites:</strong> Static content with occasional updates</li>
+                            <li><strong>News sites:</strong> Combine SSG for articles + ISR for headlines</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="section-marker" id="23-5"></div>
+                <h2>23.5 Server-Side Rendering (SSR)</h2>
+                <p>Server-Side Rendering generates HTML on each request, ideal for personalized or frequently changing content.</p>
+
+                <div class="details-container">
+                    <summary>Definition</summary>
+                    <div>
+                        Server-Side Rendering (SSR) is a technique where Next.js renders a page on the server for each incoming request, sending fully rendered HTML to the client instead of empty shell.
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Detail</summary>
+                    <div>
+                        <p>SSR is perfect when:</p>
+                        <ul>
+                            <li>Content changes frequently (news feeds, stock prices)</li>
+                            <li>Content is personalized (user dashboards, shopping carts)</li>
+                            <li>You need real-time data (live scores, chat messages)</li>
+                            <li>SEO is critical AND content changes often</li>
+                        </ul>
+                        
+                        <p>How it works:</p>
+                        <ol>
+                            <li>Browser requests a page</li>
+                            <li>Next.js server receives the request</li>
+                            <li>It executes <code>getServerSideProps</code> to fetch data</li>
+                            <li>It renders the page with the fetched data</li>
+                            <li>It sends fully rendered HTML to the browser</li>
+                            <li>React hydrates the page for interactivity</li>
+                        </ol>
+                        
+                        <p>Unlike SSG, SSR happens on every request—so there's a small latency penalty.</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Syntax</summary>
+                    <div>
+                        <pre><code>// app/dashboard/page.js
+export async function getServerSideProps(context) {
+  const { req } = context;
+  
+  // Access cookies, headers, query params
+  const token = req.cookies.authToken;
+  
+  // Fetch user data from API
+  const userResponse = await fetch('https://api.example.com/user', {
+    headers: {
+      Authorization: \`Bearer \${token}\`
+    }
+  });
+  
+  const userData = await userResponse.json();
+  
+  // If unauthorized, redirect
+  if (!userData.id) {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
+    };
+  }
+  
+  // Return props to page component
+  return {
+    props: {
+      user: userData,
+    },
+  };
+}
+
+export default function Dashboard({ user }) {
+  return (
+    &lt;div style={{ padding: '2rem' }}&gt;
+      &lt;h1&gt;Welcome, {user.name}!&lt;/h1&gt;
+      &lt;p&gt;Email: {user.email}&lt;/p&gt;
+      &lt;p&gt;Role: {user.role}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Example</summary>
+                    <div class="example-box">
+                        <p><strong>Real-world example: User dashboard with real-time data</strong></p>
+                        
+                        <pre><code>// app/dashboard/page.js
+export async function getServerSideProps(context) {
+  const { req } = context;
+  
+  // Extract auth token from cookies
+  const authToken = req.cookies.authToken;
+  
+  if (!authToken) {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
+    };
+  }
+  
+  // Fetch user profile
+  const userRes = await fetch('https://api.example.com/me', {
+    headers: {
+      Authorization: \`Bearer \${authToken}\`
+    }
+  });
+  
+  if (!userRes.ok) {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      },
+    };
+  }
+  
+  const user = await userRes.json();
+  
+  // Fetch recent activity
+  const activityRes = await fetch('https://api.example.com/activity', {
+    headers: {
+      Authorization: \`Bearer \${authToken}\`
+    }
+  });
+  
+  const activity = await activityRes.json();
+  
+  // Fetch unread notifications
+  const notificationsRes = await fetch('https://api.example.com/notifications/unread', {
+    headers: {
+      Authorization: \`Bearer \${authToken}\`
+    }
+  });
+  
+  const notifications = await notificationsRes.json();
+  
+  return {
+    props: {
+      user,
+      activity: activity.slice(0, 5),
+      unreadNotifications: notifications.length
+    }
+  };
+}
+
+export default function Dashboard({ user, activity, unreadNotifications }) {
+  return (
+    &lt;div style={{ 
+      maxWidth: '1000px', 
+      margin: '0 auto', 
+      padding: '2rem',
+      fontFamily: 'system-ui'
+    }}&gt;
+      &lt;header style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center', 
+        marginBottom: '2rem'
+      }}&gt;
+        &lt;h1 style={{ color: '#00d1ff' }}&gt;Dashboard&lt;/h1&gt;
+        &lt;span style={{ 
+          background: '#ffb74d', 
+          color: '#000', 
+          borderRadius: '50%', 
+          width: '24px', 
+          height: '24px', 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          fontSize: '0.8rem'
+        }}&gt;
+          {unreadNotifications}
+        &lt;/span&gt;
+      &lt;/header&gt;
+      
+      &lt;div style={{ 
+        backgroundColor: '#0f2540', 
+        padding: '1.5rem', 
+        borderRadius: '8px',
+        marginBottom: '2rem'
+      }}&gt;
+        &lt;h2 style={{ color: '#00d1ff' }}&gt;Welcome back, {user.name}!&lt;/h2&gt;
+        &lt;p style={{ color: '#a0b8d8' }}&gt;You last logged in: {new Date(user.lastLogin).toLocaleString()}&lt;/p&gt;
+      &lt;/div&gt;
+      
+      &lt;h2 style={{ color: '#00d1ff' }}&gt;Recent Activity&lt;/h2&gt;
+      &lt;ul style={{ listStyle: 'none', padding: 0 }}&gt;
+        {activity.map((item, index) =&gt; (
+          &lt;li key={index} style={{ 
+            padding: '0.8rem', 
+            borderBottom: '1px solid #1a2a3f',
+            color: '#a0b8d8'
+          }}&gt;
+            {item.action} at {new Date(item.timestamp).toLocaleTimeString()}
+          &lt;/li&gt;
+        ))}
+      &lt;/ul&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p>Now every time a user visits <code>/dashboard</code>, they get their personalized data!</p>
+                        
+                        <p><strong>Pro Tip:</strong> Always validate authentication in <code>getServerSideProps</code> to prevent unauthorized access!</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>When to Use SSR</summary>
+                    <div>
+                        <table class="table table-dark table-striped mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Use Case</th>
+                                    <th>SSG</th>
+                                    <th>SSR</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Blog posts</td>
+                                    <td>✅ Perfect</td>
+                                    <td>❌ Overkill</td>
+                                </tr>
+                                <tr>
+                                    <td>Product catalog</td>
+                                    <td>✅ Best</td>
+                                    <td>❌ Too slow</td>
+                                </tr>
+                                <tr>
+                                    <td>Shopping cart</td>
+                                    <td>❌ Not possible</td>
+                                    <td>✅ Required</td>
+                                </tr>
+                                <tr>
+                                    <td>User dashboard</td>
+                                    <td>❌ Personalization</td>
+                                    <td>✅ Required</td>
+                                </tr>
+                                <tr>
+                                    <td>Live sports scores</td>
+                                    <td>❌ Stale data</td>
+                                    <td>✅ Required</td>
+                                </tr>
+                                <tr>
+                                    <td>News homepage</td>
+                                    <td>✅ With ISR</td>
+                                    <td>✅ Also good</td>
+                                </tr>
+                                <tr>
+                                    <td>Admin panel</td>
+                                    <td>❌ Authentication</td>
+                                    <td>✅ Required</td>
+                                </tr>
+                                <tr>
+                                    <td>Marketing landing page</td>
+                                    <td>✅ Perfect</td>
+                                    <td>❌ Slower</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <p><strong>Rule of thumb:</strong></p>
+                        <ul>
+                            <li>Use SSG when content is public and doesn't change often</li>
+                            <li>Use SSR when content is personalized or changes frequently</li>
+                            <li>Use ISR when you want SSG speed with occasional updates</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Data Fetching Comparison</summary>
+                    <div>
+                        <pre><code>// SSG - Build time only
+export async function getStaticProps() {
+  const data = await fetchData(); // Runs once during build
+  return { props: { data } };
+}
+
+// SSR - On every request
+export async function getServerSideProps(context) {
+  const data = await fetchData(); // Runs on every request
+  return { props: { data } };
+}
+
+// ISR - Build time + revalidation
+export async function getStaticProps() {
+  const data = await fetchData(); // Runs during build
+  return { 
+    props: { data }, 
+    revalidate: 60 // Revalidate every 60 seconds
+  };
+}
+
+// Client-side (for non-critical data)
+'use client';
+import { useEffect, useState } from 'react';
+
+export default function Component() {
+  const [data, setData] = useState(null);
+  
+  useEffect(() =&gt; {
+    fetchData().then(setData);
+  }, []);
+  
+  return &lt;div&gt;{data ? data : 'Loading...'}&lt;/div&gt;;
+}</code></pre>
+                        
+                        <p><strong>Performance ranking (fastest to slowest):</strong></p>
+                        <ol>
+                            <li><strong>SSG:</strong> Fastest (CDN cached)</li>
+                            <li><strong>ISR:</strong> Very fast (cached, regenerates in background)</li>
+                            <li><strong>SSR:</strong> Slower (generates on every request)</li>
+                            <li><strong>CSR:</strong> Slowest (client waits for JS to download and execute)</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Uses</summary>
+                    <div class="use-case">
+                        <ul>
+                            <li><strong>User dashboards:</strong> Personalized data per user</li>
+                            <li><strong>Authentication flows:</strong> Check session before rendering</li>
+                            <li><strong>Real-time applications:</strong> Stock tickers, live sports</li>
+                            <li><strong>Personalized content:</strong> Recommendations based on user history</li>
+                            <li><strong>SEO-critical dynamic pages:</strong> Product pages with real-time pricing</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="section-marker" id="23-6"></div>
+                <h2>23.6 API Routes</h2>
+                <p>Next.js API Routes let you create backend endpoints inside your frontend project, eliminating the need for a separate server.</p>
+
+                <div class="details-container">
+                    <summary>Definition</summary>
+                    <div>
+                        API Routes in Next.js are serverless functions that run on the server and respond to HTTP requests. They're defined in the <code>app/api</code> directory and expose RESTful endpoints accessible via URLs like <code>/api/hello</code>.
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Detail</summary>
+                    <div>
+                        <p>API Routes are powered by Node.js and provide a seamless way to:</p>
+                        <ul>
+                            <li>Connect to databases</li>
+                            <li>Handle form submissions</li>
+                            <li>Integrate with third-party APIs</li>
+                            <li>Create webhook endpoints</li>
+                            <li>Implement authentication logic</li>
+                        </ul>
+                        
+                        <p>They're serverless functions—meaning you don't manage servers. Vercel automatically scales them.</p>
+                        
+                        <p>API Routes are written as standard Node.js modules that export a handler function.</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Syntax</summary>
+                    <div>
+                        <pre><code>// app/api/hello/route.js
+import { NextResponse } from 'next/server';
+
+export async function GET(request) {
+  return NextResponse.json({
+    message: 'Hello World!',
+    timestamp: new Date().toISOString(),
+  });
+}
+
+// POST endpoint
+export async function POST(request) {
+  const body = await request.json();
+  
+  return NextResponse.json({
+    received: body,
+    message: 'Data received successfully!'
+  });
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Example</summary>
+                    <div class="example-box">
+                        <p><strong>Real-world example: Contact form API</strong></p>
+                        
+                        <pre><code>// app/api/contact/route.js
+import { NextResponse } from 'next/server';
+import { sendEmail } from '@/lib/email';
+
+export async function POST(request) {
+  try {
+    const body = await request.json();
+    
+    // Validate required fields
+    const { name, email, message } = body;
+    
+    if (!name || !email || !message) {
+      return NextResponse.json(
+        { error: 'Name, email, and message are required' },
+        { status: 400 }
+      );
+    }
+    
+    // Send email
+    await sendEmail({
+      to: 'contact@yourcompany.com',
+      from: email,
+      subject: \`New contact from \${name}\`,
+      html: \`&lt;p&gt;\${message}&lt;/p&gt;&lt;p&gt;From: \${name} (\${email})&lt;/p&gt;\`
+    });
+    
+    return NextResponse.json(
+      { success: true, message: 'Message sent!' },
+      { status: 200 }
+    );
+  } catch (error) {
+    console.error('Error sending email:', error);
+    
+    return NextResponse.json(
+      { error: 'Failed to send message' },
+      { status: 500 }
+    );
+  }
+}</code></pre>
+                        
+                        <p>Now create the frontend form:</p>
+                        
+                        <pre><code>// app/contact/page.js
+'use client';
+import { useState } from 'react';
+
+export default function ContactPage() {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    message: ''
+  });
+  const [status, setStatus] = useState('');
+  
+  const handleChange = (e) =&gt; {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value
+    });
+  };
+  
+  const handleSubmit = async (e) =&gt; {
+    e.preventDefault();
+    setStatus('sending');
+    
+    const response = await fetch('/api/contact', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(formData),
+    });
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      setStatus('success');
+      setFormData({ name: '', email: '', message: '' });
+    } else {
+      setStatus('error');
+    }
+  };
+  
+  return (
+    &lt;div style={{ padding: '2rem', maxWidth: '600px', margin: '0 auto' }}&gt;
+      &lt;h1 style={{ color: '#00d1ff' }}&gt;Contact Us&lt;/h1&gt;
+      
+      &lt;form onSubmit={handleSubmit} style={{ marginTop: '2rem' }}&gt;
+        &lt;div style={{ marginBottom: '1rem' }}&gt;
+          &lt;label htmlFor="name" style={{ display: 'block', marginBottom: '0.5rem' }}&gt;Name&lt;/label&gt;
+          &lt;input
+            type="text"
+            id="name"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            required
+            style={{ 
+              width: '100%', 
+              padding: '0.75rem', 
+              border: '1px solid #1a2a3f',
+              backgroundColor: '#0f2540',
+              color: '#e6f1ff',
+              borderRadius: '4px'
+            }}
+          /&gt;
+        &lt;/div&gt;
+        
+        &lt;div style={{ marginBottom: '1rem' }}&gt;
+          &lt;label htmlFor="email" style={{ display: 'block', marginBottom: '0.5rem' }}&gt;Email&lt;/label&gt;
+          &lt;input
+            type="email"
+            id="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+            style={{ 
+              width: '100%', 
+              padding: '0.75rem', 
+              border: '1px solid #1a2a3f',
+              backgroundColor: '#0f2540',
+              color: '#e6f1ff',
+              borderRadius: '4px'
+            }}
+          /&gt;
+        &lt;/div&gt;
+        
+        &lt;div style={{ marginBottom: '1rem' }}&gt;
+          &lt;label htmlFor="message" style={{ display: 'block', marginBottom: '0.5rem' }}&gt;Message&lt;/label&gt;
+          &lt;textarea
+            id="message"
+            name="message"
+            value={formData.message}
+            onChange={handleChange}
+            required
+            rows="5"
+            style={{ 
+              width: '100%', 
+              padding: '0.75rem', 
+              border: '1px solid #1a2a3f',
+              backgroundColor: '#0f2540',
+              color: '#e6f1ff',
+              borderRadius: '4px'
+            }}
+          /&gt;
+        &lt;/div&gt;
+        
+        &lt;button
+          type="submit"
+          disabled={status === 'sending'}
+          style={{ 
+            backgroundColor: '#00d1ff',
+            color: '#000',
+            border: 'none',
+            padding: '0.75rem 1.5rem',
+            borderRadius: '4px',
+            cursor: 'pointer',
+            fontWeight: 'bold'
+          }}
+        &gt;
+          {status === 'sending' ? 'Sending...' : 'Send Message'}
+        &lt;/button&gt;
+      &lt;/form&gt;
+      
+      {status === 'success' &amp;&amp; (
+        &lt;div style={{ 
+          color: '#00d1ff', 
+          marginTop: '1rem',
+          padding: '1rem',
+          backgroundColor: 'rgba(0, 209, 255, 0.1)',
+          borderRadius: '4px'
+        }}&gt;
+          Thank you! Your message has been sent.
+        &lt;/div&gt;
+      )}
+      
+      {status === 'error' &amp;&amp; (
+        &lt;div style={{ 
+          color: '#ffb74d', 
+          marginTop: '1rem',
+          padding: '1rem',
+          backgroundColor: 'rgba(255, 183, 77, 0.1)',
+          borderRadius: '4px'
+        }}&gt;
+          Oops! Something went wrong. Please try again.
+        &lt;/div&gt;
+      )}
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>Directory structure:</strong></p>
+                        <pre><code>app/
+├── api/
+│   └── contact/
+│       └── route.js
+├── contact/
+│   └── page.js
+└── ...</code></pre>
+                        
+                        <p>Now your contact form sends emails without any backend server!</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Handling Different HTTP Methods</summary>
+                    <div>
+                        <pre><code>// app/api/posts/route.js
+import { NextResponse } from 'next/server';
+
+export async function GET() {
+  // Get all posts
+  const posts = await fetchPosts();
+  return NextResponse.json(posts);
+}
+
+export async function POST(request) {
+  // Create new post
+  const data = await request.json();
+  const newPost = await createPost(data);
+  return NextResponse.json(newPost, { status: 201 });
+}
+
+export async function PUT(request) {
+  // Update existing post
+  const data = await request.json();
+  const updatedPost = await updatePost(data);
+  return NextResponse.json(updatedPost);
+}
+
+export async function DELETE(request) {
+  // Delete post
+  const { id } = await request.json();
+  await deletePost(id);
+  return NextResponse.json({ success: true });
+}</code></pre>
+                        
+                        <p>Call these endpoints from your frontend:</p>
+                        <pre><code>// GET all posts
+fetch('/api/posts')
+  .then(res =&gt; res.json())
+  .then(posts =&gt; console.log(posts));
+
+// POST new post
+fetch('/api/posts', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ title: 'My Post', content: 'Hello!' })
+});</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Middleware Integration</summary>
+                    <div>
+                        <p>Protect API routes with middleware:</p>
+                        
+                        <pre><code>// middleware.js
+import { NextRequest, NextResponse } from 'next/server';
+
+export function middleware(request) {
+  const { pathname } = request.nextUrl;
+  
+  // Protect API routes
+  if (pathname.startsWith('/api/admin')) {
+    const authHeader = request.headers.get('Authorization');
+    
+    if (!authHeader || authHeader !== 'Bearer secret-key') {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+  }
+}</code></pre>
+                        
+                        <p>And configure it in <code>next.config.js</code>:</p>
+                        <pre><code>// next.config.js
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  experimental: {
+    appDir: true,
+  },
+};
+
+module.exports = nextConfig;</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Testing API Routes</summary>
+                    <div>
+                        <p>Test your API routes locally:</p>
+                        
+                        <pre><code># Test with curl
+curl http://localhost:3000/api/hello
+
+# Test POST with json
+curl -X POST http://localhost:3000/api/contact \
+  -H "Content-Type: application/json" \
+  -d '{"name":"John","email":"john@example.com","message":"Hello"}'</code></pre>
+                        
+                        <p>Or use browser extensions like Thunder Client or Postman!</p>
+                        
+                        <p>For automated tests, use Jest with <code>next/test-utils</code>:</p>
+                        <pre><code>// __tests__/api/contact.test.js
+import { createServer } from 'next/test-utils';
+
+describe('API Routes', () =&gt; {
+  test('POST /api/contact returns success', async () =&gt; {
+    const res = await fetch('http://localhost:3000/api/contact', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'John Doe',
+        email: 'john@example.com',
+        message: 'Hello world!'
+      })
+    });
+    
+    const data = await res.json();
+    expect(res.status).toBe(200);
+    expect(data.success).toBe(true);
+  });
+});</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Uses</summary>
+                    <div class="use-case">
+                        <ul>
+                            <li><strong>Form handling:</strong> Contact forms, signups</li>
+                            <li><strong>Database operations:</strong> CRUD operations</li>
+                            <li><strong>Third-party integrations:</strong> Stripe, PayPal, Mailchimp</li>
+                            <li><strong>Webhooks:</strong> Receive data from services like GitHub</li>
+                            <li><strong>Authentication:</strong> Login, signup, password reset</li>
+                            <li><strong>File uploads:</strong> Image/video uploads</li>
+                            <li><strong>Server-side caching:</strong> API responses with Redis</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="section-marker" id="23-7"></div>
+                <h2>23.7 Image Optimization</h2>
+                <p>Next.js provides built-in image optimization that automatically transforms images for optimal performance across devices.</p>
+
+                <div class="details-container">
+                    <summary>Definition</summary>
+                    <div>
+                        Next.js Image Optimization is a feature that automatically resizes, compresses, and serves images in modern formats (WebP, AVIF) based on the device's screen size and resolution, improving page speed and user experience.
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Detail</summary>
+                    <div>
+                        <p>Traditional image handling causes problems:</p>
+                        <ul>
+                            <li>Large images slow down mobile users</li>
+                            <li>Images aren't responsive to different screen sizes</li>
+                            <li>Old formats (JPG/PNG) are inefficient</li>
+                            <li>Lazy loading isn't implemented</li>
+                        </ul>
+                        
+                        <p>Next.js solves this with <code>&lt;Image&gt;</code> component:</p>
+                        <ul>
+                            <li>Automatic resizing to match display dimensions</li>
+                            <li>Modern format conversion (WebP/AVIF)</li>
+                            <li>Lazy loading by default</li>
+                            <li>Blur-up placeholders</li>
+                            <li>Optimized delivery via CDN</li>
+                            <li>Automatic cache headers</li>
+                        </ul>
+                        
+                        <p>Never use <code>&lt;img&gt;</code> tag directly—always use <code>&lt;Image&gt;</code> from 'next/image'!</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Syntax</summary>
+                    <div>
+                        <pre><code>// Import the Image component
+import Image from 'next/image';
+
+// Basic usage
+&lt;Image 
+  src="/images/photo.jpg" 
+  alt="Description" 
+  width={500} 
+  height={300} 
+/&gt;
+
+// Responsive sizing
+&lt;Image 
+  src="/images/photo.jpg" 
+  alt="Description" 
+  fill 
+  style={{ objectFit: 'cover' }} 
+/&gt;
+
+// With placeholder
+&lt;Image 
+  src="/images/photo.jpg" 
+  alt="Description" 
+  width={800} 
+  height={600} 
+  placeholder="blur" 
+  blurDataURL="data:image/jpeg;base64,..."
+/&gt;</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Example</summary>
+                    <div class="example-box">
+                        <p><strong>Real-world example: Product gallery with optimization</strong></p>
+                        
+                        <pre><code>// app/products/page.js
+import Image from 'next/image';
+
+export default function ProductsPage() {
+  const products = [
+    { id: 1, name: 'Laptop', image: '/images/laptop.jpg', price: '$999' },
+    { id: 2, name: 'Phone', image: '/images/phone.jpg', price: '$699' },
+    { id: 3, name: 'Tablet', image: '/images/tablet.jpg', price: '$499' },
+  ];
+  
+  return (
+    &lt;div style={{ padding: '2rem' }}&gt;
+      &lt;h1 style={{ color: '#00d1ff' }}&gt;Our Products&lt;/h1&gt;
+      
+      &lt;div style={{ 
+        display: 'grid', 
+        gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
+        gap: '2rem', 
+        marginTop: '2rem'
+      }}&gt;
+        {products.map(product =&gt; (
+          &lt;div 
+            key={product.id} 
+            style={{ 
+              border: '1px solid #1a2a3f', 
+              borderRadius: '8px', 
+              overflow: 'hidden',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+            }}
+          &gt;
+            &lt;div style={{ position: 'relative', height: '200px' }}&gt;
+              &lt;Image 
+                src={product.image} 
+                alt={product.name} 
+                fill 
+                style={{ objectFit: 'cover' }} 
+                priority={product.id === 1} // Load first product immediately
+                placeholder="blur"
+                blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iI2YyZjJmMiIvPjwvc3ZnPg=="
+              /&gt;
+            &lt;/div&gt;
+            
+            &lt;div style={{ padding: '1rem' }}&gt;
+              &lt;h3 style={{ color: '#e6f1ff', margin: '0 0 0.5rem 0' }}&gt;{product.name}&lt;/h3&gt;
+              &lt;p style={{ color: '#ffb74d', margin: '0' }}&gt;{product.price}&lt;/p&gt;
+            &lt;/div&gt;
+          &lt;/div&gt;
+        ))}
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>Key props explained:</strong></p>
+                        <ul>
+                            <li><strong>src:</strong> Path to image (local or remote)</li>
+                            <li><strong>alt:</strong> Required accessibility text</li>
+                            <li><strong>width/height:</strong> Original dimensions (required for non-fill)</li>
+                            <li><strong>fill:</strong> Make image fill parent container</li>
+                            <li><strong>priority:</strong> Load immediately (for above-the-fold images)</li>
+                            <li><strong>placeholder:</strong> "blur" or "empty" for loading state</li>
+                            <li><strong>blurDataURL:</strong> Base64-encoded tiny image for blur effect</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Remote Images</summary>
+                    <div>
+                        <p>To use images from external domains, configure allowed domains in <code>next.config.js</code>:</p>
+                        
+                        <pre><code>// next.config.js
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  images: {
+    domains: ['images.unsplash.com', 'cdn.example.com', 'avatars.githubusercontent.com'],
+    formats: ['image/webp', 'image/avif'], // Preferred formats
+    minimumCacheTTL: 60, // Cache TTL in seconds
+  },
+};
+
+module.exports = nextConfig;</code></pre>
+                        
+                        <p>Now you can safely use:</p>
+                        <pre><code>&lt;Image 
+  src="https://images.unsplash.com/photo-1506744038136-46273834b3fb" 
+  alt="Beautiful landscape" 
+  width={800} 
+  height={600} 
+/&gt;</code></pre>
+                        
+                        <p>Next.js will proxy the image through its optimized CDN!</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Placeholder & Loading</summary>
+                    <div>
+                        <p>Placeholders improve perceived performance:</p>
+                        
+                        <pre><code>// Blur placeholder (recommended)
+&lt;Image 
+  src="/images/photo.jpg" 
+  alt="Description" 
+  width={800} 
+  height={600} 
+  placeholder="blur" 
+/&gt;
+
+// Empty placeholder (simple)
+&lt;Image 
+  src="/images/photo.jpg" 
+  alt="Description" 
+  width={800} 
+  height={600} 
+  placeholder="empty" 
+/&gt;
+
+// Custom placeholder with base64
+&lt;Image 
+  src="/images/photo.jpg" 
+  alt="Description" 
+  width={800} 
+  height={600} 
+  placeholder="blur" 
+  blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8//8/AAX+Av7czFnnAAAAAElFTkSuQmCC" 
+/&gt;</code></pre>
+                        
+                        <p>For complex placeholders, use tools like <a href="https://placem.at/" target="_blank">Placem.at</a> or generate with <a href="https://www.base64-image.de/" target="_blank">Base64 encoders</a>.</p>
+                        
+                        <p><strong>Pro Tip:</strong> Always use blur placeholders—they dramatically improve UX!</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Custom Domains</summary>
+                    <div>
+                        <p>If you're using a custom domain, make sure to include it in your config:</p>
+                        
+                        <pre><code>// next.config.js
+const nextConfig = {
+  images: {
+    domains: [
+      'yourdomain.com',
+      'cdn.yourdomain.com',
+      'images.unsplash.com'
+    ],
+  },
+};
+
+module.exports = nextConfig;</code></pre>
+                        
+                        <p>Also configure your DNS properly and ensure SSL certificates are valid.</p>
+                        
+                        <p>For production, always use a CDN for images—even with Next.js optimization!</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Uses</summary>
+                    <div class="use-case">
+                        <ul>
+                            <li><strong>E-commerce:</strong> Optimize product images for fast loading</li>
+                            <li><strong>Blogs:</strong> Improve image performance without manual optimization</li>
+                            <li><strong>Portfolios:</strong> Showcase high-quality images with minimal impact</li>
+                            <li><strong>News sites:</strong> Handle thousands of images efficiently</li>
+                            <li><strong>Mobile apps:</strong> Deliver retina-ready images automatically</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="section-marker" id="23-8"></div>
+                <h2>23.8 Deployment with Vercel</h2>
+                <p>Vercel is the platform created by the makers of Next.js, offering seamless deployment, automatic scaling, and global CDN distribution.</p>
+
+                <div class="details-container">
+                    <summary>Definition</summary>
+                    <div>
+                        Vercel is a cloud platform for deploying and hosting Next.js applications with zero configuration, automatic CI/CD, global CDN, and instant cache invalidation.
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Detail</summary>
+                    <div>
+                        <p>Vercel is designed specifically for Next.js and offers:</p>
+                        <ul>
+                            <li><strong>Zero-config deployment:</strong> Just push to Git, done!</li>
+                            <li><strong>Global CDN:</strong> Assets served from 35+ locations worldwide</li>
+                            <li><strong>Automatic HTTPS:</strong> Free SSL certificates</li>
+                            <li><strong>Preview deployments:</strong> Auto-generated URLs for every PR</li>
+                            <li><strong>Edge Functions:</strong> Run code at the edge (closer to users)</li>
+                            <li><strong>Analytics:</strong> Performance metrics, bandwidth usage</li>
+                            <li><strong>Environment variables:</strong> Securely manage secrets</li>
+                        </ul>
+                        
+                        <p>There's no server management—Vercel handles everything automatically.</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Syntax</summary>
+                    <div>
+                        <pre><code># Install Vercel CLI globally
+npm install -g vercel
+
+# Initialize project
+vercel
+
+# Deploy current directory
+vercel --prod
+
+# Or deploy specific directory
+vercel --dir=./build</code></pre>
+                        
+                        <p>Or connect your GitHub/GitLab/Bitbucket repo:</p>
+                        <ol>
+                            <li>Go to <a href="https://vercel.com" target="_blank">https://vercel.com</a></li>
+                            <li>Click "Add New Project"</li>
+                            <li>Select your repository</li>
+                            <li>Configure build settings (auto-detected for Next.js)</li>
+                            <li>Click "Deploy!"</li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Example</summary>
+                    <div class="example-box">
+                        <p><strong>Step-by-step deployment workflow:</strong></p>
+                        
+                        <ol>
+                            <li><strong>Push to GitHub:</strong></li>
+                            <pre><code>git add .
+git commit -m "Add new feature"
+git push origin main</code></pre>
+                            
+                            <li><strong>Automatically triggers Vercel build:</strong></li>
+                            <p>Vercel detects Next.js project and runs:</p>
+                            <pre><code>npm run build
+npm run export  # if using static export
+</code></pre>
+                            
+                            <li><strong>Deploy preview:</strong></li>
+                            <p>For pull requests, Vercel creates a unique URL like:</p>
+                            <pre><code>https://project-name-git-feature-branch-yourusername.vercel.app</code></pre>
+                            
+                            <li><strong>Production deployment:</strong></li>
+                            <p>When merged to main branch:</p>
+                            <pre><code>https://your-project.vercel.app</code></pre>
+                        </ol>
+                        
+                        <p><strong>Environment Variables:</strong></p>
+                        <p>Go to your Vercel project → Settings → Environment Variables:</p>
+                        <table class="table table-dark table-striped mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Value</th>
+                                    <th>Type</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>NEXT_PUBLIC_API_URL</td>
+                                    <td>https://api.yourapp.com</td>
+                                    <td>System</td>
+                                </tr>
+                                <tr>
+                                    <td>MONGODB_URI</td>
+                                    <td>mongodb://...</td>
+                                    <td>System</td>
+                                </tr>
+                                <tr>
+                                    <td>STRIPE_SECRET_KEY</td>
+                                    <td>sk_test_...</td>
+                                    <td>System</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <p>Access in your code:</p>
+                        <pre><code>// In your Next.js app
+console.log(process.env.NEXT_PUBLIC_API_URL); // Works in client and server
+console.log(process.env.MONGODB_URI); // Only works in server side</code></pre>
+                        
+                        <p><strong>Important:</strong> Prefix environment variables with <code>NEXT_PUBLIC_</code> to make them available in the browser!</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>GitHub Integration</summary>
+                    <div>
+                        <p>Connecting GitHub automates your entire deployment pipeline:</p>
+                        
+                        <ol>
+                            <li><strong>Push to main:</strong> Automatically deploys to production</li>
+                            <li><strong>Create PR:</strong> Creates preview deployment</li>
+                            <li><strong>Review preview:</strong> Test changes before merging</li>
+                            <li><strong>Merge PR:</strong> Updates production automatically</li>
+                            <li><strong>Rollback:</strong> One-click rollback to previous version</li>
+                        </ol>
+                        
+                        <p>Visual feedback:</p>
+                        <ul>
+                            <li>Green checkmark: Deployment successful</li>
+                            <li>Red X: Build failed</li>
+                            <li>Preview link: Click to test</li>
+                            <li>Build logs: See exactly what happened</li>
+                        </ul>
+                        
+                        <p>Pro tip: Enable "Auto-deploy branches" to get previews for every branch!</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Preview Deployments</summary>
+                    <div>
+                        <p>Preview deployments are temporary URLs generated for every pull request.</p>
+                        
+                        <p>Why they matter:</p>
+                        <ul>
+                            <li>Designers can review visual changes</li>
+                            <li>QA engineers can test functionality</li>
+                            <li>Stakeholders can approve before merge</li>
+                            <li>No need to deploy locally</li>
+                        </ul>
+                        
+                        <p>Example workflow:</p>
+                        <ol>
+                            <li>You create branch: <code>git checkout -b feature/new-homepage</code></li>
+                            <li>You push: <code>git push origin feature/new-homepage</code></li>
+                            <li>GitHub opens PR</li>
+                            <li>Vercel creates: <code>https://project-main-abc123.vercel.app</code></li>
+                            <li>You share link with team</li>
+                            <li>Team approves</li>
+                            <li>You merge</li>
+                            <li>Production updates automatically</li>
+                        </ol>
+                        
+                        <p>Every preview is completely isolated and disappears when PR is closed!</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Uses</summary>
+                    <div class="use-case">
+                        <ul>
+                            <li><strong>Teams:</strong> Collaborative development with preview links</li>
+                            <li><strong>Startups:</strong> Zero infrastructure management</li>
+                            <li><strong>Agencies:</strong> Deploy client projects instantly</li>
+                            <li><strong>Open source:</strong> Easy contribution workflows</li>
+                            <li><strong>Enterprise:</strong> Secure, scalable, compliant hosting</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Final Checklist Before Deployment</summary>
+                    <div>
+                        <ul>
+                            <li>✅ Test locally with <code>npm run build</code> then <code>npm run start</code></li>
+                            <li>✅ Set up environment variables in Vercel</li>
+                            <li>✅ Configure image domains in next.config.js</li>
+                            <li>✅ Verify all routes work correctly</li>
+                            <li>✅ Check for broken links (use <code>next-sitemap</code> plugin)</li>
+                            <li>✅ Test on mobile devices (use Chrome DevTools)</li>
+                            <li>✅ Run Lighthouse audit (aim for 90+ score)</li>
+                            <li>✅ Connect to custom domain (if applicable)</li>
+                            <li>✅ Set up analytics tracking</li>
+                            <li>✅ Configure error monitoring (Sentry)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Advanced Vercel Features</summary>
+                    <div>
+                        <p>Once you're comfortable, explore these powerful features:</p>
+                        
+                        <h4>Edge Functions</h4>
+                        <pre><code>// app/api/geo/route.js
+import { NextResponse } from 'next/server';
+
+export async function GET(request) {
+  // Runs at the edge (closest to user)
+  const ip = request.headers.get('x-forwarded-for');
+  const geo = await fetch('https://ipapi.co/' + ip + '/json/').then(r =&gt; r.json());
+  
+  return NextResponse.json(geo);
+}</code></pre>
+                        
+                        <h4>Redirects and Rewrites</h4>
+                        <pre><code>// next.config.js
+module.exports = {
+  async redirects() {
+    return [
+      {
+        source: '/old-page',
+        destination: '/new-page',
+        permanent: true,
+      },
+    ];
+  },
+  
+  async rewrites() {
+    return [
+      {
+        source: '/api/:path*',
+        destination: 'https://external-api.com/:path*',
+      },
+    ];
+  },
+};</code></pre>
+                        
+                        <h4>Headers Configuration</h4>
+                        <pre><code>// next.config.js
+module.exports = {
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: 'public, max-age=31536000',
+          },
+        ],
+      },
+    ];
+  },
+};</code></pre>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS + Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Expand/Collapse All Controls
+            document.getElementById('expandAll').addEventListener('click', function() {
+                document.querySelectorAll('.details-container').forEach(el => {
+                    el.setAttribute('open', '');
+                });
+            });
+
+            document.getElementById('collapseAll').addEventListener('click', function() {
+                document.querySelectorAll('.details-container').forEach(el => {
+                    el.removeAttribute('open');
+                });
+            });
+
+            // TOC Search
+            document.getElementById('searchToc').addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
+                
+                tocItems.forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    if (text.includes(searchTerm)) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+
+            // Smooth Scroll to TOC items
+            document.querySelectorAll('.toc-item, .toc-subitem').forEach(item => {
+                item.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const element = document.getElementById(targetId);
+                    if (element) {
+                        window.scrollTo({
+                            top: element.offsetTop - 100,
+                            behavior: 'smooth'
+                        });
+                        
+                        // Highlight active item
+                        document.querySelectorAll('.toc-item').forEach(i => i.classList.remove('active'));
+                        document.querySelectorAll('.toc-subitem').forEach(i => i.classList.remove('active'));
+                        this.classList.add('active');
+                    }
+                });
+            });
+
+            // Auto highlight current section on scroll
+            const sections = document.querySelectorAll('[id^="23-"]');
+            const navLinks = document.querySelectorAll('.toc-item, .toc-subitem');
+
+            window.addEventListener('scroll', () => {
+                let current = '';
+
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop - 150;
+                    const sectionHeight = section.clientHeight;
+                    if (pageYOffset >= sectionTop && pageYOffset < sectionTop + sectionHeight) {
+                        current = section.id;
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('data-target') === current) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+
+            // Add copy button to code blocks
+            document.querySelectorAll('pre').forEach(pre => {
+                const button = document.createElement('button');
+                button.innerHTML = '<i class="fas fa-copy"></i>';
+                button.className = 'copy-btn';
+                button.style.position = 'absolute';
+                button.style.top = '10px';
+                button.style.right = '10px';
+                button.style.background = 'rgba(0, 209, 255, 0.2)';
+                button.style.color = '#00d1ff';
+                button.style.border = 'none';
+                button.style.padding = '5px 10px';
+                button.style.borderRadius = '4px';
+                button.style.cursor = 'pointer';
+                button.style.fontSize = '0.8rem';
+                button.style.zIndex = '10';
+                
+                button.addEventListener('click', () => {
+                    const text = pre.querySelector('code').textContent;
+                    navigator.clipboard.writeText(text).then(() => {
+                        button.innerHTML = '<i class="fas fa-check"></i>';
+                        setTimeout(() => {
+                            button.innerHTML = '<i class="fas fa-copy"></i>';
+                        }, 1500);
+                    });
+                });
+                
+                pre.style.position = 'relative';
+                pre.appendChild(button);
+            });
+        });
+    </script>
+
+    <!-- Highlight.js for syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/monokai.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+</html>
+```

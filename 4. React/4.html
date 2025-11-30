@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JavaScript Core Concepts: Spread/Rest, Modules, Promises & Async/Await</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00d1ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --text-secondary: #b3cde6;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            background-color: rgba(10, 25, 47, 0.9);
+            border-right: 1px solid var(--cyan);
+            position: fixed;
+            height: 100vh;
+            width: 300px;
+            overflow-y: auto;
+            padding: 20px;
+            z-index: 1000;
+            box-shadow: 5px 0 15px rgba(0, 209, 255, 0.1);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+        }
+
+        h1, h2, h3, h4 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--amber);
+            padding-bottom: 8px;
+            margin-top: 30px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            border-left: 6px solid var(--amber);
+            padding-left: 15px;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            border-left: 4px solid var(--amber);
+            padding-left: 12px;
+        }
+
+        h3 {
+            font-size: 1.4rem;
+            border-left: 3px solid var(--cyan);
+            padding-left: 10px;
+            margin-top: 25px;
+        }
+
+        .subtitle {
+            color: var(--amber);
+            font-style: italic;
+            margin-bottom: 25px;
+        }
+
+        .author-info {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 25px;
+            padding: 10px;
+            background-color: rgba(0, 209, 255, 0.05);
+            border-radius: 5px;
+            border-left: 3px solid var(--cyan);
+        }
+
+        .toc-item {
+            margin: 8px 0;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: var(--text-secondary);
+        }
+
+        .toc-item:hover {
+            background-color: rgba(0, 209, 255, 0.1);
+            color: var(--cyan);
+        }
+
+        .toc-item.active {
+            background-color: rgba(0, 209, 255, 0.2);
+            color: var(--cyan);
+            border-left: 3px solid var(--amber);
+        }
+
+        .search-box {
+            width: 100%;
+            margin-bottom: 20px;
+            background-color: rgba(0, 0, 0, 0.3);
+            border-color: var(--cyan);
+            color: var(--text-light);
+        }
+
+        .btn-control {
+            background-color: rgba(0, 209, 255, 0.1);
+            border: 1px solid var(--cyan);
+            color: var(--cyan);
+            margin: 10px 0;
+            width: 100%;
+            padding: 8px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+        }
+
+        .btn-control:hover {
+            background-color: rgba(0, 209, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        pre code {
+            display: block;
+            padding: 16px;
+            overflow-x: auto;
+            background-color: #0f1e33;
+            border-left: 4px solid var(--amber);
+            border-radius: 5px;
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: var(--text-light);
+            font-family: 'Courier New', Courier, monospace;
+            margin: 20px 0;
+        }
+
+        .code-keyword {
+            color: var(--amber);
+        }
+        .code-string {
+            color: #a5ff8f;
+        }
+        .code-comment {
+            color: #777;
+        }
+        .code-number {
+            color: #ff9e6d;
+        }
+        .code-operator {
+            color: #ffcc66;
+        }
+
+        details {
+            margin: 20px 0;
+            border: 1px solid rgba(0, 209, 255, 0.2);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        summary {
+            padding: 15px 20px;
+            background-color: rgba(0, 209, 255, 0.1);
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--cyan);
+            list-style: none;
+            font-size: 1.1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(0, 209, 255, 0.1);
+        }
+
+        summary::before {
+            content: "▶ ";
+            font-size: 0.9rem;
+            transition: transform 0.3s ease;
+        }
+
+        details[open] summary::before {
+            transform: rotate(90deg);
+        }
+
+        details > div {
+            padding: 20px;
+            color: var(--text-secondary);
+            line-height: 1.7;
+        }
+
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 183, 77, 0.3);
+            font-weight: 500;
+        }
+
+        .example-box {
+            background-color: rgba(10, 25, 47, 0.5);
+            border-left: 4px solid var(--amber);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 0 5px 5px 0;
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: #000;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 8px;
+        }
+
+        .footer-note {
+            color: var(--text-secondary);
+            text-align: center;
+            margin-top: 40px;
+            padding: 20px;
+            border-top: 1px solid rgba(0, 209, 255, 0.1);
+            font-size: 0.9rem;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 992px) {
+            .left-panel {
+                width: 250px;
+            }
+            .right-panel {
+                margin-left: 250px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .left-panel {
+                position: relative;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid var(--cyan);
+            }
+            .right-panel {
+                margin-left: 0;
+            }
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+            <!-- Left Panel -->
+            <div class="col-md-3 left-panel">
+                <h1>JavaScript Essentials</h1>
+                <p class="subtitle">Spread/Rest Operators, Modules, Promises & Async/Await</p>
+                <div class="author-info">
+                    <i class="bi bi-person-circle"></i> Mastering Modern JavaScript<br>
+                    <small>For Absolute Beginners to Intermediate Learners</small>
+                </div>
+
+                <input type="text" class="form-control search-box" id="searchToc" placeholder="Search topics...">
+                
+                <button class="btn btn-control" id="expandAll">Expand All</button>
+                <button class="btn btn-control" id="collapseAll">Collapse All</button>
+
+                <div class="toc-container mt-4">
+                    <h4 class="text-muted mb-3">Table of Contents</h4>
+                    <div class="toc-item active" data-target="#section-2-5">2.5 Spread and Rest Operators</div>
+                    <div class="toc-item" data-target="#section-2-6">2.6 Modules (import/export)</div>
+                    <div class="toc-item" data-target="#section-2-7">2.7 Promises and Async/Await</div>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="col-md-9 right-panel">
+                <!-- Section 2.5 -->
+                <section id="section-2-5">
+                    <h2>2.5 Spread and Rest Operators</h2>
+                    <p>The spread (<code>...</code>) and rest operators look identical but serve opposite purposes. One expands data, the other collects it.</p>
+
+                    <details>
+                        <summary>Executive Summary</summary>
+                        <div>
+                            <ul>
+                                <li><strong>Spread Operator</strong> (<code>...</code>): Expands iterables (arrays, objects, strings) into individual elements.</li>
+                                <li><strong>Rest Parameter</strong> (<code>...</code>): Collects multiple elements into an array or object.</li>
+                                <li>Both use the same syntax (<code>...</code>) but context determines meaning.</li>
+                                <li>Essential for immutability, function flexibility, and modern JS patterns.</li>
+                            </ul>
+                            <p class="highlight">Remember: <strong>Spread = Expand</strong>, <strong>Rest = Collect</strong></p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Forensic Detail: Spread Operator in Action</summary>
+                        <div>
+                            <p>Spread takes something iterable and breaks it apart into individual items.</p>
+
+                            <div class="example-box">
+                                <pre><code>// ✅ SPREAD: Expanding arrays
+const arr1 = [1, 2, 3];
+const arr2 = [4, 5, 6];
+const combined = [...arr1, ...arr2]; // [1, 2, 3, 4, 5, 6]
+
+// ✅ SPREAD: Adding to arrays
+const numbers = [1, 2, 3];
+const withZero = [0, ...numbers]; // [0, 1, 2, 3]
+const withEnd = [...numbers, 4, 5]; // [1, 2, 3, 4, 5]
+
+// ✅ SPREAD: Copying arrays (immutable)
+const original = ['apple', 'banana'];
+const copy = [...original]; // Creates new array — not a reference!
+
+// ✅ SPREAD: String expansion
+const word = "hello";
+const letters = [...word]; // ['h', 'e', 'l', 'l', 'o']
+
+// ✅ SPREAD: Object properties
+const person = { name: "Alice", age: 25 };
+const fullPerson = { ...person, city: "NYC", job: "Engineer" };
+// { name: "Alice", age: 25, city: "NYC", job: "Engineer" }
+
+// ✅ SPREAD: Merging objects
+const defaults = { theme: "dark", fontSize: 16 };
+const userPrefs = { fontSize: 18, language: "en" };
+const settings = { ...defaults, ...userPrefs };
+// { theme: "dark", fontSize: 18, language: "en" } — last wins!</code></pre>
+                            </div>
+
+                            <p><strong>Key Insight:</strong> Spread creates shallow copies. Nested objects/arrays are still referenced, not cloned.</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Origin Story: The Problem Before Spread</summary>
+                        <div>
+                            <p>Before ES6, combining arrays required awkward methods:</p>
+
+                            <div class="example-box">
+                                <pre><code>// ❌ Pre-ES6: concat() method
+const arr1 = [1, 2, 3];
+const arr2 = [4, 5, 6];
+const combined = arr1.concat(arr2);
+
+// ❌ Pre-ES6: Pushing array elements one by one
+const nums = [1, 2];
+const moreNums = [3, 4, 5];
+for (let i = 0; i < moreNums.length; i++) {
+    nums.push(moreNums[i]);
+}
+
+// ❌ Pre-ES6: Object merging was impossible without libraries
+const obj1 = { a: 1 };
+const obj2 = { b: 2 };
+const merged = Object.assign({}, obj1, obj2); // Messy syntax!</code></pre>
+                            </div>
+
+                            <p>Spread made these operations elegant, readable, and consistent across data types.</p>
+
+                            <p><strong>Real Impact:</strong> Libraries like React adopted spread for immutable state updates:</p>
+
+                            <div class="example-box">
+                                <pre><code>// ❌ Mutating state directly (BAD!)
+this.state.items.push(newItem);
+
+// ✅ Immutable update with spread (GOOD!)
+this.setState({
+    items: [...this.state.items, newItem]
+});</code></pre>
+                            </div>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Deep Dive: Rest Parameter - The Collector</summary>
+                        <div>
+                            <p>Rest gathers multiple arguments into an array — the opposite of spread.</p>
+
+                            <div class="example-box">
+                                <pre><code>// ✅ REST: Collect function arguments
+function sum(...numbers) {
+    return numbers.reduce((total, n) => total + n, 0);
+}
+
+sum(1, 2, 3, 4, 5); // 15 — numbers = [1, 2, 3, 4, 5]
+
+// ✅ REST: With regular parameters
+function greet(greeting, ...names) {
+    return names.map(name => \`\${greeting}, \${name}!\`).join(' ');
+}
+
+greet("Hello", "Alice", "Bob", "Charlie");
+// "Hello, Alice! Hello, Bob! Hello, Charlie!"
+
+// ✅ REST: Destructuring with rest
+const [first, second, ...rest] = [1, 2, 3, 4, 5];
+console.log(first); // 1
+console.log(second); // 2
+console.log(rest); // [3, 4, 5]
+
+// ✅ REST: Object destructuring
+const { name, ...otherProps } = {
+    name: "Alice",
+    age: 25,
+    city: "NYC",
+    job: "Engineer"
+};
+console.log(name); // "Alice"
+console.log(otherProps); // { age: 25, city: "NYC", job: "Engineer" }</code></pre>
+                            </div>
+
+                            <p><strong>Crucial Rule:</strong> Rest parameter MUST be the last parameter in a function!</p>
+
+                            <div class="example-box">
+                                <pre><code>// ❌ INVALID
+function example(...a, b, c) { }
+
+// ✅ VALID
+function example(a, b, ...c) { }</code></pre>
+                            </div>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Practical Examples: Real-World Use Cases</summary>
+                        <div>
+                            <h4>1. Dynamic Function Calls</h4>
+                            <div class="example-box">
+                                <pre><code>// Math.max doesn't accept arrays — need to spread!
+const numbers = [10, 5, 8, 20, 3];
+const max = Math.max(...numbers); // 20 — equivalent to Math.max(10, 5, 8, 20, 3)
+
+// Apply function with spread
+const arr1 = [1, 2, 3];
+const arr2 = [4, 5, 6];
+Array.prototype.push.apply(arr1, arr2); // ❌ Old way
+arr1.push(...arr2); // ✅ Modern way</code></pre>
+                            </div>
+
+                            <h4>2. React Component Props</h4>
+                            <div class="example-box">
+                                <pre><code>// ✅ Spread props to pass all attributes
+const Button = ({ className, children, ...props }) => (
+    <button className={\`btn \${className}\`} {...props}>
+        {children}
+    </button>
+);
+
+// Usage:
+<Button className="primary" onClick={handleClick} disabled={true}>
+    Click Me
+</Button>
+// Props passed: className, onClick, disabled — all captured by ...props</code></pre>
+                            </div>
+
+                            <h4>3. Cloning Complex Objects</h4>
+                            <div class="example-box">
+                                <pre><code>// Shallow clone (good for simple cases)
+const user = { name: "Alice", profile: { avatar: "avatar.jpg" } };
+const newUser = { ...user };
+
+// BUT: nested objects are still referenced!
+newUser.profile.avatar = "new-avatar.jpg";
+console.log(user.profile.avatar); // "new-avatar.jpg" — changed in original too!
+
+// Deep clone requires recursive spread or JSON methods
+const deepClone = JSON.parse(JSON.stringify(user));</code></pre>
+                            </div>
+
+                            <p><strong>Pro Tip:</strong> Use spread for shallow cloning and functional updates. For deep cloning complex objects, consider libraries like Lodash or structuredClone() in modern browsers.</p>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- Section 2.6 -->
+                <section id="section-2-6">
+                    <h2>2.6 Modules (import/export)</h2>
+                    <p>Modules let you split your code into separate files for better organization, reusability, and maintainability.</p>
+
+                    <details>
+                        <summary>Executive Summary</summary>
+                        <div>
+                            <ul>
+                                <li><code>export</code>: Makes functions, variables, classes available to other files.</li>
+                                <li><code>import</code>: Brings exported items into current file.</li>
+                                <li>Two types: Named exports and Default exports.</li>
+                                <li>Modern standard since ES6 — replaces CommonJS (Node.js require).</li>
+                            </ul>
+                            <p class="highlight">Modules are the foundation of modern JavaScript applications — used everywhere from React to Node.js.</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Forensic Detail: Named vs Default Exports</summary>
+                        <div>
+                            <p>There are two ways to export from a module:</p>
+
+                            <h4>Named Exports (Multiple per file)</h4>
+                            <div class="example-box">
+                                <pre><code>// mathUtils.js — named exports
+export const add = (a, b) => a + b;
+export const subtract = (a, b) => a - b;
+export const PI = 3.14159;
+
+// You can also export at the end
+const multiply = (a, b) => a * b;
+const divide = (a, b) => a / b;
+export { multiply, divide };</code></pre>
+                            </div>
+
+                            <p>Import named exports:</p>
+                            <div class="example-box">
+                                <pre><code>// main.js
+import { add, subtract, PI, multiply, divide } from './mathUtils.js';
+
+console.log(add(5, 3)); // 8
+console.log(PI); // 3.14159
+
+// Import with alias
+import { add as sum, subtract as minus } from './mathUtils.js';
+console.log(sum(10, 4)); // 14</code></pre>
+                            </div>
+
+                            <h4>Default Export (One per file)</h4>
+                            <div class="example-box">
+                                <pre><code>// calculator.js — default export
+export default function calculateTotal(price, taxRate) {
+    return price * (1 + taxRate);
+}
+
+// Or export a class as default
+export default class User {
+    constructor(name) {
+        this.name = name;
+    }
+}
+
+// Or export a value as default
+export default "My App";</code></pre>
+                            </div>
+
+                            <p>Import default export — no curly braces needed:</p>
+                            <div class="example-box">
+                                <pre><code>// main.js
+import calculateTotal from './calculator.js';
+import User from './calculator.js';
+import appName from './calculator.js';
+
+console.log(calculateTotal(100, 0.08)); // 108
+const alice = new User("Alice");</code></pre>
+                            </div>
+
+                            <p><strong>Key Rule:</strong> Only ONE default export per file, but MANY named exports.</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Origin Story: The Module Explosion</summary>
+                        <div>
+                            <p>Before modules, JavaScript had no native way to organize code across files:</p>
+
+                            <div class="example-box">
+                                <pre><code>// ❌ Pre-module chaos: Global pollution
+// file1.js
+var add = function(a, b) { return a + b; };
+var PI = 3.14159;
+
+// file2.js
+var subtract = function(a, b) { return a - b; };
+var multiply = function(a, b) { return a * b; };
+
+// HTML file loads scripts in order — fragile and error-prone!
+<script src="file1.js"></script>
+<script src="file2.js"></script>
+
+// Now global scope is polluted with 4 functions and a constant!
+// Name collisions? Easy: if another script uses 'add' — boom!</code></pre>
+                            </div>
+
+                            <p>CommonJS (Node.js) introduced <code>require()</code> and <code>module.exports</code>:</p>
+                            <div class="example-box">
+                                <pre><code>// Node.js CommonJS style
+const add = require('./math').add;
+module.exports = { add, subtract };</code></pre>
+                            </div>
+
+                            <p>ES6 modules solved this elegantly with static analysis, tree-shaking, and clear syntax:</p>
+                            <div class="example-box">
+                                <pre><code>// ✅ Modern ES6 Modules
+import { add, subtract } from './math.js'; // Static — analyzed at build time!
+export { add, subtract }; // Clear intent — what you're exposing</code></pre>
+                            </div>
+
+                            <p>This enabled modern bundlers like Webpack and Vite to optimize code by removing unused imports ("tree-shaking").</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Deep Dive: Re-exporting and Wildcard Imports</summary>
+                        <div>
+                            <h4>Re-exporting (Exporting from Another Module)</h4>
+                            <div class="example-box">
+                                <pre><code>// utils/index.js — barrel file
+export { add, subtract } from './math.js';
+export { validateEmail } from './validation.js';
+export { formatDate } from './date.js';
+
+// Then import everything from one place
+import { add, validateEmail, formatDate } from './utils/index.js';</code></pre>
+                            </div>
+
+                            <h4>Wildcard Import (Import Everything)</h4>
+                            <div class="example-box">
+                                <pre><code>// mathUtils.js
+export const add = (a, b) => a + b;
+export const PI = 3.14159;
+export function multiply(a, b) { return a * b; }
+
+// main.js
+import * as MathLib from './mathUtils.js';
+
+console.log(MathLib.add(2, 3)); // 5
+console.log(MathLib.PI); // 3.14159
+console.log(MathLib.multiply(4, 5)); // 20</code></pre>
+                            </div>
+
+                            <p>This creates a namespace object containing all exports.</p>
+
+                            <h4>Dynamic Imports (Runtime Loading)</h4>
+                            <div class="example-box">
+                                <pre><code>// Load module only when needed — improves performance
+async function loadCalculator() {
+    const { calculateTotal } = await import('./calculator.js');
+    return calculateTotal(100, 0.08);
+}
+
+loadCalculator().then(result => console.log(result));</code></pre>
+                            </div>
+
+                            <p>Useful for lazy loading components in React or feature flags.</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Practical Examples: Building a Real Project Structure</summary>
+                        <div>
+                            <h4>Project Structure</h4>
+                            <pre>
+project/
+├── index.html
+├── main.js
+├── utils/
+│   ├── math.js
+│   ├── validation.js
+│   └── date.js
+└── components/
+    ├── Button.js
+    └── Card.js
+                            </pre>
+
+                            <h4>Example Files</h4>
+
+                            <div class="example-box">
+                                <pre><code>// utils/math.js
+export const add = (a, b) => a + b;
+export const subtract = (a, b) => a - b;
+export const PI = 3.14159;
+
+// utils/validation.js
+export const isValidEmail = (email) => /\S+@\S+\.\S+/.test(email);
+export const isPositiveNumber = (n) => typeof n === 'number' && n > 0;
+
+// components/Button.js
+import { add } from '../utils/math.js';
+
+export default function Button({ text, onClick }) {
+    return <button onclick=\`\${onClick}\`\>\${text} (Result: \${add(1, 2)})</button>;
+}</code></pre>
+                            </div>
+
+                            <div class="example-box">
+                                <pre><code>// main.js — Entry point
+import { add, PI } from './utils/math.js';
+import { isValidEmail } from './utils/validation.js';
+import Button from './components/Button.js';
+
+console.log(\`PI is \${PI}\`);
+console.log(isValidEmail("test@example.com")); // true
+
+// Create button dynamically
+const btn = new Button({ text: "Calculate", onClick: () => alert(add(5, 3)) });
+document.body.appendChild(btn);</code></pre>
+                            </div>
+
+                            <p><strong>Important:</strong> In browsers, you must use <code><script type="module"></code>:</p>
+                            <div class="example-box">
+                                <pre><code><!-- index.html -->
+<script type="module" src="./main.js"></script></code></pre>
+                            </div>
+
+                            <p>Without <code>type="module"</code>, browsers won't recognize import/export!</p>
+
+                            <h4>Best Practices</h4>
+                            <ul>
+                                <li>Use named exports for multiple related values</li>
+                                <li>Use default export for single primary item (component, function, class)</li>
+                                <li>Group related exports in index.js files (barrel exports)</li>
+                                <li>Always use relative paths: <code>./file.js</code> or <code>../folder/file.js</code></li>
+                                <li>Never mix default and named exports in the same statement</li>
+                            </ul>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- Section 2.7 -->
+                <section class="col-md-9 right-panel">
+                    <h2>2.7 Promises and Async/Await</h2>
+                    <p>Handle asynchronous operations cleanly — replacing callback hell with readable, linear code.</p>
+
+                    <details>
+                        <summary>Executive Summary</summary>
+                        <div>
+                            <ul>
+                                <li><strong>Promise</strong>: Object representing eventual completion/failure of async operation.</li>
+                                <li><strong>Async Function</strong>: Function that returns a Promise and can use <code>await</code>.</li>
+                                <li><strong>Await</strong>: Pauses execution until Promise resolves — makes async code look synchronous.</li>
+                                <li>Eliminates callback pyramid of doom.</li>
+                            </ul>
+                            <p class="highlight">Async/Await is the modern standard for handling async operations — simpler than raw Promises.</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Forensic Detail: Promise States and Syntax</summary>
+                        <div>
+                            <p>A Promise has three states:</p>
+                            <ol>
+                                <li><strong>Pending</strong>: Initial state — neither fulfilled nor rejected.</li>
+                                <li><strong>Fulfilled</strong>: Operation completed successfully.</li>
+                                <li><strong>Rejected</strong>: Operation failed.</li>
+                            </ol>
+
+                            <div class="example-box">
+                                <pre><code>// ✅ Creating a Promise
+const fetchData = new Promise((resolve, reject) => {
+    setTimeout(() => {
+        const success = true;
+        if (success) {
+            resolve("Data loaded successfully!");
+        } else {
+            reject("Failed to load data.");
+        }
+    }, 2000);
+});
+
+// Consuming a Promise
+fetchData
+    .then(result => console.log(result)) // Runs on success
+    .catch(error => console.error(error)); // Runs on failure</code></pre>
+                            </div>
+
+                            <p>You can chain promises:</p>
+                            <div class="example-box">
+                                <pre><code>fetch('/api/user')
+    .then(response => response.json()) // Convert to JSON
+    .then(user => fetch(\`/api/posts?userId=\${user.id}\`)) // Fetch posts
+    .then(postsResponse => postsResponse.json())
+    .then(posts => console.log(posts))
+    .catch(error => console.error('Error:', error));</code></pre>
+                            </div>
+
+                            <p><strong>Key Insight:</strong> Each <code>.then()</code> returns a new Promise — enabling chaining.</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Origin Story: Callback Hell</summary>
+                        <div>
+                            <p>Before Promises, async code looked like this:</p>
+
+                            <div class="example-box">
+                                <pre><code>// ❌ Callback Hell — Pyramid of Doom
+getUser(id, function(user) {
+    getPosts(user.id, function(posts) {
+        getComments(posts[0].id, function(comments) {
+            getLikes(comments[0].id, function(likes) {
+                console.log(\`Post: \${posts[0].title} has \${likes.length} likes\`);
+            });
+        });
+    });
+});</code></pre>
+                            </div>
+
+                            <p>This was hard to read, debug, and maintain. Error handling was messy.</p>
+
+                            <p>Promises solved this with flat chains:</p>
+
+                            <div class="example-box">
+                                <pre><code>// ✅ Promise Chain — Flat and readable
+getUser(id)
+    .then(user => getPosts(user.id))
+    .then(posts => getComments(posts[0].id))
+    .then(comments => getLikes(comments[0].id))
+    .then(likes => console.log(\`Post: \${posts[0].title} has \${likes.length} likes\`))
+    .catch(error => console.error('Error:', error));</code></pre>
+                            </div>
+
+                            <p>But even this could be cleaner — enter async/await!</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Deep Dive: Async/Await Unpacked</summary>
+                        <div>
+                            <p>Async/await is syntactic sugar over Promises — making them look synchronous.</p>
+
+                            <div class="example-box">
+                                <pre><code>// ✅ Async function — always returns a Promise
+async function fetchUserData(userId) {
+    try {
+        const response = await fetch(\`/api/users/\${userId}\`);
+        if (!response.ok) throw new Error('Network response was not ok');
+        
+        const user = await response.json();
+        const posts = await fetch(\`/api/posts?userId=\${userId}\`)
+            .then(r => r.json());
+            
+        return { user, posts };
+    } catch (error) {
+        console.error('Fetch failed:', error);
+        throw error; // Re-throw to handle upstream
+    }
+}
+
+// Using the async function
+fetchUserData(123)
+    .then(data => console.log(data))
+    .catch(error => console.error(error));</code></pre>
+                            </div>
+
+                            <p><strong>How it works:</strong></p>
+                            <ol>
+                                <li><code>async</code> before function → automatically returns a Promise</li>
+                                <li><code>await</code> before Promise → pauses execution until resolved</li>
+                                <li>Code after <code>await</code> runs only after resolution</li>
+                                <li>If Promise rejects → throws error (caught by try/catch)</li>
+                            </ol>
+
+                            <h4>Multiple Concurrent Promises</h4>
+                            <div class="example-box">
+                                <pre><code>// ✅ Run multiple async operations concurrently
+async function loadAllData() {
+    const [user, posts, comments] = await Promise.all([
+        fetch('/ap

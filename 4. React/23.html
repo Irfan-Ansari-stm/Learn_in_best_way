@@ -1,0 +1,2069 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Module 4: HTTP Requests and API Integration - Chapter 15</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a192f;
+      --cyan: #00f5ff;
+      --amber: #ffb347;
+      --text-light: #e6f1ff;
+      --border-light: #1a3b5c;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      font-family: 'Roboto', sans-serif;
+      overflow-x: hidden;
+    }
+
+    .left-panel {
+      position: fixed;
+      width: 300px;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 20px;
+      background-color: rgba(10, 25, 47, 0.9);
+      border-right: 1px solid var(--border-light);
+      z-index: 1000;
+    }
+
+    .right-panel {
+      margin-left: 300px;
+      padding: 30px;
+      height: 100vh;
+      overflow-y: auto;
+      background-color: var(--bg-dark);
+    }
+
+    h1, h2, h3, h4 {
+      color: var(--cyan);
+      font-weight: 600;
+    }
+
+    h1 {
+      border-bottom: 2px solid var(--amber);
+      padding-bottom: 10px;
+      margin-bottom: 25px;
+    }
+
+    h2 {
+      margin-top: 40px;
+      border-left: 4px solid var(--amber);
+      padding-left: 15px;
+    }
+
+    h3 {
+      color: var(--amber);
+      margin-top: 30px;
+    }
+
+    .toc-item {
+      margin: 8px 0;
+      padding: 6px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .toc-item:hover {
+      background-color: rgba(0, 245, 255, 0.1);
+    }
+
+    .toc-item.active {
+      background-color: rgba(0, 245, 255, 0.2);
+      border-left: 3px solid var(--cyan);
+    }
+
+    .search-box {
+      margin-bottom: 20px;
+      background-color: rgba(26, 59, 92, 0.5);
+      border: 1px solid var(--border-light);
+      color: var(--text-light);
+    }
+
+    .btn-control {
+      background-color: rgba(10, 25, 47, 0.7);
+      border: 1px solid var(--border-light);
+      color: var(--cyan);
+      margin-bottom: 15px;
+      font-size: 0.9rem;
+    }
+
+    .btn-control:hover {
+      background-color: rgba(0, 245, 255, 0.2);
+      color: var(--cyan);
+    }
+
+    details {
+      margin: 15px 0;
+      border-left: 1px solid var(--border-light);
+      padding-left: 15px;
+      background-color: rgba(10, 25, 47, 0.4);
+      border-radius: 0 5px 5px 0;
+    }
+
+    summary {
+      list-style: none;
+      cursor: pointer;
+      font-weight: bold;
+      color: var(--amber);
+      padding: 10px 15px;
+      background-color: rgba(0, 245, 255, 0.05);
+      border-radius: 5px;
+      margin-bottom: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    summary::before {
+      content: "▶ ";
+      font-size: 0.8em;
+    }
+
+    details[open] > summary::before {
+      content: "▼ ";
+    }
+
+    pre {
+      background-color: #0d1b2a !important;
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 15px;
+      overflow-x: auto;
+      margin: 15px 0;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    code {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.95rem;
+      color: var(--cyan);
+    }
+
+    .highlight {
+      color: var(--amber);
+      font-weight: bold;
+    }
+
+    .note {
+      background-color: rgba(255, 179, 71, 0.1);
+      border-left: 3px solid var(--amber);
+      padding: 12px 15px;
+      margin: 20px 0;
+      border-radius: 0 5px 5px 0;
+    }
+
+    .syntax {
+      background-color: rgba(0, 245, 255, 0.08);
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-weight: 500;
+      display: inline-block;
+      margin: 0 3px;
+    }
+
+    .author-info {
+      color: var(--amber);
+      font-style: italic;
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+
+    .footer-note {
+      margin-top: 60px;
+      text-align: center;
+      color: var(--amber);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border-light);
+      padding-top: 15px;
+    }
+
+    /* Smooth scrolling */
+    html {
+      scroll-behavior: smooth;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 991px) {
+      .left-panel {
+        width: 100%;
+        position: relative;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border-light);
+      }
+      .right-panel {
+        margin-left: 0;
+      }
+    }
+
+    /* Demo styling for API examples */
+    .api-demo {
+      background-color: rgba(13, 27, 42, 0.6);
+      border: 1px dashed var(--border-light);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .loading-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--cyan);
+      font-style: italic;
+    }
+
+    .error-state {
+      background-color: rgba(255, 71, 87, 0.1);
+      border: 1px solid #ff4757;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 15px 0;
+      color: #ff4757;
+    }
+
+    .success-state {
+      background-color: rgba(0, 204, 136, 0.1);
+      border: 1px solid #00cc88;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 15px 0;
+      color: #00cc88;
+    }
+
+    .fetch-btn {
+      background-color: var(--cyan);
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .fetch-btn:hover {
+      background-color: #00c0e6;
+      transform: translateY(-2px);
+    }
+
+    .axios-btn {
+      background-color: #5b21b6;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .axios-btn:hover {
+      background-color: #4a1a99;
+      transform: translateY(-2px);
+    }
+
+    .pattern-card {
+      background-color: rgba(13, 27, 42, 0.6);
+      border: 1px dashed var(--border-light);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .pattern-badge {
+      display: inline-block;
+      background-color: var(--amber);
+      color: #000;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      margin-left: 8px;
+    }
+
+    .comparison-table th, .comparison-table td {
+      border: 1px solid var(--border-light);
+      padding: 10px;
+    }
+
+    .comparison-table th {
+      background-color: rgba(0, 245, 255, 0.1);
+    }
+
+    .comparison-table tr:nth-child(even) {
+      background-color: rgba(26, 59, 92, 0.3);
+    }
+
+    .api-response {
+      background-color: rgba(10, 25, 47, 0.8);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 15px;
+      margin: 15px 0;
+      font-family: 'Roboto Mono', monospace;
+      white-space: pre-wrap;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .use-effect-diagram {
+      background-color: rgba(13, 27, 42, 0.6);
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+      font-family: 'Roboto Mono', monospace;
+      line-height: 1.6;
+    }
+
+    .dependency-badge {
+      background-color: rgba(0, 245, 255, 0.2);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      margin: 0 3px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container-fluid p-0">
+  <div class="row g-0">
+
+    <!-- Left Panel -->
+    <div class="col-md-3 left-panel">
+      <h1>Module 4</h1>
+      <h4>HTTP Requests and API Integration</h4>
+      <p class="author-info">— Mastering Data Fetching with Clarity & Depth —</p>
+
+      <input type="text" class="form-control search-box" id="searchTOC" placeholder="Search topics..." />
+
+      <div class="d-grid gap-2">
+        <button class="btn btn-control" id="expandAll">Expand All</button>
+        <button class="btn btn-control" id="collapseAll">Collapse All</button>
+      </div>
+
+      <div class="toc">
+        <h5>Table of Contents</h5>
+        <div class="toc-item" data-target="#section-15-1">15.1 Fetch API and Axios</div>
+        <div class="toc-item" data-target="#section-15-2">15.2 Making API Calls in useEffect</div>
+        <div class="toc-item" data-target="#section-15-3">15.3 Loading States and Error Handling</div>
+        <div class="toc-item" data-target="#section-15-4">15.4 Data Fetching Patterns</div>
+      </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="col-md-9 right-panel">
+
+      <!-- Section 15.1 -->
+      <section id="section-15-1">
+        <h2>15.1 Fetch API and Axios</h2>
+        
+        <details>
+          <summary>📌 Summary: The Two Pillars of HTTP Requests</summary>
+          <p>When making HTTP requests in React, you have two primary choices: the native <span class="syntax">Fetch API</span> and the popular library <span class="syntax">Axios</span>. Both serve the same purpose but with different philosophies.</p>
+          
+          <h3>🔹 Fetch API: Native Browser Solution</h3>
+          <p>The Fetch API is built into modern browsers. It's a promise-based interface for making network requests.</p>
+
+          <h3>⚡ Basic Syntax</h3>
+          <pre><code>
+// GET request
+fetch('https://jsonplaceholder.typicode.com/posts/1')
+  .then(response =&gt; response.json())
+  .then(data =&gt; console.log(data))
+  .catch(error =&gt; console.error('Error:', error));
+
+// POST request
+fetch('https://jsonplaceholder.typicode.com/posts', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    title: 'My Post',
+    body: 'This is the content',
+    userId: 1
+  })
+})
+  .then(response =&gt; response.json())
+  .then(data =&gt; console.log(data))
+  .catch(error =&gt; console.error('Error:', error));
+          </code></pre>
+
+          <h3>💡 Key Features of Fetch</h3>
+          <ul>
+            <li><strong>Native:</strong> No external dependencies</li>
+            <li><strong>Promise-based:</strong> Works well with async/await</li>
+            <li><strong>Flexible:</strong> Supports all HTTP methods</li>
+            <li><strong>Streaming:</strong> Can handle large responses efficiently</li>
+          </ul>
+
+          <h3>⚠️ Critical Gotchas</h3>
+          <ul>
+            <li><strong>Network errors only:</strong> Fetch only rejects on network failures, not HTTP errors (404, 500)</li>
+            <li><strong>No automatic JSON parsing:</strong> Must call <code>response.json()</code> manually</li>
+            <li><strong>No automatic serialization:</strong> Must use <code>JSON.stringify()</code> for request bodies</li>
+            <li><strong>No timeout control:</strong> No built-in way to cancel requests</li>
+          </ul>
+
+          <div class="note">
+            <strong>🧠 Mental Model:</strong> Fetch is like a raw tool — powerful but requires more manual work. You need to handle every detail yourself.
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Axios: Feature-Rich HTTP Client</summary>
+          <p>Axios is a popular third-party library that wraps Fetch with additional features and better defaults.</p>
+
+          <h3>⚡ Installation</h3>
+          <pre><code>
+npm install axios
+
+# Or with yarn
+yarn add axios
+          </code></pre>
+
+          <h3>⚡ Basic Syntax</h3>
+          <pre><code>
+import axios from 'axios';
+
+// GET request
+axios.get('https://jsonplaceholder.typicode.com/posts/1')
+  .then(response =&gt; console.log(response.data))
+  .catch(error =&gt; console.error('Error:', error));
+
+// POST request
+axios.post('https://jsonplaceholder.typicode.com/posts', {
+  title: 'My Post',
+  body: 'This is the content',
+  userId: 1
+})
+  .then(response =&gt; console.log(response.data))
+  .catch(error =&gt; console.error('Error:', error));
+
+// Using async/await (recommended)
+async function fetchPost() {
+  try {
+    const response = await axios.get('https://jsonplaceholder.typicode.com/posts/1');
+    console.log(response.data);
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+          </code></pre>
+
+          <h3>💡 Key Advantages of Axios</h3>
+          <table class="table table-dark table-sm mt-3">
+            <thead>
+              <tr><th>Feature</th><th>Axios</th><th>Fetch</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Automatic JSON parsing</td><td>✅ Yes</td><td>❌ No</td></tr>
+              <tr><td>Automatic request serialization</td><td>✅ Yes</td><td>❌ No</td></tr>
+              <tr><td>HTTP error handling</td><td>✅ Rejects on 4xx/5xx</td><td>❌ Only rejects on network errors</td></tr>
+              <tr><td>Request/response interceptors</td><td>✅ Yes</td><td>❌ No</td></tr>
+              <tr><td>Cancelation support</td><td>✅ Yes</td><td>❌ Limited</td></tr>
+              <tr><td>Timeout configuration</td><td>✅ Yes</td><td>❌ No</td></tr>
+              <tr><td>Client-side XSRF protection</td><td>✅ Yes</td><td>❌ No</td></tr>
+              <tr><td>Built-in progress tracking</td><td>✅ Yes</td><td>❌ No</td></tr>
+              <tr><td>Browser + Node.js support</td><td>✅ Yes</td><td>✅ Yes</td></tr>
+              <tr><td>Bundle size impact</td><td>~2KB</td><td>0KB (native)</td></tr>
+            </tbody>
+          </table>
+
+          <h3>🔥 Advanced Axios Features</h3>
+          <h4>1. Request Interceptors</h4>
+          <pre><code>
+// Add authorization token to all requests
+axios.interceptors.request.use(
+  config =&gt; {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = \`Bearer \${token}\`;
+    }
+    return config;
+  },
+  error =&gt; {
+    return Promise.reject(error);
+  }
+);
+
+// Add response interceptor for error handling
+axios.interceptors.response.use(
+  response =&gt; response,
+  error =&gt; {
+    if (error.response?.status === 401) {
+      // Handle unauthorized access
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
+          </code></pre>
+
+          <h4>2. Creating an Instance</h4>
+          <pre><code>
+// Create a custom instance with default settings
+const apiClient = axios.create({
+  baseURL: 'https://api.example.com/v1',
+  timeout: 10000,
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json'
+  }
+});
+
+// Use the instance
+apiClient.get('/posts')
+  .then(response =&gt; console.log(response.data));
+
+apiClient.post('/posts', { title: 'New Post' })
+  .then(response =&gt; console.log(response.data));
+          </code></pre>
+
+          <h4>3. Canceling Requests</h4>
+          <pre><code>
+import { useEffect, useState } from 'react';
+
+function UserProfile({ userId }) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Create cancel token
+  const CancelToken = axios.CancelToken;
+  const source = CancelToken.source();
+
+  useEffect(() =&gt; {
+    const fetchUser = async () =&gt; {
+      try {
+        const response = await axios.get(
+          \`/users/\${userId}\`,
+          { cancelToken: source.token }
+        );
+        setUser(response.data);
+      } catch (err) {
+        if (axios.isCancel(err)) {
+          console.log('Request canceled');
+        } else {
+          setError(err.message);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+
+    // Cleanup on unmount
+    return () =&gt; {
+      source.cancel('Component unmounted');
+    };
+  }, [userId]);
+
+  // ...
+}
+          </code></pre>
+
+          <div class="note">
+            <strong>🌟 Pro Tip:</strong> Use Axios for production applications. Its features save development time and prevent common bugs.
+          </div>
+        </details>
+
+        <details>
+          <summary>⚙️ Deep Dive: Fetch vs Axios Comparison</summary>
+          <h3>⚡ Side-by-Side Examples</h3>
+
+          <h4>GET Request</h4>
+          <pre><code>
+// 🚫 FETCH API
+fetch('https://jsonplaceholder.typicode.com/posts/1')
+  .then(response =&gt; {
+    if (!response.ok) {
+      throw new Error(\`HTTP error! status: \${response.status}\`);
+    }
+    return response.json();
+  })
+  .then(data =&gt; console.log(data))
+  .catch(error =&gt; console.error('Error:', error));
+
+// ✅ AXIOS
+axios.get('https://jsonplaceholder.typicode.com/posts/1')
+  .then(response =&gt; console.log(response.data))
+  .catch(error =&gt; console.error('Error:', error));
+          </code></pre>
+
+          <h4>POST Request with Headers</h4>
+          <pre><code>
+// 🚫 FETCH API
+fetch('https://jsonplaceholder.typicode.com/posts', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': \`Bearer \${token}\`
+  },
+  body: JSON.stringify({
+    title: 'My Post',
+    body: 'Content here',
+    userId: 1
+  })
+})
+  .then(response =&gt; {
+    if (!response.ok) {
+      throw new Error(\`HTTP error! status: \${response.status}\`);
+    }
+    return response.json();
+  })
+  .then(data =&gt; console.log(data))
+  .catch(error =&gt; console.error('Error:', error));
+
+// ✅ AXIOS
+axios.post('https://jsonplaceholder.typicode.com/posts', {
+  title: 'My Post',
+  body: 'Content here',
+  userId: 1
+}, {
+  headers: {
+    'Authorization': \`Bearer \${token}\`
+  }
+})
+  .then(response =&gt; console.log(response.data))
+  .catch(error =&gt; console.error('Error:', error));
+          </code></pre>
+
+          <h4>PUT Request with Error Handling</h4>
+          <pre><code>
+// 🚫 FETCH API
+async function updatePost(postId, updates) {
+  try {
+    const response = await fetch(\`https://jsonplaceholder.typicode.com/posts/\${postId}\`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(updates)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || \`HTTP \${response.status}\`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Update failed:', error);
+    throw error;
+  }
+}
+
+// ✅ AXIOS
+async function updatePost(postId, updates) {
+  try {
+    const response = await axios.put(
+      \`https://jsonplaceholder.typicode.com/posts/\${postId}\`,
+      updates
+    );
+    return response.data;
+  } catch (error) {
+    console.error('Update failed:', error.response?.data || error.message);
+    throw error;
+  }
+}
+          </code></pre>
+
+          <h3>📊 Decision Matrix</h3>
+          <table class="table table-dark table-sm mt-3">
+            <thead>
+              <tr><th>Criteria</th><th>Use Fetch</th><th>Use Axios</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><strong>Project Size</strong></td><td>Small, simple apps</td><td>Medium to large apps</td></tr>
+              <tr><td><strong>Team Experience</strong></td><td>Beginners learning fundamentals</td><td>Experienced teams</td></tr>
+              <tr><td><strong>Performance</strong></td><td>Minimal bundle size</td><td>~2KB extra</td></tr>
+              <tr><td><strong>Development Speed</strong></td><td>Slower due to boilerplate</td><td>Faster with built-in features</td></tr>
+              <tr><td><strong>Error Handling</strong></td><td>Manual implementation required</td><td>Automatic and comprehensive</td></tr>
+              <tr><td><strong>Interceptors</strong></td><td>Not available natively</td><td>Essential for auth/tokens</td></tr>
+              <tr><td><strong>Cancelation</strong></td><td>Complex with AbortController</td><td>Simple built-in support</td></tr>
+              <tr><td><strong>Testing</strong></td><td>More complex mocking</td><td>Easier mocking</td></tr>
+              <tr><td><strong>Learning Curve</strong></td><td>Steeper initially</td><td>Shallower</td></tr>
+              <tr><td><strong>Recommendation</strong></td><td>For learning purposes</td><td>For production applications</td></tr>
+            </tbody>
+          </table>
+
+          <div class="note">
+            <strong>🎯 Final Wisdom:</strong> Learn Fetch to understand HTTP fundamentals, but use Axios in production. The 2KB bundle cost is negligible compared to the development time saved.
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 15.2 -->
+      <section id="section-15-2">
+        <h2>15.2 Making API Calls in useEffect</h2>
+        
+        <details>
+          <summary>📌 Summary: The Correct Way to Fetch Data in React</summary>
+          <p>React components don't automatically fetch data — we must explicitly trigger it using the <code>useEffect</code> hook.</p>
+
+          <h3>🔹 Core Concept: useEffect for Side Effects</h3>
+          <p><code>useEffect</code> runs after render and is perfect for side effects like data fetching, subscriptions, or DOM manipulation.</p>
+
+          <h3>⚡ Basic Pattern</h3>
+          <pre><code>
+import { useState, useEffect } from 'react';
+
+function UserProfile({ userId }) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() =&gt; {
+    // 1. Set loading state
+    setLoading(true);
+    setError(null);
+
+    // 2. Make API call
+    fetch(\`/api/users/\${userId}\`)
+      .then(response =&gt; {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(data =&gt; {
+        setUser(data);
+        setLoading(false);
+      })
+      .catch(error =&gt; {
+        setError(error.message);
+        setLoading(false);
+      });
+  }, [userId]); // 3. Dependency array
+
+  if (loading) return &lt;div&gt;Loading...&lt;/div&gt;;
+  if (error) return &lt;div className="error-state"&gt;Error: {error}&lt;/div&gt;;
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;{user.name}&lt;/h2&gt;
+      &lt;p&gt;Email: {user.email}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>💡 Why This Pattern Works</h3>
+          <ol>
+            <li><strong>Set loading state:</strong> Show user something is happening</li>
+            <li><strong>Make API call:</strong> Fetch data from server</li>
+            <li><strong>Update state:</strong> Store result in component state</li>
+            <li><strong>Handle errors:</strong> Catch and display any issues</li>
+            <li><strong>Dependency array:</strong> Control when effect re-runs</li>
+          </ol>
+
+          <h3>⚠️ Common Pitfalls</h3>
+          <h4>1. Missing Dependency Array</h4>
+          <pre><code>
+// ❌ BAD: Infinite loop!
+useEffect(() =&gt; {
+  fetchData();
+}); // No dependency array → runs after EVERY render
+
+// ✅ GOOD: Runs only when userId changes
+useEffect(() =&gt; {
+  fetchData();
+}, [userId]);
+          </code></pre>
+
+          <h4>2. Forgetting Cleanup</h4>
+          <pre><code>
+// ❌ BAD: Potential memory leak
+useEffect(() =&gt; {
+  fetch('/api/data')
+    .then(response =&gt; response.json())
+    .then(data =&gt; setData(data));
+}, []);
+
+// ✅ GOOD: Proper cleanup with abort controller
+useEffect(() =&gt; {
+  const controller = new AbortController();
+
+  fetch('/api/data', { signal: controller.signal })
+    .then(response =&gt; response.json())
+    .then(data =&gt; setData(data))
+    .catch(error =&gt; {
+      if (error.name !== 'AbortError') {
+        setError(error.message);
+      }
+    });
+
+  // Cleanup function
+  return () =&gt; {
+    controller.abort(); // Cancel request if component unmounts
+  };
+}, []);
+          </code></pre>
+
+          <h3>🔥 Real-World Example: Product List</h3>
+          <pre><code>
+import { useState, useEffect } from 'react';
+import axios from 'axios';
+
+function ProductList() {
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [category, setCategory] = useState('all');
+
+  useEffect(() =&gt; {
+    // Cancel previous request if category changes
+    const controller = new AbortController();
+
+    const fetchProducts = async () =&gt; {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await axios.get('/api/products', {
+          params: { category },
+          signal: controller.signal
+        });
+        setProducts(response.data);
+      } catch (err) {
+        if (axios.isCancel(err)) {
+          console.log('Request canceled');
+        } else {
+          setError('Failed to load products');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+
+    // Cleanup function
+    return () =&gt; {
+      controller.abort();
+    };
+  }, [category]); // Re-fetch when category changes
+
+  const handleCategoryChange = (newCategory) =&gt; {
+    setCategory(newCategory);
+  };
+
+  if (loading) return &lt;div className="loading-state"&gt;Loading products...&lt;/div&gt;;
+  if (error) return &lt;div className="error-state"&gt;{error}&lt;/div&gt;;
+
+  return (
+    &lt;div&gt;
+      &lt;select value={category} onChange={(e) =&gt; handleCategoryChange(e.target.value)}&gt;
+        &lt;option value="all"&gt;All Products&lt;/option&gt;
+        &lt;option value="electronics"&gt;Electronics&lt;/option&gt;
+        &lt;option value="books"&gt;Books&lt;/option&gt;
+        &lt;option value="clothing"&gt;Clothing&lt;/option&gt;
+      &lt;/select&gt;
+
+      &lt;div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '16px', marginTop: '20px' }}&gt;
+        {products.map(product =&gt; (
+          &lt;div key={product.id} className="product-card"&gt;
+            &lt;h3&gt;{product.name}&lt;/h3&gt;
+            &lt;p&gt;\${product.price}&lt;/p&gt;
+          &lt;/div&gt;
+        ))}
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <div class="note">
+            <strong>🧠 Mental Model:</strong> Think of useEffect as a doorbell. When the doorbell rings (dependencies change), you open the door (run effect) to get fresh data from the outside world (API).
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Deep Dive: The useEffect Dependency Array Explained</summary>
+          <p>The dependency array controls when your effect runs. Understanding this is crucial.</p>
+
+          <h3>📊 Dependency Array Scenarios</h3>
+          <pre><code>
+// Scenario 1: Empty array [] → Run once on mount
+useEffect(() =&gt; {
+  // Runs only once, after first render
+  fetch('/api/data');
+}, []);
+
+// Scenario 2: Single dependency [id] → Run when id changes
+useEffect(() =&gt; {
+  // Runs on mount AND when id changes
+  fetch(\`/api/user/\${id}\`);
+}, [id]);
+
+// Scenario 3: Multiple dependencies [id, category] → Run when either changes
+useEffect(() =&gt; {
+  // Runs on mount AND when id OR category changes
+  fetch(\`/api/products?userId=\${id}&amp;category=\${category}\`);
+}, [id, category]);
+
+// Scenario 4: No dependency array → Run after EVERY render
+useEffect(() =&gt; {
+  // DANGEROUS! Runs after every render → potential infinite loop
+  fetch('/api/data');
+});
+// ⚠️ This will cause infinite re-renders if you update state inside!
+
+// Scenario 5: Dependencies include functions → Be careful!
+useEffect(() =&gt; {
+  // This might run unnecessarily if handleClick changes on every render
+  fetch('/api/data');
+}, [handleClick]);
+
+// ✅ Better approach: Memoize the function
+const handleClick = useCallback(() =&gt; {
+  // Function logic
+}, []);
+          </code></pre>
+
+          <h3>🔍 How React Tracks Dependencies</h3>
+          <p>React uses strict equality comparison (<code>===</code>) to determine if dependencies have changed:</p>
+          <pre><code>
+// ❌ BAD: New object created on every render
+useEffect(() =&gt; {
+  fetch('/api/data');
+}, [{ id: 1, name: 'user' }]); // New object every time → infinite loop!
+
+// ✅ GOOD: Use variables
+const user = { id: 1, name: 'user' };
+useEffect(() =&gt; {
+  fetch(\`/api/data?userId=\${user.id}\`);
+}, [user.id]); // Primitive value → stable
+
+// ✅ BEST: Use useMemo for complex objects
+const user = useMemo(() =&gt; ({ id: 1, name: 'user' }), []);
+useEffect(() =&gt; {
+  fetch(\`/api/data?userId=\${user.id}\`);
+}, [user]);
+          </code></pre>
+
+          <h3>🛠️ Debugging useEffect Issues</h3>
+          <p>Add logging to understand what's happening:</p>
+          <pre><code>
+useEffect(() =&gt; {
+  console.log('Effect ran with dependencies:', [id, category]);
+  
+  const controller = new AbortController();
+  
+  fetch(\`/api/data?id=\${id}&amp;category=\${category}\`, { signal: controller.signal })
+    .then(response =&gt; response.json())
+    .then(data =&gt; setData(data))
+    .catch(error =&gt; {
+      if (error.name !== 'AbortError') {
+        setError(error.message);
+      }
+    });
+
+  return () =&gt; {
+    console.log('Cleanup: aborting request');
+    controller.abort();
+  };
+}, [id, category]);
+          </code></pre>
+
+          <h3>🔥 Advanced: Fetching with Conditional Logic</h3>
+          <pre><code>
+function UserDashboard({ userId, isLoggedIn }) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() =&gt; {
+    // Don't fetch if user isn't logged in
+    if (!isLoggedIn) {
+      setLoading(false);
+      return;
+    }
+
+    // Don't fetch if userId is invalid
+    if (!userId) {
+      setError('User ID is required');
+      setLoading(false);
+      return;
+    }
+
+    const controller = new AbortController();
+
+    const fetchUser = async () =&gt; {
+      try {
+        const response = await axios.get(\`/api/users/\${userId}\`, {
+          signal: controller.signal
+        });
+        setUser(response.data);
+      } catch (err) {
+        if (axios.isCancel(err)) {
+          console.log('Request canceled');
+        } else {
+          setError('Failed to load user data');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+
+    return () =&gt; {
+      controller.abort();
+    };
+  }, [userId, isLoggedIn]); // Both dependencies matter
+
+  // Render based on state
+  if (loading) return &lt;div className="loading-state"&gt;Loading dashboard...&lt;/div&gt;;
+  if (error) return &lt;div className="error-state"&gt;{error}&lt;/div&gt;;
+  if (!isLoggedIn) return &lt;div&gt;Please log in to view your dashboard.&lt;/div&gt;;
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Welcome, {user.name}!&lt;/h2&gt;
+      &lt;!-- Dashboard content --&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <div class="use-effect-diagram">
+            {/* Diagram showing useEffect flow */}
+            ┌──────────────────┐
+            │   Component      │
+            │     Mounts       │
+            └────────┬─────────┘
+                     │
+            ┌──────v──────┐
+            │  useEffect  │ ← Dependency array triggers
+            │   Runs      │
+            └──────┬──────┘
+                     │
+            ┌──────v──────┐
+            │  API Call   │ ← Async operation begins
+            └──────┬──────┘
+                     │
+            ┌──────v──────┐
+            │  State      │ ← Update state with data
+            │  Updates    │
+            └──────┬──────┘
+                     │
+            ┌──────v──────┐
+            │   Render    │ ← Component re-renders with new data
+            └─────────────┘
+          </div>
+
+          <div class="note">
+            <strong>🎯 Pro Tip:</strong> Always include the dependency array. If you're unsure what to put, ask: "What values in this effect could change between renders?" Include those.
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 15.3 -->
+      <section id="section-15-3">
+        <h2>15.3 Loading States and Error Handling</h2>
+        
+        <details>
+          <summary>📌 Summary: Managing the User Experience During Network Operations</summary>
+          <p>Every API call has three possible states: loading, success, and error. Your UI must handle all three gracefully.</p>
+
+          <h3>🔹 The Three States Pattern</h3>
+          <ol>
+            <li><strong>Loading:</strong> User is waiting for data</li>
+            <li><strong>Success:</strong> Data received and displayed</li>
+            <li><strong>Error:</strong> Something went wrong</li>
+          </ol>
+
+          <h3>⚡ Basic Implementation</h3>
+          <pre><code>
+import { useState, useEffect } from 'react';
+
+function UserProfile({ userId }) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() =&gt; {
+    const controller = new AbortController();
+
+    const fetchUser = async () =&gt; {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await axios.get(\`/api/users/\${userId}\`, {
+          signal: controller.signal
+        });
+        setUser(response.data);
+      } catch (err) {
+        if (axios.isCancel(err)) {
+          console.log('Request canceled');
+        } else {
+          setError(err.response?.data?.message || err.message || 'Unknown error');
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+
+    return () =&gt; {
+      controller.abort();
+    };
+  }, [userId]);
+
+  // Loading state
+  if (loading) {
+    return &lt;div className="loading-state"&gt;
+      Loading user profile...
+    &lt;/div&gt;;
+  }
+
+  // Error state
+  if (error) {
+    return &lt;div className="error-state"&gt;
+      Failed to load profile: {error}
+      &lt;button onClick={() =&gt; window.location.reload()}&gt;Retry&lt;/button&gt;
+    &lt;/div&gt;;
+  }
+
+  // Success state
+  return (
+    &lt;div className="success-state"&gt;
+      &lt;h2&gt;{user.name}&lt;/h2&gt;
+      &lt;p&gt;Email: {user.email}&lt;/p&gt;
+      &lt;p&gt;Joined: {new Date(user.joinedAt).toLocaleDateString()}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>💡 Best Practices for Loading States</h3>
+          <ul>
+            <li><strong>Always show loading:</strong> Users hate blank screens</li>
+            <li><strong>Use skeleton loaders:</strong> Better UX than spinners</li>
+            <li><strong>Consider timing:</strong> Don't show loading for very fast requests (&lt; 300ms)</li>
+            <li><strong>Be specific:</strong> "Loading posts..." instead of just "Loading..."</li>
+          </ul>
+
+          <h3>🔥 Advanced Error Handling</h3>
+          <h4>1. HTTP Status Code Specific Errors</h4>
+          <pre><code>
+useEffect(() =&gt; {
+  const controller = new AbortController();
+
+  const fetchPosts = async () =&gt; {
+    try {
+      const response = await axios.get('/api/posts', { signal: controller.signal });
+      setPosts(response.data);
+    } catch (err) {
+      if (axios.isCancel(err)) {
+        return;
+      }
+
+      let errorMessage = 'Something went wrong';
+
+      // Handle specific status codes
+      switch (err.response?.status) {
+        case 401:
+          errorMessage = 'You are not authorized to view these posts';
+          break;
+        case 403:
+          errorMessage = 'Access denied. You do not have permission.';
+          break;
+        case 404:
+          errorMessage = 'Posts not found. Maybe they were deleted.';
+          break;
+        case 500:
+          errorMessage = 'Server error. Our team has been notified.';
+          break;
+        case 503:
+          errorMessage = 'Service temporarily unavailable. Please try again later.';
+          break;
+        default:
+          errorMessage = err.response?.data?.message || err.message || 'Unknown error';
+      }
+
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchPosts();
+
+  return () =&gt; {
+    controller.abort();
+  };
+}, []);
+          </code></pre>
+
+          <h4>2. Network Errors vs Server Errors</h4>
+          <pre><code>
+try {
+  const response = await axios.get('/api/data');
+  setData(response.data);
+} catch (err) {
+  if (err.code === 'ECONNABORTED') {
+    setError('Request timed out. Please check your internet connection.');
+  } else if (!err.response) {
+    // No response from server (network issue)
+    setError('Network error. Please check your connection.');
+  } else {
+    // Server responded with error
+    setError(err.response.data.message || 'Server error');
+  }
+}
+          </code></pre>
+
+          <h4>3. Retry Mechanism</h4>
+          <pre><code>
+import { useState, useEffect } from 'react';
+
+function DataComponent() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [retryCount, setRetryCount] = useState(0);
+
+  const fetchData = async () =&gt; {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const response = await axios.get('/api/data');
+      setData(response.data);
+      setRetryCount(0); // Reset retry count on success
+    } catch (err) {
+      setError(err.message);
+      setRetryCount(prev =&gt; prev + 1);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() =&gt; {
+    fetchData();
+  }, []);
+
+  // Auto-retry on error
+  useEffect(() =&gt; {
+    if (error &amp;&amp; retryCount &lt; 3) {
+      const timer = setTimeout(fetchData, 2000 * retryCount); // Exponential backoff
+      return () =&gt; clearTimeout(timer);
+    }
+  }, [error, retryCount]);
+
+  if (loading) return &lt;div className="loading-state"&gt;Loading...&lt;/div&gt;;
+  if (error &amp;&amp; retryCount &gt;= 3) return &lt;div className="error-state"&gt;
+    Failed to load data after 3 attempts. Please try again later.
+    &lt;button onClick={fetchData}&gt;Manual Retry&lt;/button&gt;
+  &lt;/div&gt;;
+  if (error) return &lt;div className="error-state"&gt;
+    {error} Retrying in {2 * retryCount}s...
+  &lt;/div&gt;;
+
+  return (
+    &lt;div className="success-state"&gt;
+      {data.map(item =&gt; (
+        &lt;div key={item.id}&gt;{item.name}&lt;/div&gt;
+      ))}
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h4>4. Global Error Handler</h4>
+          <pre><code>
+// axiosConfig.js
+import axios from 'axios';
+
+const apiClient = axios.create({
+  baseURL: '/api',
+  timeout: 10000
+});
+
+// Global response interceptor
+apiClient.interceptors.response.use(
+  response =&gt; response,
+  error =&gt; {
+    // Log error to analytics
+    console.error('API Error:', error);
+
+    // Handle global errors
+    if (error.response?.status === 401) {
+      // Redirect to login
+      window.location.href = '/login';
+    } else if (error.response?.status === 403) {
+      // Show access denied message
+      alert('You do not have permission to perform this action');
+    }
+
+    return Promise.reject(error);
+  }
+);
+
+export default apiClient;
+          </code></pre>
+
+          <div class="api-demo">
+            <h4>✅ Live Demo: State Management</h4>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+              <button class="fetch-btn">Load Data</button>
+              <button class="axios-btn">Load Data with Axios</button>
+            </div>
+            <div class="component-preview">
+              <p>Click the buttons above to see loading, success, and error states in action!</p>
+            </div>
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Deep Dive: Skeleton Loaders and Progressive Rendering</summary>
+          <p>Skeleton loaders provide better perceived performance than spinners by showing the structure of content before it loads.</p>
+
+          <h3>⚡ Skeleton Loader Implementation</h3>
+          <pre><code>
+import { useState, useEffect } from 'react';
+
+function UserProfileSkeleton() {
+  return (
+    &lt;div style={{ 
+      padding: '20px', 
+      border: '1px dashed var(--border-light)', 
+      borderRadius: '8px',
+      backgroundColor: 'rgba(10, 25, 47, 0.3)'
+    }}&gt;
+      &lt;div style={{ 
+        height: '40px', 
+        backgroundColor: '#1a2b42', 
+        borderRadius: '4px', 
+        marginBottom: '16px',
+        animation: 'pulse 1.5s infinite'
+      }}&gt;&lt;/div&gt;
+      
+      &lt;div style={{ 
+        height: '20px', 
+        backgroundColor: '#1a2b42', 
+        borderRadius: '4px', 
+        marginBottom: '8px',
+        animation: 'pulse 1.5s infinite'
+      }}&gt;&lt;/div&gt;
+      
+      &lt;div style={{ 
+        height: '16px', 
+        backgroundColor: '#1a2b42', 
+        borderRadius: '4px', 
+        marginBottom: '8px',
+        animation: 'pulse 1.5s infinite'
+      }}&gt;&lt;/div&gt;
+      
+      &lt;div style={{ 
+        height: '16px', 
+        backgroundColor: '#1a2b42', 
+        borderRadius: '4px', 
+        marginBottom: '8px',
+        animation: 'pulse 1.5s infinite'
+      }}&gt;&lt;/div&gt;
+      
+      &lt;div style={{ 
+        height: '16px', 
+        backgroundColor: '#1a2b42', 
+        borderRadius: '4px', 
+        animation: 'pulse 1.5s infinite'
+      }}&gt;&lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+function UserProfile({ userId }) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() =&gt; {
+    const controller = new AbortController();
+
+    const fetchUser = async () =&gt; {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await axios.get(\`/api/users/\${userId}\`, {
+          signal: controller.signal
+        });
+        setUser(response.data);
+      } catch (err) {
+        if (axios.isCancel(err)) {
+          console.log('Request canceled');
+        } else {
+          setError(err.message);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+
+    return () =&gt; {
+      controller.abort();
+    };
+  }, [userId]);
+
+  if (loading) {
+    return &lt;UserProfileSkeleton /&gt;;
+  }
+
+  if (error) {
+    return &lt;div className="error-state"&gt;Error: {error}&lt;/div&gt;;
+  }
+
+  return (
+    &lt;div style={{ padding: '20px', border: '1px solid var(--border-light)', borderRadius: '8px' }}&gt;
+      &lt;h2&gt;{user.name}&lt;/h2&gt;
+      &lt;p&gt;Email: {user.email}&lt;/p&gt;
+      &lt;p&gt;Joined: {new Date(user.joinedAt).toLocaleDateString()}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+
+// Add CSS animation
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+  }
+`;
+document.head.appendChild(style);
+          </code></pre>
+
+          <h3>💡 Progressive Loading Patterns</h3>
+          <h4>1. Content First, Images Later</h4>
+          <pre><code>
+function BlogPost({ postId }) {
+  const [post, setPost] = useState(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
+
+  useEffect(() =&gt; {
+    const fetchPost = async () =&gt; {
+      const response = await axios.get(\`/api/posts/\${postId}\`);
+      setPost(response.data);
+    };
+
+    fetchPost();
+  }, [postId]);
+
+  if (!post) return &lt;div className="loading-state"&gt;Loading post...&lt;/div&gt;;
+
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;{post.title}&lt;/h1&gt;
+      &lt;p&gt;{post.excerpt}&lt;/p&gt;
+      
+      &lt;!-- Show image only after it loads --&gt;
+      &lt;img 
+        src={post.imageUrl} 
+        alt={post.title} 
+        onLoad={() =&gt; setImageLoaded(true)}
+        style={{ 
+          opacity: imageLoaded ? 1 : 0,
+          transition: 'opacity 0.3s ease'
+        }}
+      /&gt;
+      
+      &lt;!-- Show placeholder while image loads --&gt;
+      {!imageLoaded &amp;&amp; (
+        &lt;div style={{ 
+          height: '300px', 
+          backgroundColor: '#1a2b42', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          margin: '20px 0'
+        }}&gt;
+          &lt;div style={{ color: '#666' }}&gt;Loading image...&lt;/div&gt;
+        &lt;/div&gt;
+      )}
+      
+      &lt;div dangerouslySetInnerHTML={{ __html: post.content }} /&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h4>2. Pagination with Lazy Loading</h4>
+          <pre><code>
+function PostList() {
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+
+  const loadMore = async () =&gt; {
+    if (loading || !hasMore) return;
+
+    setLoading(true);
+
+    try {
+      const response = await axios.get('/api/posts', {
+        params: { page: page + 1 }
+      });
+      
+      const newPosts = response.data;
+      setPosts(prev =&gt; [...prev, ...newPosts]);
+      setHasMore(newPosts.length === 10); // Assuming 10 per page
+      setPage(prev =&gt; prev + 1);
+    } catch (error) {
+      console.error('Failed to load more posts:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() =&gt; {
+    loadMore();
+  }, []);
+
+  return (
+    &lt;div&gt;
+      {posts.map(post =&gt; (
+        &lt;PostItem key={post.id} post={post} /&gt;
+      ))}
+
+      {loading &amp;&amp; (
+        &lt;div className="loading-state"&gt;Loading more posts...&lt;/div&gt;
+      )}
+
+      {!loading &amp;&amp; !hasMore &amp;&amp; (
+        &lt;div className="success-state"&gt;No more posts to load&lt;/div&gt;
+      )}
+
+      {!loading &amp;&amp; hasMore &amp;&amp; (
+        &lt;button onClick={loadMore} className="fetch-btn"&gt;Load More&lt;/button&gt;
+      )}
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <div class="note">
+            <strong>🎯 Final Wisdom:</strong> Never leave users guessing. Every API call should have clear visual feedback for loading, success, and error states. The difference between good and great UX is often just thoughtful state management.
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 15.4 -->
+      <section id="section-15-4">
+        <h2>15.4 Data Fetching Patterns</h2>
+        
+        <details>
+          <summary>📌 Summary: Professional Patterns for Production Apps</summary>
+          <p>As your app grows, you'll encounter complex data fetching scenarios. Here are battle-tested patterns used by professional teams.</p>
+
+          <h3>🔹 Pattern 1: Custom Hook for Data Fetching</h3>
+          <p>Abstract the complexity of data fetching into reusable hooks.</p>
+
+          <h3>⚡ Implementation</h3>
+          <pre><code>
+import { useState, useEffect } from 'react';
+
+// Custom hook
+function useApi(url, options = {}) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() =&gt; {
+    const controller = new AbortController();
+
+    const fetchData = async () =&gt; {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await fetch(url, {
+          ...options,
+          signal: controller.signal
+        });
+
+        if (!response.ok) {
+          throw new Error(\`HTTP error! status: \${response.status}\`);
+        }
+
+        const result = await response.json();
+        setData(result);
+      } catch (err) {
+        if (err.name !== 'AbortError') {
+          setError(err.message);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (url) {
+      fetchData();
+    }
+
+    return () =&gt; {
+      controller.abort();
+    };
+  }, [url, options]);
+
+  return { data, loading, error };
+}
+
+// Usage in component
+function UserProfile({ userId }) {
+  const { data: user, loading, error } = useApi(\`/api/users/\${userId}\`);
+
+  if (loading) return &lt;div className="loading-state"&gt;Loading...&lt;/div&gt;;
+  if (error) return &lt;div className="error-state"&gt;Error: {error}&lt;/div&gt;;
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;{user.name}&lt;/h2&gt;
+      &lt;p&gt;Email: {user.email}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>🔥 Pattern 2: Data Caching with React Query (Conceptual)</h3>
+          <p>Modern apps use libraries like React Query to handle caching, background updates, and stale data.</p>
+
+          <h3>⚡ Pattern Structure</h3>
+          <pre><code>
+// This is how you'd think about it conceptually
+function UserProfile({ userId }) {
+  // Imagine this hook handles:
+  // - Caching responses
+  // - Background refetching
+  // - Stale-while-revalidate
+  // - Automatic retry on failure
+  // - Dependency-based invalidation
+  const { data: user, isLoading, isError } = useQuery(
+    ['user', userId], // Cache key
+    () =&gt; fetchUser(userId) // Fetch function
+  );
+
+  if (isLoading) return &lt;div className="loading-state"&gt;Loading...&lt;/div&gt;;
+  if (isError) return &lt;div className="error-state"&gt;Error loading user&lt;/div&gt;;
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;{user.name}&lt;/h2&gt;
+      &lt;p&gt;Email: {user.email}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>🔹 Pattern 3: Parallel Data Fetching</h3>
+          <p>Fetching multiple related resources simultaneously.</p>
+
+          <h3>⚡ Implementation</h3>
+          <pre><code>
+import { useState, useEffect } from 'react';
+
+function UserDashboard({ userId }) {
+  const [user, setUser] = useState(null);
+  const [posts, setPosts] = useState([]);
+  const [comments, setComments] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() =&gt; {
+    const controller = new AbortController();
+
+    const fetchUserData = async () =&gt; {
+      try {
+        const [userResponse, postsResponse, commentsResponse] = await Promise.all([
+          axios.get(\`/api/users/\${userId}\`, { signal: controller.signal }),
+          axios.get(\`/api/users/\${userId}/posts\`, { signal: controller.signal }),
+          axios.get(\`/api/users/\${userId}/comments\`, { signal: controller.signal })
+        ]);
+
+        setUser(userResponse.data);
+        setPosts(postsResponse.data);
+        setComments(commentsResponse.data);
+      } catch (err) {
+        if (axios.isCancel(err)) {
+          console.log('Requests canceled');
+        } else {
+          setError(err.message);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUserData();
+
+    return () =&gt; {
+      controller.abort();
+    };
+  }, [userId]);
+
+  if (loading) return &lt;div className="loading-state"&gt;Loading dashboard...&lt;/div&gt;;
+  if (error) return &lt;div className="error-state"&gt;Error: {error}&lt;/div&gt;;
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;{user.name}'s Dashboard&lt;/h2&gt;
+      
+      &lt;h3&gt;Recent Posts&lt;/h3&gt;
+      {posts.map(post =&gt; (
+        &lt;div key={post.id}&gt;{post.title}&lt;/div&gt;
+      ))}
+
+      &lt;h3&gt;Recent Comments&lt;/h3&gt;
+      {comments.map(comment =&gt; (
+        &lt;div key={comment.id}&gt;{comment.text}&lt;/div&gt;
+      ))}
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>🔹 Pattern 4: Dependent Data Fetching</h3>
+          <p>Fetching data that depends on previously fetched data.</p>
+
+          <h3>⚡ Implementation</h3>
+          <pre><code>
+function PostDetails({ postId }) {
+  const [post, setPost] = useState(null);
+  const [author, setAuthor] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() =&gt; {
+    const controller = new AbortController();
+
+    const fetchPostAndAuthor = async () =&gt; {
+      try {
+        // First fetch the post
+        const postResponse = await axios.get(\`/api/posts/\${postId}\`, {
+          signal: controller.signal
+        });
+        setPost(postResponse.data);
+
+        // Then fetch the author using post.authorId
+        const authorResponse = await axios.get(\`/api/users/\${postResponse.data.authorId}\`, {
+          signal: controller.signal
+        });
+        setAuthor(authorResponse.data);
+
+      } catch (err) {
+        if (axios.isCancel(err)) {
+          console.log('Requests canceled');
+        } else {
+          setError(err.message);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (postId) {
+      fetchPostAndAuthor();
+    }
+
+    return () =&gt; {
+      controller.abort();
+    };
+  }, [postId]);
+
+  if (loading) return &lt;div className="loading-state"&gt;Loading post...&lt;/div&gt;;
+  if (error) return &lt;div className="error-state"&gt;Error: {error}&lt;/div&gt;;
+
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;{post.title}&lt;/h1&gt;
+      &lt;p&gt;By {author?.name}&lt;/p&gt;
+      &lt;p&gt;{post.content}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>🔹 Pattern 5: Optimistic Updates</h3>
+          <p>Updating UI immediately before API call completes for better perceived performance.</p>
+
+          <h3>⚡ Implementation</h3>
+          <pre><code>
+function PostList() {
+  const [posts, setPosts] = useState([]);
+
+  const createPost = async (postData) =&gt; {
+    // 1. Optimistic update: Update UI immediately
+    const optimisticPost = {
+      id: Date.now(),
+      ...postData,
+      createdAt: new Date().toISOString()
+    };
+    
+    setPosts(prev =&gt; [optimisticPost, ...prev]);
+
+    // 2. Make API call
+    try {
+      const response = await axios.post('/api/posts', postData);
+      const actualPost = response.data;
+
+      // 3. Confirm update: Replace optimistic with real data
+      setPosts(prev =&gt; 
+        prev.map(post =&gt; 
+          post.id === optimisticPost.id ? actualPost : post
+        )
+      );
+    } catch (error) {
+      // 4. Rollback on error
+      setPosts(prev =&gt; prev.filter(post =&gt; post.id !== optimisticPost.id));
+      alert('Failed to create post: ' + error.message);
+    }
+  };
+
+  return (
+    &lt;div&gt;
+      &lt;button onClick={() =&gt; createPost({ title: 'New Post', content: 'Content' })}&gt;Create Post&lt;/button&gt;
+      
+      {posts.map(post =&gt; (
+        &lt;div key={post.id}&gt;
+          &lt;h3&gt;{post.title}&lt;/h3&gt;
+          &lt;p&gt;{post.content}&lt;/p&gt;
+        &lt;/div&gt;
+      ))}
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>📊 Pattern Comparison Table</h3>
+          <table class="table table-dark comparison-table">
+            <thead>
+              <tr><th>Pattern</th><th>Best For</th><th>Pros</th><th>Cons</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Custom Hook</td><td>Reusability across components</td><td>DRY code, consistent behavior</td><td>Additional abstraction layer</td></tr>
+              <tr><td>Data Caching</td><td>Apps with frequent data access</td><td>Reduced network calls, faster UI</td><td>Complexity, cache invalidation</td></tr>
+              <tr><td>Parallel Fetching</td><td>Related data needed together</td><td>Faster overall load time</td><td>All requests must succeed</td></tr>
+              <tr><td>Dependent Fetching</td><td>Data requires prior results</td><td>Logical data flow</td><td>Slower sequential loading</td></tr>
+              <tr><td>Optimistic Updates</td><td>Highly interactive interfaces</td><td>Instant feedback, great UX</td><td>Complex rollback logic</td></tr>
+            </tbody>
+          </table>
+
+          <div class="pattern-card">
+            <h4>✅ Live Demo: Data Fetching Patterns</h4>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+              <button class="fetch-btn">Fetch Data (Custom Hook)</button>
+              <button class="axios-btn">Parallel Fetch</button>
+              <button class="fetch-btn">Optimistic Update</button>
+            </div>
+            <div class="component-preview">
+              <p>These patterns represent professional approaches to data fetching.</p>
+            </div>
+          </div>
+
+          <div class="note">
+            <strong>🌟 Pro Tip:</strong> Start with custom hooks for reusability. As your app grows, consider React Query or similar libraries to handle caching, background updates, and error handling automatically.
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Deep Dive: Modern Data Fetching Architecture</summary>
+          <p>Professional applications follow a layered architecture for data fetching.</p>
+
+          <h3>🌐 Layered Architecture</h3>
+          <pre><code>
+// 1. API Service Layer (responsible for HTTP calls)
+// services/api.js
+import axios from 'axios';
+
+const apiClient = axios.create({
+  baseURL: '/api',
+  timeout: 10000
+});
+
+export const userService = {
+  getUser: (id) =&gt; apiClient.get(\`/users/\${id}\`),
+  updateUser: (id, data) =&gt; apiClient.put(\`/users/\${id}\`, data),
+  deleteUser: (id) =&gt; apiClient.delete(\`/users/\${id}\`)
+};
+
+export const postService = {
+  getPosts: (params) =&gt; apiClient.get('/posts', { params }),
+  createPost: (data) =&gt; apiClient.post('/posts', data),
+  updatePost: (id, data) =&gt; apiClient.put(\`/posts/\${id}\`, data)
+};
+
+// 2. Custom Hook Layer (responsible for state management)
+// hooks/useUser.js
+import { useState, useEffect } from 'react';
+import { userService } from '../services/api';
+
+export function useUser(id) {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() =&gt; {
+    const fetchUser = async () =&gt; {
+      if (!id) return;
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        const response = await userService.getUser(id);
+        setUser(response.data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchUser();
+  }, [id]);
+
+  return { user, loading, error };
+}
+
+// 3. Component Layer (responsible for presentation)
+// components/UserProfile.jsx
+import { useUser } from '../hooks/useUser';
+
+function UserProfile({ userId }) {
+  const { user, loading, error } = useUser(userId);
+
+  if (loading) return &lt;div className="loading-state"&gt;Loading...&lt;/div&gt;;
+  if (error) return &lt;div className="error-state"&gt;Error: {error}&lt;/div&gt;;
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;{user.name}&lt;/h2&gt;
+      &lt;p&gt;Email: {user.email}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>💡 Benefits of This Architecture</h3>
+          <ul>
+            <li><strong>Separation of Concerns:</strong> API calls, state, and UI are separate</li>
+            <li><strong>Testability:</strong> Services can be mocked independently</li>
+            <li><strong>Reusability:</strong> Same service used across multiple components</li>
+            <li><strong>Maintainability:</strong> Changes to API endpoints only affect one file</li>
+            <li><strong>Scalability:</strong> Easy to add new endpoints without cluttering components</li>
+          </ul>
+
+          <div class="note">
+            <strong>🎯 Final Wisdom:</strong> Don't make API calls directly in components. Always abstract them through services and custom hooks. This pattern scales beautifully as your application grows from small to enterprise-level.
+          </div>
+        </details>
+      </section>
+
+      <div class="footer-note">
+        📚 Next: 15.5 React Query / TanStack Query, 15.6 SWR, 15.7 GraphQL with Apollo Client, 15.8 Caching Strategies
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript Utilities -->
+<script>
+  // Expand/Collapse All
+  document.getElementById('expandAll').addEventListener('click', () => {
+    document.querySelectorAll('details').forEach(detail => detail.open = true);
+  });
+
+  document.getElementById('collapseAll').addEventListener('click', () => {
+    document.querySelectorAll('details').forEach(detail => detail.open = false);
+  });
+
+  // Smooth Scroll to TOC Item
+  document.querySelectorAll('.toc-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const targetId = item.getAttribute('data-target');
+      document.querySelector(targetId).scrollIntoView({ behavior: 'smooth' });
+      
+      // Highlight active item
+      document.querySelectorAll('.toc-item').forEach(el => el.classList.remove('active'));
+      item.classList.add('active');
+    });
+  });
+
+  // Search TOC
+  document.getElementById('searchTOC').addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase();
+    document.querySelectorAll('.toc-item').forEach(item => {
+      const text = item.textContent.toLowerCase();
+      item.style.display = text.includes(query) ? 'block' : 'none';
+    });
+  });
+
+  // Demo functionality
+  document.querySelectorAll('.fetch-btn, .axios-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      const demoCard = button.closest('.api-demo, .pattern-card');
+      if (demoCard) {
+        const preview = demoCard.querySelector('.component-preview');
+        if (preview) {
+          const buttonText = button.textContent;
+          preview.innerHTML = `
+            <h3>${buttonText}</h3>
+            <p>Simulating API call...</p>
+            <p>State: ${buttonText.includes('Load') ? 'Loading' : buttonText.includes('Update') ? 'Optimistic Update' : 'Success'}!</p>
+          `;
+          
+          // Simulate loading state
+          setTimeout(() => {
+            preview.innerHTML = `
+              <h3>${buttonText}</h3>
+              <p>API call completed successfully!</p>
+              <p>Data loaded from mock endpoint</p>
+            `;
+          }, 1500);
+        }
+      }
+    });
+  });
+
+  // Optional: Add highlight.js if needed (uncomment if CDN available)
+  /*
+  const script = document.createElement('script');
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js';
+  script.onload = () => {
+    document.querySelectorAll('pre code').forEach(block => hljs.highlightBlock(block));
+  };
+  document.head.appendChild(script);
+  */
+</script>
+
+<!-- Bootstrap JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
+```

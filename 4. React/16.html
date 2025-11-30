@@ -1,0 +1,1348 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Advanced React Forms - Chapter 11</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a192f;
+      --cyan: #00f5ff;
+      --amber: #ffb347;
+      --text-light: #e6f1ff;
+      --border-light: #1a3b5c;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      font-family: 'Roboto', sans-serif;
+      overflow-x: hidden;
+    }
+
+    .left-panel {
+      position: fixed;
+      width: 300px;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 20px;
+      background-color: rgba(10, 25, 47, 0.9);
+      border-right: 1px solid var(--border-light);
+      z-index: 1000;
+    }
+
+    .right-panel {
+      margin-left: 300px;
+      padding: 30px;
+      height: 100vh;
+      overflow-y: auto;
+      background-color: var(--bg-dark);
+    }
+
+    h1, h2, h3, h4 {
+      color: var(--cyan);
+      font-weight: 600;
+    }
+
+    h1 {
+      border-bottom: 2px solid var(--amber);
+      padding-bottom: 10px;
+      margin-bottom: 25px;
+    }
+
+    h2 {
+      margin-top: 40px;
+      border-left: 4px solid var(--amber);
+      padding-left: 15px;
+    }
+
+    h3 {
+      color: var(--amber);
+      margin-top: 30px;
+    }
+
+    .toc-item {
+      margin: 8px 0;
+      padding: 6px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .toc-item:hover {
+      background-color: rgba(0, 245, 255, 0.1);
+    }
+
+    .toc-item.active {
+      background-color: rgba(0, 245, 255, 0.2);
+      border-left: 3px solid var(--cyan);
+    }
+
+    .search-box {
+      margin-bottom: 20px;
+      background-color: rgba(26, 59, 92, 0.5);
+      border: 1px solid var(--border-light);
+      color: var(--text-light);
+    }
+
+    .btn-control {
+      background-color: rgba(10, 25, 47, 0.7);
+      border: 1px solid var(--border-light);
+      color: var(--cyan);
+      margin-bottom: 15px;
+      font-size: 0.9rem;
+    }
+
+    .btn-control:hover {
+      background-color: rgba(0, 245, 255, 0.2);
+      color: var(--cyan);
+    }
+
+    details {
+      margin: 15px 0;
+      border-left: 1px solid var(--border-light);
+      padding-left: 15px;
+      background-color: rgba(10, 25, 47, 0.4);
+      border-radius: 0 5px 5px 0;
+    }
+
+    summary {
+      list-style: none;
+      cursor: pointer;
+      font-weight: bold;
+      color: var(--amber);
+      padding: 10px 15px;
+      background-color: rgba(0, 245, 255, 0.05);
+      border-radius: 5px;
+      margin-bottom: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    summary::before {
+      content: "▶ ";
+      font-size: 0.8em;
+    }
+
+    details[open] > summary::before {
+      content: "▼ ";
+    }
+
+    pre {
+      background-color: #0d1b2a !important;
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 15px;
+      overflow-x: auto;
+      margin: 15px 0;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    code {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.95rem;
+      color: var(--cyan);
+    }
+
+    .highlight {
+      color: var(--amber);
+      font-weight: bold;
+    }
+
+    .note {
+      background-color: rgba(255, 179, 71, 0.1);
+      border-left: 3px solid var(--amber);
+      padding: 12px 15px;
+      margin: 20px 0;
+      border-radius: 0 5px 5px 0;
+    }
+
+    .syntax {
+      background-color: rgba(0, 245, 255, 0.08);
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-weight: 500;
+      display: inline-block;
+      margin: 0 3px;
+    }
+
+    .author-info {
+      color: var(--amber);
+      font-style: italic;
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+
+    .footer-note {
+      margin-top: 60px;
+      text-align: center;
+      color: var(--amber);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border-light);
+      padding-top: 15px;
+    }
+
+    /* Smooth scrolling */
+    html {
+      scroll-behavior: smooth;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 991px) {
+      .left-panel {
+        width: 100%;
+        position: relative;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border-light);
+      }
+      .right-panel {
+        margin-left: 0;
+      }
+    }
+
+    /* Form styling for examples */
+    .form-example {
+      background-color: rgba(13, 27, 42, 0.6);
+      padding: 20px;
+      border-radius: 8px;
+      border: 1px dashed var(--border-light);
+      margin: 20px 0;
+    }
+
+    .form-control {
+      background-color: #1a2b42 !important;
+      border-color: var(--border-light) !important;
+      color: var(--text-light) !important;
+    }
+
+    .form-control:focus {
+      border-color: var(--cyan) !important;
+      box-shadow: 0 0 0 0.2rem rgba(0, 245, 255, 0.25) !important;
+    }
+
+    .btn-primary {
+      background-color: var(--amber);
+      border-color: var(--amber);
+    }
+
+    .btn-primary:hover {
+      background-color: #e6a23a;
+      border-color: #e6a23a;
+    }
+
+    .validation-badge {
+      display: inline-block;
+      background-color: var(--amber);
+      color: #000;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      margin-left: 5px;
+    }
+
+    .file-preview {
+      max-width: 200px;
+      max-height: 150px;
+      object-fit: cover;
+      border: 1px dashed var(--cyan);
+      border-radius: 5px;
+      margin: 10px 0;
+    }
+
+    .dynamic-field {
+      background-color: rgba(0, 245, 255, 0.05);
+      padding: 10px;
+      border-radius: 5px;
+      margin: 8px 0;
+      border-left: 3px solid var(--cyan);
+    }
+
+    .accessibility-tip {
+      background-color: rgba(0, 245, 255, 0.1);
+      border-left: 4px solid var(--cyan);
+      padding: 12px 15px;
+      margin: 20px 0;
+      border-radius: 0 5px 5px 0;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container-fluid p-0">
+  <div class="row g-0">
+
+    <!-- Left Panel -->
+    <div class="col-md-3 left-panel">
+      <h1>Chapter 11</h1>
+      <h4>Advanced Forms in React</h4>
+      <p class="author-info">— Mastering Forms with Depth & Precision —</p>
+
+      <input type="text" class="form-control search-box" id="searchTOC" placeholder="Search topics..." />
+
+      <div class="d-grid gap-2">
+        <button class="btn btn-control" id="expandAll">Expand All</button>
+        <button class="btn btn-control" id="collapseAll">Collapse All</button>
+      </div>
+
+      <div class="toc">
+        <h5>Table of Contents</h5>
+        <div class="toc-item" data-target="#section-11-4">11.4 Form Validation Strategies</div>
+        <div class="toc-item" data-target="#section-11-5">11.5 File Upload Handling</div>
+        <div class="toc-item" data-target="#section-11-6">11.6 Dynamic Forms</div>
+        <div class="toc-item" data-target="#section-11-7">11.7 Form Accessibility</div>
+      </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="col-md-9 right-panel">
+
+      <!-- Section 11.4 -->
+      <section id="section-11-4">
+        <h2>11.4 Form Validation Strategies</h2>
+        
+        <details>
+          <summary>📌 Summary: Don't Just Collect Data — Validate It Wisely</summary>
+          <p>Validation is the gatekeeper of your application's data integrity. Poor validation = bugs, security risks, and bad user experience. We'll explore four powerful strategies from basic to advanced.</p>
+
+          <h3>🔹 Strategy 1: HTML5 Native Validation (Simplest)</h3>
+          <p>Use built-in browser attributes — no JavaScript needed!</p>
+          <pre><code>
+&lt;form&gt;
+  &lt;input 
+    type="email" 
+    required 
+    placeholder="Email" 
+  /&gt;
+  
+  &lt;input 
+    type="password" 
+    minlength="8" 
+    required 
+    placeholder="Password" 
+  /&gt;
+  
+  &lt;input 
+    type="number" 
+    min="13" 
+    max="120" 
+    placeholder="Age" 
+  /&gt;
+  
+  &lt;button type="submit"&gt;Submit&lt;/button&gt;
+&lt;/form&gt;
+          </code></pre>
+          
+          <h3>💡 Pros & Cons</h3>
+          <table class="table table-dark table-sm mt-3">
+            <thead>
+              <tr><th>Aspect</th><th>Pros</th><th>Cons</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Speed</td><td>Instant, no JS load</td><td>Only works on submit</td></tr>
+              <tr><td>Accessibility</td><td>Built-in screen reader support</td><td>Styling limited</td></tr>
+              <tr><td>Customization</td><td>-</td><td>No custom error messages</td></tr>
+              <tr><td>Browser Support</td><td>Excellent</td><td>Minor inconsistencies</td></tr>
+            </tbody>
+          </table>
+
+          <div class="note">
+            <strong>🎯 Best For:</strong> Simple forms, quick prototypes, or when you need zero dependencies.
+          </div>
+        </details>
+
+        <details>
+          <summary>🧪 Deep Dive: Custom Validation Logic with useState</summary>
+          <p>When HTML5 isn't enough (e.g., password strength, custom rules), use React state to track errors.</p>
+
+          <h3>⚡ Real Example: Password Strength Validator</h3>
+          <pre><code>
+import { useState } from 'react';
+
+function PasswordForm() {
+  const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState([]);
+
+  const validatePassword = (pwd) =&gt; {
+    const newErrors = [];
+    
+    if (pwd.length &lt; 8) newErrors.push('Must be at least 8 characters');
+    if (!/[A-Z]/.test(pwd)) newErrors.push('Need at least one uppercase letter');
+    if (!/[a-z]/.test(pwd)) newErrors.push('Need at least one lowercase letter');
+    if (!/[0-9]/.test(pwd)) newErrors.push('Need at least one number');
+    if (!/[!@#$%^&amp;*()_+\-=\[\]{};':"\\|,.&lt;&gt;\/?]/.test(pwd)) 
+      newErrors.push('Need at least one special character');
+    
+    setErrors(newErrors);
+  };
+
+  const handleChange = (e) =&gt; {
+    const value = e.target.value;
+    setPassword(value);
+    validatePassword(value);
+  };
+
+  const handleSubmit = (e) =&gt; {
+    e.preventDefault();
+    if (errors.length === 0) {
+      alert('Password is strong! ✅');
+    }
+  };
+
+  return (
+    &lt;form onSubmit={handleSubmit} className="form-example"&gt;
+      &lt;label className="form-label"&gt;Create Password&lt;/label&gt;
+      &lt;input 
+        type="password" 
+        value={password} 
+        onChange={handleChange} 
+        className="form-control mb-2" 
+      /&gt;
+
+      &lt;div className="mb-3"&gt;
+        {errors.length &gt; 0 ? (
+          &lt;div className="text-danger"&gt;
+            &lt;strong&gt;Issues:&lt;/strong&gt;
+            &lt;ul className="mb-0"&gt;
+              {errors.map((err, i) =&gt; (
+                &lt;li key={i}&gt;{err}&lt;/li&gt;
+              ))}
+            &lt;/ul&gt;
+          &lt;/div&gt;
+        ) : (
+          password.length &gt; 0 &amp;&amp; (
+            &lt;div className="text-success"&gt;
+              ✅ Strong password!
+            &lt;/div&gt;
+          )
+        )}
+      &lt;/div&gt;
+
+      &lt;button type="submit" disabled={errors.length &gt; 0} className="btn btn-primary"&gt;
+        Submit
+      &lt;/button&gt;
+    &lt;/form&gt;
+  );
+}
+          </code></pre>
+
+          <h3>🧠 Mental Model: The Validation Pipeline</h3>
+          <ol>
+            <li>User types → triggers <code>onChange</code></li>
+            <li>Validation function runs → returns array of errors</li>
+            <li>Errors stored in state → UI updates instantly</li>
+            <li>Submit blocked if errors exist</li>
+          </ol>
+
+          <div class="note">
+            <strong>⚠️ Warning:</strong> Never rely solely on client-side validation. Always validate on the server too!
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Strategy 3: Schema-Based Validation with Zod/Yup</summary>
+          <p>Define your form structure as a schema — like a contract. Libraries like Zod (TypeScript) and Yup (JavaScript) turn validation into declarative code.</p>
+
+          <h3>⚡ Zod Example (Modern Favorite)</h3>
+          <pre><code>
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+// Define schema — this is your contract!
+const userSchema = z.object({
+  email: z.string().email('Invalid email format'),
+  age: z.number().int().min(13, 'Must be 13+').max(120, 'Too old!'),
+  password: z.string().min(8, 'At least 8 chars')
+    .regex(/[A-Z]/, 'Need uppercase')
+    .regex(/[0-9]/, 'Need number')
+});
+
+// Type inference — get full TypeScript support!
+type User = z.infer&lt;typeof userSchema&gt;;
+
+function RegistrationForm() {
+  const { register, handleSubmit, formState: { errors } } = useForm({
+    resolver: zodResolver(userSchema)
+  });
+
+  const onSubmit = (data: User) =&gt; {
+    console.log('Validated data:', data); // Guaranteed shape!
+  };
+
+  return (
+    &lt;form onSubmit={handleSubmit(onSubmit)}&gt;
+      &lt;input {...register('email')} placeholder="Email" /&gt;
+      {errors.email &amp;&amp; &lt;span className="text-danger"&gt;{errors.email.message}&lt;/span&gt;}
+
+      &lt;input type="number" {...register('age', { valueAsNumber: true })} placeholder="Age" /&gt;
+      {errors.age &amp;&amp; &lt;span className="text-danger"&gt;{errors.age.message}&lt;/span&gt;}
+
+      &lt;input type="password" {...register('password')} placeholder="Password" /&gt;
+      {errors.password &amp;&amp; &lt;span className="text-danger"&gt;{errors.password.message}&lt;/span&gt;}
+
+      &lt;button type="submit"&gt;Register&lt;/button&gt;
+    &lt;/form&gt;
+  );
+}
+          </code></pre>
+
+          <h3>🔥 Why This Is Revolutionary</h3>
+          <ul>
+            <li><strong>TypeScript Integration:</strong> Your form data has perfect type safety</li>
+            <li><strong>Reusable Schemas:</strong> Use same schema for API requests</li>
+            <li><strong>Async Validation:</strong> Check if email exists via API</li>
+            <li><strong>Readable:</strong> One place defines ALL rules</li>
+          </ul>
+
+          <h3>Pseudocode: How Zod Works Internally</h3>
+          <pre><code>
+// Simplified internal logic:
+function validate(schema, input) {
+  const errors = [];
+  
+  for (let field in schema.shape) {
+    const rule = schema.shape[field];
+    
+    if (!rule.safeParse(input[field]).success) {
+      errors.push({
+        path: field,
+        message: rule._def.messages[0]
+      });
+    }
+  }
+  
+  return { success: errors.length === 0, errors };
+}
+          </code></pre>
+
+          <div class="note">
+            <strong>🌟 Pro Tip:</strong> Use Zod + React Hook Form + TypeScript together — it’s the gold standard for production apps.
+          </div>
+        </details>
+
+        <details>
+          <summary>🌐 Strategy 4: Async Validation (Real-Time Checks)</summary>
+          <p>Some validations require network calls: check username availability, verify email via API, etc.</p>
+
+          <h3>⚡ Real Example: Username Availability Check</h3>
+          <pre><code>
+import { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+
+function SignupForm() {
+  const [usernameAvailable, setUsernameAvailable] = useState(null);
+  const [checking, setChecking] = useState(false);
+
+  const { register, watch, formState: { errors } } = useForm();
+
+  const username = watch('username');
+
+  // Async validation effect
+  useEffect(() =&gt; {
+    if (!username) {
+      setUsernameAvailable(null);
+      return;
+    }
+
+    setChecking(true);
+    
+    // Simulate API call
+    const checkUsername = async () =&gt; {
+      try {
+        // In real app: await fetch(`/api/check-username?name=${username}`)
+        const mockResponse = username !== 'admin' &amp;&amp; username.length &gt; 3;
+        setUsernameAvailable(mockResponse);
+      } catch (error) {
+        setUsernameAvailable(null);
+      } finally {
+        setChecking(false);
+      }
+    };
+
+    const debounceTimer = setTimeout(checkUsername, 500);
+    return () =&gt; clearTimeout(debounceTimer);
+  }, [username]);
+
+  return (
+    &lt;form className="form-example"&gt;
+      &lt;label className="form-label"&gt;Username&lt;/label&gt;
+      &lt;input 
+        {...register('username', {
+          required: 'Username is required',
+          minLength: { value: 4, message: 'Min 4 characters' }
+        })} 
+        className="form-control mb-2"
+      /&gt;
+
+      {errors.username &amp;&amp; (
+        &lt;span className="text-danger"&gt;{errors.username.message}&lt;/span&gt;
+      )}
+
+      {checking &amp;&amp; &lt;span className="text-warning"&gt;Checking...&lt;/span&gt;}
+      
+      {!checking &amp;&amp; username &amp;&amp; (
+        &lt;span className={usernameAvailable ? 'text-success' : 'text-danger'}&gt;
+          {usernameAvailable ? '✅ Available!' : '❌ Taken!'}
+        &lt;/span&gt;
+      )}
+
+      &lt;button type="submit" disabled={!usernameAvailable || checking} className="btn btn-primary mt-3"&gt;
+        Sign Up
+      &lt;/button&gt;
+    &lt;/form&gt;
+  );
+}
+          </code></pre>
+
+          <h3>💡 Key Patterns for Async Validation</h3>
+          <ol>
+            <li><strong>Debounce:</strong> Wait 300-500ms after typing stops before calling API</li>
+            <li><strong>Cancellation:</strong> Cancel previous requests if user types fast</li>
+            <li><strong>Loading States:</strong> Show spinner while checking</li>
+            <li><strong>Fallback:</strong> Allow submission even if API fails (but log it)</li>
+          </ol>
+
+          <div class="note">
+            <strong>🧠 Advanced Tip:</strong> Use libraries like <code>use-debounce</code> or implement cancellation with AbortController for production-grade async validation.
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 11.5 -->
+      <section id="section-11-5">
+        <h2>11.5 File Upload Handling</h2>
+        
+        <details>
+          <summary>📌 Summary: Files Are Not Strings — Handle Them Right</summary>
+          <p>File uploads are tricky because files are binary data, not plain text. React doesn't manage them through state — we use <code>FileList</code> objects and FormData.</p>
+
+          <h3>🔹 Core Concepts</h3>
+          <ul>
+            <li>Input with <code>type="file"</code> gives you a <code>FileList</code></li>
+            <li>Each file has properties: <code>name</code>, <code>size</code>, <code>type</code>, <code>lastModified</code></li>
+            <li>Use <code>FormData</code> to send files to APIs</li>
+            <li>Never store entire files in React state — only references or previews</li>
+          </ul>
+
+          <h3>⚡ Basic File Upload Example</h3>
+          <pre><code>
+import { useState } from 'react';
+
+function ImageUploader() {
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [previewUrl, setPreviewUrl] = useState('');
+
+  const handleFileChange = (e) =&gt; {
+    const file = e.target.files[0];
+    
+    if (!file) return;
+    
+    // 1. Store file reference
+    setSelectedFile(file);
+    
+    // 2. Create preview URL (for images)
+    const url = URL.createObjectURL(file);
+    setPreviewUrl(url);
+  };
+
+  const handleSubmit = async (e) =&gt; {
+    e.preventDefault();
+    
+    if (!selectedFile) return alert('Please select a file');
+    
+    const formData = new FormData();
+    formData.append('image', selectedFile); // Key name must match backend expectation
+    
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData // ← Files sent as multipart/form-data
+      });
+      
+      if (response.ok) {
+        alert('Upload successful!');
+        setSelectedFile(null);
+        setPreviewUrl('');
+      }
+    } catch (error) {
+      alert('Upload failed: ' + error.message);
+    }
+  };
+
+  return (
+    &lt;form onSubmit={handleSubmit} className="form-example"&gt;
+      &lt;label className="form-label"&gt;Choose Image&lt;/label&gt;
+      &lt;input 
+        type="file" 
+        accept="image/*" 
+        onChange={handleFileChange} 
+        className="form-control mb-3" 
+      /&gt;
+
+      {previewUrl &amp;&amp; (
+        &lt;div&gt;
+          &lt;img src={previewUrl} alt="Preview" className="file-preview" /&gt;
+          &lt;p&gt;File: {selectedFile.name} ({(selectedFile.size/1024).toFixed(1)} KB)&lt;/p&gt;
+        &lt;/div&gt;
+      )}
+
+      &lt;button type="submit" disabled={!selectedFile} className="btn btn-primary"&gt;
+        Upload Image
+      &lt;/button&gt;
+    &lt;/form&gt;
+  );
+}
+          </code></pre>
+
+          <h3>💡 Why URL.createObjectURL()?</h3>
+          <p>This creates a temporary URL pointing to the file in browser memory. It's lightweight and doesn't upload anything yet. When done, call <code>URL.revokeObjectURL()</code> to free memory:</p>
+          <pre><code>
+useEffect(() =&gt; {
+  if (previewUrl) {
+    return () =&gt; URL.revokeObjectURL(previewUrl);
+  }
+}, [previewUrl]);
+          </code></pre>
+
+          <div class="note">
+            <strong>⚠️ Security Note:</strong> Never trust file types from client side. Always validate MIME types and extensions on the server.
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Multi-File Upload with Drag & Drop</summary>
+          <p>Make your upload experience professional with drag-and-drop.</p>
+
+          <h3>⚡ Complete Drag & Drop Implementation</h3>
+          <pre><code>
+import { useState, useRef } from 'react';
+
+function MultiFileUploader() {
+  const [files, setFiles] = useState([]);
+  const fileInputRef = useRef(null);
+
+  const handleDragOver = (e) =&gt; {
+    e.preventDefault();
+    e.stopPropagation();
+    document.body.style.borderColor = '#00f5ff';
+  };
+
+  const handleDragLeave = (e) =&gt; {
+    e.preventDefault();
+    e.stopPropagation();
+    document.body.style.borderColor = '';
+  };
+
+  const handleDrop = (e) =&gt; {
+    e.preventDefault();
+    e.stopPropagation();
+    document.body.style.borderColor = '';
+    
+    const droppedFiles = Array.from(e.dataTransfer.files);
+    const validFiles = droppedFiles.filter(f =&gt; f.type.startsWith('image/'));
+    
+    setFiles(prev =&gt; [...prev, ...validFiles]);
+  };
+
+  const handleInputChange = (e) =&gt; {
+    const selectedFiles = Array.from(e.target.files);
+    setFiles(prev =&gt; [...prev, ...selectedFiles]);
+  };
+
+  const removeFile = (index) =&gt; {
+    setFiles(prev =&gt; prev.filter((_, i) =&gt; i !== index));
+  };
+
+  const handleSubmit = async () =&gt; {
+    const formData = new FormData();
+    files.forEach((file, i) =&gt; formData.append(`files[${i}]`, file));
+    
+    const response = await fetch('/api/upload-multiple', {
+      method: 'POST',
+      body: formData
+    });
+    
+    if (response.ok) {
+      alert('Files uploaded!');
+      setFiles([]);
+    }
+  };
+
+  return (
+    &lt;div className="form-example"&gt;
+      &lt;h4&gt;Drag & Drop Images Here&lt;/h4&gt;
+      
+      &lt;div 
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        style={{
+          border: '2px dashed var(--cyan)',
+          borderRadius: '8px',
+          padding: '40px',
+          textAlign: 'center',
+          marginBottom: '20px',
+          cursor: 'pointer'
+        }}
+      &gt;
+        &lt;p&gt;Click or drop images here&lt;/p&gt;
+        &lt;input 
+          type="file" 
+          ref={fileInputRef}
+          onChange={handleInputChange}
+          multiple 
+          accept="image/*" 
+          style={{ display: 'none' }} 
+        /&gt;
+        &lt;button 
+          type="button" 
+          onClick={() =&gt; fileInputRef.current?.click()}
+          className="btn btn-outline-cyan mt-2"
+        &gt;
+          Browse Files
+        &lt;/button&gt;
+      &lt;/div&gt;
+
+      {files.length &gt; 0 &amp;&amp; (
+        &lt;div&gt;
+          &lt;h5&gt;Selected Files ({files.length})&lt;/h5&gt;
+          &lt;div style={{display: 'flex', flexWrap: 'wrap', gap: '10px'}}&gt;
+            {files.map((file, index) =&gt; (
+              &lt;div key={index} className="dynamic-field"&gt;
+                &lt;img 
+                  src={URL.createObjectURL(file)} 
+                  alt={file.name} 
+                  className="file-preview" 
+                /&gt;
+                &lt;p style={{margin: '5px 0'}}&gt;{file.name}&lt;/p&gt;
+                &lt;button 
+                  type="button" 
+                  onClick={() =&gt; removeFile(index)}
+                  className="btn btn-sm btn-danger"
+                &gt;
+                  Remove
+                &lt;/button&gt;
+              &lt;/div&gt;
+            ))}
+          &lt;/div&gt;
+          &lt;button 
+            onClick={handleSubmit} 
+            className="btn btn-primary mt-3"
+          &gt;
+            Upload All
+          &lt;/button&gt;
+        &lt;/div&gt;
+      )}
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>🔒 Advanced: File Size Limits & Type Filtering</h3>
+          <pre><code>
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+const handleDrop = (e) =&gt; {
+  e.preventDefault();
+  const files = Array.from(e.dataTransfer.files);
+  
+  const validFiles = files.filter(file =&gt; {
+    // Check size
+    if (file.size &gt; MAX_FILE_SIZE) {
+      alert(`${file.name} is too large! Max 5MB`);
+      return false;
+    }
+    
+    // Check type
+    if (!file.type.startsWith('image/')) {
+      alert(`${file.name} must be an image`);
+      return false;
+    }
+    
+    return true;
+  });
+  
+  setFiles(prev =&gt; [...prev, ...validFiles]);
+};
+          </code></pre>
+
+          <div class="note">
+            <strong>🧠 Pro Tip:</strong> For very large files, consider using chunked uploads with libraries like <code>uppy.io</code> or <code>tus.io</code>.
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 11.6 -->
+      <section id="section-11-6">
+        <h2>11.6 Dynamic Forms</h2>
+        
+        <details>
+          <summary>📌 Summary: Forms That Grow With You</summary>
+          <p>Dynamic forms let users add/remove fields on-the-fly — perfect for addresses, skills, dependents, or product variants.</p>
+
+          <h3>🔹 Core Principle: Use Keys + Indexes Carefully</h3>
+          <p>React needs unique keys to track list items. Never use array index as key unless list never changes order!</p>
+
+          <h3>⚡ Basic Dynamic Field Example</h3>
+          <pre><code>
+import { useState } from 'react';
+
+function SkillForm() {
+  const [skills, setSkills] = useState(['']);
+
+  const addSkill = () =&gt; {
+    setSkills([...skills, '']);
+  };
+
+  const removeSkill = (index) =&gt; {
+    setSkills(skills.filter((_, i) =&gt; i !== index));
+  };
+
+  const updateSkill = (index, value) =&gt; {
+    const newSkills = [...skills];
+    newSkills[index] = value;
+    setSkills(newSkills);
+  };
+
+  return (
+    &lt;form className="form-example"&gt;
+      &lt;h4&gt;Your Skills&lt;/h4&gt;
+      
+      {skills.map((skill, index) =&gt; (
+        &lt;div key={index} className="dynamic-field"&gt;
+          &lt;input 
+            type="text" 
+            value={skill} 
+            onChange={(e) =&gt; updateSkill(index, e.target.value)} 
+            placeholder="Enter skill..."
+            className="form-control mb-2"
+          /&gt;
+          &lt;button 
+            type="button" 
+            onClick={() =&gt; removeSkill(index)}
+            className="btn btn-sm btn-danger"
+          &gt;
+            Remove
+          &lt;/button&gt;
+        &lt;/div&gt;
+      ))}
+
+      &lt;button 
+        type="button" 
+        onClick={addSkill}
+        className="btn btn-outline-cyan mt-2"
+      &gt;
+        Add Another Skill
+      &lt;/button&gt;
+
+      &lt;button type="submit" className="btn btn-primary mt-3"&gt;Submit&lt;/button&gt;
+    &lt;/form&gt;
+  );
+}
+          </code></pre>
+
+          <div class="note">
+            <strong>⚠️ Critical Warning:</strong> Using index as key breaks React's reconciliation when items are reordered or removed. Use unique IDs instead!
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Advanced: Dynamic Nested Objects with Unique IDs</summary>
+          <p>For complex nested structures (like forms with arrays of objects), generate unique IDs.</p>
+
+          <h3>⚡ Professional Implementation</h3>
+          <pre><code>
+import { useState } from 'react';
+
+// Helper to generate unique ID
+const generateId = () =&gt; Math.random().toString(36).substring(2, 9);
+
+function AddressForm() {
+  const [addresses, setAddresses] = useState([
+    { id: generateId(), street: '', city: '', zip: '' }
+  ]);
+
+  const addAddress = () =&gt; {
+    setAddresses([...addresses, { id: generateId(), street: '', city: '', zip: '' }]);
+  };
+
+  const removeAddress = (id) =&gt; {
+    setAddresses(addresses.filter(addr =&gt; addr.id !== id));
+  };
+
+  const updateAddress = (id, field, value) =&gt; {
+    setAddresses(
+      addresses.map(addr =&gt; 
+        addr.id === id ? { ...addr, [field]: value } : addr
+      )
+    );
+  };
+
+  return (
+    &lt;form className="form-example"&gt;
+      &lt;h4&gt;Addresses&lt;/h4&gt;
+      
+      {addresses.map((addr, index) =&gt; (
+        &lt;div key={addr.id} className="dynamic-field"&gt;
+          &lt;h5&gt;Address #{index + 1}&lt;/h5&gt;
+          
+          &lt;input 
+            type="text" 
+            placeholder="Street" 
+            value={addr.street} 
+            onChange={(e) =&gt; updateAddress(addr.id, 'street', e.target.value)} 
+            className="form-control mb-2" 
+          /&gt;
+          
+          &lt;input 
+            type="text" 
+            placeholder="City" 
+            value={addr.city} 
+            onChange={(e) =&gt; updateAddress(addr.id, 'city', e.target.value)} 
+            className="form-control mb-2" 
+          /&gt;
+          
+          &lt;input 
+            type="text" 
+            placeholder="ZIP" 
+            value={addr.zip} 
+            onChange={(e) =&gt; updateAddress(addr.id, 'zip', e.target.value)} 
+            className="form-control mb-2" 
+          /&gt;
+          
+          &lt;button 
+            type="button" 
+            onClick={() =&gt; removeAddress(addr.id)}
+            className="btn btn-sm btn-danger mb-2"
+          &gt;
+            Remove Address
+          &lt;/button&gt;
+        &lt;/div&gt;
+      ))}
+
+      &lt;button 
+        type="button" 
+        onClick={addAddress}
+        className="btn btn-outline-cyan mt-2"
+      &gt;
+        Add Address
+      &lt;/button&gt;
+
+      &lt;button type="submit" className="btn btn-primary mt-3"&gt;Save Addresses&lt;/button&gt;
+    &lt;/form&gt;
+  );
+}
+          </code></pre>
+
+          <h3>💡 Why Unique IDs Beat Indexes</h3>
+          <table class="table table-dark table-sm mt-3">
+            <thead>
+              <tr><th>Scenario</th><th>Using Index</th><th>Using Unique ID</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Remove middle item</td><td>Next items shift → state misaligned</td><td>Exact item removed → safe</td></tr>
+              <tr><td>Reorder items</td><td>All keys change → React re-renders everything</td><td>Keys unchanged → React preserves state</td></tr>
+              <tr><td>Performance</td><td>Poor</td><td>Excellent</td></tr>
+            </tbody>
+          </table>
+
+          <div class="note">
+            <strong>🌟 Pro Tip:</strong> Use libraries like <code>react-use-form-state</code> or <code>react-hook-form</code>'s <code>useFieldArray</code> for production dynamic forms — they handle edge cases automatically.
+          </div>
+        </details>
+
+        <details>
+          <summary>⚙️ Deep Dive: Conditional Fields Based on Selection</summary>
+          <p>Hide/show fields based on user choices — like "Other" options.</p>
+
+          <h3>⚡ Real Example: Job Application</h3>
+          <pre><code>
+import { useState } from 'react';
+
+function JobApplication() {
+  const [jobType, setJobType] = useState('fulltime');
+  const [otherTitle, setOtherTitle] = useState('');
+
+  const jobTypes = [
+    { value: 'fulltime', label: 'Full-time' },
+    { value: 'contract', label: 'Contract' },
+    { value: 'freelance', label: 'Freelance' },
+    { value: 'other', label: 'Other' }
+  ];
+
+  return (
+    &lt;form className="form-example"&gt;
+      &lt;label className="form-label"&gt;Job Type&lt;/label&gt;
+      &lt;select 
+        value={jobType} 
+        onChange={(e) =&gt; setJobType(e.target.value)}
+        className="form-control mb-3"
+      &gt;
+        {jobTypes.map(type =&gt; (
+          &lt;option key={type.value} value={type.value}&gt;{type.label}&lt;/option&gt;
+        ))}
+      &lt;/select&gt;
+
+      {jobType === 'other' &amp;&amp; (
+        &lt;div className="mb-3"&gt;
+          &lt;label className="form-label"&gt;Please Specify&lt;/label&gt;
+          &lt;input 
+            type="text" 
+            value={otherTitle} 
+            onChange={(e) =&gt; setOtherTitle(e.target.value)} 
+            className="form-control" 
+            placeholder="e.g., Remote Designer" 
+          /&gt;
+        &lt;/div&gt;
+      )}
+
+      {jobType === 'contract' &amp;&amp; (
+        &lt;div className="mb-3"&gt;
+          &lt;label className="form-label"&gt;Contract Duration (months)&lt;/label&gt;
+          &lt;input 
+            type="number" 
+            min="1" 
+            max="24" 
+            className="form-control" 
+          /&gt;
+        &lt;/div&gt;
+      )}
+
+      &lt;button type="submit" className="btn btn-primary"&gt;Apply&lt;/button&gt;
+    &lt;/form&gt;
+  );
+}
+          </code></pre>
+
+          <h3>🧠 Mental Model: State-Driven UI</h3>
+          <p>Your form's appearance should be a direct reflection of your state. No DOM manipulation — just render what your state says.</p>
+        </details>
+      </section>
+
+      <!-- Section 11.7 -->
+      <section id="section-11-7">
+        <h2>11.7 Form Accessibility</h2>
+        
+        <details>
+          <summary>📌 Summary: Forms Must Work for Everyone</summary>
+          <p>Accessibility isn't optional — it's ethical and often legal. A form that only works for sighted mouse users excludes millions. Let's fix that.</p>
+
+          <h3>🔹 Core Principles</h3>
+          <ol>
+            <li><strong>Labels:</strong> Every input needs a visible label</li>
+            <li><strong>Screen Reader Support:</strong> Use proper ARIA attributes</li>
+            <li><strong>Keyboard Navigation:</strong> Tab order must make sense</li>
+            <li><strong>Error Feedback:</strong> Errors must be announced by screen readers</li>
+            <li><strong>Focus Management:</strong> Focus should move logically after actions</li>
+          </ol>
+
+          <h3>⚡ Accessible Form Example</h3>
+          <pre><code>
+import { useState } from 'react';
+
+function AccessibleLoginForm() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [errors, setErrors] = useState({});
+
+  const handleSubmit = (e) =&gt; {
+    e.preventDefault();
+    const newErrors = {};
+    
+    if (!email) newErrors.email = 'Email is required';
+    if (!password) newErrors.password = 'Password is required';
+    
+    setErrors(newErrors);
+    
+    if (Object.keys(newErrors).length === 0) {
+      alert('Login successful!');
+    }
+  };
+
+  return (
+    &lt;form onSubmit={handleSubmit} className="form-example"&gt;
+      &lt;!-- 👇 Perfectly accessible label pattern --&gt;
+      &lt;div className="mb-3"&gt;
+        &lt;label htmlFor="email" className="form-label"&gt;
+          Email Address
+        &lt;/label&gt;
+        &lt;input 
+          id="email" 
+          type="email" 
+          aria-invalid={!!errors.email} 
+          aria-describedby={errors.email ? 'email-error' : undefined}
+          value={email} 
+          onChange={(e) =&gt; setEmail(e.target.value)} 
+          className="form-control" 
+        /&gt;
+        {errors.email &amp;&amp; (
+          &lt;div 
+            id="email-error" 
+            className="text-danger mt-1" 
+            role="alert"
+          &gt;
+            {errors.email}
+          &lt;/div&gt;
+        )}
+      &lt;/div&gt;
+
+      &lt;div className="mb-3"&gt;
+        &lt;label htmlFor="password" className="form-label"&gt;
+          Password
+        &lt;/label&gt;
+        &lt;input 
+          id="password" 
+          type="password" 
+          aria-invalid={!!errors.password} 
+          aria-describedby={errors.password ? 'password-error' : undefined}
+          value={password} 
+          onChange={(e) =&gt; setPassword(e.target.value)} 
+          className="form-control" 
+        /&gt;
+        {errors.password &amp;&amp; (
+          &lt;div 
+            id="password-error" 
+            className="text-danger mt-1" 
+            role="alert"
+          &gt;
+            {errors.password}
+          &lt;/div&gt;
+        )}
+      &lt;/div&gt;
+
+      &lt;!-- 👇 Button with clear action --&gt;
+      &lt;button 
+        type="submit" 
+        className="btn btn-primary"
+      &gt;
+        Log In
+      &lt;/button&gt;
+
+      &lt;!-- 👇 Skip link for keyboard users --&gt;
+      &lt;a href="#main-content" className="visually-hidden focusable"&gt;
+        Skip to main content
+      &lt;/a&gt;
+    &lt;/form&gt;
+  );
+}
+          </code></pre>
+
+          <h3>🔍 Breakdown of Accessibility Features</h3>
+          <table class="table table-dark table-sm mt-3">
+            <thead>
+              <tr><th>Feature</th><th>Why It Matters</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>for="id"</code> on label</td><td>Links label to input — click label focuses input</td></tr>
+              <tr><td><code>id</code> on input</td><td>Must match label's <code>for</code> attribute</td></tr>
+              <tr><td><code>aria-invalid="true"</code></td><td>Tells screen readers this field has an error</td></tr>
+              <tr><td><code>aria-describedby</code></td><td>Connects input to its error message</td></tr>
+              <tr><td><code>role="alert"</code></td><td>Forces screen readers to announce error immediately</td></tr>
+              <tr><td>Logical tab order</td><td>Inputs follow visual flow — no jumping</td></tr>
+              <tr><td>Visible focus indicators</td><td>Don't remove <code>:focus</code> styles — keyboard users need them!</td></tr>
+            </tbody>
+          </table>
+
+          <div class="accessibility-tip">
+            <strong>🎯 Quick Checklist:</strong>
+            <ul>
+              <li>Every input has a visible, associated label</li>
+              <li>Errors are programmatically linked to inputs</li>
+              <li>Forms work fully with keyboard (Tab, Enter, Space)</li>
+              <li>No hover-only interactions</li>
+              <li>Color contrast ≥ 4.5:1 for text and controls</li>
+              <li>Test with screen reader (VoiceOver, NVDA)</li>
+            </ul>
+          </div>
+
+          <h3>🛠️ Bonus: Make Focus Visible</h3>
+          <p>Add this to your global CSS to ensure focus rings are always visible:</p>
+          <pre><code>
+:focus {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}
+
+/* Don't do this! */
+:focus {
+  outline: none; /* ❌ Kills accessibility */
+}
+          </code></pre>
+
+          <h3>📱 Test Like a Pro</h3>
+          <ol>
+            <li>Turn off your mouse — navigate with <kbd>Tab</kbd>, <kbd>Shift+Tab</kbd>, <kbd>Enter</kbd></li>
+            <li>Enable VoiceOver (Mac) or NVDA (Windows)</li>
+            <li>Use Lighthouse in Chrome DevTools → Accessibility audit</li>
+            <li>Ask someone with vision impairment to test</li>
+          </ol>
+
+          <div class="note">
+            <strong>🧠 Final Wisdom:</strong> Accessibility isn't a feature — it's a foundation. Build it in from day one, not as an afterthought.
+          </div>
+        </details>
+      </section>
+
+      <div class="footer-note">
+        📚 Next: Testing Forms, Performance Optimization, and Building Reusable Form Components
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript Utilities -->
+<script>
+  // Expand/Collapse All
+  document.getElementById('expandAll').addEventListener('click', () => {
+    document.querySelectorAll('details').forEach(detail => detail.open = true);
+  });
+
+  document.getElementById('collapseAll').addEventListener('click', () => {
+    document.querySelectorAll('details').forEach(detail => detail.open = false);
+  });
+
+  // Smooth Scroll to TOC Item
+  document.querySelectorAll('.toc-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const targetId = item.getAttribute('data-target');
+      document.querySelector(targetId).scrollIntoView({ behavior: 'smooth' });
+      
+      // Highlight active item
+      document.querySelectorAll('.toc-item').forEach(el => el.classList.remove('active'));
+      item.classList.add('active');
+    });
+  });
+
+  // Search TOC
+  document.getElementById('searchTOC').addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase();
+    document.querySelectorAll('.toc-item').forEach(item => {
+      const text = item.textContent.toLowerCase();
+      item.style.display = text.includes(query) ? 'block' : 'none';
+    });
+  });
+
+  // Optional: Add highlight.js if needed (uncomment if CDN available)
+  /*
+  const script = document.createElement('script');
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js';
+  script.onload = () => {
+    document.querySelectorAll('pre code').forEach(block => hljs.highlightBlock(block));
+  };
+  document.head.appendChild(script);
+  */
+</script>
+
+<!-- Bootstrap JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

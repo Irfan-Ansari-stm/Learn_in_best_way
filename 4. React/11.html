@@ -1,0 +1,1640 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter 6: Components Fundamentals</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00f5ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --border-color: #00c4ff;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .sidebar {
+            background-color: #0d2140;
+            border-right: 2px solid var(--border-color);
+            height: 100vh;
+            position: fixed;
+            overflow-y: auto;
+            padding: 1rem;
+            width: 280px;
+            box-shadow: 5px 0 15px rgba(0, 212, 255, 0.1);
+        }
+
+        .content {
+            margin-left: 280px;
+            padding: 2rem;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.3rem;
+            margin-top: 2rem;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: var(--amber);
+            border-bottom: 3px solid var(--amber);
+        }
+
+        .toc-item {
+            margin: 0.5rem 0;
+            padding: 0.4rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        .toc-item:hover {
+            background-color: rgba(0, 245, 255, 0.1);
+            padding-left: 0.8rem;
+        }
+
+        .toc-item.active {
+            background-color: rgba(0, 245, 255, 0.2);
+            border-left: 3px solid var(--cyan);
+        }
+
+        .toc-subitem {
+            margin-left: 1.5rem;
+            font-size: 0.9rem;
+            color: #b8c4d6;
+            padding: 0.2rem 0;
+        }
+
+        .toc-subitem:hover {
+            background-color: rgba(0, 245, 255, 0.08);
+            padding-left: 0.5rem;
+        }
+
+        .search-box {
+            margin: 1rem 0;
+            background-color: #1a2a40;
+            border: 1px solid var(--border-color);
+            color: var(--text-light);
+        }
+
+        .code-block {
+            background-color: #121e33;
+            border-left: 4px solid var(--amber);
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 8px rgba(0, 212, 255, 0.1);
+        }
+
+        pre code {
+            color: var(--cyan);
+            display: block;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.2);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+
+        .note {
+            background-color: rgba(0, 245, 255, 0.1);
+            border-left: 4px solid var(--cyan);
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .warning {
+            background-color: rgba(255, 183, 77, 0.15);
+            border-left: 4px solid var(--amber);
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        details {
+            margin: 1.5rem 0;
+            border: 1px solid rgba(0, 245, 255, 0.3);
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #0d1b33;
+        }
+
+        summary {
+            padding: 1rem;
+            background-color: #122647;
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--cyan);
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s ease;
+        }
+
+        summary:hover {
+            background-color: #1a3155;
+        }
+
+        summary::before {
+            content: "▶ ";
+            font-size: 0.9rem;
+            transition: transform 0.3s ease;
+        }
+
+        details[open] > summary::before {
+            content: "▼ ";
+            transform: rotate(90deg);
+        }
+
+        .btn-control {
+            margin-bottom: 1rem;
+            background-color: rgba(0, 245, 255, 0.15);
+            border: 1px solid var(--border-color);
+            color: var(--cyan);
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .btn-control:hover {
+            background-color: rgba(0, 245, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .author-info {
+            color: #b8c4d6;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border-bottom: 1px solid rgba(0, 245, 255, 0.2);
+        }
+
+        .section-marker {
+            color: var(--amber);
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        .jsx-tag {
+            color: var(--amber);
+        }
+
+        .jsx-attr {
+            color: #a0eaff;
+        }
+
+        .jsx-value {
+            color: #a8f5ff;
+        }
+
+        .keyword {
+            color: #ff9e6d;
+        }
+
+        .comment {
+            color: #5a7e9d;
+            font-style: italic;
+        }
+
+        .prop-name {
+            color: #a8f5ff;
+            font-weight: 600;
+        }
+
+        .type-label {
+            color: var(--amber);
+            font-style: italic;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 991px) {
+            .sidebar {
+                width: 250px;
+            }
+            .content {
+                margin-left: 250px;
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 2px solid var(--border-color);
+            }
+            .content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Left Sidebar -->
+    <div class="sidebar">
+        <h3 class="text-center mb-4">Chapter 6: Components Fundamentals</h3>
+        <p class="author-info">Mastered by React Tutor • For Deep Understanding</p>
+
+        <div class="mb-4">
+            <input type="text" class="form-control search-box" id="searchToc" placeholder="Search topics...">
+        </div>
+
+        <div class="mb-3">
+            <button class="btn btn-sm btn-control w-100" id="expandAll">Expand All</button>
+            <button class="btn btn-sm btn-control w-100 mt-2" id="collapseAll">Collapse All</button>
+        </div>
+
+        <div class="toc">
+            <div class="toc-item" data-target="section-6-1">6.1 Functional vs Class Components</div>
+            <div class="toc-item" data-target="section-6-2">6.2 Component Architecture Principles</div>
+            <div class="toc-item" data-target="section-6-3">6.3 Props: Passing Data to Components</div>
+            <div class="toc-item" data-target="section-6-4">6.4 Props Validation with PropTypes</div>
+            <div class="toc-item" data-target="section-6-5">6.5 Default Props</div>
+            <div class="toc-item" data-target="section-6-6">6.6 Children Prop</div>
+            <div class="toc-item" data-target="section-6-7">6.7 Component Composition</div>
+            <div class="toc-item" data-target="section-6-8">6.8 Thinking in React</div>
+        </div>
+    </div>
+
+    <!-- Right Content Panel -->
+    <div class="content">
+        <div id="section-6-1">
+            <h2><span class="section-marker">6.1</span> Functional vs Class Components</h2>
+            <details>
+                <summary>Introduction to React Components</summary>
+                <p>Components are the building blocks of React applications. They let you split the UI into independent, reusable pieces and think about each piece in isolation.</p>
+                
+                <div class="note">
+                    <strong>Core Concept:</strong> Everything in React is a component - from buttons to entire pages. Components can be nested inside other components, creating complex UIs from simple parts.
+                </div>
+            </details>
+
+            <details>
+                <summary>Functional Components (Modern Approach)</summary>
+                <p>Functional components are JavaScript functions that return JSX. They're simpler, more readable, and work perfectly with React Hooks.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ✅ Functional Component (Recommended)
+function Welcome(props) {
+  return &lt;h1&gt;Hello, {props.name}&lt;/h1&gt;;
+}
+
+// Arrow function syntax (even cleaner)
+const Welcome = (props) =&gt; {
+  return &lt;h1&gt;Hello, {props.name}&lt;/h1&gt;;
+};
+
+// Or with destructuring (most common)
+const Welcome = ({ name }) =&gt; (
+  &lt;h1&gt;Hello, {name}&lt;/h1&gt;
+);`}
+                    </code>
+                </div>
+                
+                <p><strong>Advantages:</strong></p>
+                <ul>
+                    <li>Simpler syntax and easier to read</li>
+                    <li>No need to bind 'this' context</li>
+                    <li>Perfect integration with Hooks (useState, useEffect, etc.)</li>
+                    <li>Better performance in most cases</li>
+                    <li>Easier to test</li>
+                </ul>
+            </details>
+
+            <details>
+                <summary>Class Components (Legacy Approach)</summary>
+                <p>Class components use ES6 classes and extend React.Component. They were the standard before Hooks were introduced in React 16.8.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ❌ Class Component (Legacy - avoid for new projects)
+class Welcome extends React.Component {
+  render() {
+    return &lt;h1&gt;Hello, {this.props.name}&lt;/h1&gt;;
+  }
+}`}
+                    </code>
+                </div>
+                
+                <p><strong>Key Differences:</strong></p>
+                <table class="table table-dark table-striped mt-3">
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Functional Component</th>
+                            <th>Class Component</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>State</td>
+                            <td>useState Hook</td>
+                            <td>this.state</td>
+                        </tr>
+                        <tr>
+                            <td>Lifecycle</td>
+                            <td>useEffect Hook</td>
+                            <td>componentDidMount, etc.</td>
+                        </tr>
+                        <tr>
+                            <td>Context</td>
+                            <td>useContext Hook</td>
+                            <td>static contextType</td>
+                        </tr>
+                        <tr>
+                            <td>Performance</td>
+                            <td>Generally better</td>
+                            <td>More overhead</td>
+                        </tr>
+                        <tr>
+                            <td>Learning Curve</td>
+                            <td>Simpler</td>
+                            <td>Complex</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <div class="warning">
+                    <strong>Important:</strong> While class components still work, <strong>all new React development should use functional components</strong>. Class components are considered legacy technology since the introduction of Hooks.
+                </div>
+            </details>
+
+            <details>
+                <summary>Why Functional Components Won</summary>
+                <p>The shift from class to functional components wasn't just about syntax—it was about solving real problems:</p>
+                
+                <ul>
+                    <li><strong>Logic reuse:</strong> In class components, sharing logic between components required complex patterns like Higher-Order Components or render props. With Hooks, you create custom hooks that encapsulate logic.</li>
+                    <li><strong>Code organization:</strong> Class components force you to split related code across lifecycle methods. Functional components let you group related logic together using custom hooks.</li>
+                    <li><strong>Bundle size:</strong> Functional components are smaller and more optimized by modern bundlers.</li>
+                    <li><strong>Developer experience:</strong> No more confusing 'this' binding issues!</li>
+                </ul>
+                
+                <div class="note">
+                    <strong>Real-world analogy:</strong> Think of functional components as modern smartphones—simple, powerful, and focused on what matters. Class components are like old flip phones—they worked but had unnecessary complexity.
+                </div>
+            </details>
+        </div>
+
+        <div id="section-6-2">
+            <h2><span class="section-marker">6.2</span> Component Architecture Principles</h2>
+            <details>
+                <summary>Single Responsibility Principle</summary>
+                <p>Each component should have one clear purpose and do it well. This makes components reusable, testable, and maintainable.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ❌ BAD - Does too many things
+function UserProfile({ user, posts, comments, likes, followers }) {
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;{user.name}&lt;/h2&gt;
+      &lt;p&gt;{user.bio}&lt;/p&gt;
+      
+      &lt;h3&gt;Posts&lt;/h3&gt;
+      {posts.map(post =&gt; &lt;PostItem key={post.id} post={post} /&gt;)}
+      
+      &lt;h3&gt;Comments&lt;/h3&gt;
+      {comments.map(comment =&gt; &lt;CommentItem key={comment.id} comment={comment} /&gt;)}
+      
+      &lt;h3&gt;Likes&lt;/h3&gt;
+      &lt;p&gt;{likes.length} likes&lt;/p&gt;
+      
+      &lt;h3&gt;Followers&lt;/h3&gt;
+      {followers.map(follower =&gt; &lt;UserAvatar key={follower.id} user={follower} /&gt;)}
+    &lt;/div&gt;
+  );
+}
+
+// ✅ GOOD - Split responsibilities
+function UserProfile({ user }) {
+  return (
+    &lt;div&gt;
+      &lt;UserInfo user={user} /&gt;
+      &lt;UserPosts userId={user.id} /&gt;
+      &lt;UserComments userId={user.id} /&gt;
+      &lt;UserStats user={user} /&gt;
+    &lt;/div&gt;
+  );
+}
+
+function UserInfo({ user }) {
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;{user.name}&lt;/h2&gt;
+      &lt;p&gt;{user.bio}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+
+function UserPosts({ userId }) {
+  const posts = usePosts(userId);
+  return (
+    &lt;div&gt;
+      &lt;h3&gt;Posts&lt;/h3&gt;
+      {posts.map(post =&gt; &lt;PostItem key={post.id} post={post} /&gt;)}
+    &lt;/div&gt;
+  );
+}`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Composition Over Inheritance</summary>
+                <p>React favors composition—building components by combining other components—rather than inheritance-based hierarchies.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ❌ BAD - Inheritance approach
+class Button extends React.Component {
+  render() {
+    return &lt;button&gt;{this.props.children}&lt;/button&gt;;
+  }
+}
+
+class PrimaryButton extends Button {
+  render() {
+    return (
+      &lt;Button className="primary"&gt;
+        {this.props.children}
+      &lt;/Button&gt;
+    );
+  }
+}
+
+// ✅ GOOD - Composition approach
+function Button({ children, variant = "default", onClick }) {
+  const baseClasses = "px-4 py-2 rounded";
+  const variantClasses = {
+    default: "bg-gray-300",
+    primary: "bg-blue-500 text-white",
+    danger: "bg-red-500 text-white"
+  };
+  
+  return (
+    &lt;button 
+      className={\`\${baseClasses} \${variantClasses[variant]}\`}
+      onClick={onClick}
+    &gt;
+      {children}
+    &lt;/button&gt;
+  );
+}
+
+// Usage
+&lt;Button variant="primary"&gt;Submit&lt;/Button&gt;
+&lt;Button variant="danger"&gt;Delete&lt;/Button&gt;`}
+                    </code>
+                </div>
+                
+                <div class="note">
+                    <strong>Why Composition?</strong> Composition is more flexible and predictable. You can mix and match components without worrying about complex inheritance chains. It's like LEGO blocks—you can combine them in any way you want!
+                </div>
+            </details>
+
+            <details>
+                <summary>Props Down, Events Up</summary>
+                <p>This is the golden rule of React architecture: data flows down through props, and events flow up through callbacks.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// Parent Component
+function App() {
+  const [count, setCount] = useState(0);
+  
+  const handleIncrement = () =&gt; setCount(count + 1);
+  const handleDecrement = () =&gt; setCount(count - 1);
+  
+  return (
+    &lt;div&gt;
+      &lt;Counter count={count} 
+               onIncrement={handleIncrement} 
+               onDecrement={handleDecrement} /&gt;
+      &lt;Display value={count} /&gt;
+    &lt;/div&gt;
+  );
+}
+
+// Child Component
+function Counter({ count, onIncrement, onDecrement }) {
+  return (
+    &lt;div&gt;
+      &lt;button onClick={onDecrement}&gt;-&lt;/button&gt;
+      &lt;span&gt;{count}&lt;/span&gt;
+      &lt;button onClick={onIncrement}&gt;+&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}`}
+                    </code>
+                </div>
+                
+                <div class="warning">
+                    <strong>Never modify props directly!</strong> Props are read-only. If you need to change data, use state in the parent component and pass down a callback function to update it.
+                </div>
+            </details>
+
+            <details>
+                <summary>Component Naming Conventions</summary>
+                <p>Consistent naming makes your codebase professional and understandable.</p>
+                
+                <ul>
+                    <li><strong>Capital PascalCase:</strong> Always capitalize component names (<code>UserProfile</code>, not <code>userProfile</code>)</li>
+                    <li><strong>Descriptive names:</strong> <code>ProductCard</code> instead of <code>Card</code></li>
+                    <li><strong>Prefixes for variations:</strong> <code>PrimaryButton</code>, <code>DangerButton</code></li>
+                    <li><strong>Use "Container" suffix:</strong> <code>UserListContainer</code> for components that handle data fetching</li>
+                    <li><strong>Use "Provider" suffix:</strong> <code>AuthContextProvider</code> for context providers</li>
+                </ul>
+            </details>
+        </div>
+
+        <div id="section-6-3">
+            <h2><span class="section-marker">6.3</span> Props: Passing Data to Components</h2>
+            <details>
+                <summary>What Are Props?</summary>
+                <p>Props (short for properties) are how you pass data from a parent component to a child component. They're like function parameters in JavaScript.</p>
+                
+                <div class="note">
+                    <strong>Core Analogy:</strong> Think of props as the "ingredients" you give to a recipe (component). The component uses these ingredients to create its output.
+                </div>
+            </details>
+
+            <details>
+                <summary>Basic Prop Syntax</summary>
+                <p>Pass props as attributes in JSX, then access them as function parameters.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// Parent Component
+function App() {
+  return (
+    &lt;Welcome name="Alice" age={25} isLoggedIn={true} /&gt;
+  );
+}
+
+// Child Component
+function Welcome({ name, age, isLoggedIn }) {
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;Hello, {name}!&lt;/h1&gt;
+      &lt;p&gt;You are {age} years old.&lt;/p&gt;
+      &lt;p&gt;Status: {isLoggedIn ? 'Logged In' : 'Guest'}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}`}
+                    </code>
+                </div>
+                
+                <p><strong>Prop Types:</strong></p>
+                <ul>
+                    <li><strong>Strings:</strong> <code>&lt;Button label="Click me" /&gt;</code></li>
+                    <li><strong>Numbers:</strong> <code>&lt;Progress value={75} /&gt;</code></li>
+                    <li><strong>Booleans:</strong> <code>&lt;Modal isOpen={true} /&gt;</code></li>
+                    <li><strong>Objects:</strong> <code>&lt;User profile={{ name: "Bob", role: "Admin" }} /&gt;</code></li>
+                    <li><strong>Arrays:</strong> <code>&lt;ItemList items={["Apple", "Banana"]} /&gt;</code></li>
+                    <li><strong>Functions:</strong> <code>&lt;Button onClick={handleClick} /&gt;</code></li>
+                    <li><strong>JSX Elements:</strong> <code>&lt;Card header={&lt;h3&gt;Title&lt;/h3&gt;} /&gt;</code></li>
+                </ul>
+            </details>
+
+            <details>
+                <summary>Accessing Props in Functional Components</summary>
+                <p>Three ways to access props in functional components:</p>
+                
+                <div class="code-block">
+                    <code>
+{`// Method 1: Destructure in parameters (Most Common)
+const Button = ({ label, onClick, disabled }) =&gt; (
+  &lt;button onClick={onClick} disabled={disabled}&gt;{label}&lt;/button&gt;
+);
+
+// Method 2: Access via props object
+const Button = (props) =&gt; (
+  &lt;button onClick={props.onClick} disabled={props.disabled}&gt;{props.label}&lt;/button&gt;
+);
+
+// Method 3: Destructure inside function body
+const Button = (props) =&gt; {
+  const { label, onClick, disabled } = props;
+  return (
+    &lt;button onClick={onClick} disabled={disabled}&gt;{label}&lt;/button&gt;
+  );
+};`}
+                    </code>
+                </div>
+                
+                <div class="note">
+                    <strong>Best Practice:</strong> Always use destructuring in parameters—it's clean, explicit, and shows exactly what props your component needs.
+                </div>
+            </details>
+
+            <details>
+                <summary>Prop Naming Best Practices</summary>
+                <ul>
+                    <li>Use camelCase: <code>userName</code>, not <code>user_name</code></li>
+                    <li>Be descriptive: <code>maxFileSize</code> instead of <code>max</code></li>
+                    <li>Use boolean prefixes: <code>isLoading</code>, <code>isDisabled</code>, <code>hasError</code></li>
+                    <li>For event handlers: <code>onEventName</code> (e.g., <code>onClick</code>, <code>onSubmit</code>)</li>
+                    <li>For callbacks that modify data: <code>onChange</code>, <code>onUpdate</code></li>
+                </ul>
+                
+                <div class="code-block">
+                    <code>
+{`// ✅ Good prop names
+&lt;TextInput 
+  label="Email" 
+  value={email} 
+  onChange={setEmail} 
+  isValid={isValidEmail} 
+  isLoading={false} 
+/&gt;
+
+// ❌ Bad prop names
+&lt;TextInput 
+  txt="Email" 
+  v={email} 
+  fn={setEmail} 
+  ok={isValidEmail} 
+  loading={false} 
+/&gt;`}
+                    </code>
+                </div>
+            </details>
+        </div>
+
+        <div id="section-6-4">
+            <h2><span class="section-marker">6.4</span> Props Validation with PropTypes</h2>
+            <details>
+                <summary>Why Validate Props?</summary>
+                <p>PropTypes help catch bugs early by ensuring components receive the right types of data. They serve as documentation and provide warnings in development mode.</p>
+                
+                <div class="warning">
+                    <strong>Note:</strong> PropTypes are only available in development mode and don't affect production builds. They're not a replacement for proper TypeScript typing, but they're invaluable for JavaScript projects.
+                </div>
+            </details>
+
+            <details>
+                <summary>Basic PropTypes Syntax</summary>
+                <p>Import PropTypes and define validation rules for your component's props.</p>
+                
+                <div class="code-block">
+                    <code>
+{`import PropTypes from 'prop-types';
+
+function UserProfile({ name, age, email, isActive }) {
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;{name}&lt;/h2&gt;
+      &lt;p&gt;Age: {age}&lt;/p&gt;
+      &lt;p&gt;Email: {email}&lt;/p&gt;
+      &lt;p&gt;Status: {isActive ? 'Active' : 'Inactive'}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+
+// Define prop types
+UserProfile.propTypes = {
+  name: PropTypes.string.isRequired,
+  age: PropTypes.number,
+  email: PropTypes.string,
+  isActive: PropTypes.bool
+};
+
+export default UserProfile;`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Common PropTypes</summary>
+                <table class="table table-dark table-striped mt-3">
+                    <thead>
+                        <tr>
+                            <th>Type</th>
+                            <th>Usage</th>
+                            <th>Description</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>PropTypes.string</code></td>
+                            <td><code>name: PropTypes.string</code></td>
+                            <td>String value</td>
+                        </tr>
+                        <tr>
+                            <td><code>PropTypes.number</code></td>
+                            <td><code>score: PropTypes.number</code></td>
+                            <td>Numeric value</td>
+                        </tr>
+                        <tr>
+                            <td><code>PropTypes.bool</code></td>
+                            <td><code>isVisible: PropTypes.bool</code></td>
+                            <td>Boolean value</td>
+                        </tr>
+                        <tr>
+                            <td><code>PropTypes.array</code></td>
+                            <td><code>items: PropTypes.array</code></td>
+                            <td>Array of any values</td>
+                        </tr>
+                        <tr>
+                            <td><code>PropTypes.object</code></td>
+                            <td><code>config: PropTypes.object</code></td>
+                            <td>Plain JavaScript object</td>
+                        </tr>
+                        <tr>
+                            <td><code>PropTypes.func</code></td>
+                            <td><code>onClick: PropTypes.func</code></td>
+                            <td>Function reference</td>
+                        </tr>
+                        <tr>
+                            <td><code>PropTypes.element</code></td>
+                            <td><code>icon: PropTypes.element</code></td>
+                            <td>React element</td>
+                        </tr>
+                        <tr>
+                            <td><code>PropTypes.node</code></td>
+                            <td><code>children: PropTypes.node</code></td>
+                            <td>Anything renderable: numbers, strings, elements</td>
+                        </tr>
+                        <tr>
+                            <td><code>PropTypes.oneOf([...])</code></td>
+                            <td><code>size: PropTypes.oneOf(['small', 'medium', 'large'])</code></td>
+                            <td>One of specific values</td>
+                        </tr>
+                        <tr>
+                            <td><code>PropTypes.oneOfType([...])</code></td>
+                            <td><code>value: PropTypes.oneOfType([PropTypes.string, PropTypes.number])</code></td>
+                            <td>One of multiple types</td>
+                        </tr>
+                        <tr>
+                            <td><code>PropTypes.shape({...})</code></td>
+                            <td><code>user: PropTypes.shape({name: PropTypes.string, email: PropTypes.string})</code></td>
+                            <td>Object with specific structure</td>
+                        </tr>
+                        <tr>
+                            <td><code>PropTypes.arrayOf(...)</code></td>
+                            <td><code>tags: PropTypes.arrayOf(PropTypes.string)</code></td>
+                            <td>Array of specific type</td>
+                        </tr>
+                        <tr>
+                            <td><code>PropTypes.objectOf(...)</code></td>
+                            <td><code>scores: PropTypes.objectOf(PropTypes.number)</code></td>
+                            <td>Object with values of specific type</td>
+                        </tr>
+                        <tr>
+                            <td><code>PropTypes.instanceOf(...)</code></td>
+                            <td><code>date: PropTypes.instanceOf(Date)</code></td>
+                            <td>Instance of a specific class</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </details>
+
+            <details>
+                <summary>Required Props and Defaults</summary>
+                <p>Mark essential props as required and provide fallback values.</p>
+                
+                <div class="code-block">
+                    <code>
+{`import PropTypes from 'prop-types';
+
+function Card({ title, subtitle, children, variant = 'default' }) {
+  const variants = {
+    default: 'bg-gray-100',
+    primary: 'bg-blue-100',
+    danger: 'bg-red-100'
+  };
+  
+  return (
+    &lt;div className={variants[variant]}&gt;
+      &lt;h3&gt;{title}&lt;/h3&gt;
+      {subtitle &amp;&amp; &lt;p className="text-sm"&gt;{subtitle}&lt;/p&gt;}
+      {children}
+    &lt;/div&gt;
+  );
+}
+
+Card.propTypes = {
+  title: PropTypes.string.isRequired,
+  subtitle: PropTypes.string,
+  children: PropTypes.node.isRequired,
+  variant: PropTypes.oneOf(['default', 'primary', 'danger'])
+};
+
+Card.defaultProps = {
+  variant: 'default'
+};
+
+export default Card;`}
+                    </code>
+                </div>
+                
+                <div class="note">
+                    <strong>Pro Tip:</strong> Use <code>isRequired</code> for props that are essential to the component's functionality. If a prop has a sensible default, don't mark it as required.
+                </div>
+            </details>
+
+            <details>
+                <summary>Advanced Example: Complex Shape Validation</summary>
+                <p>Validate nested objects and arrays with specific structures.</p>
+                
+                <div class="code-block">
+                    <code>
+{`import PropTypes from 'prop-types';
+
+function ProductList({ products, categoryFilter }) {
+  return (
+    &lt;div&gt;
+      {products.map(product =&gt; (
+        &lt;ProductCard key={product.id} product={product} /&gt;
+      ))}
+    &lt;/div&gt;
+  );
+}
+
+ProductList.propTypes = {
+  products: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+      name: PropTypes.string.isRequired,
+      price: PropTypes.number.isRequired,
+      category: PropTypes.string.isRequired,
+      inStock: PropTypes.bool.isRequired,
+      images: PropTypes.arrayOf(PropTypes.string),
+      meta PropTypes.shape({
+        createdAt: PropTypes.instanceOf(Date),
+        rating: PropTypes.number,
+        reviews: PropTypes.number
+      })
+    })
+  ).isRequired,
+  
+  categoryFilter: PropTypes.oneOfType([
+    PropTypes.string,
+    PropTypes.arrayOf(PropTypes.string)
+  ])
+};
+
+export default ProductList;`}
+                    </code>
+                </div>
+            </details>
+        </div>
+
+        <div id="section-6-5">
+            <h2><span class="section-marker">6.5</span> Default Props</h2>
+            <details>
+                <summary>Why Use Default Props?</summary>
+                <p>Default props provide fallback values when props aren't passed. This makes components more robust and reduces conditional logic in your render method.</p>
+                
+                <div class="note">
+                    <strong>Philosophy:</strong> A component should never break because someone forgot to pass a prop. Default props make components self-contained and predictable.
+                </div>
+            </details>
+
+            <details>
+                <summary>Method 1: Using defaultProps (Legacy)</summary>
+                <p>Define defaults as a static property on the component.</p>
+                
+                <div class="code-block">
+                    <code>
+{`function Button({ label, variant, onClick }) {
+  return (
+    &lt;button 
+      className={\`btn btn-\${variant}\`} 
+      onClick={onClick}
+    &gt;
+      {label}
+    &lt;/button&gt;
+  );
+}
+
+Button.defaultProps = {
+  variant: 'primary',
+  label: 'Click Me',
+  onClick: () =&gt; console.log('Button clicked')
+};`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Method 2: JavaScript Default Parameters (Modern)</summary>
+                <p>Set defaults directly in the function signature—this is now the recommended approach.</p>
+                
+                <div class="code-block">
+                    <code>
+{`function Button({ 
+  label = 'Click Me', 
+  variant = 'primary', 
+  onClick = () =&gt; console.log('Button clicked') 
+} = {}) {
+  return (
+    &lt;button 
+      className={\`btn btn-\${variant}\`} 
+      onClick={onClick}
+    &gt;
+      {label}
+    &lt;/button&gt;
+  );
+}`}
+                    </code>
+                </div>
+                
+                <div class="note">
+                    <strong>Why this is better:</strong> 
+                    <ul>
+                        <li>All defaults are visible at the top of the component</li>
+                        <li>Works with destructuring naturally</li>
+                        <li>Eliminates the need for separate defaultProps definition</li>
+                        <li>IDEs can provide better autocomplete and type hints</li>
+                    </ul>
+                </div>
+            </details>
+
+            <details>
+                <summary>Default Props with Complex Types</summary>
+                <p>Handle arrays, objects, and functions as default values.</p>
+                
+                <div class="code-block">
+                    <code>
+{`function DataTable({ 
+  columns = [], 
+  data = [], 
+  pageSize = 10, 
+  onSort = () =&gt; {}, 
+  emptyMessage = 'No data available' 
+} = {}) {
+  return (
+    &lt;div&gt;
+      {data.length === 0 ? (
+        &lt;p&gt;{emptyMessage}&lt;/p&gt;
+      ) : (
+        &lt;table&gt;
+          &lt;thead&gt;
+            &lt;tr&gt;
+              {columns.map(column =&gt; (
+                &lt;th key={column.key} onClick={() =&gt; onSort(column.key)}&gt;
+                  {column.label}
+                &lt;/th&gt;
+              ))}
+            &lt;/tr&gt;
+          &lt;/thead&gt;
+          &lt;tbody&gt;
+            {data.slice(0, pageSize).map(row =&gt; (
+              &lt;tr key={row.id}&gt;
+                {columns.map(column =&gt; (
+                  &lt;td key={column.key}&gt;{row[column.key]}&lt;/td&gt;
+                ))}
+              &lt;/tr&gt;
+            ))}
+          &lt;/tbody&gt;
+        &lt;/table&gt;
+      )}
+    &lt;/div&gt;
+  );
+}`}
+                    </code>
+                </div>
+                
+                <div class="warning">
+                    <strong>Important:</strong> Never use mutable default values like <code>[]</code> or <code>{}</code> as direct defaults in function parameters if you plan to mutate them! This creates a shared reference across all component instances.
+                    
+                    <pre><code>// ❌ BAD - Shared reference problem
+function List({ items = [] }) {
+  // This will modify the same array for ALL instances!
+  items.push('new item');
+  return &lt;ul&gt;{items.map(item =&gt; &lt;li&gt;{item}&lt;/li&gt;)}&lt;/ul&gt;;
+}
+
+// ✅ GOOD - Create new array each time
+function List({ items = [] }) {
+  const localItems = [...items]; // Create a copy
+  localItems.push('new item');
+  return &lt;ul&gt;{localItems.map(item =&gt; &lt;li&gt;{item}&lt;/li&gt;)}&lt;/ul&gt;;
+}</code></pre>
+                </div>
+            </details>
+
+            <details>
+                <summary>When NOT to Use Default Props</summary>
+                <ul>
+                    <li><strong>When the value must be provided:</strong> If a prop is essential, use <code>isRequired</code> instead</li>
+                    <li><strong>When the default is misleading:</strong> Don't use defaults that hide configuration issues</li>
+                    <li><strong>When working with TypeScript:</strong> Use interface defaults instead</li>
+                    <li><strong>For performance-critical components:</strong> Avoid complex default computations</li>
+                </ul>
+                
+                <div class="note">
+                    <strong>Rule of Thumb:</strong> Default props should make components easier to use, not hide poor design decisions. If you find yourself needing many defaults, consider refactoring your component to be simpler.
+                </div>
+            </details>
+        </div>
+
+        <div id="section-6-6">
+            <h2><span class="section-marker">6.6</span> Children Prop</h2>
+            <details>
+                <summary>What Is the Children Prop?</summary>
+                <p>The <code>children</code> prop is a special prop that contains everything placed between the opening and closing tags of a component.</p>
+                
+                <div class="note">
+                    <strong>Core Insight:</strong> The children prop enables composition—the ability to wrap content inside components. This is how React implements layout components, modals, cards, and more.
+                </div>
+            </details>
+
+            <details>
+                <summary>Basic Children Usage</summary>
+                <p>Children can be text, elements, or even other components.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// Parent Component
+function App() {
+  return (
+    &lt;Card&gt;
+      &lt;h2&gt;My Title&lt;/h2&gt;
+      &lt;p&gt;This is some content inside the card.&lt;/p&gt;
+      &lt;Button&gt;Click Me&lt;/Button&gt;
+    &lt;/Card&gt;
+  );
+}
+
+// Child Component
+function Card({ children }) {
+  return (
+    &lt;div className="card"&gt;
+      &lt;div className="card-body"&gt;
+        {children}
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}`}
+                    </code>
+                </div>
+                
+                <p>This renders as:</p>
+                <div class="code-block">
+                    <code>
+{`&lt;div class="card"&gt;
+  &lt;div class="card-body"&gt;
+    &lt;h2&gt;My Title&lt;/h2&gt;
+    &lt;p&gt;This is some content inside the card.&lt;/p&gt;
+    &lt;button&gt;Click Me&lt;/button&gt;
+  &lt;/div&gt;
+&lt;/div&gt;`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Multiple Children and Arrays</summary>
+                <p>When you pass multiple elements as children, React automatically creates an array.</p>
+                
+                <div class="code-block">
+                    <code>
+{`function Section({ children }) {
+  console.log(Array.isArray(children)); // true!
+  
+  return (
+    &lt;section&gt;
+      {children}
+    &lt;/section&gt;
+  );
+}
+
+// Usage
+&lt;Section&gt;
+  &lt;h1&gt;Header&lt;/h1&gt;
+  &lt;p&gt;Paragraph 1&lt;/p&gt;
+  &lt;p&gt;Paragraph 2&lt;/p&gt;
+&lt;/Section&gt;`}
+                    </code>
+                </div>
+                
+                <div class="note">
+                    <strong>Insight:</strong> Even though we write JSX as if it's HTML, React treats multiple children as an array internally. This is why you can map over children!
+                </div>
+            </details>
+
+            <details>
+                <summary>Advanced: Processing Children</summary>
+                <p>You can manipulate children with React utilities like <code>React.Children</code>.</p>
+                
+                <div class="code-block">
+                    <code>
+{`function Modal({ children, title }) {
+  return (
+    &lt;div className="modal-overlay"&gt;
+      &lt;div className="modal-content"&gt;
+        {title &amp;&amp; &lt;h3&gt;{title}&lt;/h3&gt;}
+        {React.Children.map(children, child =&gt; {
+          // Add styles to all children
+          if (React.isValidElement(child)) {
+            return React.cloneElement(child, {
+              style: {
+                ...child.props.style,
+                marginBottom: '1rem'
+              }
+            });
+          }
+          return child;
+        })}
+        &lt;button onClick={closeModal}&gt;Close&lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}}
+
+// Usage
+&lt;Modal title="Confirmation"&gt;
+  &lt;p&gt;Are you sure you want to delete this item?&lt;/p&gt;
+  &lt;Button variant="danger"&gt;Delete&lt;/Button&gt;
+&lt;/Modal&gt;`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Children as Functions (Render Props Pattern)</summary>
+                <p>Children can be functions that return JSX—this is called the Render Props pattern.</p>
+                
+                <div class="code-block">
+                    <code>
+{`function MouseTracker({ children }) {
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  
+  const handleMouseMove = (e) =&gt; {
+    setPosition({ x: e.clientX, y: e.clientY });
+  };
+  
+  return (
+    &lt;div onMouseMove={handleMouseMove}&gt;
+      {children({ x: position.x, y: position.y })}
+    &lt;/div&gt;
+  );
+}
+
+// Usage
+&lt;MouseTracker&gt;
+  {({ x, y }) =&gt; (
+    &lt;div&gt;
+      Mouse position: ({x}, {y})
+    &lt;/div&gt;
+  )}
+&lt;/MouseTracker&gt;`}
+                    </code>
+                </div>
+                
+                <div class="note">
+                    <strong>Power of Render Props:</strong> This pattern allows you to share stateful logic between components without changing their structure. The child function receives the tracked data as parameters and decides how to render it.
+                </div>
+            </details>
+        </div>
+
+        <div id="section-6-7">
+            <h2><span class="section-marker">6.7</span> Component Composition</h2>
+            <details>
+                <summary>What Is Component Composition?</summary>
+                <p>Component composition means building complex UIs by combining simple components together, rather than inheriting from them. It's React's preferred way of reusing code.</p>
+                
+                <div class="note">
+                    <strong>Core Principle:</strong> "Compose, don't inherit." Instead of creating deep inheritance hierarchies, build components that accept other components as children or props.
+                </div>
+            </details>
+
+            <details>
+                <summary>Layout Components</summary>
+                <p>Use composition to create reusable layout structures.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// Layout Component
+function PageLayout({ children, header, footer }) {
+  return (
+    &lt;div className="page-layout"&gt;
+      {header}
+      &lt;main&gt;{children}&lt;/main&gt;
+      {footer}
+    &lt;/div&gt;
+  );
+}
+
+// Usage
+&lt;PageLayout 
+  header={&lt;Header /&gt;}
+  footer={&lt;Footer /&gt;}
+&gt;
+  &lt;HomePageContent /&gt;
+&lt;/PageLayout&gt;`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Wrapper Components</summary>
+                <p>Create components that add behavior around other components.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// Authenticated Wrapper
+function Authenticated({ children }) {
+  const user = useAuth();
+  
+  if (!user) {
+    return &lt;LoginPrompt /&gt;;
+  }
+  
+  return children;
+}
+
+// Usage
+&lt;Authenticated&gt;
+  &lt;Dashboard /&gt;
+  &lt;Profile /&gt;
+&lt;/Authenticated&gt;`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Higher-Order Components (HOCs) - Modern Alternative</summary>
+                <p>While HOCs are less common now due to Hooks, understanding them helps with legacy code.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// HOC - Adds loading state
+function withLoading(WrappedComponent) {
+  return function LoadingComponent({ isLoading, ...props }) {
+    if (isLoading) {
+      return &lt;div&gt;Loading...&lt;/div&gt;;
+    }
+    
+    return &lt;WrappedComponent {...props} /&gt;;
+  };
+}
+
+// Usage
+const EnhancedButton = withLoading(Button);
+&lt;EnhancedButton label="Submit" isLoading={true} /&gt;`}
+                    </code>
+                </div>
+                
+                <div class="note">
+                    <strong>Modern Alternative:</strong> Today, we'd use custom hooks instead:
+                    <pre><code>// Custom hook
+function useLoading(isLoading) {
+  if (isLoading) return 'Loading...';
+  return null;
+}
+
+// Component
+function ButtonWithLoading({ label, isLoading, ...props }) {
+  const loadingText = useLoading(isLoading);
+  
+  return (
+    &lt;button {...props}&gt;
+      {loadingText || label}
+    &lt;/button&gt;
+  );
+}</code></pre>
+                </div>
+            </details>
+
+            <details>
+                <summary>Compound Components Pattern</summary>
+                <p>Create components that work together as a unit, often sharing state internally.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// Tab system
+function Tabs({ children }) {
+  const [activeTab, setActiveTab] = useState(0);
+  
+  const tabs = React.Children.toArray(children).filter(
+    child =&gt; child.type === Tab
+  );
+  
+  return (
+    &lt;div&gt;
+      &lt;div className="tabs-header"&gt;
+        {tabs.map((tab, index) =&gt; (
+          &lt;button 
+            key={index} 
+            onClick={() =&gt; setActiveTab(index)}
+            className={index === activeTab ? 'active' : ''}
+          &gt;
+            {tab.props.label}
+          &lt;/button&gt;
+        ))}
+      &lt;/div&gt;
+      &lt;div className="tabs-content"&gt;
+        {tabs[activeTab]}
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+function Tab({ label, children }) {
+  return &lt;div&gt;{children}&lt;/div&gt;;
+}
+
+// Usage
+&lt;Tabs&gt;
+  &lt;Tab label="Profile"&gt;
+    &lt;UserProfile /&gt;
+  &lt;/Tab&gt;
+  &lt;Tab label="Settings"&gt;
+    &lt;SettingsPanel /&gt;
+  &lt;/Tab&gt;
+&lt;/Tabs&gt;`}
+                    </code>
+                </div>
+                
+                <div class="warning">
+                    <strong>Key Insight:</strong> Compound components rely on React's ability to preserve component structure. The parent (Tabs) doesn't know about the internal structure of its children (Tab)—it just renders them based on their order.
+                </div>
+            </details>
+        </div>
+
+        <div id="section-6-8">
+            <h2><span class="section-marker">6.8</span> Thinking in React</h2>
+            <details>
+                <summary>React's Core Philosophy</summary>
+                <p>React encourages thinking about UIs as a tree of components, where each component is responsible for rendering a part of the UI based on its props and state.</p>
+                
+                <div class="note">
+                    <strong>Golden Rule:</strong> "Think in components, not in DOM elements." Focus on what data changes and how it affects the UI, not on how to manipulate the DOM directly.
+                </div>
+            </details>
+
+            <details>
+                <summary>Step-by-Step Process</summary>
+                <ol>
+                    <li><strong>Break the UI into a component hierarchy</strong></li>
+                    <li><strong>Build a static version</strong> - render data with no interactivity</li>
+                    <li><strong>Identify the minimal representation of state</strong></li>
+                    <li><strong>Identify where state should live</strong></li>
+                    <li><strong>Add inverse data flow</strong> - pass data back up via callbacks</li>
+                </ol>
+            </details>
+
+            <details>
+                <summary>Example: Building a Product Search</summary>
+                <p>Let's apply React thinking to a product search feature:</p>
+                
+                <div class="code-block">
+                    <code>
+{`// Step 1: Break down the UI
+// - SearchBar (input + button)
+// - ProductList (container)
+// - ProductItem (individual product)
+// - FilterSidebar (category filters)
+
+// Step 2: Build static version
+function ProductSearch() {
+  return (
+    &lt;div&gt;
+      &lt;SearchBar /&gt;
+      &lt;FilterSidebar /&gt;
+      &lt;ProductList&gt;
+        &lt;ProductItem name="Laptop" price={999} /&gt;
+        &lt;ProductItem name="Phone" price={699} /&gt;
+        &lt;ProductItem name="Tablet" price={399} /&gt;
+      &lt;/ProductList&gt;
+    &lt;/div&gt;
+  );
+}
+
+// Step 3: Identify state
+// - Search term (string)
+// - Selected category (string or null)
+// - Products (array, filtered based on search/filter)
+
+// Step 4: Identify where state lives
+// - Search term and category → move to ProductSearch (parent)
+// - Filtered products → computed from state
+
+// Step 5: Add inverse data flow
+function ProductSearch() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [category, setCategory] = useState(null);
+  
+  const filteredProducts = products.filter(product =&gt; {
+    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = !category || product.category === category;
+    return matchesSearch && matchesCategory;
+  });
+  
+  return (
+    &lt;div&gt;
+      &lt;SearchBar 
+        searchTerm={searchTerm} 
+        onSearchChange={setSearchTerm} 
+      /&gt;
+      &lt;FilterSidebar 
+        category={category} 
+        onCategoryChange={setCategory} 
+      /&gt;
+      &lt;ProductList products={filteredProducts} /&gt;
+    &lt;/div&gt;
+  );
+}`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Component Communication Patterns</summary>
+                <table class="table table-dark table-striped mt-3">
+                    <thead>
+                        <tr>
+                            <th>Pattern</th>
+                            <th>Use Case</th>
+                            <th>Implementation</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Props Down</td>
+                            <td>Parent to child data flow</td>
+                            <td>Pass data as props</td>
+                        </tr>
+                        <tr>
+                            <td>Events Up</td>
+                            <td>Child to parent communication</td>
+                            <td>Pass callback functions as props</td>
+                        </tr>
+                        <tr>
+                            <td>Context API</td>
+                            <td>Deep component tree sharing</td>
+                            <td>createContext + useContext</td>
+                        </tr>
+                        <tr>
+                            <td>State Management</td>
+                            <td>Global state across many components</td>
+                            <td>Redux, Zustand, Jotai</td>
+                        </tr>
+                        <tr>
+                            <td>Callback Refs</td>
+                            <td>Parent accessing child DOM</td>
+                            <td>useRef + callback refs</td>
+                        </tr>
+                        <tr>
+                            <td>Portals</td>
+                            <td>Render children outside parent DOM</td>
+                            <td>ReactDOM.createPortal()</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </details>
+
+            <details>
+                <summary>Common Anti-Patterns</summary>
+                <ul>
+                    <li><strong>Putting state too high:</strong> Don't lift state to the root component unless necessary</li>
+                    <li><strong>Putting state too low:</strong> Don't duplicate state in multiple child components</li>
+                    <li><strong>Direct DOM manipulation:</strong> Avoid document.getElementById() or innerHTML</li>
+                    <li><strong>Over-complicating components:</strong> If a component has more than 5 props or 50 lines, consider splitting it</li>
+                    <li><strong>Using index as keys:</strong> Always use unique IDs when possible</li>
+                </ul>
+                
+                <div class="warning">
+                    <strong>Remember:</strong> React's power comes from its simplicity. When you feel overwhelmed, ask: "What's the smallest component I can create here?" Often, the answer reveals a better architecture.
+                </div>
+            </details>
+
+            <details>
+                <summary>Final Thought: Component Mindset</summary>
+                <p>Successful React developers think differently:</p>
+                
+                <ul>
+                    <li><strong>Instead of:</strong> "How do I update this div?"</li>
+                    <li><strong>Think:</strong> "What data changed, and which components need to re-render?"</li>
+                </ul>
+                
+                <p>Every UI change is a result of state change. Your job isn't to manipulate the DOM—it's to describe what the UI should look like given the current state.</p>
+                
+                <div class="note">
+                    <strong>Practice Exercise:</strong> Take any web page you use daily (Twitter, Gmail, etc.). Break it down into components. What data does each component need? Where should that data live? How would you connect them? This mental exercise transforms how you approach React development.
+                </div>
+            </details>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Expand/Collapse All Controls
+        document.getElementById('expandAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.setAttribute('open', '');
+            });
+        });
+
+        document.getElementById('collapseAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.removeAttribute('open');
+            });
+        });
+
+        // Search functionality for TOC
+        document.getElementById('searchToc').addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase();
+            const tocItems = document.querySelectorAll('.toc-item');
+            
+            tocItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(query)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        // Smooth scrolling for TOC navigation
+        document.querySelectorAll('.toc-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target');
+                const targetElement = document.getElementById(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Highlight active item
+                    document.querySelectorAll('.toc-item').forEach(el => el.classList.remove('active'));
+                    this.classList.add('active');
+                }
+            });
+        });
+
+        // Highlight code snippets with simple syntax highlighting
+        document.querySelectorAll('pre code').forEach(block => {
+            // Simple syntax highlighting for JSX
+            const content = block.textContent;
+            
+            // Highlight JSX tags
+            let highlighted = content
+                .replace(/(&lt;\/?)([a-zA-Z][a-zA-Z0-9]*)(&gt;)/g, '$1<span class="jsx-tag">$2</span>$3')
+                .replace(/([a-zA-Z]+)=/g, '<span class="jsx-attr">$1</span>=')
+                .replace(/=["'][^"']*["']/g, match => `<span class="jsx-value">${match}</span>`)
+                .replace(/(true|false|null|undefined)/g, '<span class="keyword">$1</span>')
+                .replace(/\/\/.*$/gm, match => `<span class="comment">${match}</span>`);
+            
+            block.innerHTML = highlighted;
+        });
+
+        // Initialize first section as active
+        document.querySelector('.toc-item').classList.add('active');
+
+        // Add smooth scroll to all anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

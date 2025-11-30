@@ -1,0 +1,1539 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Module 4: React Router - Chapter 14</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a192f;
+      --cyan: #00f5ff;
+      --amber: #ffb347;
+      --text-light: #e6f1ff;
+      --border-light: #1a3b5c;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      font-family: 'Roboto', sans-serif;
+      overflow-x: hidden;
+    }
+
+    .left-panel {
+      position: fixed;
+      width: 300px;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 20px;
+      background-color: rgba(10, 25, 47, 0.9);
+      border-right: 1px solid var(--border-light);
+      z-index: 1000;
+    }
+
+    .right-panel {
+      margin-left: 300px;
+      padding: 30px;
+      height: 100vh;
+      overflow-y: auto;
+      background-color: var(--bg-dark);
+    }
+
+    h1, h2, h3, h4 {
+      color: var(--cyan);
+      font-weight: 600;
+    }
+
+    h1 {
+      border-bottom: 2px solid var(--amber);
+      padding-bottom: 10px;
+      margin-bottom: 25px;
+    }
+
+    h2 {
+      margin-top: 40px;
+      border-left: 4px solid var(--amber);
+      padding-left: 15px;
+    }
+
+    h3 {
+      color: var(--amber);
+      margin-top: 30px;
+    }
+
+    .toc-item {
+      margin: 8px 0;
+      padding: 6px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .toc-item:hover {
+      background-color: rgba(0, 245, 255, 0.1);
+    }
+
+    .toc-item.active {
+      background-color: rgba(0, 245, 255, 0.2);
+      border-left: 3px solid var(--cyan);
+    }
+
+    .search-box {
+      margin-bottom: 20px;
+      background-color: rgba(26, 59, 92, 0.5);
+      border: 1px solid var(--border-light);
+      color: var(--text-light);
+    }
+
+    .btn-control {
+      background-color: rgba(10, 25, 47, 0.7);
+      border: 1px solid var(--border-light);
+      color: var(--cyan);
+      margin-bottom: 15px;
+      font-size: 0.9rem;
+    }
+
+    .btn-control:hover {
+      background-color: rgba(0, 245, 255, 0.2);
+      color: var(--cyan);
+    }
+
+    details {
+      margin: 15px 0;
+      border-left: 1px solid var(--border-light);
+      padding-left: 15px;
+      background-color: rgba(10, 25, 47, 0.4);
+      border-radius: 0 5px 5px 0;
+    }
+
+    summary {
+      list-style: none;
+      cursor: pointer;
+      font-weight: bold;
+      color: var(--amber);
+      padding: 10px 15px;
+      background-color: rgba(0, 245, 255, 0.05);
+      border-radius: 5px;
+      margin-bottom: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    summary::before {
+      content: "▶ ";
+      font-size: 0.8em;
+    }
+
+    details[open] > summary::before {
+      content: "▼ ";
+    }
+
+    pre {
+      background-color: #0d1b2a !important;
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 15px;
+      overflow-x: auto;
+      margin: 15px 0;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    code {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.95rem;
+      color: var(--cyan);
+    }
+
+    .highlight {
+      color: var(--amber);
+      font-weight: bold;
+    }
+
+    .note {
+      background-color: rgba(255, 179, 71, 0.1);
+      border-left: 3px solid var(--amber);
+      padding: 12px 15px;
+      margin: 20px 0;
+      border-radius: 0 5px 5px 0;
+    }
+
+    .syntax {
+      background-color: rgba(0, 245, 255, 0.08);
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-weight: 500;
+      display: inline-block;
+      margin: 0 3px;
+    }
+
+    .author-info {
+      color: var(--amber);
+      font-style: italic;
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+
+    .footer-note {
+      margin-top: 60px;
+      text-align: center;
+      color: var(--amber);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border-light);
+      padding-top: 15px;
+    }
+
+    /* Smooth scrolling */
+    html {
+      scroll-behavior: smooth;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 991px) {
+      .left-panel {
+        width: 100%;
+        position: relative;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border-light);
+      }
+      .right-panel {
+        margin-left: 0;
+      }
+    }
+
+    /* Demo styling for routing examples */
+    .router-demo {
+      background-color: rgba(13, 27, 42, 0.6);
+      border: 1px dashed var(--border-light);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .nav-link {
+      display: inline-block;
+      padding: 10px 15px;
+      margin: 0 5px;
+      background-color: rgba(0, 245, 255, 0.1);
+      color: var(--cyan);
+      border-radius: 5px;
+      text-decoration: none;
+      transition: all 0.3s ease;
+    }
+
+    .nav-link:hover {
+      background-color: var(--cyan);
+      color: #000;
+    }
+
+    .nav-link.active {
+      background-color: var(--amber);
+      color: #000;
+      font-weight: bold;
+    }
+
+    .route-path {
+      background-color: rgba(255, 179, 71, 0.1);
+      padding: 4px 8px;
+      border-radius: 3px;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.9rem;
+    }
+
+    .path-highlight {
+      color: var(--amber);
+      font-weight: bold;
+    }
+
+    .component-preview {
+      border: 1px solid var(--border-light);
+      border-radius: 5px;
+      padding: 15px;
+      margin: 15px 0;
+      background-color: rgba(10, 25, 47, 0.3);
+    }
+
+    .nested-route {
+      margin-left: 20px;
+      padding-left: 15px;
+      border-left: 2px dashed var(--cyan);
+    }
+
+    .parameter-badge {
+      display: inline-block;
+      background-color: var(--amber);
+      color: #000;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      margin-left: 5px;
+    }
+
+    .spa-diagram {
+      background-color: rgba(13, 27, 42, 0.6);
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+      font-family: 'Roboto Mono', monospace;
+      white-space: pre;
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container-fluid p-0">
+  <div class="row g-0">
+
+    <!-- Left Panel -->
+    <div class="col-md-3 left-panel">
+      <h1>Module 4</h1>
+      <h4>React Router</h4>
+      <p class="author-info">— Mastering Navigation with Clarity & Depth —</p>
+
+      <input type="text" class="form-control search-box" id="searchTOC" placeholder="Search topics..." />
+
+      <div class="d-grid gap-2">
+        <button class="btn btn-control" id="expandAll">Expand All</button>
+        <button class="btn btn-control" id="collapseAll">Collapse All</button>
+      </div>
+
+      <div class="toc">
+        <h5>Table of Contents</h5>
+        <div class="toc-item" data-target="#section-14-1">14.1 Single Page Applications (SPA)</div>
+        <div class="toc-item" data-target="#section-14-2">14.2 React Router Setup</div>
+        <div class="toc-item" data-target="#section-14-3">14.3 Basic Routing</div>
+        <div class="toc-item" data-target="#section-14-4">14.4 Dynamic Routes and Parameters</div>
+        <div class="toc-item" data-target="#section-14-5">14.5 Nested Routes</div>
+      </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="col-md-9 right-panel">
+
+      <!-- Section 14.1 -->
+      <section id="section-14-1">
+        <h2>14.1 Single Page Applications (SPA)</h2>
+        
+        <details>
+          <summary>📌 Summary: The Modern Web Experience</summary>
+          <p>A Single Page Application (SPA) is a web app that loads a single HTML page and dynamically updates that page as the user interacts with the app — no full page reloads.</p>
+          
+          <h3>🔹 Traditional Multi-Page App vs SPA</h3>
+          <table class="table table-dark table-sm mt-3">
+            <thead>
+              <tr><th>Feature</th><th>Traditional Website</th><th>Single Page Application</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Page Load</td><td>Full page reload on every navigation</td><td>No page reload — only component changes</td></tr>
+              <tr><td>Server Requests</td><td>HTML, CSS, JS downloaded each time</td><td>HTML/CSS/JS loaded once, then API calls only</td></tr>
+              <tr><td>User Experience</td><td>Visible page transitions, flickering</td><td>Smooth, app-like experience</td></tr>
+              <tr><td>Performance</td><td>Slower due to repeated downloads</td><td>Faster after initial load</td></tr>
+              <tr><td>Navigation</td><td>Browser URL changes with full request</td><td>URL changes via JavaScript (history API)</td></tr>
+              <tr><td>Examples</td><td>WordPress, traditional blogs</td><td>Gmail, Facebook, Twitter, Netflix</td></tr>
+            </tbody>
+          </table>
+
+          <h3>⚡ How SPAs Work Internally</h3>
+          <pre><code>
+// Traditional website flow:
+User clicks link → Browser requests new HTML from server → Server sends new page → Browser renders
+
+// SPA flow:
+User clicks link → JavaScript intercepts click → Updates URL via history.pushState() → 
+React Router matches route → Renders appropriate component → DOM updates without reload
+          </code></pre>
+
+          <h3>🧠 Mental Model: SPA as a Desktop App</h3>
+          <p>Think of an SPA like a desktop application:</p>
+          <ol>
+            <li>You install it once (download all assets)</li>
+            <li>You open it (load index.html)</li>
+            <li>You navigate between screens (components change)</li>
+            <li>The app never fully closes — just shows different views</li>
+          </ol>
+
+          <h3>💡 Why SPAs Are Essential Today</h3>
+          <ul>
+            <li><strong>Speed:</strong> No waiting for server responses after initial load</li>
+            <li><strong>Responsiveness:</strong> Instant UI updates feel native</li>
+            <li><strong>Offline Capabilities:</strong> Can cache resources for offline use</li>
+            <li><strong>Consistent UX:</strong> Same look and feel across all pages</li>
+            <li><strong>API-Centric:</strong> Perfect for modern REST/GraphQL backends</li>
+          </ul>
+
+          <div class="note">
+            <strong>⚠️ Important:</strong> SPAs require proper SEO handling (server-side rendering or static generation) since search engines may not execute JavaScript.
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Deep Dive: History API and Client-Side Routing</summary>
+          <p>SPAs rely on the HTML5 History API to manipulate browser URLs without reloading.</p>
+
+          <h3>🔍 The History API Methods</h3>
+          <pre><code>
+// 1. Push a new state onto the history stack
+history.pushState({page: 'home'}, 'Home', '/home');
+
+// 2. Replace current state
+history.replaceState({page: 'about'}, 'About', '/about');
+
+// 3. Go back/forward in history
+history.back();   // Goes back one step
+history.forward(); // Goes forward one step
+history.go(-2);   // Goes back two steps
+
+// 4. Listen for navigation events
+window.addEventListener('popstate', (event) =&gt; {
+  console.log('Route changed to:', location.pathname);
+});
+          </code></pre>
+
+          <h3>📊 Visual Representation: SPA Navigation Flow</h3>
+          <div class="spa-diagram">
+┌───────────────────────┐
+│     Index.html        │ ← Loaded once
+├───────────────────────┤
+│   &lt;App&gt; Component     │
+│    ┌─────────────┐    │
+│    │  &lt;Navbar&gt;   │    │ ← Always visible
+│    └─────────────┘    │
+│    ┌─────────────┐    │
+│    │  &lt;Routes&gt;   │    │ ← Changes based on URL
+│    │             │    │
+│    │  &lt;Home&gt;     │    │ ← When URL = /
+│    │             │    │
+│    └─────────────┘    │
+└───────────────────────┘
+           ▲
+           │
+       User clicks "About"
+           │
+           ▼
+┌───────────────────────┐
+│     Index.html        │ ← Already loaded!
+├───────────────────────┤
+│   &lt;App&gt; Component     │
+│    ┌─────────────┐    │
+│    │  &lt;Navbar&gt;   │    │ ← Still visible
+│    └─────────────┘    │
+│    ┌─────────────┐    │
+│    │  &lt;Routes&gt;   │    │ ← Re-rendered!
+│    │             │    │
+│    │ &lt;About&gt;     │    │ ← Now showing About component
+│    │             │    │
+│    └─────────────┘    │
+└───────────────────────┘
+          </div>
+
+          <h3>💡 Key Insight: The Magic of Client-Side Routing</h3>
+          <p>React Router doesn't actually change the page — it:</p>
+          <ol>
+            <li>Intercepts link clicks</li>
+            <li>Uses <code>history.pushState()</code> to update URL</li>
+            <li>Matches the URL against route definitions</li>
+            <li>Re-renders the appropriate component</li>
+            <li>Updates the browser's address bar</li>
+          </ol>
+
+          <div class="demo-card">
+            <h4>✅ Live Demo: SPA Navigation</h4>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+              <a href="#" class="nav-link active">Home</a>
+              <a href="#" class="nav-link">About</a>
+              <a href="#" class="nav-link">Contact</a>
+            </div>
+            <div class="component-preview">
+              <h3>Welcome to the Home Page!</h3>
+              <p>This content changes without page reloads.</p>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 14.2 -->
+      <section id="section-14-2">
+        <h2>14.2 React Router Setup</h2>
+        
+        <details>
+          <summary>📌 Summary: Installing and Configuring React Router</summary>
+          <p>React Router is the de facto standard for routing in React applications. Let's get it set up correctly.</p>
+
+          <h3>🔹 Installation</h3>
+          <pre><code>
+# Install React Router v6 (current version)
+npm install react-router-dom
+
+# Or with yarn
+yarn add react-router-dom
+          </code></pre>
+
+          <h3>⚡ Basic Setup Structure</h3>
+          <p>Every React Router app needs three key elements:</p>
+          <ol>
+            <li><strong>BrowserRouter:</strong> Wraps your entire app</li>
+            <li><strong>Routes:</strong> Container for all route definitions</li>
+            <li><strong>Route:</strong> Defines a path and component to render</li>
+          </ol>
+
+          <h3>⚡ Complete Setup Example</h3>
+          <pre><code>
+// src/index.js
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter } from 'react-router-dom';
+import App from './App';
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  &lt;!-- 1. Wrap App with BrowserRouter --&gt;
+  &lt;BrowserRouter&gt;
+    &lt;App /&gt;
+  &lt;/BrowserRouter&gt;
+);
+
+// src/App.js
+import { Routes, Route } from 'react-router-dom';
+import Home from './components/Home';
+import About from './components/About';
+import Contact from './components/Contact';
+
+function App() {
+  return (
+    &lt;div className="App"&gt;
+      &lt;!-- 2. Use Routes container --&gt;
+      &lt;Routes&gt;
+        &lt;!-- 3. Define individual routes --&gt;
+        &lt;Route path="/" element={&lt;Home /&gt;} /&gt;
+        &lt;Route path="/about" element={&lt;About /&gt;} /&gt;
+        &lt;Route path="/contact" element={&lt;Contact /&gt;} /&gt;
+      &lt;/Routes&gt;
+    &lt;/div&gt;
+  );
+}
+
+export default App;
+          </code></pre>
+
+          <h3>💡 Why BrowserRouter?</h3>
+          <p>React Router provides several routers:</p>
+          <ul>
+            <li><strong>BrowserRouter:</strong> Uses HTML5 History API (most common)</li>
+            <li><strong>HashRouter:</strong> Uses URL hash (#/) — works on static servers</li>
+            <li><strong>MemoryRouter:</strong> Stores history in memory — used for testing</li>
+          </ul>
+
+          <div class="note">
+            <strong>🌟 Pro Tip:</strong> Use <code>BrowserRouter</code> for most projects. Use <code>HashRouter</code> only if you're deploying to a static server that doesn't support server-side routing.
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Advanced: Setting Up with TypeScript</summary>
+          <p>If you're using TypeScript, you can get full type safety with React Router.</p>
+
+          <h3>⚡ Type-Safe Setup</h3>
+          <pre><code>
+// src/types/router.d.ts
+import { NavigateFunction } from 'react-router-dom';
+
+declare module 'react-router-dom' {
+  export interface NavigateFunction extends Function {}
+}
+
+// src/App.tsx
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import Home from './components/Home';
+import About from './components/About';
+import Contact from './components/Contact';
+
+function App() {
+  return (
+    &lt;BrowserRouter&gt;
+      &lt;Routes&gt;
+        &lt;Route path="/" element={&lt;Home /&gt;} /&gt;
+        &lt;Route path="/about" element={&lt;About /&gt;} /&gt;
+        &lt;Route path="/contact" element={&lt;Contact /&gt;} /&gt;
+      &lt;/Routes&gt;
+    &lt;/BrowserRouter&gt;
+  );
+}
+
+export default App;
+          </code></pre>
+
+          <h3>🔥 Folder Structure Recommendation</h3>
+          <pre><code>
+src/
+├── components/
+│   ├── Home.jsx
+│   ├── About.jsx
+│   └── Contact.jsx
+├── router/
+│   ├── AppRouter.jsx    ← Main router configuration
+│   └── routes.js        ← Centralized route definitions
+├── App.jsx
+└── main.jsx
+          </code></pre>
+
+          <h3>⚡ Organized Router Configuration</h3>
+          <pre><code>
+// src/router/routes.js
+import Home from '../components/Home';
+import About from '../components/About';
+import Contact from '../components/Contact';
+
+export const routes = [
+  { path: '/', element: &lt;Home /&gt; },
+  { path: '/about', element: &lt;About /&gt; },
+  { path: '/contact', element: &lt;Contact /&gt; }
+];
+
+// src/router/AppRouter.jsx
+import { Routes, Route } from 'react-router-dom';
+import { routes } from './routes';
+
+function AppRouter() {
+  return (
+    &lt;Routes&gt;
+      {routes.map((route, index) =&gt; (
+        &lt;Route key={index} path={route.path} element={route.element} /&gt;
+      ))}
+    &lt;/Routes&gt;
+  );
+}
+
+export default AppRouter;
+
+// src/App.jsx
+import { BrowserRouter } from 'react-router-dom';
+import AppRouter from './router/AppRouter';
+
+function App() {
+  return (
+    &lt;BrowserRouter&gt;
+      &lt;AppRouter /&gt;
+    &lt;/BrowserRouter&gt;
+  );
+}
+
+export default App;
+          </code></pre>
+
+          <div class="demo-card">
+            <h4>✅ Live Demo: Setup Verification</h4>
+            <div class="component-preview">
+              <p>✅ React Router is properly installed and configured!</p>
+              <p>Now let's create our first routes.</p>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 14.3 -->
+      <section id="section-14-3">
+        <h2>14.3 Basic Routing</h2>
+        
+        <details>
+          <summary>📌 Summary: Defining Simple Routes</summary>
+          <p>Basic routing lets users navigate between different views in your application. Each route maps a URL path to a specific component.</p>
+
+          <h3>🔹 Core Concepts</h3>
+          <ul>
+            <li><strong>Path:</strong> The URL segment that triggers a route</li>
+            <li><strong>Element:</strong> The component to render when path matches</li>
+            <li><strong>Exact Match:</strong> By default, React Router uses exact matching</li>
+            <li><strong>Default Route:</strong> Use <code>path="/"</code> for the home page</li>
+          </ul>
+
+          <h3>⚡ Basic Route Syntax</h3>
+          <pre><code>
+import { Routes, Route } from 'react-router-dom';
+import Home from './Home';
+import About from './About';
+import Contact from './Contact';
+
+function App() {
+  return (
+    &lt;Routes&gt;
+      &lt;Route path="/" element={&lt;Home /&gt;} /&gt;
+      &lt;Route path="/about" element={&lt;About /&gt;} /&gt;
+      &lt;Route path="/contact" element={&lt;Contact /&gt;} /&gt;
+    &lt;/Routes&gt;
+  );
+}
+          </code></pre>
+
+          <h3>🔑 Understanding Path Matching</h3>
+          <table class="table table-dark table-sm mt-3">
+            <thead>
+              <tr><th>URL</th><th>Matches Route</th><th>Why</th></tr>
+            </thead>
+            <tbody>
+              <tr><td><code>/</code></td><td><code>&lt;Route path="/" /&gt;</code></td><td>Exact match</td></tr>
+              <tr><td><code>/about</code></td><td><code>&lt;Route path="/about" /&gt;</code></td><td>Exact match</td></tr>
+              <tr><td><code>/about/team</code></td><td><em>None</em></td><td>Not an exact match</td></tr>
+              <tr><td><code>/contact</code></td><td><code>&lt;Route path="/contact" /&gt;</code></td><td>Exact match</td></tr>
+              <tr><td><code>/anything-else</code></td><td><em>None</em></td><td>No matching route</td></tr>
+            </tbody>
+          </table>
+
+          <h3>🔥 Real-World Example: Portfolio Site</h3>
+          <pre><code>
+import { Routes, Route } from 'react-router-dom';
+import Home from './components/Home';
+import Projects from './components/Projects';
+import Resume from './components/Resume';
+import Contact from './components/Contact';
+
+function App() {
+  return (
+    &lt;div className="App"&gt;
+      &lt;header&gt;
+        &lt;nav&gt;
+          &lt;a href="/" className="nav-link"&gt;Home&lt;/a&gt;
+          &lt;a href="/projects" className="nav-link"&gt;Projects&lt;/a&gt;
+          &lt;a href="/resume" className="nav-link"&gt;Resume&lt;/a&gt;
+          &lt;a href="/contact" className="nav-link"&gt;Contact&lt;/a&gt;
+        &lt;/nav&gt;
+      &lt;/header&gt;
+
+      &lt;main&gt;
+        &lt;Routes&gt;
+          &lt;Route path="/" element={&lt;Home /&gt;} /&gt;
+          &lt;Route path="/projects" element={&lt;Projects /&gt;} /&gt;
+          &lt;Route path="/resume" element={&lt;Resume /&gt;} /&gt;
+          &lt;Route path="/contact" element={&lt;Contact /&gt;} /&gt;
+        &lt;/Routes&gt;
+      &lt;/main&gt;
+    &lt;/div&gt;
+  );
+}
+
+// Home.jsx
+function Home() {
+  return (
+    &lt;div className="component-preview"&gt;
+      &lt;h2&gt;Welcome to My Portfolio&lt;/h2&gt;
+      &lt;p&gt;This is the home page.&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+
+// Projects.jsx
+function Projects() {
+  return (
+    &lt;div className="component-preview"&gt;
+      &lt;h2&gt;My Projects&lt;/h2&gt;
+      &lt;p&gt;Here are my recent projects.&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+
+// Resume.jsx
+function Resume() {
+  return (
+    &lt;div className="component-preview"&gt;
+      &lt;h2&gt;My Resume&lt;/h2&gt;
+      &lt;p&gt;Download my CV here.&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+
+// Contact.jsx
+function Contact() {
+  return (
+    &lt;div className="component-preview"&gt;
+      &lt;h2&gt;Get In Touch&lt;/h2&gt;
+      &lt;p&gt;Send me a message!&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>💡 Why This Works So Well</h3>
+          <ul>
+            <li><strong>URL reflects UI:</strong> You can bookmark any page</li>
+            <li><strong>Back button works:</strong> Browser history is maintained</li>
+            <li><strong>SEO friendly:</strong> Each page has its own URL</li>
+            <li><strong>Fast navigation:</strong> Only component changes, no full reload</li>
+          </ul>
+
+          <div class="note">
+            <strong>🧠 Mental Model:</strong> Think of routes as doors in a house. Each door (URL path) leads to a different room (component). When you enter through a door, you see that room — but the rest of the house stays the same.
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Deep Dive: The Order Matters</summary>
+          <p>React Router matches routes in order — the first matching route wins!</p>
+
+          <h3>❌ Common Mistake: Incorrect Order</h3>
+          <pre><code>
+// ❌ BAD: Will never show the /profile route
+function App() {
+  return (
+    &lt;Routes&gt;
+      &lt;Route path="/" element={&lt;Home /&gt;} /&gt;
+      &lt;Route path="/:username" element={&lt;UserProfile /&gt;} /&gt;  // This catches ALL paths!
+      &lt;Route path="/profile" element={&lt;Profile /&gt;} /&gt;      // Never reached!
+    &lt;/Routes&gt;
+  );
+}
+          </code></pre>
+
+          <h3>✅ Correct Order: Specific Before General</h3>
+          <pre><code>
+// ✅ GOOD: Specific routes first, then general ones
+function App() {
+  return (
+    &lt;Routes&gt;
+      &lt;Route path="/" element={&lt;Home /&gt;} /&gt;
+      &lt;Route path="/profile" element={&lt;Profile /&gt;} /&gt;      // Specific
+      &lt;Route path="/:username" element={&lt;UserProfile /&gt;} /&gt;  // General catch-all
+    &lt;/Routes&gt;
+  );
+}
+          </code></pre>
+
+          <h3>🔍 How Path Matching Works Internally</h3>
+          <p>React Router uses a simple algorithm:</p>
+          <ol>
+            <li>Start at the top of the Routes list</li>
+            <li>Compare current URL with each Route's path</li>
+            <li>When a match is found, render that component and stop</li>
+            <li>If no match, render nothing (or a 404 page)</li>
+          </ol>
+
+          <h3>🔥 Best Practice: Add a 404 Route</h3>
+          <pre><code>
+import { Routes, Route, Navigate } from 'react-router-dom';
+import Home from './Home';
+import About from './About';
+import Contact from './Contact';
+import NotFound from './NotFound';
+
+function App() {
+  return (
+    &lt;Routes&gt;
+      &lt;Route path="/" element={&lt;Home /&gt;} /&gt;
+      &lt;Route path="/about" element={&lt;About /&gt;} /&gt;
+      &lt;Route path="/contact" element={&lt;Contact /&gt;} /&gt;
+      
+      &lt;!-- Catch-all route for unmatched paths --&gt;
+      &lt;Route path="*" element={&lt;NotFound /&gt;} /&gt;
+    &lt;/Routes&gt;
+  );
+}
+
+// NotFound.jsx
+function NotFound() {
+  return (
+    &lt;div className="component-preview"&gt;
+      &lt;h2&gt;404 - Page Not Found&lt;/h2&gt;
+      &lt;p&gt;The page you're looking for doesn't exist.&lt;/p&gt;
+      &lt;a href="/" className="nav-link"&gt;Go Home&lt;/a&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <div class="demo-card">
+            <h4>✅ Live Demo: Basic Navigation</h4>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+              <a href="#" class="nav-link active">Home</a>
+              <a href="#" class="nav-link">About</a>
+              <a href="#" class="nav-link">Contact</a>
+            </div>
+            <div class="component-preview">
+              <h3>Welcome to the Home Page!</h3>
+              <p>This is the default route. Click on other links to see them render!</p>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 14.4 -->
+      <section id="section-14-4">
+        <h2>14.4 Dynamic Routes and Parameters</h2>
+        
+        <details>
+          <summary>📌 Summary: Building Flexible Routes with Variables</summary>
+          <p>Dynamic routes allow you to create routes with variables (parameters) that change based on user input — perfect for profile pages, product listings, and more.</p>
+
+          <h3>🔹 Parameter Syntax</h3>
+          <p>Use colons (<code>:</code>) to define dynamic segments in your path:</p>
+          <pre><code>
+// Route definition
+&lt;Route path="/user/:id" element={&lt;UserProfile /&gt;} /&gt;
+
+// Matches these URLs:
+/user/123
+/user/abc
+/user/any-value-here
+
+// But NOT:
+/user
+/user/john/profile
+          </code></pre>
+
+          <h3>⚡ Basic Dynamic Route Example</h3>
+          <pre><code>
+import { Routes, Route, useParams } from 'react-router-dom';
+import Home from './Home';
+import UserProfile from './UserProfile';
+
+function App() {
+  return (
+    &lt;Routes&gt;
+      &lt;Route path="/" element={&lt;Home /&gt;} /&gt;
+      &lt;Route path="/user/:userId" element={&lt;UserProfile /&gt;} /&gt;
+    &lt;/Routes&gt;
+  );
+}
+
+// UserProfile.jsx
+import { useParams } from 'react-router-dom';
+
+function UserProfile() {
+  // Extract parameter from URL
+  const { userId } = useParams();
+
+  return (
+    &lt;div className="component-preview"&gt;
+      &lt;h2&gt;User Profile: {userId}&lt;/h2&gt;
+      &lt;p&gt;Displaying profile for user ID: &lt;span className="parameter-badge"&gt;{userId}&lt;/span&gt;&lt;/p&gt;
+      &lt;p&gt;This could be fetched from an API using this ID!&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>💡 Understanding useParams()</h3>
+          <p><code>useParams()</code> is a hook that returns an object containing all route parameters.</p>
+          <pre><code>
+// URL: /products/iphone-15/color/blue/size/128gb
+// Route: /products/:productName/color/:color/size/:size
+
+function ProductPage() {
+  const params = useParams();
+  
+  console.log(params);
+  // Output: { productName: 'iphone-15', color: 'blue', size: '128gb' }
+  
+  return (
+    &lt;div&gt;
+      &lt;p&gt;Product: {params.productName}&lt;/p&gt;
+      &lt;p&gt;Color: {params.color}&lt;/p&gt;
+      &lt;p&gt;Size: {params.size}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>🔥 Real-World Example: Blog Post System</h3>
+          <pre><code>
+import { Routes, Route, useParams } from 'react-router-dom';
+import BlogHome from './BlogHome';
+import BlogPost from './BlogPost';
+
+function App() {
+  return (
+    &lt;Routes&gt;
+      &lt;Route path="/" element={&lt;BlogHome /&gt;} /&gt;
+      &lt;Route path="/post/:postId" element={&lt;BlogPost /&gt;} /&gt;
+      &lt;Route path="/category/:categoryName" element={&lt;CategoryPosts /&gt;} /&gt;
+    &lt;/Routes&gt;
+  );
+}
+
+// BlogPost.jsx
+import { useParams, useEffect, useState } from 'react';
+
+function BlogPost() {
+  const { postId } = useParams();
+  const [post, setPost] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() =&gt; {
+    // Fetch post data using the dynamic ID
+    fetch(`/api/posts/${postId}`)
+      .then(response =&gt; response.json())
+      .then(data =&gt; {
+        setPost(data);
+        setLoading(false);
+      });
+  }, [postId]); // Re-fetch when postId changes!
+
+  if (loading) return &lt;div&gt;Loading...&lt;/div&gt;;
+
+  return (
+    &lt;div className="component-preview"&gt;
+      &lt;h2&gt;{post?.title}&lt;/h2&gt;
+      &lt;p&gt;Author: {post?.author}&lt;/p&gt;
+      &lt;p&gt;Published: {post?.date}&lt;/p&gt;
+      &lt;div dangerouslySetInnerHTML={{ __html: post?.content }} /&gt;
+    &lt;/div&gt;
+  );
+}
+
+// CategoryPosts.jsx
+function CategoryPosts() {
+  const { categoryName } = useParams();
+
+  return (
+    &lt;div className="component-preview"&gt;
+      &lt;h2&gt;Posts in Category: {categoryName}&lt;/h2&gt;
+      &lt;p&gt;Showing posts tagged with: &lt;span className="parameter-badge"&gt;{categoryName}&lt;/span&gt;&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>⚠️ Common Pitfalls</h3>
+          <ul>
+            <li><strong>Forgetting to import useParams:</strong> You'll get undefined</li>
+            <li><strong>Using parameters before they're loaded:</strong> Always check for existence</li>
+            <li><strong>Not re-fetching data when parameters change:</strong> Use dependency array in useEffect</li>
+          </ul>
+
+          <div class="note">
+            <strong>🧠 Mental Model:</strong> Route parameters are like function arguments. Just as <code>getUser(id)</code> takes an ID, <code>/user/:id</code> takes an ID from the URL.
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Advanced: Multiple Parameters and Optional Segments</summary>
+          <p>React Router supports complex parameter patterns including optional segments and wildcards.</p>
+
+          <h3>⚡ Multiple Parameters</h3>
+          <pre><code>
+// Route: /product/:categoryId/:productId
+// URL: /product/123/456
+
+function ProductDetail() {
+  const { categoryId, productId } = useParams();
+  
+  return (
+    &lt;div&gt;
+      &lt;p&gt;Category: &lt;span className="parameter-badge"&gt;{categoryId}&lt;/span&gt;&lt;/p&gt;
+      &lt;p&gt;Product: &lt;span className="parameter-badge"&gt;{productId}&lt;/span&gt;&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>⚡ Optional Parameters</h3>
+          <p>Use question mark (?) to make a segment optional:</p>
+          <pre><code>
+// Route: /user/:userId?/profile
+// Matches: /user/123/profile AND /user/profile
+
+function UserProfile() {
+  const { userId } = useParams();
+  
+  if (!userId) {
+    return &lt;div&gt;Your profile&lt;/div&gt;;
+  }
+  
+  return &lt;div&gt;Profile of user {userId}&lt;/div&gt;;
+}
+          </code></pre>
+
+          <h3>⚡ Wildcard Routes (Catch-All)</h3>
+          <p>Use asterisk (*) to match any remaining path:</p>
+          <pre><code>
+// Route: /admin/*
+// URL: /admin/users, /admin/settings, /admin/users/edit/123
+
+function AdminPanel() {
+  const { *: path } = useParams(); // This syntax won't work directly
+  
+  // Instead, use a different approach:
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Admin Dashboard&lt;/h2&gt;
+      &lt;p&gt;You're at: {window.location.pathname}&lt;/p&gt;
+      &lt;!-- Use this pattern for complex admin routing --&gt;
+    &lt;/div&gt;
+  );
+}
+
+// Better approach: nested routes (see next section)
+          </code></pre>
+
+          <h3>🔥 Real-World Example: E-commerce Product Page</h3>
+          <pre><code>
+// Route definition
+&lt;Route path="/product/:productId/:variantId?" element={&lt;ProductPage /&gt;} /&gt;
+
+// ProductPage.jsx
+import { useParams, useEffect, useState } from 'react';
+
+function ProductPage() {
+  const { productId, variantId } = useParams();
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() =&gt; {
+    // Fetch product data
+    const fetchProduct = async () =&gt; {
+      try {
+        let url = `/api/products/${productId}`;
+        if (variantId) {
+          url += `/variants/${variantId}`;
+        }
+        
+        const response = await fetch(url);
+        const data = await response.json();
+        setProduct(data);
+      } catch (error) {
+        console.error('Failed to fetch product:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
+  }, [productId, variantId]);
+
+  if (loading) return &lt;div&gt;Loading product...&lt;/div&gt;;
+
+  return (
+    &lt;div className="component-preview"&gt;
+      &lt;h2&gt;{product?.name}&lt;/h2&gt;
+      &lt;p&gt;ID: &lt;span className="parameter-badge"&gt;{productId}&lt;/span&gt;&lt;/p&gt;
+      {variantId &amp;&amp; (
+        &lt;p&gt;Variant: &lt;span className="parameter-badge"&gt;{variantId}&lt;/span&gt;&lt;/p&gt;
+      )}
+      &lt;p&gt;Price: ${product?.price}&lt;/p&gt;
+      &lt;button&gt;Add to Cart&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <div class="demo-card">
+            <h4>✅ Live Demo: Dynamic Route</h4>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+              <a href="#" class="nav-link">Home</a>
+              <a href="#" class="nav-link">/user/123</a>
+              <a href="#" class="nav-link">/user/456</a>
+            </div>
+            <div class="component-preview">
+              <h3>User Profile: 123</h3>
+              <p>Displaying profile for user ID: <span class="parameter-badge">123</span></p>
+              <p>Change the URL to see different profiles!</p>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 14.5 -->
+      <section id="section-14-5">
+        <h2>14.5 Nested Routes</h2>
+        
+        <details>
+          <summary>📌 Summary: Organizing Complex UI Hierarchies</summary>
+          <p>Nested routes allow you to build complex layouts where child routes render inside parent components — perfect for dashboards, tabs, and hierarchical structures.</p>
+
+          <h3>🔹 Core Concept: Parent-Child Relationship</h3>
+          <p>In nested routing:</p>
+          <ol>
+            <li>A parent route renders a layout component</li>
+            <li>The layout component contains a <code>&lt;Outlet /&gt;</code> placeholder</li>
+            <li>Child routes render into that outlet</li>
+            <li>The URL reflects the hierarchy</li>
+          </ol>
+
+          <h3>⚡ Basic Nested Route Syntax</h3>
+          <pre><code>
+import { Routes, Route, Outlet } from 'react-router-dom';
+import DashboardLayout from './DashboardLayout';
+import DashboardHome from './DashboardHome';
+import Settings from './Settings';
+import Profile from './Profile';
+
+function App() {
+  return (
+    &lt;Routes&gt;
+      &lt;Route path="/" element={&lt;Home /&gt;} /&gt;
+      
+      &lt;!-- Parent route with Outlet --&gt;
+      &lt;Route path="/dashboard" element={&lt;DashboardLayout /&gt;} &gt;
+        &lt;!-- Child routes will render inside DashboardLayout's Outlet --&gt;
+        &lt;Route index element={&lt;DashboardHome /&gt;} /&gt;
+        &lt;Route path="settings" element={&lt;Settings /&gt;} /&gt;
+        &lt;Route path="profile" element={&lt;Profile /&gt;} /&gt;
+      &lt;/Route&gt;
+      
+      &lt;Route path="*" element={&lt;NotFound /&gt;} /&gt;
+    &lt;/Routes&gt;
+  );
+}
+
+// DashboardLayout.jsx
+import { Outlet, Link } from 'react-router-dom';
+
+function DashboardLayout() {
+  return (
+    &lt;div className="component-preview"&gt;
+      &lt;nav style={{ backgroundColor: '#1a2b42', padding: '15px', marginBottom: '20px' }}&gt;
+        &lt;Link to="/dashboard" className="nav-link"&gt;Home&lt;/Link&gt;
+        &lt;Link to="/dashboard/settings" className="nav-link"&gt;Settings&lt;/Link&gt;
+        &lt;Link to="/dashboard/profile" className="nav-link"&gt;Profile&lt;/Link&gt;
+      &lt;/nav&gt;
+      
+      &lt;!-- This is where child routes render --&gt;
+      &lt;Outlet /&gt;
+    &lt;/div&gt;
+  );
+}
+
+// DashboardHome.jsx
+function DashboardHome() {
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Dashboard Home&lt;/h2&gt;
+      &lt;p&gt;Welcome to your dashboard!&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+
+// Settings.jsx
+function Settings() {
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Settings&lt;/h2&gt;
+      &lt;p&gt;Configure your account settings.&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>💡 Why Nested Routes Matter</h3>
+          <ul>
+            <li><strong>Reusable Layouts:</strong> Header, sidebar, footer stay consistent</li>
+            <li><strong>URL Hierarchy:</strong> <code>/dashboard/settings</code> clearly shows relationship</li>
+            <li><strong>Component Composition:</strong> Share logic and state between parent and children</li>
+            <li><strong>Code Organization:</strong> Group related routes together</li>
+          </ul>
+
+          <h3>🔥 Real-World Example: Social Media Dashboard</h3>
+          <pre><code>
+import { Routes, Route, Outlet } from 'react-router-dom';
+import AppLayout from './AppLayout';
+import Feed from './Feed';
+import Messages from './Messages';
+import Notifications from './Notifications';
+import Profile from './Profile';
+import Settings from './Settings';
+
+function App() {
+  return (
+    &lt;Routes&gt;
+      &lt;Route path="/" element={&lt;Home /&gt;} /&gt;
+      
+      &lt;!-- Root layout for authenticated routes --&gt;
+      &lt;Route path="/app" element={&lt;AppLayout /&gt;} &gt;
+        &lt;Route index element={&lt;Feed /&gt;} /&gt;
+        &lt;Route path="messages" element={&lt;Messages /&gt;} /&gt;
+        &lt;Route path="notifications" element={&lt;Notifications /&gt;} /&gt;
+        &lt;Route path="profile" element={&lt;Profile /&gt;} /&gt;
+        &lt;Route path="settings" element={&lt;Settings /&gt;} /&gt;
+      &lt;/Route&gt;
+      
+      &lt;Route path="*" element={&lt;NotFound /&gt;} /&gt;
+    &lt;/Routes&gt;
+  );
+}
+
+// AppLayout.jsx
+import { Outlet, Link } from 'react-router-dom';
+
+function AppLayout() {
+  return (
+    &lt;div style={{ display: 'flex', minHeight: '100vh' }}&gt;
+      &lt;!-- Sidebar --&gt;
+      &lt;aside style={{ width: '250px', backgroundColor: '#0a192f', padding: '20px' }}&gt;
+        &lt;h3&gt;Social App&lt;/h3&gt;
+        &lt;nav&gt;
+          &lt;Link to="/app" className="nav-link"&gt;Feed&lt;/Link&gt;
+          &lt;Link to="/app/messages" className="nav-link"&gt;Messages&lt;/Link&gt;
+          &lt;Link to="/app/notifications" className="nav-link"&gt;Notifications&lt;/Link&gt;
+          &lt;Link to="/app/profile" className="nav-link"&gt;Profile&lt;/Link&gt;
+          &lt;Link to="/app/settings" className="nav-link"&gt;Settings&lt;/Link&gt;
+        &lt;/nav&gt;
+      &lt;/aside&gt;
+      
+      &lt;!-- Main content area --&gt;
+      &lt;main style={{ flex: 1, padding: '20px' }}&gt;
+        &lt;Outlet /&gt;  {/* Child routes render here */}
+      &lt;/main&gt;
+    &lt;/div&gt;
+  );
+}
+
+// Feed.jsx
+function Feed() {
+  return (
+    &lt;div className="nested-route"&gt;
+      &lt;h2&gt;Your Feed&lt;/h2&gt;
+      &lt;p&gt;Latest posts from people you follow.&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+
+// Messages.jsx
+function Messages() {
+  return (
+    &lt;div className="nested-route"&gt;
+      &lt;h2&gt;Messages&lt;/h2&gt;
+      &lt;p&gt;Your private conversations.&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>🎯 Understanding the Outlet</h3>
+          <p>The <code>&lt;Outlet /&gt;</code> component is the placeholder where child routes render. It's essential for nested routing.</p>
+
+          <h3>🔥 Nested Routes with Parameters</h3>
+          <pre><code>
+// Route structure
+&lt;Route path="/users" element={&lt;UsersLayout /&gt;} &gt;
+  &lt;Route index element={&lt;UserList /&gt;} /&gt;
+  &lt;Route path=":userId" element={&lt;UserProfile /&gt;} /&gt;
+  &lt;Route path=":userId/posts" element={&lt;UserPosts /&gt;} /&gt;
+&lt;/Route&gt;
+
+// UsersLayout.jsx
+import { Outlet, Link } from 'react-router-dom';
+
+function UsersLayout() {
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Users Management&lt;/h2&gt;
+      &lt;nav&gt;
+        &lt;Link to="/users" className="nav-link"&gt;All Users&lt;/Link&gt;
+        &lt;Link to="/users/123" className="nav-link"&gt;User 123&lt;/Link&gt;
+        &lt;Link to="/users/456/posts" className="nav-link"&gt;User 456 Posts&lt;/Link&gt;
+      &lt;/nav&gt;
+      
+      &lt;hr /&gt;
+      &lt;Outlet /&gt;  {/* Will render UserList, UserProfile, or UserPosts */}
+    &lt;/div&gt;
+  );
+}
+
+// UserProfile.jsx
+import { useParams } from 'react-router-dom';
+
+function UserProfile() {
+  const { userId } = useParams();
+  
+  return (
+    &lt;div&gt;
+      &lt;h3&gt;User Profile: {userId}&lt;/h3&gt;
+      &lt;p&gt;Viewing profile for user {userId}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+
+// UserPosts.jsx
+function UserPosts() {
+  // We still have access to userId from the parent route!
+  return (
+    &lt;div&gt;
+      &lt;h3&gt;User Posts&lt;/h3&gt;
+      &lt;p&gt;Showing posts for user in URL path&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>💡 Pro Tips for Nested Routes</h3>
+          <ol>
+            <li><strong>Always use <code>&lt;Outlet /&gt;</code> in parent components</strong> — it's required</li>
+            <li><strong>Use <code>index</code> prop for the default child route</strong> — renders when path matches exactly</li>
+            <li><strong>Parent routes don't need to render anything</strong> — they just provide layout</li>
+            <li><strong>URLs reflect the hierarchy</strong> — <code>/users/123/posts</code> shows clear relationship</li>
+          </ol>
+
+          <div class="note">
+            <strong>🧠 Mental Model:</strong> Think of nested routes like folders in a file system. The parent folder (route) contains subfolders (child routes), and the outlet is the window that displays the contents of the selected folder.
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Advanced: Multiple Levels of Nesting</summary>
+          <p>You can nest routes as deeply as needed for complex applications.</p>
+
+          <h3>⚡ Deeply Nested Structure</h3>
+          <pre><code>
+// Route structure
+&lt;Route path="/admin" element={&lt;AdminLayout /&gt;} &gt;
+  &lt;Route index element={&lt;AdminDashboard /&gt;} /&gt;
+  &lt;Route path="users" element={&lt;UsersLayout /&gt;} &gt;
+    &lt;Route index element={&lt;UserList /&gt;} /&gt;
+    &lt;Route path=":userId" element={&lt;UserProfile /&gt;} &gt;
+      &lt;Route index element={&lt;UserOverview /&gt;} /&gt;
+      &lt;Route path="posts" element={&lt;UserPosts /&gt;} /&gt;
+      &lt;Route path="comments" element={&lt;UserComments /&gt;} /&gt;
+    &lt;/Route&gt;
+  &lt;/Route&gt;
+  &lt;Route path="analytics" element={&lt;AnalyticsLayout /&gt;} &gt;
+    &lt;Route index element={&lt;DashboardAnalytics /&gt;} /&gt;
+    &lt;Route path="daily" element={&lt;DailyAnalytics /&gt;} /&gt;
+    &lt;Route path="weekly" element={&lt;WeeklyAnalytics /&gt;} /&gt;
+  &lt;/Route&gt;
+&lt;/Route&gt;
+
+// AdminLayout.jsx
+import { Outlet, Link } from 'react-router-dom';
+
+function AdminLayout() {
+  return (
+    &lt;div style={{ display: 'flex' }}&gt;
+      &lt;aside style={{ width: '200px', backgroundColor: '#0a192f', padding: '15px' }}&gt;
+        &lt;h3&gt;Admin Panel&lt;/h3&gt;
+        &lt;ul style={{ listStyle: 'none', padding: 0 }}&gt;
+          &lt;li&gt;&lt;Link to="/admin" className="nav-link"&gt;Dashboard&lt;/Link&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;Link to="/admin/users" className="nav-link"&gt;Users&lt;/Link&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;Link to="/admin/analytics" className="nav-link"&gt;Analytics&lt;/Link&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/aside&gt;
+      
+      &lt;main style={{ flex: 1, padding: '20px' }}&gt;
+        &lt;Outlet /&gt;  {/* Renders UsersLayout or AnalyticsLayout */}
+      &lt;/main&gt;
+    &lt;/div&gt;
+  );
+}
+
+// UsersLayout.jsx
+import { Outlet, Link } from 'react-router-dom';
+
+function UsersLayout() {
+  return (
+    &lt;div style={{ display: 'flex' }}&gt;
+      &lt;aside style={{ width: '180px', backgroundColor: '#1a2b42', padding: '15px' }}&gt;
+        &lt;h4&gt;Users&lt;/h4&gt;
+        &lt;ul style={{ listStyle: 'none', padding: 0 }}&gt;
+          &lt;li&gt;&lt;Link to="/admin/users" className="nav-link"&gt;All Users&lt;/Link&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;Link to="/admin/users/123" className="nav-link"&gt;User 123&lt;/Link&gt;&lt;/li&gt;
+          &lt;li&gt;&lt;Link to="/admin/users/456" className="nav-link"&gt;User 456&lt;/Link&gt;&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/aside&gt;
+      
+      &lt;main style={{ flex: 1, padding: '20px' }}&gt;
+        &lt;Outlet /&gt;  {/* Renders UserProfile or UserList */}
+      &lt;/main&gt;
+    &lt;/div&gt;
+  );
+}
+
+// UserProfile.jsx
+import { Outlet, Link } from 'react-router-dom';
+
+function UserProfile() {
+  return (
+    &lt;div style={{ padding: '20px' }}&gt;
+      &lt;h3&gt;User Profile&lt;/h3&gt;
+      &lt;nav style={{ marginBottom: '20px' }}&gt;
+        &lt;Link to="/admin/users/123" className="nav-link"&gt;Overview&lt;/Link&gt;
+        &lt;Link to="/admin/users/123/posts" className="nav-link"&gt;Posts&lt;/Link&gt;
+        &lt;Link to="/admin/users/123/comments" className="nav-link"&gt;Comments&lt;/Link&gt;
+      &lt;/nav&gt;
+      
+      &lt;Outlet /&gt;  {/* Renders UserOverview, UserPosts, or UserComments */}
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <div class="demo-card">
+            <h4>✅ Live Demo: Nested Routes</h4>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+              <a href="#" class="nav-link">Home</a>
+              <a href="#" class="nav-link">/dashboard</a>
+              <a href="#" class="nav-link">/dashboard/settings</a>
+              <a href="#" class="nav-link">/dashboard/profile</a>
+            </div>
+            <div class="component-preview" style="padding: 20px;">
+              <div style="background-color: #1a2b42; padding: 15px; margin-bottom: 15px; border-radius: 5px;">
+                <strong>Dashboard Layout</strong> (Always visible)
+              </div>
+              <div style="margin-left: 20px; padding-left: 15px; border-left: 2px dashed var(--cyan);">
+                <h3>Settings</h3>
+                <p>This content is rendered inside the DashboardLayout</p>
+              </div>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <div class="footer-note">
+        📚 Next: 14.6 Route Guards and Protection, 14.7 Programmatic Navigation, 14.8 Router Hooks
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript Utilities -->
+<script>
+  // Expand/Collapse All
+  document.getElementById('expandAll').addEventListener('click', () => {
+    document.querySelectorAll('details').forEach(detail => detail.open = true);
+  });
+
+  document.getElementById('collapseAll').addEventListener('click', () => {
+    document.querySelectorAll('details').forEach(detail => detail.open = false);
+  });
+
+  // Smooth Scroll to TOC Item
+  document.querySelectorAll('.toc-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const targetId = item.getAttribute('data-target');
+      document.querySelector(targetId).scrollIntoView({ behavior: 'smooth' });
+      
+      // Highlight active item
+      document.querySelectorAll('.toc-item').forEach(el => el.classList.remove('active'));
+      item.classList.add('active');
+    });
+  });
+
+  // Search TOC
+  document.getElementById('searchTOC').addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase();
+    document.querySelectorAll('.toc-item').forEach(item => {
+      const text = item.textContent.toLowerCase();
+      item.style.display = text.includes(query) ? 'block' : 'none';
+    });
+  });
+
+  // Optional: Add highlight.js if needed (uncomment if CDN available)
+  /*
+  const script = document.createElement('script');
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js';
+  script.onload = () => {
+    document.querySelectorAll('pre code').forEach(block => hljs.highlightBlock(block));
+  };
+  document.head.appendChild(script);
+  */
+</script>
+
+<!-- Bootstrap JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
+```

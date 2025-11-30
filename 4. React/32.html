@@ -1,0 +1,1989 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter 22: Production and Deployment</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00d1ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --text-muted: #a0b8d8;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            background-color: #0c213d;
+            border-right: 1px solid rgba(0, 209, 255, 0.1);
+            height: 100vh;
+            position: fixed;
+            width: 300px;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid rgba(0, 209, 255, 0.2);
+            padding-bottom: 8px;
+            margin-top: 30px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin-top: 40px;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            margin-top: 35px;
+        }
+
+        .subtitle {
+            color: var(--amber);
+            font-style: italic;
+            margin-bottom: 25px;
+        }
+
+        .author-info {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        .toc-item {
+            margin: 8px 0;
+            padding: 6px 10px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .toc-item:hover {
+            background-color: rgba(0, 209, 255, 0.1);
+            color: var(--cyan);
+        }
+
+        .toc-item.active {
+            background-color: rgba(0, 209, 255, 0.2);
+            color: var(--cyan);
+            border-left: 3px solid var(--cyan);
+        }
+
+        .toc-subitem {
+            margin-left: 20px;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            padding: 4px 10px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .toc-subitem:hover {
+            background-color: rgba(0, 209, 255, 0.1);
+            color: var(--cyan);
+        }
+
+        .search-input {
+            background-color: #153350;
+            border: 1px solid rgba(0, 209, 255, 0.3);
+            color: var(--text-light);
+            margin-bottom: 20px;
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+
+        .btn-control {
+            background-color: rgba(0, 209, 255, 0.1);
+            border: 1px solid rgba(0, 209, 255, 0.3);
+            color: var(--cyan);
+            margin: 10px 0;
+            padding: 6px 12px;
+            font-size: 0.9rem;
+            border-radius: 5px;
+        }
+
+        .btn-control:hover {
+            background-color: rgba(0, 209, 255, 0.2);
+            color: var(--cyan);
+        }
+
+        .details-container {
+            margin-bottom: 30px;
+            border-left: 3px solid var(--amber);
+            border-radius: 0 8px 8px 0;
+            overflow: hidden;
+        }
+
+        .details-container summary {
+            list-style: none;
+            cursor: pointer;
+            padding: 15px;
+            background-color: rgba(255, 183, 77, 0.1);
+            color: var(--amber);
+            font-weight: bold;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0;
+        }
+
+        .details-container summary:hover {
+            background-color: rgba(255, 183, 77, 0.2);
+        }
+
+        .details-container summary::before {
+            content: "▶";
+            font-size: 0.8rem;
+            transition: transform 0.3s ease;
+        }
+
+        .details-container[open] summary::before {
+            content: "▼";
+            transform: rotate(90deg);
+        }
+
+        .details-container > div {
+            padding: 15px;
+            background-color: #0f2540;
+            border-radius: 0 0 8px 8px;
+            margin-top: 0;
+            border: 1px solid rgba(255, 183, 77, 0.1);
+        }
+
+        pre code {
+            display: block;
+            padding: 16px;
+            overflow-x: auto;
+            background-color: #0a192f;
+            border-radius: 8px;
+            border-left: 4px solid var(--amber);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #e6f1ff;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 15px 0;
+        }
+
+        code {
+            background-color: rgba(255, 183, 77, 0.1);
+            color: var(--amber);
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+        }
+
+        .highlight {
+            background-color: rgba(0, 209, 255, 0.15);
+            padding: 10px;
+            border-left: 3px solid var(--cyan);
+            margin: 20px 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .formula {
+            background-color: rgba(0, 209, 255, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-family: 'Cambria Math', serif;
+            text-align: center;
+            color: var(--cyan);
+            font-size: 1.1rem;
+        }
+
+        .use-case {
+            background-color: rgba(255, 183, 77, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 3px solid var(--amber);
+        }
+
+        .example-box {
+            background-color: rgba(10, 25, 47, 0.8);
+            border: 1px solid rgba(0, 209, 255, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: #000;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 8px;
+        }
+
+        .nav-link {
+            color: var(--text-muted) !important;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--cyan) !important;
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 991px) {
+            .left-panel {
+                width: 250px;
+            }
+            .right-panel {
+                margin-left: 250px;
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .left-panel {
+                position: relative;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid rgba(0, 209, 255, 0.1);
+            }
+            .right-panel {
+                margin-left: 0;
+                padding: 15px;
+            }
+        }
+
+        .section-marker {
+            position: absolute;
+            top: -100px;
+            visibility: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Left Panel -->
+            <div class="col-md-3 left-panel">
+                <h1>Chapter 22</h1>
+                <h3 class="subtitle">Production and Deployment</h3>
+                <p class="author-info">By: React Mastery Tutor | For Advanced Students</p>
+
+                <input type="text" class="form-control search-input" id="searchToc" placeholder="Search topics...">
+                
+                <button class="btn btn-sm btn-control w-100 mb-2" id="expandAll">Expand All</button>
+                <button class="btn btn-sm btn-control w-100 mb-3" id="collapseAll">Collapse All</button>
+
+                <div id="tocContainer">
+                    <div class="toc-item" data-target="22-1">22.1 Build Optimization</div>
+                    <div class="toc-subitem" data-target="22-1-1">• Bundle Size Reduction</div>
+                    <div class="toc-subitem" data-target="22-1-2">• Code Splitting</div>
+                    <div class="toc-subitem" data-target="22-1-3">• Tree Shaking</div>
+                    <div class="toc-subitem" data-target="22-1-4">• Minification & Compression</div>
+                    
+                    <div class="toc-item" data-target="22-2">22.2 Environment Variables</div>
+                    <div class="toc-subitem" data-target="22-2-1">• Process.env Usage</div>
+                    <div class="toc-subitem" data-target="22-2-2">• Security Best Practices</div>
+                    <div class="toc-subitem" data-target="22-2-3">• Vite vs Webpack Configs</div>
+                    
+                    <div class="toc-item" data-target="22-3">22.3 Error Boundaries</div>
+                    <div class="toc-subitem" data-target="22-3-1">• Component Lifecycle Errors</div>
+                    <div class="toc-subitem" data-target="22-3-2">• Fallback UI Design</div>
+                    <div class="toc-subitem" data-target="22-3-3">• Logging with Error Boundaries</div>
+                    
+                    <div class="toc-item" data-target="22-4">22.4 Error Tracking (Sentry)</div>
+                    <div class="toc-subitem" data-target="22-4-1">• Sentry Setup in React</div>
+                    <div class="toc-subitem" data-target="22-4-2">• Capturing User Context</div>
+                    <div class="toc-subitem" data-target="22-4-3">• Performance Monitoring</div>
+                    
+                    <div class="toc-item" data-target="22-5">22.5 Analytics Integration</div>
+                    <div class="toc-subitem" data-target="22-5-1">• Google Analytics</div>
+                    <div class="toc-subitem" data-target="22-5-2">• Hotjar & Mixpanel</div>
+                    <div class="toc-subitem" data-target="22-5-3">• Event Tracking Patterns</div>
+                    
+                    <div class="toc-item" data-target="22-6">22.6 SEO for React Apps</div>
+                    <div class="toc-subitem" data-target="22-6-1">• SSR vs SSG</div>
+                    <div class="toc-subitem" data-target="22-6-2">• React Helmet</div>
+                    <div class="toc-subitem" data-target="22-6-3">• Meta Tags & Structured Data</div>
+                    
+                    <div class="toc-item" data-target="22-7">22.7 Deployment Strategies</div>
+                    <div class="toc-subitem" data-target="22-7-1">• Static Hosting (Vercel, Netlify)</div>
+                    <div class="toc-subitem" data-target="22-7-2">• Docker Containers</div>
+                    <div class="toc-subitem" data-target="22-7-3">• CI/CD Pipelines</div>
+                    
+                    <div class="toc-item" data-target="22-8">22.8 CDN and Caching</div>
+                    <div class="toc-subitem" data-target="22-8-1">• Asset Versioning</div>
+                    <div class="toc-subitem" data-target="22-8-2">• Cache Headers</div>
+                    <div class="toc-subitem" data-target="22-8-3">• CDN Purging Strategies</div>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="col-md-9 right-panel">
+                <div class="section-marker" id="22-1"></div>
+                <h2>22.1 Build Optimization</h2>
+                <p>Build optimization is the process of preparing your React application for production by minimizing bundle size, improving load times, and eliminating unnecessary code.</p>
+
+                <div class="details-container">
+                    <summary>Definition</summary>
+                    <div>
+                        Build optimization transforms development code into production-ready assets through techniques like minification, tree shaking, code splitting, and compression. The goal is to deliver the smallest possible bundle that loads quickly and performs well.
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Detail</summary>
+                    <div>
+                        <p>During development, we prioritize readability and debugging. In production, we prioritize performance. Modern bundlers like Webpack and Vite analyze your dependency graph and remove unused exports (tree shaking), split large chunks into smaller ones (code splitting), and compress files (minification).</p>
+                        <p>Key metrics to monitor:</p>
+                        <ul>
+                            <li><strong>Bundle Size:</strong> Total JavaScript/CSS delivered to the browser</li>
+                            <li><strong>First Contentful Paint (FCP):</strong> Time until first content renders</li>
+                            <li><strong>Largest Contentful Paint (LCP):</strong> Time to render largest element</li>
+                            <li><strong>Total Blocking Time (TBT):</strong> Time when main thread is blocked</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Syntax</summary>
+                    <div>
+                        <pre><code>// webpack.config.js (production config)
+module.exports = {
+  mode: 'production',
+  optimization: {
+    minimize: true,
+    splitChunks: {
+      chunks: 'all',
+      cacheGroups: {
+        vendor: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'vendors',
+          chunks: 'all',
+        },
+      },
+    },
+    runtimeChunk: 'single',
+  },
+  plugins: [
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': JSON.stringify('production'),
+    }),
+  ],
+};</code></pre>
+                        
+                        <pre><code>// vite.config.js
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  build: {
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ['react', 'react-dom', 'react-router-dom'],
+          lib: ['lodash', 'moment'],
+        },
+      },
+    },
+  },
+});</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Example</summary>
+                    <div class="example-box">
+                        <p><strong>Before Optimization:</strong> 2.4 MB bundle with duplicate dependencies</p>
+                        <pre><code>// App.js - Before
+import React from 'react';
+import { Button } from 'ui-library'; // 800KB
+import { Modal } from 'ui-library'; // 800KB
+import { Table } from 'ui-library'; // 800KB
+
+function App() {
+  return &lt;Button&gt;Click Me&lt;/Button&gt;;
+}</code></pre>
+                        
+                        <p><strong>After Optimization:</strong> 320 KB bundle with code splitting</p>
+                        <pre><code>// App.js - After
+import React, { lazy, Suspense } from 'react';
+
+const Button = lazy(() =&gt; import('ui-library/Button'));
+const Modal = lazy(() =&gt; import('ui-library/Modal'));
+const Table = lazy(() =&gt; import('ui-library/Table'));
+
+function App() {
+  return (
+    &lt;Suspense fallback="Loading..."&gt;
+      &lt;Button&gt;Click Me&lt;/Button&gt;
+    &lt;/Suspense&gt;
+  );
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Uses</summary>
+                    <div class="use-case">
+                        <ul>
+                            <li><strong>Mobile Users:</strong> Reduces data usage and load time on slow networks</li>
+                            <li><strong>E-commerce Sites:</strong> Every 100ms improvement can increase conversion rates</li>
+                            <li><strong>PWA Applications:</strong> Enables offline functionality with smaller service workers</li>
+                            <li><strong>SEO:</strong> Faster loading improves Google rankings</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Best Practices</summary>
+                    <div>
+                        <ol>
+                            <li>Use <code>React.lazy()</code> + <code>Suspense</code> for route-based code splitting</li>
+                            <li>Avoid importing entire libraries (<code>import lodash</code>) — use individual imports (<code>import debounce from 'lodash/debounce'</code>)</li>
+                            <li>Remove unused dependencies with <code>npx depcheck</code></li>
+                            <li>Enable Gzip/Brotli compression on server</li>
+                            <li>Analyze bundles with <code>webpack-bundle-analyzer</code></li>
+                            <li>Preload critical resources with <code>&lt;link rel="preload"&gt;</code></li>
+                        </ol>
+                    </div>
+                </div>
+
+                <div class="section-marker" id="22-2"></div>
+                <h2>22.2 Environment Variables</h2>
+                <p>Environment variables allow you to configure your application differently based on deployment environments (development, staging, production) without changing code.</p>
+
+                <div class="details-container">
+                    <summary>Definition</summary>
+                    <div>
+                        Environment variables are key-value pairs injected into your application at build or runtime that control configuration settings such as API endpoints, feature flags, and sensitive credentials.
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Detail</summary>
+                    <div>
+                        <p>React applications typically use environment variables prefixed with <code>REACT_APP_</code> (Create React App) or prefixed with <code>VITE_</code> (Vite). These values are embedded during the build process and become static strings in the final bundle.</p>
+                        <p><strong>Important:</strong> Environment variables are NOT secure for secrets! Since React apps run in the browser, any variable becomes visible to users. Use backend APIs for sensitive data.</p>
+                        <p>Environment variables help avoid hardcoding values and enable seamless deployment across different environments.</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Syntax</summary>
+                    <div>
+                        <pre><code># .env.development
+REACT_APP_API_URL=http://localhost:5000
+REACT_APP_FEATURE_FLAG_NEW_UI=true
+
+# .env.production
+REACT_APP_API_URL=https://api.yourapp.com
+REACT_APP_FEATURE_FLAG_NEW_UI=false
+
+# .env.local (ignored by git)
+REACT_APP_SECRET_KEY=supersecret123  &lt;!-- DO NOT COMMIT THIS --&gt;</code></pre>
+                        
+                        <pre><code>// In React component
+console.log(process.env.REACT_APP_API_URL); 
+// Development: http://localhost:5000
+// Production: https://api.yourapp.com
+
+if (process.env.REACT_APP_FEATURE_FLAG_NEW_UI === 'true') {
+  renderNewUI();
+} else {
+  renderOldUI();
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Example</summary>
+                    <div class="example-box">
+                        <p><strong>Scenario:</strong> You're building a weather app that uses different APIs for testing and production.</p>
+                        
+                        <pre><code>// api/client.js
+import axios from 'axios';
+
+const client = axios.create({
+  baseURL: process.env.REACT_APP_API_URL,
+  timeout: 10000,
+});
+
+// Add request interceptor for auth
+client.interceptors.request.use(config =&gt; {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = \`Bearer \${token}\`;
+  }
+  return config;
+});
+
+export default client;</code></pre>
+                        
+                        <pre><code>// .env.development
+REACT_APP_API_URL=https://dev.weather-api.com/v1
+
+// .env.production
+REACT_APP_API_URL=https://prod.weather-api.com/v1</code></pre>
+                        
+                        <p>When you run <code>npm run build</code>, the production environment variables are baked into the bundle. No network calls to .env files occur at runtime.</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Uses</summary>
+                    <div class="use-case">
+                        <ul>
+                            <li>Switch between development and production API endpoints</li>
+                            <li>Enable/disable experimental features per environment</li>
+                            <li>Configure third-party service keys (analytics, maps, etc.)</li>
+                            <li>Set logging levels (debug/info/error)</li>
+                            <li>Control A/B test variations</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Security Best Practices</summary>
+                    <div>
+                        <ol>
+                            <li><strong>Never store secrets:</strong> API keys, passwords, tokens should never be in frontend env vars</li>
+                            <li><strong>Validate prefixes:</strong> Only <code>REACT_APP_</code> (CRA) or <code>VITE_</code> (Vite) are exposed</li>
+                            <li><strong>Use .env.local:</strong> Add <code>.env.local</code> to .gitignore for local overrides</li>
+                            <li><strong>Validate in code:</strong> Always check if variable exists before using it</li>
+                            <li><strong>Use backend proxies:</strong> Fetch sensitive data through your own API endpoint</li>
+                        </ol>
+                        <p class="highlight"><strong>⚠️ DANGER:</strong> Never do this: <code>REACT_APP_DB_PASSWORD=supersecret</code> — this will be visible in browser dev tools!</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Vite vs Webpack Configs</summary>
+                    <div>
+                        <table class="table table-dark table-striped mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Feature</th>
+                                    <th>Vite</th>
+                                    <th>Webpack (CRA)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Prefix</td>
+                                    <td><code>VITE_</code></td>
+                                    <td><code>REACT_APP_</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Hot Module Replacement</td>
+                                    <td>Instant (ESM native)</td>
+                                    <td>Fast but slower than Vite</td>
+                                </tr>
+                                <tr>
+                                    <td>Build Speed</td>
+                                    <td>Faster (native ES modules)</td>
+                                    <td>Slower (bundle-first)</td>
+                                </tr>
+                                <tr>
+                                    <td>Configuration</td>
+                                    <td>vite.config.js</td>
+                                    <td>webpack.config.js</td>
+                                </tr>
+                                <tr>
+                                    <td>Default Env Loading</td>
+                                    <td>Automatic (.env, .env.local)</td>
+                                    <td>Requires react-scripts</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="section-marker" id="22-3"></div>
+                <h2>22.3 Error Boundaries</h2>
+                <p>Error boundaries are React components that catch JavaScript errors anywhere in their child component tree, log those errors, and display a fallback UI instead of crashing the entire app.</p>
+
+                <div class="details-container">
+                    <summary>Definition</summary>
+                    <div>
+                        An error boundary is a React component that implements <code>static getDerivedStateFromError()</code> and/or <code>componentDidCatch()</code> lifecycle methods to intercept rendering errors in its children and gracefully handle them.
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Detail</summary>
+                    <div>
+                        <p>Without error boundaries, an unhandled JavaScript error in one component causes the entire React component tree to unmount. This leads to blank screens and poor user experience.</p>
+                        <p>Only class components can be error boundaries. They catch errors during:</p>
+                        <ul>
+                            <li>Rendering</li>
+                            <li>Lifecycle methods</li>
+                            <li>Constructor of the whole tree below them</li>
+                        </ul>
+                        <p>They do NOT catch errors in:</p>
+                        <ul>
+                            <li>Event handlers (use try/catch)</li>
+                            <li>Asynchronous code (setTimeout, promises)</li>
+                            <li>Server-side rendering</li>
+                            <li>Errors thrown in the error boundary itself</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Syntax</summary>
+                    <div>
+                        <pre><code>class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError(error) {
+    // Update state so next render shows fallback UI
+    return { hasError: true };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    // Log error to external service
+    console.error('Error caught by boundary:', error, errorInfo);
+    
+    // Send to analytics/Sentry
+    logErrorToService(error, errorInfo);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return &lt;div className="error-fallback"&gt;
+        &lt;h3&gt;Something went wrong.&lt;/h3&gt;
+        &lt;p&gt;We've been notified and will fix this soon.&lt;/p&gt;
+        &lt;button onClick={() =&gt; window.location.reload()}&gt;Refresh&lt;/button&gt;
+      &lt;/div&gt;;
+    }
+
+    return this.props.children;
+  }
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Example</summary>
+                    <div class="example-box">
+                        <pre><code>// ErrorBoundary.jsx
+import React from 'react';
+
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+
+  componentDidCatch(error, errorInfo) {
+    // Send to Sentry or custom logging
+    console.group('Error Boundary Caught:');
+    console.error('Error:', error);
+    console.error('Component Stack:', errorInfo.componentStack);
+    console.groupEnd();
+    
+    // Optional: Report to monitoring service
+    if (window.Sentry) {
+      window.Sentry.captureException(error, { extra: { componentStack: errorInfo.componentStack } });
+    }
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return (
+        &lt;div style={{ 
+          padding: '2rem', 
+          textAlign: 'center', 
+          backgroundColor: '#1a2a3f', 
+          border: '1px solid #ffb74d', 
+          borderRadius: '8px' 
+        }}>
+          &lt;h2&gt;Oops! Something went wrong.&lt;/h2&gt;
+          &lt;p style={{ color: '#ccc' }}&gt;{this.state.error?.message}&lt;/p&gt;
+          &lt;button 
+            onClick={() =&gt; window.location.reload()} 
+            style={{ 
+              marginTop: '1rem', 
+              padding: '0.5rem 1rem', 
+              background: '#00d1ff', 
+              color: '#000', 
+              border: 'none', 
+              borderRadius: '4px' 
+            }}
+          &gt;
+            Reload Page
+          &lt;/button&gt;
+        &lt;/div&gt;
+      );
+    }
+
+    return this.props.children;
+  }
+}
+
+export default ErrorBoundary;</code></pre>
+
+                        <pre><code>// App.jsx
+import React from 'react';
+import ErrorBoundary from './ErrorBoundary';
+import UserProfile from './UserProfile';
+import Dashboard from './Dashboard';
+
+function App() {
+  return (
+    &lt;ErrorBoundary&gt;
+      &lt;div className="app"&gt;
+        &lt;header&gt;&lt;h1&gt;My App&lt;/h1&gt;&lt;/header&gt;
+        &lt;main&gt;
+          &lt;UserProfile /&gt;
+          &lt;Dashboard /&gt;
+        &lt;/main&gt;
+      &lt;/div&gt;
+    &lt;/ErrorBoundary&gt;
+  );
+}
+
+export default App;</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Uses</summary>
+                    <div class="use-case">
+                        <ul>
+                            <li>Prevent entire app crash due to single component failure</li>
+                            <li>Provide user-friendly error messages instead of white screen</li>
+                            <li>Log errors for developer debugging</li>
+                            <li>Implement retry mechanisms or fallback states</li>
+                            <li>Improve perceived reliability for users</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Fallback UI Design</summary>
+                    <div>
+                        <p>Design effective fallback UIs with these principles:</p>
+                        <ol>
+                            <li><strong>Be helpful:</strong> Explain what happened in plain language</li>
+                            <li><strong>Offer recovery:</strong> Provide clear action buttons (reload, go home)</li>
+                            <li><strong>Match design:</strong> Maintain brand colors and styling</li>
+                            <li><strong>Don't hide errors:</strong> Log them silently for developers</li>
+                            <li><strong>Don't expose internals:</strong> Never show stack traces to users</li>
+                        </ol>
+                        <p class="highlight"><strong>Good:</strong> "Something went wrong. Please refresh the page." <br>
+                        <strong>Bad:</strong> "TypeError: Cannot read property 'map' of undefined at UserProfile.js:42"</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Logging with Error Boundaries</summary>
+                    <div>
+                        <pre><code>// Enhanced error boundary with logging
+componentDidCatch(error, errorInfo) {
+  // Log to console (for dev)
+  console.error('Uncaught error:', error, errorInfo);
+  
+  // Send to remote service
+  fetch('/api/log-error', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      error: error.toString(),
+      componentStack: errorInfo.componentStack,
+      url: window.location.href,
+      userAgent: navigator.userAgent,
+      timestamp: new Date().toISOString()
+    })
+  }).catch(logError => {
+    console.warn('Failed to send error report:', logError);
+  });
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="section-marker" id="22-4"></div>
+                <h2>22.4 Error Tracking (Sentry)</h2>
+                <p>Sentry is a real-time error tracking platform that captures JavaScript errors, monitors performance, and provides detailed diagnostics to help you fix issues faster.</p>
+
+                <div class="details-container">
+                    <summary>Definition</summary>
+                    <div>
+                        Sentry is a cloud-based error monitoring service that automatically captures and aggregates exceptions, performance bottlenecks, and user context from web applications to provide actionable insights for developers.
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Detail</summary>
+                    <div>
+                        <p>Sentry integrates with React via <code>@sentry/react</code> and <code>@sentry/browser</code>. It works by wrapping your app in a Sentry provider that catches unhandled errors and reports them to the Sentry dashboard.</p>
+                        <p>Beyond just error capture, Sentry provides:</p>
+                        <ul>
+                            <li>Grouped error occurrences</li>
+                            <li>User impact analysis</li>
+                            <li>Release version tracking</li>
+                            <li>Performance monitoring (slow requests, long tasks)</li>
+                            <li>Integration with GitHub, Jira, Slack</li>
+                            <li>Source map support for minified code</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Syntax</summary>
+                    <div>
+                        <pre><code>// Install
+npm install @sentry/react @sentry/tracing
+
+// src/sentry.js
+import * as Sentry from '@sentry/react';
+import { Integrations } from '@sentry/tracing';
+
+Sentry.init({
+  dsn: 'https://your-public-key@sentry.io/your-project-id',
+  integrations: [
+    new Integrations.BrowserTracing({
+      routingInstrumentation: Sentry.reactRouterV5Instrumentation(history),
+    }),
+  ],
+  tracesSampleRate: 1.0, // Capture 100% of transactions
+  release: 'my-app@1.2.3',
+  environment: process.env.NODE_ENV,
+});
+
+// Wrap root component
+import { SentryErrorBoundary } from './sentry';
+
+ReactDOM.render(
+  &lt;SentryErrorBoundary&gt;
+    &lt;App /&gt;
+  &lt;/SentryErrorBoundary&gt;,
+  document.getElementById('root')
+);</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Example</summary>
+                    <div class="example-box">
+                        <pre><code>// sentry.js
+import * as Sentry from '@sentry/react';
+import { BrowserTracing } from '@sentry/tracing';
+import { createBrowserHistory } from 'history';
+
+const history = createBrowserHistory();
+
+Sentry.init({
+  dsn: 'https://abc123abcdef.ingest.sentry.io/1234567',
+  integrations: [
+    new BrowserTracing({
+      routingInstrumentation: Sentry.reactRouterV5Instrumentation(history),
+      tracingOrigins: ['localhost', 'your-api-domain.com', /^\//],
+    }),
+  ],
+  tracesSampleRate: 0.2, // 20% sampling for performance
+  replaysSessionSampleRate: 0.1, // 10% session recording
+  replaysOnErrorSampleRate: 1.0, // Always record when error occurs
+  release: process.env.npm_package_version,
+  environment: process.env.NODE_ENV || 'development',
+  beforeSend(event) {
+    // Remove sensitive data
+    if (event.user) {
+      delete event.user.email;
+      delete event.user.ip_address;
+    }
+    return event;
+  },
+});
+
+// Create a wrapped component for error boundaries
+export const SentryErrorBoundary = Sentry.ErrorBoundary;
+
+// Create a custom error boundary with enhanced logging
+export class CustomErrorBoundary extends React.Component {
+  componentDidCatch(error, errorInfo) {
+    // Log to Sentry
+    Sentry.withScope(scope => {
+      scope.setExtras(errorInfo);
+      Sentry.captureException(error);
+    });
+
+    // Also log to console
+    console.error('Captured by CustomErrorBoundary:', error, errorInfo);
+  }
+
+  render() {
+    return this.props.children;
+  }
+}</code></pre>
+
+                        <pre><code>// App.jsx
+import React from 'react';
+import { BrowserRouter } from 'react-router-dom';
+import { SentryErrorBoundary } from './sentry';
+
+function App() {
+  return (
+    &lt;BrowserRouter&gt;
+      &lt;SentryErrorBoundary fallback={&lt;ErrorPage /&gt;} &gt;
+        &lt;Header /&gt;
+        &lt;Main /&gt;
+        &lt;Footer /&gt;
+      &lt;/SentryErrorBoundary&gt;
+    &lt;/BrowserRouter&gt;
+  );
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Uses</summary>
+                    <div class="use-case">
+                        <ul>
+                            <li>Real-time alerting for production errors</li>
+                            <li>Identify most frequent bugs affecting users</li>
+                            <li>Track errors by device, OS, browser, and location</li>
+                            <li>Monitor API response times and front-end performance</li>
+                            <li>Link errors to specific releases and commits</li>
+                            <li>Integrate with team communication tools</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Capturing User Context</summary>
+                    <div>
+                        <pre><code>// Set user context for better debugging
+import * as Sentry from '@sentry/react';
+
+// When user logs in
+Sentry.setUser({
+  id: userId,
+  email: userEmail,
+  username: userName,
+  ip_address: '{{auto}}', // Automatically captured
+});
+
+// Add tags for filtering
+Sentry.setTag('user_plan', 'premium');
+Sentry.setTag('device_type', 'mobile');
+
+// Add extra context
+Sentry.setExtra('last_action', 'clicked_checkout_button');
+Sentry.setExtra('page_path', window.location.pathname);
+
+// Clear context on logout
+Sentry.configureScope(scope => scope.setUser(null));</code></pre>
+                        <p class="highlight"><strong>Pro Tip:</strong> Always set user context before errors occur — this helps you identify which users are affected and prioritize fixes!</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Performance Monitoring</summary>
+                    <div>
+                        <pre><code>// Track custom spans (measure specific operations)
+import { startSpan } from '@sentry/react';
+
+const fetchData = async () => {
+  return startSpan({ name: 'fetch-user-data' }, () =&gt; {
+    return fetch('/api/user')
+      .then(res =&gt; res.json())
+      .catch(err =&gt; {
+        Sentry.captureException(err);
+        throw err;
+      });
+  });
+};
+
+// Measure component rendering time
+useEffect(() =&gt; {
+  const span = Sentry.startInactiveSpan({
+    name: 'render-profile-component',
+  });
+
+  // Your component logic here
+  setTimeout(() =&gt; {
+    span.end(); // End the span manually
+  }, 2000);
+}, []);</code></pre>
+                    </div>
+                </div>
+
+                <div class="section-marker" id="22-5"></div>
+                <h2>22.5 Analytics Integration</h2>
+                <p>Analytics integration allows you to track user behavior, measure engagement, and make data-driven decisions about product improvements.</p>
+
+                <div class="details-container">
+                    <summary>Definition</summary>
+                    <div>
+                        Analytics integration involves embedding tracking code into your React application to collect data about user interactions, page views, conversions, and performance metrics for analysis.
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Detail</summary>
+                    <div>
+                        <p>There are two main types of analytics:</p>
+                        <ol>
+                            <li><strong>Product Analytics:</strong> Track user journeys, button clicks, form submissions (e.g., Mixpanel, Amplitude)</li>
+                            <li><strong>Web Analytics:</strong> Track page views, bounce rate, traffic sources (e.g., Google Analytics)</li>
+                        </ol>
+                        <p>In React, analytics are typically implemented via:</p>
+                        <ul>
+                            <li>React Router hooks to track page changes</li>
+                            <li>Event listeners on interactive elements</li>
+                            <li>Custom hooks for reusability</li>
+                            <li>Third-party SDKs loaded asynchronously</li>
+                        </ul>
+                        <p>Always respect privacy laws (GDPR, CCPA) — implement cookie consent banners and anonymize data.</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Syntax</summary>
+                    <div>
+                        <pre><code>// Google Analytics v4 (gtag)
+// index.html
+&lt;script&gt;
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-XXXXXXXXXX');
+&lt;/script&gt;
+
+// analytics.js (custom hook)
+import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+
+export function usePageViews() {
+  const location = useLocation();
+
+  useEffect(() =&gt; {
+    gtag('config', 'G-XXXXXXXXXX', {
+      page_path: location.pathname + location.search,
+    });
+  }, [location]);
+}</code></pre>
+                        
+                        <pre><code>// Mixpanel
+import mixpanel from 'mixpanel-browser';
+
+mixpanel.init('YOUR_TOKEN', { debug: false });
+
+// Track events
+mixpanel.track('Button Clicked', {
+  button_name: 'signup',
+  page: window.location.pathname,
+  user_id: userId
+});
+
+// Identify users
+mixpanel.identify(userId);
+mixpanel.people.set({ 
+  $email: email, 
+  $name: name,
+  plan: subscriptionPlan 
+});</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Example</summary>
+                    <div class="example-box">
+                        <pre><code>// analytics/useAnalytics.js
+import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import * as gtag from '../lib/gtag';
+
+export function useAnalytics() {
+  const location = useLocation();
+
+  useEffect(() =&gt; {
+    // Track page view
+    gtag.pageview(location.pathname + location.search);
+    
+    // Track referrer
+    const referrer = document.referrer;
+    if (referrer) {
+      gtag.event('referral', {
+        referrer: referrer,
+        source: new URL(referrer).hostname,
+      });
+    }
+  }, [location]);
+
+  const trackEvent = (eventName, properties = {}) =&gt; {
+    gtag.event(eventName, properties);
+  };
+
+  return { trackEvent };
+}</code></pre>
+
+                        <pre><code>// Header.jsx
+import React from 'react';
+import { useAnalytics } from './analytics/useAnalytics';
+
+function Header() {
+  const { trackEvent } = useAnalytics();
+
+  const handleButtonClick = () =&gt; {
+    trackEvent('header_button_click', {
+      button: 'sign_up',
+      location: 'header',
+      timestamp: new Date().toISOString(),
+    });
+    
+    // Proceed with navigation
+  };
+
+  return (
+    &lt;header&gt;
+      &lt;button onClick={handleButtonClick}&gt;Sign Up&lt;/button&gt;
+    &lt;/header&gt;
+  );
+}</code></pre>
+
+                        <pre><code>// App.jsx
+import React from 'react';
+import { BrowserRouter } from 'react-router-dom';
+import { useAnalytics } from './analytics/useAnalytics';
+
+function App() {
+  useAnalytics(); // Initialize analytics on every route change
+  
+  return (
+    &lt;BrowserRouter&gt;
+      &lt;Header /&gt;
+      &lt;Routes&gt;
+        &lt;Route path="/" element={&lt;Home /&gt;} /&gt;
+        &lt;Route path="/products" element={&lt;Products /&gt;} /&gt;
+      &lt;/Routes&gt;
+    &lt;/BrowserRouter&gt;
+  );
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Uses</summary>
+                    <div class="use-case">
+                        <ul>
+                            <li>Measure feature adoption rates</li>
+                            <li>Identify drop-off points in user flows</li>
+                            <li>Optimize conversion funnels</li>
+                            <li>Segment users by behavior</li>
+                            <li>Measure impact of UI changes</li>
+                            <li>Correlate performance with engagement</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Google Analytics vs Hotjar vs Mixpanel</summary>
+                    <div>
+                        <table class="table table-dark table-striped mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Tool</th>
+                                    <th>Best For</th>
+                                    <th>Pros</th>
+                                    <th>Cons</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Google Analytics</td>
+                                    <td>Traffic, demographics, acquisition</td>
+                                    <td>Free, comprehensive, easy setup</td>
+                                    <td>Less granular interaction data</td>
+                                </tr>
+                                <tr>
+                                    <td>Hotjar</td>
+                                    <td>Behavioral insights, heatmaps</td>
+                                    <td>Session recordings, heatmaps, feedback polls</td>
+                                    <td>Expensive at scale, limited event tracking</td>
+                                </tr>
+                                <tr>
+                                    <td>Mixpanel</td>
+                                    <td>Product analytics, user journeys</td>
+                                    <td>Powerful funnel analysis, cohort tracking</td>
+                                    <td>Pricier, steeper learning curve</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="section-marker" id="22-6"></div>
+                <h2>22.6 SEO for React Apps</h2>
+                <p>Search Engine Optimization (SEO) ensures your React application appears in search results and ranks well for relevant keywords.</p>
+
+                <div class="details-container">
+                    <summary>Definition</summary>
+                    <div>
+                        SEO for React apps involves techniques to make dynamically rendered content accessible and understandable to search engine crawlers, enabling proper indexing and ranking.
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Detail</summary>
+                    <div>
+                        <p>Traditional React apps are client-side rendered (CSR), meaning the initial HTML sent to browsers contains minimal content. Search engines may not wait for JavaScript to execute, leading to poor indexing.</p>
+                        <p>Solutions:</p>
+                        <ul>
+                            <li><strong>Server-Side Rendering (SSR):</strong> Render HTML on server before sending to client (Next.js)</li>
+                            <li><strong>Static Site Generation (SSG):</strong> Generate HTML at build time (Next.js, Gatsby)</li>
+                            <li><strong>Hydration:</strong> Client-side React takes over after server-rendered HTML</li>
+                        </ul>
+                        <p>Even with CSR, you can improve SEO by managing meta tags, structured data, and dynamic routing.</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Syntax</summary>
+                    <div>
+                        <pre><code>// Using react-helmet
+import { Helmet } from 'react-helmet';
+
+function ProductPage({ title, description, image }) {
+  return (
+    &lt;&gt;
+      &lt;Helmet&gt;
+        &lt;title&gt;{title} | My Store&lt;/title&gt;
+        &lt;meta name="description" content={description} /&gt;
+        &lt;meta property="og:title" content={title} /&gt;
+        &lt;meta property="og:description" content={description} /&gt;
+        &lt;meta property="og:image" content={image} /&gt;
+        &lt;meta name="twitter:card" content="summary_large_image" /&gt;
+        &lt;link rel="canonical" href={window.location.href} /&gt;
+      &lt;/Helmet&gt;
+      
+      &lt;h1&gt;{title}&lt;/h1&gt;
+      &lt;p&gt;{description}&lt;/p&gt;
+    &lt;/&gt;
+  );
+}</code></pre>
+                        
+                        <pre><code>// Schema.org structured data
+import { Helmet } from 'react-helmet';
+
+function ArticlePage({ article }) {
+  const schema = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": article.title,
+    "description": article.excerpt,
+    "image": article.image,
+    "datePublished": article.publishedAt,
+    "author": {
+      "@type": "Person",
+      "name": article.author.name
+    }
+  };
+
+  return (
+    &lt;&gt;
+      &lt;Helmet&gt;
+        &lt;script type="application/ld+json"&gt;
+          {JSON.stringify(schema)}
+        &lt;/script&gt;
+      &lt;/Helmet&gt;
+      ...
+    &lt;/&gt;
+  );
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Example</summary>
+                    <div class="example-box">
+                        <pre><code>// SEOManager.jsx
+import React from 'react';
+import { Helmet } from 'react-helmet';
+import { useLocation } from 'react-router-dom';
+
+const SEOManager = ({ title, description, image, canonicalPath }) =&gt; {
+  const location = useLocation();
+  const siteTitle = 'My E-commerce Store';
+  const baseUrl = 'https://yourdomain.com';
+  
+  const fullTitle = title ? `${title} | ${siteTitle}` : siteTitle;
+  const fullDescription = description || 'Discover amazing products at unbeatable prices.';
+  const imageUrl = image ? `${baseUrl}${image}` : `${baseUrl}/default-image.jpg`;
+  const canonicalUrl = canonicalPath || `${baseUrl}${location.pathname}${location.search}`;
+
+  return (
+    &lt;Helmet&gt;
+      &lt;title&gt;{fullTitle}&lt;/title&gt;
+      &lt;meta name="description" content={fullDescription} /&gt;
+      
+      {/* Open Graph */}
+      &lt;meta property="og:title" content={fullTitle} /&gt;
+      &lt;meta property="og:description" content={fullDescription} /&gt;
+      &lt;meta property="og:type" content="website" /&gt;
+      &lt;meta property="og:url" content={canonicalUrl} /&gt;
+      &lt;meta property="og:image" content={imageUrl} /&gt;
+      &lt;meta property="og:site_name" content={siteTitle} /&gt;
+      
+      {/* Twitter Card */}
+      &lt;meta name="twitter:card" content="summary_large_image" /&gt;
+      &lt;meta name="twitter:title" content={fullTitle} /&gt;
+      &lt;meta name="twitter:description" content={fullDescription} /&gt;
+      &lt;meta name="twitter:image" content={imageUrl} /&gt;
+      
+      {/* Canonical */}
+      &lt;link rel="canonical" href={canonicalUrl} /&gt;
+      
+      {/* Robots */}
+      &lt;meta name="robots" content="index, follow" /&gt;
+    &lt;/Helmet&gt;
+  );
+};
+
+export default SEOManager;</code></pre>
+
+                        <pre><code>// ProductPage.jsx
+import React from 'react';
+import SEOManager from './SEOManager';
+
+function ProductPage({ product }) {
+  return (
+    &lt;div&gt;
+      &lt;SEOManager 
+        title={product.name}
+        description={product.description.substring(0, 160)}
+        image={product.image}
+      /&gt;
+      
+      &lt;h1&gt;{product.name}&lt;/h1&gt;
+      &lt;img src={product.image} alt={product.name} /&gt;
+      &lt;p&gt;{product.description}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Uses</summary>
+                    <div class="use-case">
+                        <ul>
+                            <li>Improve organic search visibility</li>
+                            <li>Increase click-through rates from SERPs</li>
+                            <li>Enhance social media sharing previews</li>
+                            <li>Support rich snippets and knowledge panels</li>
+                            <li>Improve accessibility for screen readers</li>
+                            <li>Comply with accessibility standards</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>SSR vs SSG</summary>
+                    <div>
+                        <table class="table table-dark table-striped mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Feature</th>
+                                    <th>SSR (Server-Side Rendering)</th>
+                                    <th>SSG (Static Site Generation)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Render Timing</td>
+                                    <td>On each request</td>
+                                    <td>At build time</td>
+                                </tr>
+                                <tr>
+                                    <td>Performance</td>
+                                    <td>Fast (but server load)</td>
+                                    <td>Extremely fast (CDN cached)</td>
+                                </tr>
+                                <tr>
+                                    <td>SEO</td>
+                                    <td>Excellent</td>
+                                    <td>Excellent</td>
+                                </tr>
+                                <tr>
+                                    <td>Dynamic Content</td>
+                                    <td>Perfect for personalized content</td>
+                                    <td>Requires revalidation (ISR)</td>
+                                </tr>
+                                <tr>
+                                    <td>Cost</td>
+                                    <td>Higher (server resources)</td>
+                                    <td>Lower (static hosting)</td>
+                                </tr>
+                                <tr>
+                                    <td>Tools</td>
+                                    <td>Next.js, Remix</td>
+                                    <td>Next.js (SSG), Gatsby</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p class="highlight"><strong>Recommendation:</strong> Use SSG for blogs, marketing pages. Use SSR for user dashboards, e-commerce product pages.</p>
+                    </div>
+                </div>
+
+                <div class="section-marker" id="22-7"></div>
+                <h2>22.7 Deployment Strategies</h2>
+                <p>Deployment strategies determine how your React application is packaged, transferred, and made available to end users across different environments.</p>
+
+                <div class="details-container">
+                    <summary>Definition</summary>
+                    <div>
+                        Deployment strategy refers to the systematic approach used to deliver new versions of your React application to production while minimizing downtime, risk, and user disruption.
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Detail</summary>
+                    <div>
+                        <p>Common deployment strategies include:</p>
+                        <ul>
+                            <li><strong>Blue-Green Deployment:</strong> Two identical environments; switch traffic instantly</li>
+                            <li><strong>Canary Deployment:</strong> Roll out to small percentage of users first</li>
+                            <li><strong>Rolling Update:</strong> Gradually replace old instances with new ones</li>
+                            <li><strong>Shadow Deployment:</strong> Run new version alongside old, compare metrics</li>
+                        </ul>
+                        <p>For React apps, we primarily focus on static hosting platforms since they serve compiled JavaScript, CSS, and HTML files.</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Syntax</summary>
+                    <div>
+                        <pre><code>// package.json scripts
+{
+  "scripts": {
+    "build": "react-scripts build",
+    "deploy": "npm run build && gh-pages -d build",
+    "deploy-vercel": "vercel --prod",
+    "deploy-netlify": "netlify deploy --prod --dir=build"
+  }
+}</code></pre>
+                        
+                        <pre><code>// vercel.json (Vercel config)
+{
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        { "key": "Cache-Control", "value": "public, max-age=31536000" }
+      ]
+    }
+  ]
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Example</summary>
+                    <div class="example-box">
+                        <p><strong>Deploying to Vercel (Recommended)</strong></p>
+                        <ol>
+                            <li>Install Vercel CLI: <code>npm install -g vercel</code></li>
+                            <li>Run <code>vercel</code> in project root</li>
+                            <li>Connect your GitHub repo</li>
+                            <li>Set environment variables in Vercel dashboard</li>
+                            <li>Every push to main branch triggers automatic deploy</li>
+                        </ol>
+                        
+                        <pre><code>// Vercel Project Settings
+BUILD COMMAND: npm run build
+OUTPUT DIRECTORY: build
+ENVIRONMENT VARIABLES:
+  REACT_APP_API_URL = https://api.yourapp.com
+  NODE_ENV = production</code></pre>
+
+                        <p><strong>Deploying to Netlify</strong></p>
+                        <ol>
+                            <li>Drag-and-drop build folder to Netlify dashboard</li>
+                            <li>Or connect GitHub repo</li>
+                            <li>Set build settings: <code>npm run build</code> → <code>build</code></li>
+                            <li>Enable HTTPS, custom domains, redirects</li>
+                        </ol>
+                        
+                        <pre><code>// netlify.toml
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"</code></pre>
+
+                        <p><strong>Docker Deployment</strong></p>
+                        <pre><code># Dockerfile
+FROM node:18-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --only=production
+COPY . .
+RUN npm run build
+
+FROM nginx:alpine
+COPY --from=builder /app/build /usr/share/nginx/html
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Uses</summary>
+                    <div class="use-case">
+                        <ul>
+                            <li>Automated deployments from Git commits</li>
+                            <li>Zero-downtime updates</li>
+                            <li>Easy rollback capabilities</li>
+                            <li>Environment-specific configurations</li>
+                            <li>Integration with testing pipelines</li>
+                            <li>Global CDN distribution</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>CI/CD Pipeline Example</summary>
+                    <div>
+                        <pre><code># .github/workflows/deploy.yml
+name: Deploy to Vercel
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build
+        run: npm run build
+        
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          org-id: ${{ secrets.VERCEL_ORG_ID }}
+          project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          scope: ${{ secrets.VERCEL_SCOPE }}
+          working-directory: .</code></pre>
+                    </div>
+                </div>
+
+                <div class="section-marker" id="22-8"></div>
+                <h2>22.8 CDN and Caching</h2>
+                <p>CDN (Content Delivery Network) and caching strategies ensure your React application loads quickly for users worldwide by serving assets from geographically distributed servers.</p>
+
+                <div class="details-container">
+                    <summary>Definition</summary>
+                    <div>
+                        A CDN is a globally distributed network of proxy servers that cache static assets (JavaScript, CSS, images) closer to end users, reducing latency and improving load times.
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Detail</summary>
+                    <div>
+                        <p>Modern React apps generate hashed filenames during build (e.g., <code>main.abc123.js</code>). This enables aggressive caching because:</p>
+                        <ul>
+                            <li>Files are immutable — once built, they never change</li>
+                            <li>Hash changes only when content changes</li>
+                            <li>CDNs can cache forever since filename uniqueness guarantees freshness</li>
+                        </ul>
+                        <p>Cache headers tell browsers and CDNs how long to store files:</p>
+                        <ul>
+                            <li><code>Cache-Control: public, max-age=31536000</code> → 1 year</li>
+                            <li><code>Cache-Control: no-cache</code> → Revalidate with server</li>
+                            <li><code>Cache-Control: no-store</code> → Never cache</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Syntax</summary>
+                    <div>
+                        <pre><code>// Next.js: next.config.js
+module.exports = {
+  images: {
+    domains: ['your-cdn.com'],
+  },
+  async headers() {
+    return [
+      {
+        source: '/_next/static/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=31536000, immutable' },
+        ],
+      },
+      {
+        source: '/:path*',
+        headers: [
+          { key: 'Cache-Control', value: 'public, max-age=0, s-maxage=600' },
+        ],
+      },
+    ];
+  },
+};</code></pre>
+                        
+                        <pre><code>// Vercel: vercel.json
+{
+  "headers": [
+    {
+      "source": "/(.*).(js|css|png|jpg|jpeg|gif|svg|ico|woff|woff2|ttf|eot)$",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, s-maxage=600"
+        }
+      ]
+    }
+  ]
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Example</summary>
+                    <div class="example-box">
+                        <p><strong>Before Optimization:</strong></p>
+                        <pre><code>// Build output
+main.js           ← 500 KB
+chunk-a.js        ← 300 KB
+styles.css        ← 150 KB
+</code></pre>
+                        <p>Users download same files repeatedly → high bandwidth usage</p>
+
+                        <p><strong>After Optimization:</strong></p>
+                        <pre><code>// Build output (hashed filenames)
+main.a1b2c3.js    ← 500 KB
+chunk-a.d4e5f6.js ← 300 KB
+styles.g7h8i9.css ← 150 KB
+</code></pre>
+                        
+                        <p>CDN caches forever → First visit: download all<br>
+                        Subsequent visits: browser uses cached versions → 95% faster load</p>
+
+                        <p><strong>Cache Strategy Breakdown:</strong></p>
+                        <table class="table table-dark table-striped mt-3">
+                            <thead>
+                                <tr>
+                                    <th>File Type</th>
+                                    <th>Cache Policy</th>
+                                    <th>Reason</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>JS/CSS/Fonts/Images</td>
+                                    <td>max-age=31536000 (1 year)</td>
+                                    <td>Hashed filenames = immutable</td>
+                                </tr>
+                                <tr>
+                                    <td>index.html</td>
+                                    <td>max-age=0, s-maxage=600</td>
+                                    <td>Must check for updates frequently</td>
+                                </tr>
+                                <tr>
+                                    <td>Manifest.json</td>
+                                    <td>max-age=0</td>
+                                    <td>Used by service worker to detect changes</td>
+                                </tr>
+                                <tr>
+                                    <td>API Responses</td>
+                                    <td>max-age=300</td>
+                                    <td>Short-lived, dynamic data</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Uses</summary>
+                    <div class="use-case">
+                        <ul>
+                            <li>Reduce latency for global users</li>
+                            <li>Decrease server bandwidth costs</li>
+                            <li>Improve Core Web Vitals scores</li>
+                            <li>Handle traffic spikes efficiently</li>
+                            <li>Enable offline functionality with service workers</li>
+                            <li>Improve Lighthouse performance score</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Asset Versioning</summary>
+                    <div>
+                        <p>Asset versioning ensures users always get the latest version of your app after deployment.</p>
+                        
+                        <p><strong>Best Practice: Hash-Based File Names</strong></p>
+                        <pre><code>// Webpack/Vite automatically generates:
+main.abc123.js
+main.def456.js   ← NEW VERSION
+main.ghi789.js   ← ANOTHER NEW VERSION</code></pre>
+                        
+                        <p><strong>Why hash?</strong> When file content changes → hash changes → filename changes → browser treats as new resource → forces fresh download</p>
+                        
+                        <p><strong>How to implement:</strong></p>
+                        <ul>
+                            <li>Use CRA, Vite, or Next.js — they handle this automatically</li>
+                            <li>Never manually rename bundled files</li>
+                            <li>Don't disable hashing unless you know what you're doing</li>
+                        </ul>
+                        
+                        <p><strong>Legacy Approach (Avoid):</strong></p>
+                        <pre><code>main.js?v=1.2.3  ← Query parameter versioning
+main.js?timestamp=1712345678</code></pre>
+                        <p>Many CDNs ignore query parameters — might serve stale cache!</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>CDN Purging Strategies</summary>
+                    <div>
+                        <p>When you need to force update assets immediately:</p>
+                        
+                        <ol>
+                            <li><strong>Versioned URLs:</strong> Change the hash → CDN sees new URL → caches new file</li>
+                            <li><strong>Manual Purge:</strong> Use CDN dashboard to purge specific paths</li>
+                            <li><strong>Wildcard Purge:</strong> Purge all files under <code>/assets/*</code></li>
+                            <li><strong>Automated Purge:</strong> Trigger purge via CI/CD pipeline after deploy</li>
+                        </ol>
+                        
+                        <p><strong>Example: Automated purge with Vercel</strong></p>
+                        <pre><code># .github/workflows/purge.yml
+name: Purge CDN on Deploy
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy-and-purge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build
+        run: npm run build
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+      - name: Purge CDN Cache
+        run: curl -X POST "https://api.vercel.com/v1/integrations/purge/${{ secrets.VERCEL_PROJECT_ID }}" \
+          -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+          -d '{"purge_all": true}'</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Final Checklist</summary>
+                    <div>
+                        <ul>
+                            <li>✅ All assets have hashed filenames</li>
+                            <li>✅ Long-term caching enabled for static assets</li>
+                            <li>✅ Short caching for index.html and manifest</li>
+                            <li>✅ CDN configured (Vercel/Netlify/AWS CloudFront)</li>
+                            <li>✅ Service worker implemented for PWA support</li>
+                            <li>✅ Preloading critical resources</li>
+                            <li>✅ Image optimization enabled</li>
+                            <li>✅ Gzip/Brotli compression active</li>
+                        </ul>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS + Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Expand/Collapse All Controls
+            document.getElementById('expandAll').addEventListener('click', function() {
+                document.querySelectorAll('.details-container').forEach(el => {
+                    el.setAttribute('open', '');
+                });
+            });
+
+            document.getElementById('collapseAll').addEventListener('click', function() {
+                document.querySelectorAll('.details-container').forEach(el => {
+                    el.removeAttribute('open');
+                });
+            });
+
+            // TOC Search
+            document.getElementById('searchToc').addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
+                
+                tocItems.forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    if (text.includes(searchTerm)) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+
+            // Smooth Scroll to TOC items
+            document.querySelectorAll('.toc-item, .toc-subitem').forEach(item => {
+                item.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const element = document.getElementById(targetId);
+                    if (element) {
+                        window.scrollTo({
+                            top: element.offsetTop - 100,
+                            behavior: 'smooth'
+                        });
+                        
+                        // Highlight active item
+                        document.querySelectorAll('.toc-item').forEach(i => i.classList.remove('active'));
+                        document.querySelectorAll('.toc-subitem').forEach(i => i.classList.remove('active'));
+                        this.classList.add('active');
+                    }
+                });
+            });
+
+            // Auto highlight current section on scroll
+            const sections = document.querySelectorAll('[id^="22-"]');
+            const navLinks = document.querySelectorAll('.toc-item, .toc-subitem');
+
+            window.addEventListener('scroll', () => {
+                let current = '';
+
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop - 150;
+                    const sectionHeight = section.clientHeight;
+                    if (pageYOffset >= sectionTop && pageYOffset < sectionTop + sectionHeight) {
+                        current = section.id;
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('data-target') === current) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+
+            // Syntax highlighting enhancement
+            document.querySelectorAll('pre code').forEach(block => {
+                hljs.highlightBlock(block);
+            });
+
+            // Add copy button to code blocks
+            document.querySelectorAll('pre').forEach(pre => {
+                const button = document.createElement('button');
+                button.innerHTML = '<i class="fas fa-copy"></i>';
+                button.className = 'copy-btn';
+                button.style.position = 'absolute';
+                button.style.top = '10px';
+                button.style.right = '10px';
+                button.style.background = 'rgba(0, 209, 255, 0.2)';
+                button.style.color = '#00d1ff';
+                button.style.border = 'none';
+                button.style.padding = '5px 10px';
+                button.style.borderRadius = '4px';
+                button.style.cursor = 'pointer';
+                button.style.fontSize = '0.8rem';
+                button.style.zIndex = '10';
+                
+                button.addEventListener('click', () => {
+                    const text = pre.querySelector('code').textContent;
+                    navigator.clipboard.writeText(text).then(() => {
+                        button.innerHTML = '<i class="fas fa-check"></i>';
+                        setTimeout(() => {
+                            button.innerHTML = '<i class="fas fa-copy"></i>';
+                        }, 1500);
+                    });
+                });
+                
+                pre.style.position = 'relative';
+                pre.appendChild(button);
+            });
+        });
+    </script>
+
+    <!-- Highlight.js for syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/monokai.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+</html>
+```

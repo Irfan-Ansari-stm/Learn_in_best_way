@@ -1,0 +1,2545 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deep Learning Notes: Advanced Hooks and Patterns</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00f5ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --border-color: #1a3b5f;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Roboto', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            background-color: #0c213a;
+            border-right: 1px solid var(--border-color);
+            height: 100vh;
+            position: fixed;
+            width: 300px;
+            overflow-y: auto;
+            padding: 1rem;
+            box-shadow: 2px 0 10px rgba(0, 245, 255, 0.1);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 2rem;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.3rem;
+            margin-top: 2rem;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: var(--amber);
+        }
+
+        .toc-item {
+            margin: 0.5rem 0;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            color: var(--text-light);
+        }
+
+        .toc-item:hover {
+            background-color: rgba(0, 245, 255, 0.1);
+        }
+
+        .toc-item.active {
+            background-color: rgba(0, 245, 255, 0.2);
+            border-left: 3px solid var(--cyan);
+        }
+
+        .toc-subitem {
+            margin-left: 1.5rem;
+            padding: 0.3rem 0.8rem;
+            border-radius: 4px;
+            color: #a0cfe8;
+            font-size: 0.9rem;
+        }
+
+        .toc-subitem:hover {
+            background-color: rgba(0, 245, 255, 0.1);
+        }
+
+        .code-block {
+            background-color: #0f1e33;
+            border-left: 4px solid var(--amber);
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+            overflow-x: auto;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .highlight {
+            color: var(--amber);
+            font-weight: bold;
+        }
+
+        .details-summary {
+            cursor: pointer;
+            padding: 0.8rem;
+            background-color: #0f223a;
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            border: 1px solid var(--border-color);
+            transition: all 0.2s ease;
+        }
+
+        .details-summary:hover {
+            background-color: #132a4a;
+            box-shadow: 0 2px 6px rgba(0, 245, 255, 0.15);
+        }
+
+        .details-content {
+            padding: 1rem;
+            background-color: #0d1e35;
+            border-radius: 0 0 6px 6px;
+            border: 1px solid var(--border-color);
+            border-top: none;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-control {
+            background-color: rgba(0, 245, 255, 0.1);
+            color: var(--cyan);
+            border: 1px solid var(--cyan);
+            margin: 0.5rem 0;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+
+        .btn-control:hover {
+            background-color: rgba(0, 245, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .author-info {
+            color: var(--amber);
+            font-style: italic;
+            margin: 1rem 0;
+            padding: 0.8rem;
+            background-color: rgba(255, 183, 77, 0.1);
+            border-radius: 6px;
+            border-left: 3px solid var(--amber);
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: #000;
+            font-weight: bold;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+
+        .section-marker {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background-color: var(--amber);
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(0, 245, 255, 0.3);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(0, 245, 255, 0.5);
+        }
+
+        .search-input {
+            background-color: #0f1e33;
+            border: 1px solid var(--border-color);
+            color: var(--text-light);
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border-radius: 4px;
+            width: 100%;
+        }
+
+        .sub-header {
+            color: var(--amber);
+            font-size: 1.2rem;
+            margin: 1.5rem 0 1rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px dashed var(--border-color);
+        }
+
+        .definition-box {
+            border-left: 3px solid var(--cyan);
+            background-color: rgba(0, 245, 255, 0.05);
+            padding: 0.8rem;
+            margin: 1rem 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .example-box {
+            border-left: 3px solid var(--amber);
+            background-color: rgba(255, 183, 77, 0.08);
+            padding: 0.8rem;
+            margin: 1rem 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .uses-box {
+            border-left: 3px solid #8bc34a;
+            background-color: rgba(139, 195, 74, 0.08);
+            padding: 0.8rem;
+            margin: 1rem 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .comparison-table th, .comparison-table td {
+            border: 1px solid var(--border-color) !important;
+        }
+
+        .code-comment {
+            color: #6c757d;
+            font-style: italic;
+        }
+
+        .warning-box {
+            border-left: 3px solid #ff6b6b;
+            background-color: rgba(255, 107, 107, 0.1);
+            padding: 0.8rem;
+            margin: 1rem 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .tip-box {
+            border-left: 3px solid #4caf50;
+            background-color: rgba(76, 175, 80, 0.1);
+            padding: 0.8rem;
+            margin: 1rem 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .hook-name {
+            background-color: rgba(0, 245, 255, 0.1);
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.9rem;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid p-0 m-0">
+    <div class="row g-0">
+        <!-- Left Panel -->
+        <div class="col-auto left-panel">
+            <h3 class="text-center mb-4">Advanced Hooks and Patterns</h3>
+            <p class="author-info">By: Advanced React Architecture Tutor</p>
+
+            <div class="mb-3">
+                <input type="text" class="form-control search-input" id="searchToc" placeholder="Search topics...">
+            </div>
+
+            <button class="btn btn-control w-100" id="expandAll">Expand All</button>
+            <button class="btn btn-control w-100" id="collapseAll">Collapse All</button>
+
+            <div class="mt-4">
+                <h5 class="text-muted mb-3">Table of Contents</h5>
+                <ul class="list-unstyled">
+                    <li>
+                        <div class="toc-item" data-target="#section-20-1">
+                            <span class="section-marker"></span>20.1 useLayoutEffect
+                        </div>
+                        <ul class="list-unstyled ms-3" id="section-20-1">
+                            <li><div class="toc-subitem" data-scroll="def-use-layout-effect">Definition</div></li>
+                            <li><div class="toc-subitem" data-scroll="detail-use-layout-effect">Detail</div></li>
+                            <li><div class="toc-subitem" data-scroll="syntax-use-layout-effect">Syntax & Examples</div></li>
+                            <li><div class="toc-subitem" data-scroll="example-use-layout-effect">Example</div></li>
+                            <li><div class="toc-subitem" data-scroll="uses-use-layout-effect">Uses</div></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <div class="toc-item" data-target="#section-20-2">
+                            <span class="section-marker"></span>20.2 useImperativeHandle
+                        </div>
+                        <ul class="list-unstyled ms-3" id="section-20-2">
+                            <li><div class="toc-subitem" data-scroll="def-use-imperative-handle">Definition</div></li>
+                            <li><div class="toc-subitem" data-scroll="detail-use-imperative-handle">Detail</div></li>
+                            <li><div class="toc-subitem" data-scroll="syntax-use-imperative-handle">Syntax & Examples</div></li>
+                            <li><div class="toc-subitem" data-scroll="example-use-imperative-handle">Example</div></li>
+                            <li><div class="toc-subitem" data-scroll="uses-use-imperative-handle">Uses</div></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <div class="toc-item" data-target="#section-20-3">
+                            <span class="section-marker"></span>20.3 useDeferredValue
+                        </div>
+                        <ul class="list-unstyled ms-3" id="section-20-3">
+                            <li><div class="toc-subitem" data-scroll="def-use-deferred-value">Definition</div></li>
+                            <li><div class="toc-subitem" data-scroll="detail-use-deferred-value">Detail</div></li>
+                            <li><div class="toc-subitem" data-scroll="syntax-use-deferred-value">Syntax & Examples</div></li>
+                            <li><div class="toc-subitem" data-scroll="example-use-deferred-value">Example</div></li>
+                            <li><div class="toc-subitem" data-scroll="uses-use-deferred-value">Uses</div></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <div class="toc-item" data-target="#section-20-4">
+                            <span class="section-marker"></span>20.4 useTransition
+                        </div>
+                        <ul class="list-unstyled ms-3" id="section-20-4">
+                            <li><div class="toc-subitem" data-scroll="def-use-transition">Definition</div></li>
+                            <li><div class="toc-subitem" data-scroll="detail-use-transition">Detail</div></li>
+                            <li><div class="toc-subitem" data-scroll="syntax-use-transition">Syntax & Examples</div></li>
+                            <li><div class="toc-subitem" data-scroll="example-use-transition">Example</div></li>
+                            <li><div class="toc-subitem" data-scroll="uses-use-transition">Uses</div></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <div class="toc-item" data-target="#section-20-5">
+                            <span class="section-marker"></span>20.5 useId
+                        </div>
+                        <ul class="list-unstyled ms-3" id="section-20-5">
+                            <li><div class="toc-subitem" data-scroll="def-use-id">Definition</div></li>
+                            <li><div class="toc-subitem" data-scroll="detail-use-id">Detail</div></li>
+                            <li><div class="toc-subitem" data-scroll="syntax-use-id">Syntax & Examples</div></li>
+                            <li><div class="toc-subitem" data-scroll="example-use-id">Example</div></li>
+                            <li><div class="toc-subitem" data-scroll="uses-use-id">Uses</div></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <div class="toc-item" data-target="#section-20-6">
+                            <span class="section-marker"></span>20.6 useSyncExternalStore
+                        </div>
+                        <ul class="list-unstyled ms-3" id="section-20-6">
+                            <li><div class="toc-subitem" data-scroll="def-use-sync-external-store">Definition</div></li>
+                            <li><div class="toc-subitem" data-scroll="detail-use-sync-external-store">Detail</div></li>
+                            <li><div class="toc-subitem" data-scroll="syntax-use-sync-external-store">Syntax & Examples</div></li>
+                            <li><div class="toc-subitem" data-scroll="example-use-sync-external-store">Example</div></li>
+                            <li><div class="toc-subitem" data-scroll="uses-use-sync-external-store">Uses</div></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <div class="toc-item" data-target="#section-20-7">
+                            <span class="section-marker"></span>20.7 Custom Hook Patterns
+                        </div>
+                        <ul class="list-unstyled ms-3" id="section-20-7">
+                            <li><div class="toc-subitem" data-scroll="def-custom-patterns">Definition</div></li>
+                            <li><div class="toc-subitem" data-scroll="detail-custom-patterns">Detail</div></li>
+                            <li><div class="toc-subitem" data-scroll="syntax-custom-patterns">Syntax & Patterns</div></li>
+                            <li><div class="toc-subitem" data-scroll="example-custom-patterns">Example</div></li>
+                            <li><div class="toc-subitem" data-scroll="uses-custom-patterns">Uses</div></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <div class="toc-item" data-target="#section-20-8">
+                            <span class="section-marker"></span>20.8 Hook Libraries
+                        </div>
+                        <ul class="list-unstyled ms-3" id="section-20-8">
+                            <li><div class="toc-subitem" data-scroll="def-hook-libraries">Definition</div></li>
+                            <li><div class="toc-subitem" data-scroll="detail-hook-libraries">Detail</div></li>
+                            <li><div class="toc-subitem" data-scroll="syntax-hook-libraries">Syntax & Examples</div></li>
+                            <li><div class="toc-subitem" data-scroll="example-hook-libraries">Example</div></li>
+                            <li><div class="toc-subitem" data-scroll="uses-hook-libraries">Uses</div></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="col right-panel">
+            <h1>Advanced Hooks and Patterns</h1>
+            <h4 class="text-muted">Mastering React's Hidden Gems for Performance and Control</h4>
+
+            <!-- Section 20.1 -->
+            <section id="section-20-1">
+                <h2>20.1 useLayoutEffect</h2>
+                
+                <details>
+                    <summary class="details-summary">Definition</summary>
+                    <div class="details-content definition-box">
+                        <p><code className="hook-name">useLayoutEffect</code> is a React hook that runs synchronously after all DOM mutations but before the browser has painted.</p>
+                        <p>It's the synchronous version of <code className="hook-name">useEffect</code>, designed for reading layout from the DOM and synchronously re-rendering.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Detail</summary>
+                    <div class="details-content">
+                        <p><strong>Key Difference:</strong></p>
+                        <table class="table table-dark mt-3 comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>Aspect</th>
+                                    <th><code className="hook-name">useEffect</code></th>
+                                    <th><code className="hook-name">useLayoutEffect</code></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Timing</td>
+                                    <td>After paint (asynchronous)</td>
+                                    <td>Before paint (synchronous)</td>
+                                </tr>
+                                <tr>
+                                    <td>Blocking</td>
+                                    <td>Non-blocking</td>
+                                    <td>Blocks rendering</td>
+                                </tr>
+                                <tr>
+                                    <td>Use Case</td>
+                                    <td>Side effects, subscriptions</td>
+                                    <td>Layout measurements, visual adjustments</td>
+                                </tr>
+                                <tr>
+                                    <td>Performance Impact</td>
+                                    <td>Minimal</td>
+                                    <td>Can cause jank if misused</td>
+                                </tr>
+                                <tr>
+                                    <td>SSR Compatibility</td>
+                                    <td>Yes</td>
+                                    <td>No (warns in server)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <p><strong>Why it matters:</strong> When you need to make changes to the DOM that affect layout (like resizing, positioning), using <code className="hook-name">useEffect</code> causes a flash of incorrect layout before correction.</p>
+                        
+                        <p><strong>Analogy:</strong> Think of <code className="hook-name">useEffect</code> as fixing your shirt after you've already walked out the door. <code className="hook-name">useLayoutEffect</code> is adjusting your shirt before you step out — no one sees you with a crooked shirt.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Syntax & Examples</summary>
+                    <div class="details-content">
+                        <p><strong>Basic Syntax:</strong></p>
+                        <pre><code class="language-jsx">import { useLayoutEffect } from 'react';
+
+function MyComponent() {
+  useLayoutEffect(() =&gt; {
+    // Runs synchronously after DOM mutation
+    // Before browser paints
+    
+    return () =&gt; {
+      // Cleanup function
+    };
+  }, [dependencies]);
+  
+  return &lt;div&gt;...&lt;/div&gt;;
+}</code></pre>
+                        
+                        <p><strong>Common Pattern: Measuring Element Dimensions</strong></p>
+                        <pre><code class="language-jsx">// ❌ Using useEffect - causes flicker
+function ResizableBox() {
+  const [size, setSize] = useState({ width: 0, height: 0 });
+  const ref = useRef(null);
+  
+  useEffect(() =&gt; {
+    // This runs AFTER paint
+    // User sees default size first, then it jumps
+    if (ref.current) {
+      setSize({
+        width: ref.current.offsetWidth,
+        height: ref.current.offsetHeight
+      });
+    }
+  }, []);
+  
+  return (
+    &lt;div ref={ref} style={{ border: '1px solid red' }}&gt;
+      Size: {size.width} × {size.height}
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <pre><code class="language-jsx">// ✅ Using useLayoutEffect - no flicker
+function ResizableBox() {
+  const [size, setSize] = useState({ width: 0, height: 0 });
+  const ref = useRef(null);
+  
+  useLayoutEffect(() =&gt; {
+    // This runs BEFORE paint
+    // Layout is corrected before user sees anything
+    if (ref.current) {
+      setSize({
+        width: ref.current.offsetWidth,
+        height: ref.current.offsetHeight
+      });
+    }
+  }, []);
+  
+  return (
+    &lt;div ref={ref} style={{ border: '1px solid red' }}&gt;
+      Size: {size.width} × {size.height}
+    &lt;/div&gt;
+  );
+}</code></pre>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Example</summary>
+                    <div class="details-content example-box">
+                        <p><strong>Scenario:</strong> A card component that needs to be centered based on its actual size</p>
+                        
+                        <pre><code class="language-jsx">// app/components/CenteredCard.js
+import { useRef, useLayoutEffect, useState } from 'react';
+
+export default function CenteredCard() {
+  const cardRef = useRef(null);
+  const [position, setPosition] = useState({ top: 0, left: 0 });
+  
+  useLayoutEffect(() =&gt; {
+    if (!cardRef.current) return;
+    
+    const card = cardRef.current;
+    const container = document.querySelector('.container');
+    
+    // Calculate center position
+    const cardRect = card.getBoundingClientRect();
+    const containerRect = container.getBoundingClientRect();
+    
+    const left = (containerRect.width - cardRect.width) / 2;
+    const top = (containerRect.height - cardRect.height) / 2;
+    
+    // Apply position BEFORE paint
+    card.style.position = 'absolute';
+    card.style.left = <span class="highlight">${left}px</span>;
+    card.style.top = <span class="highlight">${top}px</span>;
+    
+    // Store for potential animation
+    setPosition({ top, left });
+  }, []);
+  
+  return (
+    &lt;div className="container" style={{ 
+      height: '300px', 
+      border: '2px dashed cyan',
+      position: 'relative',
+      overflow: 'hidden'
+    }}>
+      &lt;div 
+        ref={cardRef}
+        style={{ 
+          backgroundColor: '#0f223a',
+          padding: '2rem',
+          borderRadius: '8px',
+          border: '1px solid #00f5ff',
+          color: 'white',
+          textAlign: 'center'
+        }}
+      &gt;
+        I'm perfectly centered!
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>What happens visually:</strong></p>
+                        <ol>
+                            <li>Page renders with empty container</li>
+                            <li><code className="hook-name">useLayoutEffect</code> runs immediately</li>
+                            <li>Card is positioned exactly in center</li>
+                            <li>Browser paints the correctly positioned card</li>
+                            <li>User sees perfect centering — no movement or flicker</li>
+                        </ol>
+                        
+                        <p><strong>Without <code className="hook-name">useLayoutEffect</code>:</strong> You'd see the card render at top-left, then jump to center — creating a jarring experience.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Uses</summary>
+                    <div class="details-content uses-box">
+                        <ul>
+                            <li>Measuring DOM element dimensions (offsetWidth, clientHeight)</li>
+                            <li>Positioning elements based on layout calculations</li>
+                            <li>Scroll position restoration after navigation</li>
+                            <li>Custom scrollbars or overflow handling</li>
+                            <li>Animation initialization that depends on layout</li>
+                            <li>Text measurement for responsive typography</li>
+                            <li>Canvas drawing that requires precise dimensions</li>
+                        </ul>
+                        <p><strong>Golden Rule:</strong> Use <code className="hook-name">useLayoutEffect</code> only when you need to prevent visual inconsistency. Otherwise, prefer <code className="hook-name">useEffect</code> for better performance.</p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- Section 20.2 -->
+            <section id="section-20-2">
+                <h2>20.2 useImperativeHandle</h2>
+                
+                <details>
+                    <summary class="details-summary">Definition</summary>
+                    <div class="details-content definition-box">
+                        <p><code className="hook-name">useImperativeHandle</code> lets you customize the instance value that is exposed to parent components when using <code>ref</code>.</p>
+                        <p>It's used to expose specific methods or properties from a child component to its parent, instead of exposing the entire DOM element.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Detail</summary>
+                    <div class="details-content">
+                        <p><strong>The Problem:</strong> By default, when you create a ref on a component, you get access to the entire component instance — which can be dangerous!</p>
+                        
+                        <p><strong>Why it exists:</strong> To maintain encapsulation while allowing controlled interaction between parent and child components.</p>
+                        
+                        <p><strong>Best Practice:</strong> Only expose what's necessary. Don't expose internal state or methods that should remain private.</p>
+                        
+                        <p><strong>When NOT to use:</strong> If you can solve the problem with props and callbacks, do so instead. Imperative code should be the exception, not the rule.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Syntax & Examples</summary>
+                    <div class="details-content">
+                        <p><strong>Basic Syntax:</strong></p>
+                        <pre><code class="language-jsx">import { useImperativeHandle, useRef } from 'react';
+
+const ChildComponent = forwardRef((props, ref) =&gt; {
+  const inputRef = useRef(null);
+  
+  useImperativeHandle(ref, () =&gt; ({
+    focus: () =&gt; {
+      inputRef.current.focus();
+    },
+    getValue: () =&gt; {
+      return inputRef.current.value;
+    },
+    clear: () =&gt; {
+      inputRef.current.value = '';
+    }
+  }), []); // Dependencies array
+  
+  return &lt;input ref={inputRef} /&gt;;
+});</code></pre>
+                        
+                        <p><strong>Complete Example with Parent:</strong></p>
+                        <pre><code class="language-jsx">// Child Component
+import { forwardRef, useImperativeHandle, useRef } from 'react';
+
+const FancyInput = forwardRef((props, ref) =&gt; {
+  const inputRef = useRef(null);
+  const [value, setValue] = useState('');
+  
+  useImperativeHandle(ref, () =&gt; ({
+    focus: () =&gt; {
+      console.log('FancyInput focused!');
+      inputRef.current?.focus();
+    },
+    select: () =&gt; {
+      inputRef.current?.select();
+    },
+    getValue: () =&gt; value,
+    setValue: (newValue) =&gt; {
+      setValue(newValue);
+    },
+    clear: () =&gt; {
+      setValue('');
+      inputRef.current?.focus();
+    }
+  }), []);
+  
+  return (
+    &lt;input
+      ref={inputRef}
+      value={value}
+      onChange={(e) =&gt; setValue(e.target.value)}
+      style={{ padding: '12px', fontSize: '18px', border: '2px solid #00f5ff' }}
+      {...props}
+    /&gt;
+  );
+});
+
+export default FancyInput;</code></pre>
+                        
+                        <pre><code class="language-jsx">// Parent Component
+import { useRef } from 'react';
+import FancyInput from './FancyInput';
+
+export default function Form() {
+  const fancyInputRef = useRef(null);
+  
+  const handleFocus = () =&gt; {
+    fancyInputRef.current?.focus(); // ✅ Safe method call
+  };
+  
+  const handleSubmit = () =&gt; {
+    const currentValue = fancyInputRef.current?.getValue();
+    console.log('Submitted:', currentValue);
+  };
+  
+  const handleClear = () =&gt; {
+    fancyInputRef.current?.clear();
+  };
+  
+  return (
+    &lt;div style={{ padding: '2rem' }}>
+      &lt;FancyInput ref={fancyInputRef} placeholder="Type something..." /&gt;
+      
+      &lt;div style={{ marginTop: '1rem' }}>
+        &lt;button onClick={handleFocus}&gt;Focus Input&lt;/button&gt;
+        &lt;button onClick={handleSubmit}&gt;Submit&lt;/button&gt;
+        &lt;button onClick={handleClear}&gt;Clear&lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Example</summary>
+                    <div class="details-content example-box">
+                        <p><strong>Scenario:</strong> Custom video player with programmatic control</p>
+                        
+                        <pre><code class="language-jsx">// VideoPlayer.js
+import { forwardRef, useImperativeHandle, useRef } from 'react';
+
+const VideoPlayer = forwardRef((props, ref) =&gt; {
+  const videoRef = useRef(null);
+  
+  useImperativeHandle(ref, () =&gt; ({
+    play: () =&gt; {
+      videoRef.current?.play();
+    },
+    pause: () =&gt; {
+      videoRef.current?.pause();
+    },
+    seek: (timeInSeconds) =&gt; {
+      videoRef.current.currentTime = timeInSeconds;
+    },
+    mute: () =&gt; {
+      videoRef.current.muted = true;
+    },
+    unmute: () =&gt; {
+      videoRef.current.muted = false;
+    },
+    getDuration: () =&gt; {
+      return videoRef.current?.duration || 0;
+    },
+    getCurrentTime: () =&gt; {
+      return videoRef.current?.currentTime || 0;
+    }
+  }), []);
+  
+  return (
+    &lt;div style={{ position: 'relative', maxWidth: '600px', margin: '0 auto' }}>
+      &lt;video
+        ref={videoRef}
+        width="100%"
+        controls={false}
+        style={{ borderRadius: '8px' }}
+      &gt;
+        &lt;source src="https://sample-videos.com/video123/mp4/720/big_buck_bunny_720p_1mb.mp4" type="video/mp4" /&gt;
+      &lt;/video&gt;
+      
+      &lt;div style={{ textAlign: 'center', marginTop: '1rem' }}>
+        &lt;button onClick={() =&gt; videoRef.current?.play()}&gt;Play (internal)&lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+});
+
+export default VideoPlayer;</code></pre>
+                        
+                        <pre><code class="language-jsx">// App.js
+import { useRef } from 'react';
+import VideoPlayer from './VideoPlayer';
+
+export default function App() {
+  const videoRef = useRef(null);
+  
+  const handlePlay = () =&gt; {
+    videoRef.current?.play();
+  };
+  
+  const handlePause = () =&gt; {
+    videoRef.current?.pause();
+  };
+  
+  const handleSeek = () =&gt; {
+    videoRef.current?.seek(15); // Jump to 15 seconds
+  };
+  
+  const handleMute = () =&gt; {
+    videoRef.current?.mute();
+  };
+  
+  return (
+    &lt;div style={{ padding: '2rem' }}>
+      &lt;h2&gt;Controlled Video Player&lt;/h2&gt;
+      
+      &lt;VideoPlayer ref={videoRef} /&gt;
+      
+      &lt;div style={{ marginTop: '1rem', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+        &lt;button onClick={handlePlay}&gt;Play&lt;/button&gt;
+        &lt;button onClick={handlePause}&gt;Pause&lt;/button&gt;
+        &lt;button onClick={handleSeek}&gt;Seek to 15s&lt;/button&gt;
+        &lt;button onClick={handleMute}&gt;Mute&lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>Benefits:</strong></p>
+                        <ul>
+                            <li>Parent doesn't know about the internal implementation</li>
+                            <li>Only exposes safe, intentional API</li>
+                            <li>Prevents accidental manipulation of internal state</li>
+                            <li>Clear contract between parent and child</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Uses</summary>
+                    <div class="details-content uses-box">
+                        <ul>
+                            <li>Creating reusable form inputs with programmatic control</li>
+                            <li>Building custom media players (audio/video)</li>
+                            <li>Implementing complex UI components (sliders, carousels)</li>
+                            <li>Integrating third-party libraries with React</li>
+                            <li>Creating accessible components that need keyboard control</li>
+                            <li>Building testing utilities that need to trigger events</li>
+                            <li>Implementing modal dialogs with programmatic open/close</li>
+                        </ul>
+                        <p><strong>Warning:</strong> Overusing <code className="hook-name">useImperativeHandle</code> breaks React's declarative paradigm. Always ask: "Can I solve this with props?" before reaching for refs.</p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- Section 20.3 -->
+            <section id="section-20-3">
+                <h2>20.3 useDeferredValue</h2>
+                
+                <details>
+                    <summary class="details-summary">Definition</summary>
+                    <div class="details-content definition-box">
+                        <p><code className="hook-name">useDeferredValue</code> is a hook that allows you to defer updating a part of your UI until after more urgent updates have been processed.</p>
+                        <p>It creates a "deferred" version of a value that lags behind the current value by a small amount.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Detail</summary>
+                    <div class="details-content">
+                        <p><strong>The Problem:</strong> When you have expensive rendering (large lists, complex components), typing in an input field can cause the entire component tree to re-render, making the interface feel sluggish.</p>
+                        
+                        <p><strong>The Solution:</strong> <code className="hook-name">useDeferredValue</code> lets you keep the input responsive while deferring expensive updates.</p>
+                        
+                        <p><strong>How it works:</strong> React treats the deferred value as lower priority. When a high-priority update occurs (like typing), React processes it immediately. The deferred value updates later, during idle time.</p>
+                        
+                        <p><strong>Visual Analogy:</strong> Imagine a busy restaurant kitchen. The chef prioritizes taking orders (typing) over preparing complex dishes (rendering large lists). The customer sees their order confirmed instantly, even though their food takes longer to arrive.</p>
+                        
+                        <p><strong>Important:</strong> It doesn't optimize the expensive computation — it just delays rendering it.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Syntax & Examples</summary>
+                    <div class="details-content">
+                        <p><strong>Basic Syntax:</strong></p>
+                        <pre><code class="language-jsx">import { useDeferredValue } from 'react';
+
+function MyComponent({ inputValue }) {
+  const deferredValue = useDeferredValue(inputValue);
+  
+  return (
+    &lt;div&gt;
+      &lt;input value={inputValue} onChange={handleChange} /&gt;
+      &lt;ExpensiveList value={deferredValue} /&gt; {/* Uses deferred version */}
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>Example: Search with Large Dataset</strong></p>
+                        <pre><code class="language-jsx">// ❌ Without useDeferredValue - slow typing
+function SearchApp() {
+  const [query, setQuery] = useState('');
+  
+  // Expensive operation every keystroke
+  const filteredItems = useMemo(() =&gt; {
+    return items.filter(item =&gt; 
+      item.name.toLowerCase().includes(query.toLowerCase())
+    );
+  }, [query]);
+  
+  return (
+    &lt;div&gt;
+      &lt;input 
+        value={query} 
+        onChange={(e) =&gt; setQuery(e.target.value)} 
+        placeholder="Search..." 
+      /&gt;
+      &lt;ItemList items={filteredItems} /&gt; {/* Re-renders everything on every keypress */}
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <pre><code class="language-jsx">// ✅ With useDeferredValue - smooth typing
+function SearchApp() {
+  const [query, setQuery] = useState('');
+  const deferredQuery = useDeferredValue(query); // 👈 Deferred version
+  
+  // Expensive operation runs on deferred value
+  const filteredItems = useMemo(() =&gt; {
+    return items.filter(item =&gt; 
+      item.name.toLowerCase().includes(deferredQuery.toLowerCase())
+    );
+  }, [deferredQuery]);
+  
+  return (
+    &lt;div&gt;
+      &lt;input 
+        value={query} 
+        onChange={(e) =&gt; setQuery(e.target.value)} 
+        placeholder="Search..." 
+      /&gt;
+      &lt;ItemList items={filteredItems} /&gt; {/* Only re-renders when idle */}
+    &lt;/div&gt;
+  );
+}</code></pre>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Example</summary>
+                    <div class="details-content example-box">
+                        <p><strong>Scenario:</strong> Real-time search across 10,000 product names</p>
+                        
+                        <pre><code class="language-jsx">// ProductSearch.js
+import { useState, useMemo, useDeferredValue } from 'react';
+
+// Mock large dataset
+const products = Array.from({ length: 10000 }, (_, i) =&gt; ({
+  id: i + 1,
+  name: <span class="highlight">`Product ${Math.floor(Math.random() * 1000)}`</span>,
+  category: ['Electronics', 'Books', 'Clothing', 'Home'][i % 4],
+  price: Math.random() * 1000
+}));
+
+export default function ProductSearch() {
+  const [searchTerm, setSearchTerm] = useState('');
+  const deferredSearchTerm = useDeferredValue(searchTerm); // 👈 Key line
+  
+  // This expensive filter runs on the DEFERRED value
+  const filteredProducts = useMemo(() =&gt; {
+    console.log('Filtering products...'); // Will log less frequently
+    return products.filter(product =&gt; 
+      product.name.toLowerCase().includes(deferredSearchTerm.toLowerCase())
+    );
+  }, [deferredSearchTerm]);
+  
+  // This cheap filter runs on the LIVE value
+  const visibleCount = useMemo(() =&gt; {
+    return products.filter(product =&gt; 
+      product.name.toLowerCase().includes(searchTerm.toLowerCase())
+    ).length;
+  }, [searchTerm]);
+  
+  return (
+    &lt;div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
+      &lt;h2&gt;Product Search (10,000 items)&lt;/h2&gt;
+      
+      &lt;input
+        type="text"
+        value={searchTerm}
+        onChange={(e) =&gt; setSearchTerm(e.target.value)}
+        placeholder="Type to search..."
+        style={{ 
+          width: '100%', 
+          padding: '12px', 
+          fontSize: '18px',
+          marginBottom: '1rem'
+        }}
+      /&gt;
+      
+      &lt;p&gt;Matching: <span class="highlight">{visibleCount}</span> products&lt;/p&gt;
+      
+      &lt;div style={{ maxHeight: '400px', overflowY: 'auto', border: '1px solid #00f5ff', borderRadius: '8px', padding: '1rem' }}>
+        {filteredProducts.length === 0 ? (
+          &lt;p&gt;No products found&lt;/p&gt;
+        ) : (
+          filteredProducts.map(product =&gt; (
+            &lt;div 
+              key={product.id} 
+              style={{ 
+                padding: '0.5rem', 
+                borderBottom: '1px solid #1a3b5f',
+                display: 'flex',
+                justifyContent: 'space-between'
+              }}
+            &gt;
+              &lt;span&gt;{product.name}&lt;/span&gt;
+              &lt;span&gt;${product.price.toFixed(2)}&lt;/span&gt;
+            &lt;/div&gt;
+          ))
+        )}
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>What happens:</strong></p>
+                        <ol>
+                            <li>User types "iphone"</li>
+                            <li>Input field responds instantly (live value)</li>
+                            <li>React schedules expensive filtering for idle time</li>
+                            <li>While filtering is pending, previous results are shown</li>
+                            <li>Once filtering completes, new results appear without blocking</li>
+                        </ol>
+                        
+                        <p><strong>Performance Impact:</strong> Typing feels smooth even with 10,000 items because the UI never freezes!</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Uses</summary>
+                    <div class="details-content uses-box">
+                        <ul>
+                            <li>Real-time search with large datasets</li>
+                            <li>Live filtering of massive lists</li>
+                            <li>Debounced expensive computations</li>
+                            <li>Smooth autocomplete suggestions</li>
+                            <li>Large table rendering with live filters</li>
+                            <li>Complex charts with dynamic data</li>
+                            <li>Drag-and-drop interfaces with real-time previews</li>
+                        </ul>
+                        <p><strong>Pro Tip:</strong> Combine with <code className="hook-name">useMemo</code> for maximum benefit. The deferred value should be used only where expensive computation occurs.</p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- Section 20.4 -->
+            <section id="section-20-4">
+                <h2>20.4 useTransition</h2>
+                
+                <details>
+                    <summary class="details-summary">Definition</summary>
+                    <div class="details-content definition-box">
+                        <p><code className="hook-name">useTransition</code> is a hook that marks state updates as non-urgent, allowing React to prioritize other work like user input.</p>
+                        <p>It returns a state transition function and a boolean indicating whether a transition is pending.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Detail</summary>
+                    <div class="details-content">
+                        <p><strong>Problem:</strong> When navigating between views or changing tabs, expensive rendering can block user interactions.</p>
+                        
+                        <p><strong>Solution:</strong> <code className="hook-name">useTransition</code> tells React: "This update isn't critical — process user input first."</p>
+                        
+                        <p><strong>Key Features:</strong></p>
+                        <ul>
+                            <li>Marks state updates as low priority</li>
+                            <li>Provides pending state for loading indicators</li>
+                            <li>Works with Suspense boundaries</li>
+                            <li>Can be combined with <code className="hook-name">useDeferredValue</code></li>
+                        </ul>
+                        
+                        <p><strong>Analogy:</strong> Think of it as putting your most important tasks on a priority queue. User typing = high priority. Data fetching = low priority.</p>
+                        
+                        <p><strong>Important:</strong> Unlike debouncing, <code className="hook-name">useTransition</code> doesn't delay the update — it just makes it lower priority.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Syntax & Examples</summary>
+                    <div class="details-content">
+                        <p><strong>Basic Syntax:</strong></p>
+                        <pre><code class="language-jsx">import { useTransition } from 'react';
+
+function MyComponent() {
+  const [isPending, startTransition] = useTransition();
+  
+  const handleClick = () =&gt; {
+    startTransition(() =&gt; {
+      setState(newState); // This update is marked as low priority
+    });
+  };
+  
+  return (
+    &lt;div&gt;
+      &lt;button onClick={handleClick}&gt;
+        {isPending ? 'Loading...' : 'Update'}
+      &lt;/button&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>Example: Tab Navigation</strong></p>
+                        <pre><code class="language-jsx">// ❌ Without useTransition - janky tab switching
+function TabNavigation() {
+  const [activeTab, setActiveTab] = useState('home');
+  
+  const handleTabClick = (tab) =&gt; {
+    setActiveTab(tab); // This blocks UI
+  };
+  
+  return (
+    &lt;div&gt;
+      &lt;div style={{ display: 'flex', marginBottom: '1rem' }}&gt;
+        &lt;button onClick={() =&gt; handleTabClick('home')}&gt;Home&lt;/button&gt;
+        &lt;button onClick={() =&gt; handleTabClick('profile')}&gt;Profile&lt;/button&gt;
+        &lt;button onClick={() =&gt; handleTabClick('settings')}&gt;Settings&lt;/button&gt;
+      &lt;/div&gt;
+      
+      &lt;div style={{ padding: '1rem', border: '1px solid #00f5ff', borderRadius: '8px' }}&gt;
+        {activeTab === 'home' &amp;&amp; &lt;ExpensiveHomeContent /&gt;}
+        {activeTab === 'profile' &amp;&amp; &lt;ExpensiveProfileContent /&gt;}
+        {activeTab === 'settings' &amp;&amp; &lt;ExpensiveSettingsContent /&gt;}
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <pre><code class="language-jsx">// ✅ With useTransition - smooth tab switching
+function TabNavigation() {
+  const [activeTab, setActiveTab] = useState('home');
+  const [isPending, startTransition] = useTransition();
+  
+  const handleTabClick = (tab) =&gt; {
+    startTransition(() =&gt; {
+      setActiveTab(tab); // Mark as low priority
+    });
+  };
+  
+  return (
+    &lt;div&gt;
+      &lt;div style={{ display: 'flex', marginBottom: '1rem' }}&gt;
+        &lt;button onClick={() =&gt; handleTabClick('home')} disabled={isPending}&gt;Home&lt;/button&gt;
+        &lt;button onClick={() =&gt; handleTabClick('profile')} disabled={isPending}&gt;Profile&lt;/button&gt;
+        &lt;button onClick={() =&gt; handleTabClick('settings')} disabled={isPending}&gt;Settings&lt;/button&gt;
+      &lt;/div&gt;
+      
+      &lt;div style={{ padding: '1rem', border: '1px solid #00f5ff', borderRadius: '8px' }}&gt;
+        {isPending ? (
+          &lt;div style={{ textAlign: 'center', padding: '2rem' }}&gt;
+            Loading...
+          &lt;/div&gt;
+        ) : (
+          <>
+            {activeTab === 'home' &amp;&amp; &lt;ExpensiveHomeContent /&gt;}
+            {activeTab === 'profile' &amp;&amp; &lt;ExpensiveProfileContent /&gt;}
+            {activeTab === 'settings' &amp;&amp; &lt;ExpensiveSettingsContent /&gt;}
+          </>
+        )}
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Example</summary>
+                    <div class="details-content example-box">
+                        <p><strong>Scenario:</strong> Dashboard with multiple expensive charts</p>
+                        
+                        <pre><code class="language-jsx">// Dashboard.js
+import { useState, useTransition } from 'react';
+import LineChart from './LineChart';
+import BarChart from './BarChart';
+import PieChart from './PieChart';
+
+export default function Dashboard() {
+  const [activeView, setActiveView] = useState('line');
+  const [isPending, startTransition] = useTransition();
+  
+  const handleViewChange = (view) =&gt; {
+    startTransition(() =&gt; {
+      setActiveView(view);
+    });
+  };
+  
+  return (
+    &lt;div style={{ padding: '2rem' }}>
+      &lt;h2&gt;Data Dashboard&lt;/h2&gt;
+      
+      &lt;div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem' }}>
+        &lt;button 
+          onClick={() =&gt; handleViewChange('line')}
+          style={{ 
+            padding: '0.75rem 1.5rem', 
+            backgroundColor: activeView === 'line' ? '#00f5ff' : '#0f223a',
+            color: activeView === 'line' ? '#000' : '#fff',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+          disabled={isPending}
+        &gt;
+          Line Chart
+        &lt;/button&gt;
+        
+        &lt;button 
+          onClick={() =&gt; handleViewChange('bar')}
+          style={{ 
+            padding: '0.75rem 1.5rem', 
+            backgroundColor: activeView === 'bar' ? '#00f5ff' : '#0f223a',
+            color: activeView === 'bar' ? '#000' : '#fff',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+          disabled={isPending}
+        &gt;
+          Bar Chart
+        &lt;/button&gt;
+        
+        &lt;button 
+          onClick={() =&gt; handleViewChange('pie')}
+          style={{ 
+            padding: '0.75rem 1.5rem', 
+            backgroundColor: activeView === 'pie' ? '#00f5ff' : '#0f223a',
+            color: activeView === 'pie' ? '#000' : '#fff',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+          disabled={isPending}
+        &gt;
+          Pie Chart
+        &lt;/button&gt;
+      &lt;/div&gt;
+      
+      &lt;div style={{ 
+        minHeight: '400px', 
+        border: '1px solid #00f5ff', 
+        borderRadius: '8px', 
+        padding: '1rem',
+        backgroundColor: '#0f223a'
+      }}&gt;
+        {isPending ? (
+          &lt;div style={{ textAlign: 'center', padding: '2rem' }}&gt;
+            &lt;div className="spinner"&gt;Loading chart data...&lt;/div&gt;
+          &lt;/div&gt;
+        ) : (
+          <>
+            {activeView === 'line' &amp;&amp; &lt;LineChart /&gt;}
+            {activeView === 'bar' &amp;&amp; &lt;BarChart /&gt;}
+            {activeView === 'pie' &amp;&amp; &lt;PieChart /&gt;}
+          </>
+        )}
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>What happens:</strong></p>
+                        <ol>
+                            <li>User clicks "Bar Chart" button</li>
+                            <li>Button becomes disabled immediately</li>
+                            <li>React starts transitioning to bar chart</li>
+                            <li>While transition is happening, user can still click other buttons</li>
+                            <li>Once the expensive chart renders, the view updates smoothly</li>
+                        </ol>
+                        
+                        <p><strong>Performance Impact:</strong> Even with 5-second chart rendering, users can switch between views without feeling like the app froze.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Uses</summary>
+                    <div class="details-content uses-box">
+                        <ul>
+                            <li>Tab navigation with expensive content</li>
+                            <li>Page transitions in single-page applications</li>
+                            <li>Dynamic form steps with heavy validation</li>
+                            <li>Filtering large datasets with immediate feedback</li>
+                            <li>Modal dialogs with complex content</li>
+                            <li>Collapsible sections with heavy content</li>
+                            <li>Any scenario where user interaction should take priority</li>
+                        </ul>
+                        <p><strong>Golden Rule:</strong> Use <code className="hook-name">useTransition</code> whenever you have a state update that might cause noticeable lag. Always provide a visual indicator (loading state) to inform users.</p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- Section 20.5 -->
+            <section id="section-20-5">
+                <h2>20.5 useId</h2>
+                
+                <details>
+                    <summary class="details-summary">Definition</summary>
+                    <div class="details-content definition-box">
+                        <p><code className="hook-name">useId</code> is a hook that generates a unique ID string within the React component tree.</p>
+                        <p>It ensures IDs are unique even with server-side rendering and multiple component instances.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Detail</summary>
+                    <div class="details-content">
+                        <p><strong>The Problem:</strong> In SSR, manually generated IDs (like <code>id="input-1"</code>) can cause hydration mismatches because the server and client generate different IDs.</p>
+                        
+                        <p><strong>Traditional Solutions:</strong></p>
+                        <ul>
+                            <li>Using random numbers (can collide)</li>
+                            <li>Using incrementing counters (breaks with SSR)</li>
+                            <li>Using UUID libraries (adds bundle size)</li>
+                        </ul>
+                        
+                        <p><strong>Why useId exists:</strong> React automatically generates stable, unique IDs that are consistent between server and client.</p>
+                        
+                        <p><strong>Key Benefits:</strong></p>
+                        <ul>
+                            <li>Guaranteed uniqueness across the component tree</li>
+                            <li>Consistent between server and client (perfect hydration)</li>
+                            <li>No external dependencies</li>
+                            <li>Minimal overhead</li>
+                        </ul>
+                        
+                        <p><strong>When to use:</strong> For accessibility attributes (<code>aria-labelledby</code>, <code>aria-describedby</code>), form labels, and any ID-based relationships.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Syntax & Examples</summary>
+                    <div class="details-content">
+                        <p><strong>Basic Syntax:</strong></p>
+                        <pre><code class="language-jsx">import { useId } from 'react';
+
+function MyComponent() {
+  const id = useId(); // Returns something like "r1:abc123"
+  
+  return (
+    &lt;div&gt;
+      &lt;label htmlFor={id}&gt;Name:&lt;/label&gt;
+      &lt;input id={id} type="text" /&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>With Prefix:</strong></p>
+                        <pre><code class="language-jsx">function FormField({ label }) {
+  const id = useId(); // e.g., "r1:abc123"
+  const labelId = useId(); // e.g., "r1:abc124"
+  
+  return (
+    &lt;div&gt;
+      &lt;label id={labelId}&gt;{label}&lt;/label&gt;
+      &lt;input 
+        id={id} 
+        aria-labelledby={labelId} 
+        type="text" 
+      /&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>Multiple Components:</strong></p>
+                        <pre><code class="language-jsx">// App.js
+function App() {
+  return (
+    &lt;div&gt;
+      &lt;FormField label="First Name" /&gt;
+      &lt;FormField label="Last Name" /&gt;
+    &lt;/div&gt;
+  );
+}
+
+// FormField.js
+function FormField({ label }) {
+  const inputId = useId(); // "r1:abc123" for first, "r1:abc124" for second
+  const labelId = useId(); // "r1:abc125" for first, "r1:abc126" for second
+  
+  return (
+    &lt;div style={{ margin: '1rem 0' }}&gt;
+      &lt;label id={labelId}&gt;{label}&lt;/label&gt;
+      &lt;input 
+        id={inputId} 
+        aria-labelledby={labelId} 
+        type="text" 
+        style={{ width: '100%' }}
+      /&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Example</summary>
+                    <div class="details-content example-box">
+                        <p><strong>Scenario:</strong> Complex form with accessibility requirements</p>
+                        
+                        <pre><code class="language-jsx">// AccessibilityForm.js
+import { useId } from 'react';
+
+export default function AccessibilityForm() {
+  const firstNameId = useId();
+  const lastNameId = useId();
+  const emailId = useId();
+  const passwordId = useId();
+  const confirmPasswordId = useId();
+  
+  const passwordHelpTextId = useId();
+  const confirmPasswordHelpTextId = useId();
+  
+  return (
+    &lt;form style={{ padding: '2rem', maxWidth: '500px', margin: '0 auto' }}>
+      &lt;h2&gt;Create Account&lt;/h2&gt;
+      
+      &lt;div style={{ marginBottom: '1rem' }}&gt;
+        &lt;label htmlFor={firstNameId}&gt;First Name&lt;/label&gt;
+        &lt;input 
+          id={firstNameId} 
+          type="text" 
+          required 
+          style={{ width: '100%', padding: '0.75rem' }}
+        /&gt;
+      &lt;/div&gt;
+      
+      &lt;div style={{ marginBottom: '1rem' }}&gt;
+        &lt;label htmlFor={lastNameId}&gt;Last Name&lt;/label&gt;
+        &lt;input 
+          id={lastNameId} 
+          type="text" 
+          required 
+          style={{ width: '100%', padding: '0.75rem' }}
+        /&gt;
+      &lt;/div&gt;
+      
+      &lt;div style={{ marginBottom: '1rem' }}&gt;
+        &lt;label htmlFor={emailId}&gt;Email&lt;/label&gt;
+        &lt;input 
+          id={emailId} 
+          type="email" 
+          required 
+          style={{ width: '100%', padding: '0.75rem' }}
+        /&gt;
+      &lt;/div&gt;
+      
+      &lt;div style={{ marginBottom: '1rem' }}&gt;
+        &lt;label htmlFor={passwordId}&gt;Password&lt;/label&gt;
+        &lt;input 
+          id={passwordId} 
+          type="password" 
+          required 
+          aria-describedby={passwordHelpTextId}
+          style={{ width: '100%', padding: '0.75rem' }}
+        /&gt;
+        &lt;p id={passwordHelpTextId} style={{ color: '#a0cfe8', fontSize: '0.9rem', marginTop: '0.25rem' }}&gt;
+          Must be at least 8 characters with a number and symbol
+        &lt;/p&gt;
+      &lt;/div&gt;
+      
+      &lt;div style={{ marginBottom: '1rem' }}&gt;
+        &lt;label htmlFor={confirmPasswordId}&gt;Confirm Password&lt;/label&gt;
+        &lt;input 
+          id={confirmPasswordId} 
+          type="password" 
+          required 
+          aria-describedby={confirmPasswordHelpTextId}
+          style={{ width: '100%', padding: '0.75rem' }}
+        /&gt;
+        &lt;p id={confirmPasswordHelpTextId} style={{ color: '#a0cfe8', fontSize: '0.9rem', marginTop: '0.25rem' }}&gt;
+          Please confirm your password
+        &lt;/p&gt;
+      &lt;/div&gt;
+      
+      &lt;button type="submit" style={{ 
+        backgroundColor: '#00f5ff', 
+        color: '#000', 
+        padding: '0.75rem 2rem', 
+        border: 'none', 
+        borderRadius: '4px',
+        cursor: 'pointer'
+      }}&gt;
+        Create Account
+      &lt;/button&gt;
+    &lt;/form&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>Accessibility Benefits:</strong></p>
+                        <ul>
+                            <li>Screen readers can properly associate labels with inputs</li>
+                            <li>Help text is announced to assistive technologies</li>
+                            <li>No duplicate IDs (which would break accessibility)</li>
+                            <li>Perfect hydration — no warnings in development</li>
+                        </ul>
+                        
+                        <p><strong>Generated IDs (example):</strong></p>
+                        <pre><code class="language-html">&lt;label for="r1:abc123"&gt;First Name&lt;/label&gt;
+&lt;input id="r1:abc123" type="text" /&gt;
+
+&lt;label for="r1:abc124"&gt;Last Name&lt;/label&gt;
+&lt;input id="r1:abc124" type="text" /&gt;
+
+&lt;p id="r1:abc125"&gt;Must be at least 8 characters...&lt;/p&gt;
+&lt;input id="r1:abc126" type="password" aria-describedby="r1:abc125" /&gt;</code></pre>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Uses</summary>
+                    <div class="details-content uses-box">
+                        <ul>
+                            <li>Connecting form labels with inputs via <code>for</code>/<code>id</code></li>
+                            <li>Associating help text with form fields via <code>aria-describedby</code></li>
+                            <li>Linking error messages with inputs via <code>aria-invalid</code> and <code>aria-errormessage</code></li>
+                            <li>Creating unique IDs for collapsible sections</li>
+                            <li>Generating IDs for radio groups and checkboxes</li>
+                            <li>Server-side rendering compatibility</li>
+                            <li>Any accessibility requirement requiring unique identifiers</li>
+                        </ul>
+                        <p><strong>Pro Tip:</strong> Always use <code className="hook-name">useId</code> instead of manual IDs in any component that might be rendered on the server. It's free insurance against hydration errors.</p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- Section 20.6 -->
+            <section id="section-20-6">
+                <h2>20.6 useSyncExternalStore</h2>
+                
+                <details>
+                    <summary class="details-summary">Definition</summary>
+                    <div class="details-content definition-box">
+                        <p><code className="hook-name">useSyncExternalStore</code> is a hook that allows React components to subscribe to external state stores while maintaining synchronization with React's concurrent rendering model.</p>
+                        <p>It's the recommended way to integrate with external state management systems (Redux, Zustand, etc.) in React 18+.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Detail</summary>
+                    <div class="details-content">
+                        <p><strong>The Problem:</strong> Before React 18, external stores used <code>setState</code> directly, which could cause issues with concurrent rendering (stale values, inconsistent updates).</p>
+                        
+                        <p><strong>Why it exists:</strong> To bridge the gap between React's concurrent rendering model and traditional state management libraries.</p>
+                        
+                        <p><strong>Key Features:</strong></p>
+                        <ul>
+                            <li>Ensures snapshots are taken during render</li>
+                            <li>Handles concurrent updates safely</li>
+                            <li>Supports server-side rendering</li>
+                            <li>Optimized for performance</li>
+                        </ul>
+                        
+                        <p><strong>When to use:</strong> Only when building a state management library or integrating with one that doesn't yet support React 18's concurrent features.</p>
+                        
+                        <p><strong>When NOT to use:</strong> If you're using Redux Toolkit, Zustand, or other modern libraries — they handle this internally now!</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Syntax & Examples</summary>
+                    <div class="details-content">
+                        <p><strong>Basic Syntax:</strong></p>
+                        <pre><code class="language-jsx">import { useSyncExternalStore } from 'react';
+
+const store = createExternalStore(); // Your external store
+
+function MyComponent() {
+  const state = useSyncExternalStore(
+    store.subscribe, // Subscription function
+    store.getSnapshot, // Snapshot getter
+    store.getServerSnapshot // Optional: for SSR
+  );
+  
+  return &lt;div&gt;{state.value}&lt;/div&gt;;
+}</code></pre>
+                        
+                        <p><strong>Manual Implementation Example:</strong></p>
+                        <pre><code class="language-jsx">// ExternalStore.js
+class ExternalStore {
+  constructor(initialValue) {
+    this.state = initialValue;
+    this.listeners = new Set();
+  }
+  
+  subscribe(listener) {
+    this.listeners.add(listener);
+    return () =&gt; this.listeners.delete(listener);
+  }
+  
+  getSnapshot() {
+    return this.state;
+  }
+  
+  setState(newState) {
+    this.state = newState;
+    this.listeners.forEach(listener =&gt; listener());
+  }
+}
+
+export const store = new ExternalStore({ count: 0 });</code></pre>
+                        
+                        <pre><code class="language-jsx">// Counter.js
+import { useSyncExternalStore } from 'react';
+import { store } from './ExternalStore';
+
+export default function Counter() {
+  const count = useSyncExternalStore(
+    store.subscribe, // Subscribe to changes
+    store.getSnapshot, // Get current value
+    () =&gt; 0 // Server snapshot (fallback)
+  );
+  
+  const increment = () =&gt; {
+    store.setState({ count: count + 1 });
+  };
+  
+  return (
+    &lt;div style={{ padding: '2rem', textAlign: 'center' }}&gt;
+      &lt;h2&gt;Count: <span class="highlight">{count}</span>&lt;/h2&gt;
+      &lt;button onClick={increment} style={{ 
+        padding: '0.75rem 1.5rem', 
+        backgroundColor: '#00f5ff', 
+        color: '#000', 
+        border: 'none', 
+        borderRadius: '4px',
+        cursor: 'pointer'
+      }}&gt;
+        Increment
+      &lt;/button&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>Modern Alternative (Recommended):</strong> Use Zustand or Redux Toolkit — they implement this internally!</p>
+                        <pre><code class="language-jsx">// Modern approach with Zustand
+import { create } from 'zustand';
+
+const useStore = create((set) =&gt; ({
+  count: 0,
+  increment: () =&gt; set((state) =&gt; ({ count: state.count + 1 }))
+}));
+
+export default function Counter() {
+  const { count, increment } = useStore();
+  
+  return (
+    &lt;div style={{ padding: '2rem', textAlign: 'center' }}&gt;
+      &lt;h2&gt;Count: <span class="highlight">{count}</span>&lt;/h2&gt;
+      &lt;button onClick={increment} style={{ 
+        padding: '0.75rem 1.5rem', 
+        backgroundColor: '#00f5ff', 
+        color: '#000', 
+        border: 'none', 
+        borderRadius: '4px',
+        cursor: 'pointer'
+      }}&gt;
+        Increment
+      &lt;/button&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Example</summary>
+                    <div class="details-content example-box">
+                        <p><strong>Scenario:</strong> Building a custom state library</p>
+                        
+                        <pre><code class="language-jsx">// lib/createStore.js
+export function createStore(initialState) {
+  let state = initialState;
+  const listeners = new Set();
+  
+  const getState = () =&gt; state;
+  
+  const setState = (newState) =&gt; {
+    state = typeof newState === 'function' ? newState(state) : newState;
+    listeners.forEach(listener =&gt; listener());
+  };
+  
+  const subscribe = (listener) =&gt; {
+    listeners.add(listener);
+    return () =&gt; listeners.delete(listener);
+  };
+  
+  return { getState, setState, subscribe };
+}</code></pre>
+                        
+                        <pre><code class="language-jsx">// hooks/useCounter.js
+import { useSyncExternalStore } from 'react';
+import { createStore } from '../lib/createStore';
+
+const counterStore = createStore({ count: 0 });
+
+export function useCounter() {
+  const { getState, subscribe, setState } = counterStore;
+  
+  const count = useSyncExternalStore(
+    subscribe,
+    getState,
+    () =&gt; 0 // Default for SSR
+  );
+  
+  const increment = () =&gt; setState({ count: count + 1 });
+  const decrement = () =&gt; setState({ count: count - 1 });
+  const reset = () =&gt; setState({ count: 0 });
+  
+  return { count, increment, decrement, reset };
+}</code></pre>
+                        
+                        <pre><code class="language-jsx">// App.js
+import { useCounter } from './hooks/useCounter';
+
+export default function App() {
+  const { count, increment, decrement, reset } = useCounter();
+  
+  return (
+    &lt;div style={{ padding: '2rem', textAlign: 'center' }}&gt;
+      &lt;h2&gt;Custom Store Count: <span class="highlight">{count}</span>&lt;/h2&gt;
+      &lt;div style={{ gap: '1rem', display: 'flex', justifyContent: 'center', marginBottom: '1rem' }}&gt;
+        &lt;button onClick={decrement} style={{ 
+          padding: '0.75rem 1.5rem', 
+          backgroundColor: '#ff6b6b', 
+          color: '#fff', 
+          border: 'none', 
+          borderRadius: '4px',
+          cursor: 'pointer'
+        }}&gt;
+          Decrement
+        &lt;/button&gt;
+        &lt;button onClick={reset} style={{ 
+          padding: '0.75rem 1.5rem', 
+          backgroundColor: '#6c757d', 
+          color: '#fff', 
+          border: 'none', 
+          borderRadius: '4px',
+          cursor: 'pointer'
+        }}&gt;
+          Reset
+        &lt;/button&gt;
+        &lt;button onClick={increment} style={{ 
+          padding: '0.75rem 1.5rem', 
+          backgroundColor: '#00f5ff', 
+          color: '#000', 
+          border: 'none', 
+          borderRadius: '4px',
+          cursor: 'pointer'
+        }}&gt;
+          Increment
+        &lt;/button&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>Why this works:</strong> <code className="hook-name">useSyncExternalStore</code> ensures that when React performs concurrent rendering, it gets a consistent snapshot of the store's state — preventing race conditions and stale values.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Uses</summary>
+                    <div class="details-content uses-box">
+                        <ul>
+                            <li>Building custom state management libraries</li>
+                            <li>Integrating with non-React state systems (MobX, Vuex)</li>
+                            <li>Connecting to WebSockets or real-time data streams</li>
+                            <li>Managing global application state outside React context</li>
+                            <li>Legacy integration with older state management systems</li>
+                        </ul>
+                        <p><strong>Golden Rule:</strong> Unless you're building a state management library, don't use <code className="hook-name">useSyncExternalStore</code> directly. Use Redux Toolkit, Zustand, Jotai, or Recoil instead — they handle this complexity for you.</p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- Section 20.7 -->
+            <section id="section-20-7">
+                <h2>20.7 Custom Hook Patterns</h2>
+                
+                <details>
+                    <summary class="details-summary">Definition</summary>
+                    <div class="details-content definition-box">
+                        <p>Custom hooks are JavaScript functions that encapsulate reusable stateful logic and can be shared across components.</p>
+                        <p>They follow naming convention: <code>useSomething</code> and can use other hooks inside them.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Detail</summary>
+                    <div class="details-content">
+                        <p><strong>Why custom hooks matter:</strong> They promote code reuse, improve testability, and create a domain-specific language for your application.</p>
+                        
+                        <p><strong>Core Principles:</strong></p>
+                        <ol>
+                            <li><strong>Single Responsibility:</strong> One logical concern per hook</li>
+                            <li><strong>Composability:</strong> Hooks should be able to combine with others</li>
+                            <li><strong>Clear Naming:</strong> Always start with "use"</li>
+                            <li><strong>Documentation:</strong> Document behavior, dependencies, and return values</li>
+                        </ol>
+                        
+                        <p><strong>Common Anti-Patterns:</strong></p>
+                        <ul>
+                            <li>Returning JSX from hooks (should return data or functions)</li>
+                            <li>Using hooks conditionally inside loops or nested functions</li>
+                            <li>Not documenting dependencies</li>
+                            <li>Overcomplicating simple logic</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Syntax & Patterns</summary>
+                    <div class="details-content">
+                        <p><strong>Pattern 1: State Management Hook</strong></p>
+                        <pre><code class="language-jsx">// hooks/useLocalStorage.js
+import { useState } from 'react';
+
+export function useLocalStorage(key, initialValue) {
+  const [storedValue, setStoredValue] = useState(() =&gt; {
+    try {
+      const item = window.localStorage.getItem(key);
+      return item ? JSON.parse(item) : initialValue;
+    } catch (error) {
+      console.error(error);
+      return initialValue;
+    }
+  });
+  
+  const setValue = (value) =&gt; {
+    try {
+      const valueToStore = value instanceof Function ? value(storedValue) : value;
+      setStoredValue(valueToStore);
+      window.localStorage.setItem(key, JSON.stringify(valueToStore));
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  
+  return [storedValue, setValue];
+}</code></pre>
+                        
+                        <p><strong>Pattern 2: Async Data Fetching Hook</strong></p>
+                        <pre><code class="language-jsx">// hooks/useAsyncData.js
+import { useState, useEffect } from 'react';
+
+export function useAsyncData(fetchFunction, dependencies = []) {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  useEffect(() =&gt; {
+    let isMounted = true;
+    
+    const fetchData = async () =&gt; {
+      setLoading(true);
+      setError(null);
+      
+      try {
+        const result = await fetchFunction();
+        if (isMounted) {
+          setData(result);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(err);
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    };
+    
+    fetchData();
+    
+    return () =&gt; {
+      isMounted = false;
+    };
+  }, dependencies);
+  
+  return { data, loading, error };
+}</code></pre>
+                        
+                        <p><strong>Pattern 3: Event Listener Hook</strong></p>
+                        <pre><code class="language-jsx">// hooks/useEventListener.js
+import { useEffect } from 'react';
+
+export function useEventListener(eventName, handler, element = window) {
+  useEffect(() =&gt; {
+    const listener = (event) =&gt; handler(event);
+    
+    element.addEventListener(eventName, listener);
+    
+    return () =&gt; {
+      element.removeEventListener(eventName, listener);
+    };
+  }, [eventName, handler, element]);
+}</code></pre>
+                        
+                        <p><strong>Pattern 4: Debounced Hook</strong></p>
+                        <pre><code class="language-jsx">// hooks/useDebounce.js
+import { useState, useEffect } from 'react';
+
+export function useDebounce(value, delay) {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+  
+  useEffect(() =&gt; {
+    const handler = setTimeout(() =&gt; {
+      setDebouncedValue(value);
+    }, delay);
+    
+    return () =&gt; {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+  
+  return debouncedValue;
+}</code></pre>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Example</summary>
+                    <div class="details-content example-box">
+                        <p><strong>Scenario:</strong> Comprehensive search component with multiple optimizations</p>
+                        
+                        <pre><code class="language-jsx">// hooks/useSearch.js
+import { useState, useCallback } from 'react';
+import { useDebounce } from './useDebounce';
+import { useAsyncData } from './useAsyncData';
+
+export function useSearch(apiEndpoint) {
+  const [query, setQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  
+  // Debounce search query to avoid excessive API calls
+  const debouncedQuery = useDebounce(query, 300);
+  
+  // Fetch data asynchronously
+  const { data: results, loading, error } = useAsyncData(
+    () =&gt; fetch(<span class="highlight">`${apiEndpoint}?q=${debouncedQuery}&category=${selectedCategory}`</span>)
+      .then(r =&gt; r.json()),
+    [debouncedQuery, selectedCategory]
+  );
+  
+  // Clear search when category changes
+  const handleCategoryChange = useCallback((category) =&gt; {
+    setSelectedCategory(category);
+    setQuery(''); // Reset search when category changes
+  }, []);
+  
+  // Reset search
+  const clearSearch = useCallback(() =&gt; {
+    setQuery('');
+  }, []);
+  
+  return {
+    query,
+    setQuery,
+    selectedCategory,
+    handleCategoryChange,
+    results,
+    loading,
+    error,
+    clearSearch
+  };
+}</code></pre>
+                        
+                        <pre><code class="language-jsx">// SearchComponent.js
+import { useSearch } from './hooks/useSearch';
+
+export default function SearchComponent() {
+  const {
+    query,
+    setQuery,
+    selectedCategory,
+    handleCategoryChange,
+    results,
+    loading,
+    error,
+    clearSearch
+  } = useSearch('/api/search');
+  
+  return (
+    &lt;div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}>
+      &lt;h2&gt;Product Search&lt;/h2&gt;
+      
+      &lt;div style={{ marginBottom: '1rem' }}&gt;
+        &lt;input
+          type="text"
+          value={query}
+          onChange={(e) =&gt; setQuery(e.target.value)}
+          placeholder="Search products..."
+          style={{ 
+            width: '100%', 
+            padding: '0.75rem', 
+            fontSize: '16px',
+            border: '1px solid #00f5ff',
+            borderRadius: '4px'
+          }}
+        /&gt;
+      &lt;/div&gt;
+      
+      &lt;div style={{ marginBottom: '1rem' }}&gt;
+        &lt;select
+          value={selectedCategory}
+          onChange={(e) =&gt; handleCategoryChange(e.target.value)}
+          style={{ 
+            padding: '0.75rem', 
+            fontSize: '16px',
+            border: '1px solid #00f5ff',
+            borderRadius: '4px'
+          }}
+        &gt;
+          &lt;option value="all"&gt;All Categories&lt;/option&gt;
+          &lt;option value="electronics"&gt;Electronics&lt;/option&gt;
+          &lt;option value="books"&gt;Books&lt;/option&gt;
+          &lt;option value="clothing"&gt;Clothing&lt;/option&gt;
+        &lt;/select&gt;
+      &lt;/div&gt;
+      
+      {error &amp;&amp; &lt;p style={{ color: '#ff6b6b' }}&gt;Error: {error.message}&lt;/p&gt;}
+      
+      {loading ? (
+        &lt;p&gt;Searching...&lt;/p&gt;
+      ) : results &amp;&amp; results.length &gt; 0 ? (
+        &lt;ul style={{ listStyle: 'none', padding: 0 }}&gt;
+          {results.map(item =&gt; (
+            &lt;li 
+              key={item.id} 
+              style={{ 
+                padding: '0.75rem', 
+                borderBottom: '1px solid #1a3b5f',
+                display: 'flex',
+                justifyContent: 'space-between'
+              }}
+            &gt;
+              &lt;span&gt;{item.name}&lt;/span&gt;
+              &lt;span&gt;${item.price}&lt;/span&gt;
+            &lt;/li&gt;
+          ))}
+        &lt;/ul&gt;
+      ) : query &amp;&amp; !loading ? (
+        &lt;p&gt;No results found.&lt;/p&gt;
+      ) : null}
+      
+      {query &amp;&amp; (
+        &lt;button 
+          onClick={clearSearch}
+          style={{ 
+            marginTop: '1rem', 
+            padding: '0.5rem 1rem',
+            backgroundColor: '#00f5ff',
+            color: '#000',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer'
+          }}
+        &gt;
+          Clear Search
+        &lt;/button&gt;
+      )}
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>Benefits:</strong></p>
+                        <ul>
+                            <li>Reusable across multiple components</li>
+                            <li>Easy to test in isolation</li>
+                            <li>Clear separation of concerns</li>
+                            <li>Simple to modify or replace underlying implementation</li>
+                            <li>Team members can understand the logic quickly</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Uses</summary>
+                    <div class="details-content uses-box">
+                        <ul>
+                            <li>Data fetching with caching and loading states</li>
+                            <li>Local storage persistence</li>
+                            <li>Event listeners with cleanup</li>
+                            <li>Debounced and throttled functions</li>
+                            <li>Form validation logic</li>
+                            <li>Geolocation tracking</li>
+                            <li>WebSocket connections</li>
+                            <li>Intersection observers for lazy loading</li>
+                            <li>Dark mode toggling</li>
+                            <li>Accessibility features (keyboard navigation)</li>
+                        </ul>
+                        <p><strong>Golden Rule:</strong> If you find yourself copying the same logic between components, extract it into a custom hook. Your future self will thank you!</p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- Section 20.8 -->
+            <section id="section-20-8">
+                <h2>20.8 Hook Libraries</h2>
+                
+                <details>
+                    <summary class="details-summary">Definition</summary>
+                    <div class="details-content definition-box">
+                        <p>Hook libraries are collections of pre-built, well-tested custom hooks that solve common problems in React applications.</p>
+                        <p>They save development time and provide battle-tested solutions for recurring patterns.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Detail</summary>
+                    <div class="details-content">
+                        <p><strong>Why use hook libraries:</strong></p>
+                        <ul>
+                            <li>Save time — don't reinvent the wheel</li>
+                            <li>Quality assurance — community-tested</li>
+                            <li>Documentation — well-documented APIs</li>
+                            <li>Performance — optimized implementations</li>
+                            <li>Community support — active maintenance</li>
+                        </ul>
+                        
+                        <p><strong>Selection Criteria:</strong></p>
+                        <ol>
+                            <li><strong>Popularity:</strong> GitHub stars, npm downloads</li>
+                            <li><strong>Maintenance:</strong> Recent updates, active contributors</li>
+                            <li><strong>Documentation:</strong> Clear examples and explanations</li>
+                            <li><strong>Bundle Size:</strong> Lightweight, tree-shakable</li>
+                            <li><strong>Compatibility:</strong> Works with your React version</li>
+                        </ol>
+                        
+                        <p><strong>Red Flags:</strong></p>
+                        <ul>
+                            <li>No recent updates in 2+ years</li>
+                            <li>Unmaintained GitHub repository</li>
+                            <li>Poor documentation</li>
+                            <li>Large bundle size for minimal functionality</li>
+                            <li>Dependencies on deprecated packages</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Syntax & Examples</summary>
+                    <div class="details-content">
+                        <p><strong>1. React Use</strong> — Collection of 100+ hooks</p>
+                        <pre><code class="language-bash"># npm install react-use
+# yarn add react-use</code></pre>
+                        
+                        <pre><code class="language-jsx">// Using react-use
+import { useLocalStorage } from 'react-use';
+
+function MyComponent() {
+  const [name, setName] = useLocalStorage('username', '');
+  
+  return (
+    &lt;input 
+      value={name} 
+      onChange={(e) =&gt; setName(e.target.value)} 
+      placeholder="Your name" 
+    /&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>2. @react-hook</strong> — Focused on functional programming</p>
+                        <pre><code class="language-bash"># npm install @react-hook/timeout
+# npm install @react-hook/interval</code></pre>
+                        
+                        <pre><code class="language-jsx">// Using @react-hook/timeout
+import { useTimeout } from '@react-hook/timeout';
+
+function CountdownTimer() {
+  const [count, setCount] = useState(10);
+  
+  useTimeout(() =&gt; {
+    if (count &gt; 0) setCount(count - 1);
+  }, count &gt; 0 ? 1000 : null);
+  
+  return &lt;div&gt;{count} seconds remaining&lt;/div&gt;;
+}</code></pre>
+                        
+                        <p><strong>3. useHooks</strong> — Simple, lightweight collection</p>
+                        <pre><code class="language-bash"># npm install usehooks-ts</code></pre>
+                        
+                        <pre><code class="language-jsx">// Using usehooks-ts
+import { useWindowSize } from 'usehooks-ts';
+
+function ResponsiveComponent() {
+  const { width, height } = useWindowSize();
+  
+  return (
+    &lt;div&gt;
+      Window size: {width} × {height}
+      {width &lt; 768 &amp;&amp; &lt;p&gt;Mobile view!&lt;/p&gt;}
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>4. React Beautiful DnD</strong> — Specialized for drag and drop</p>
+                        <pre><code class="language-bash"># npm install react-beautiful-dnd</code></pre>
+                        
+                        <pre><code class="language-jsx">// Using react-beautiful-dnd
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+
+function TodoList() {
+  const [items, setItems] = useState([
+    { id: '1', content: 'Task 1' },
+    { id: '2', content: 'Task 2' }
+  ]);
+  
+  const onDragEnd = (result) =&gt; {
+    if (!result.destination) return;
+    
+    const reordered = Array.from(items);
+    const [moved] = reordered.splice(result.source.index, 1);
+    reordered.splice(result.destination.index, 0, moved);
+    
+    setItems(reordered);
+  };
+  
+  return (
+    &lt;DragDropContext onDragEnd={onDragEnd}&gt;
+      &lt;Droppable droppableId="tasks"&gt;
+        {(provided) =&gt; (
+          &lt;ul {...provided.droppableProps} ref={provided.innerRef}&gt;
+            {items.map((item, index) =&gt; (
+              &lt;Draggable key={item.id} draggableId={item.id} index={index}&gt;
+                {(provided) =&gt; (
+                  &lt;li
+                    ref={provided.innerRef}
+                    {...provided.draggableProps}
+                    {...provided.dragHandleProps}
+                  &gt;
+                    {item.content}
+                  &lt;/li&gt;
+                )}
+              &lt;/Draggable&gt;
+            ))}
+            {provided.placeholder}
+          &lt;/ul&gt;
+        )}
+      &lt;/Droppable&gt;
+    &lt;/DragDropContext&gt;
+  );
+}</code></pre>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Example</summary>
+                    <div class="details-content example-box">
+                        <p><strong>Scenario:</strong> Feature-rich dashboard with multiple advanced features</p>
+                        
+                        <pre><code class="language-jsx">// Dashboard.js
+import { useState } from 'react';
+import { useLocalStorage } from 'react-use';
+import { useWindowSize } from 'usehooks-ts';
+import { useDebounce } from './hooks/useDebounce';
+import { useAsyncData } from './hooks/useAsyncData';
+import { useEventListener } from './hooks/useEventListener';
+
+export default function Dashboard() {
+  // Local storage for theme preference
+  const [theme, setTheme] = useLocalStorage('theme', 'light');
+  
+  // Window size for responsive design
+  const { width } = useWindowSize();
+  
+  // Debounced search
+  const [searchTerm, setSearchTerm] = useState('');
+  const debouncedSearch = useDebounce(searchTerm, 500);
+  
+  // Async data fetching
+  const { data: analytics, loading: analyticsLoading } = useAsyncData(
+    () =&gt; fetch(`/api/analytics?term=${debouncedSearch}`).then(r =&gt; r.json()),
+    [debouncedSearch]
+  );
+  
+  // Keyboard shortcuts
+  useEventListener('keydown', (e) =&gt; {
+    if (e.key === 'Escape') {
+      setSearchTerm('');
+    }
+    if (e.ctrlKey &amp;&amp; e.key === 'k') {
+      e.preventDefault();
+      setSearchTerm('');
+    }
+  });
+  
+  // Toggle theme with keyboard
+  useEventListener('keydown', (e) =&gt; {
+    if (e.key === 't' &amp;&amp; e.ctrlKey) {
+      setTheme(prev =&gt; prev === 'light' ? 'dark' : 'light');
+    }
+  });
+  
+  // Responsive layout change
+  const isMobile = width &lt; 768;
+  
+  return (
+    &lt;div style={{ 
+      padding: '2rem', 
+      backgroundColor: theme === 'dark' ? '#0a192f' : '#f5f7fa',
+      minHeight: '100vh'
+    }}>
+      &lt;h2&gt;Dashboard&lt;/h2&gt;
+      
+      &lt;input
+        type="text"
+        value={searchTerm}
+        onChange={(e) =&gt; setSearchTerm(e.target.value)}
+        placeholder="Search analytics..."
+        style={{ 
+          padding: '0.75rem', 
+          width: '100%',
+          marginBottom: '1rem',
+          border: '1px solid #00f5ff',
+          borderRadius: '4px'
+        }}
+      /&gt;
+      
+      {analyticsLoading ? (
+        &lt;p&gt;Loading analytics...&lt;/p&gt;
+      ) : analytics ? (
+        &lt;div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', 
+          gap: '1rem' 
+        }}>
+          {analytics.map(item =&gt; (
+            &lt;div 
+              key={item.id} 
+              style={{ 
+                padding: '1rem', 
+                backgroundColor: theme === 'dark' ? '#0f223a' : '#fff',
+                border: '1px solid #00f5ff',
+                borderRadius: '8px'
+              }}
+            &gt;
+              &lt;h3&gt;{item.title}&lt;/h3&gt;
+              &lt;p&gt;{item.value}&lt;/p&gt;
+            &lt;/div&gt;
+          ))}
+        &lt;/div&gt;
+      ) : null}
+      
+      &lt;button 
+        onClick={() =&gt; setTheme(theme === 'light' ? 'dark' : 'light')}
+        style={{ 
+          marginTop: '1rem',
+          padding: '0.75rem 1.5rem',
+          backgroundColor: '#00f5ff',
+          color: '#000',
+          border: 'none',
+          borderRadius: '4px',
+          cursor: 'pointer'
+        }}
+      &gt;
+        Toggle {theme} Mode
+      &lt;/button&gt;
+      
+      &lt;p style={{ marginTop: '1rem', color: '#a0cfe8' }}&gt;
+        Press Ctrl+K to clear search | Ctrl+T to toggle theme
+      &lt;/p&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <p><strong>Benefits of using libraries:</strong></p>
+                        <ul>
+                            <li>Reduced codebase size — fewer custom hooks to maintain</li>
+                            <li>Improved reliability — community-tested edge cases</li>
+                            <li>Faster development — ready-to-use solutions</li>
+                            <li>Easier onboarding — team members recognize familiar patterns</li>
+                            <li>Automatic updates — security patches and improvements</li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary class="details-summary">Uses</summary>
+                    <div class="details-content uses-box">
+                        <ul>
+                            <li>Window size and resize detection</li>
+                            <li>Local storage and session storage</li>
+                            <li>Debouncing and throttling</li>
+                            <li>Network request state management</li>
+                            <li>DOM event listeners</li>
+                            <li>Intersection observers</li>
+                            <li>Clipboard operations</li>
+                            <li>Drag and drop interfaces</li>
+                            <li>WebRTC and media streaming</li>
+                            <li>Animations and timers</li>
+                        </ul>
+                        <p><strong>Pro Tip:</strong> Start with standard React hooks, then build custom hooks for your project's specific needs. Only introduce third-party libraries when they solve problems you can't easily solve yourself.</p>
+                    </div>
+                </details>
+            </section>
+
+            <div class="mt-5 p-4 bg-dark rounded-3 border">
+                <h4 class="text-center text-muted">Key Takeaways</h4>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item bg-transparent border-0"><span class="badge">✅</span> <code className="hook-name">useLayoutEffect</code> fixes layout issues before paint — use sparingly.</li>
+                    <li class="list-group-item bg-transparent border-0"><span class="badge">✅</span> <code className="hook-name">useImperativeHandle</code> exposes controlled APIs — never expose internals.</li>
+                    <li class="list-group-item bg-transparent border-0"><span class="badge">✅</span> <code className="hook-name">useDeferredValue</code> defers expensive updates — keeps UI responsive.</li>
+                    <li class="list-group-item bg-transparent border-0"><span class="badge">✅</span> <code className="hook-name">useTransition</code> marks updates as low priority — improves perceived performance.</li>
+                    <li class="list-group-item bg-transparent border-0"><span class="badge">✅</span> <code className="hook-name">useId</code> generates unique IDs — essential for accessibility and SSR.</li>
+                    <li class="list-group-item bg-transparent border-0"><span class="badge">✅</span> <code className="hook-name">useSyncExternalStore</code> integrates external stores — leave this to libraries unless you're building one.</li>
+                    <li class="list-group-item bg-transparent border-0"><span class="badge">✅</span> Custom hooks organize logic — extract reusable patterns from components.</li>
+                    <li class="list-group-item bg-transparent border-0"><span class="badge">✅</span> Hook libraries accelerate development — use wisely, don't over-depend.</li>
+                </ul>
+                <div class="mt-3 tip-box">
+                    <strong>💡 Pro Tip:</strong> Master these advanced hooks and you'll be able to build React applications that feel instantaneous, even with complex data and interactions.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Search functionality
+        const searchInput = document.getElementById('searchToc');
+        const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
+
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            tocItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        // Expand/Collapse controls
+        document.getElementById('expandAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.open = true;
+            });
+        });
+
+        document.getElementById('collapseAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.open = false;
+            });
+        });
+
+        // Smooth scrolling for TOC links
+        document.querySelectorAll('[data-scroll]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('data-scroll');
+                const element = document.querySelector(`[id="${targetId}"]`);
+                if (element) {
+                    window.scrollTo({
+                        top: element.offsetTop - 100,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Highlight active section in TOC
+                    document.querySelectorAll('.toc-subitem').forEach(el => el.classList.remove('active'));
+                    this.classList.add('active');
+                }
+            });
+        });
+
+        // Auto-scroll TOC highlighting based on viewport
+        window.addEventListener('scroll', () => {
+            const sections = ['def-use-layout-effect', 'detail-use-layout-effect', 'syntax-use-layout-effect', 'example-use-layout-effect', 'uses-use-layout-effect',
+                             'def-use-imperative-handle', 'detail-use-imperative-handle', 'syntax-use-imperative-handle', 'example-use-imperative-handle', 'uses-use-imperative-handle',
+                             'def-use-deferred-value', 'detail-use-deferred-value', 'syntax-use-deferred-value', 'example-use-deferred-value', 'uses-use-deferred-value',
+                             'def-use-transition', 'detail-use-transition', 'syntax-use-transition', 'example-use-transition', 'uses-use-transition',
+                             'def-use-id', 'detail-use-id', 'syntax-use-id', 'example-use-id', 'uses-use-id',
+                             'def-use-sync-external-store', 'detail-use-sync-external-store', 'syntax-use-sync-external-store', 'example-use-sync-external-store', 'uses-use-sync-external-store',
+                             'def-custom-patterns', 'detail-custom-patterns', 'syntax-custom-patterns', 'example-custom-patterns', 'uses-custom-patterns',
+                             'def-hook-libraries', 'detail-hook-libraries', 'syntax-hook-libraries', 'example-hook-libraries', 'uses-hook-libraries'];
+            
+            let currentSection = '';
+            const scrollPosition = window.pageYOffset + 100;
+
+            sections.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    const offsetTop = element.offsetTop;
+                    const offsetHeight = element.offsetHeight;
+                    if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
+                        currentSection = id;
+                    }
+                }
+            });
+
+            document.querySelectorAll('.toc-subitem').forEach(item => {
+                item.classList.remove('active');
+            });
+
+            if (currentSection) {
+                const activeItem = document.querySelector(`[data-scroll="${currentSection}"]`);
+                if (activeItem) {
+                    activeItem.classList.add('active');
+                }
+            }
+        });
+
+        // Syntax highlighting (simple)
+        document.querySelectorAll('pre code').forEach(block => {
+            hljs.highlightBlock(block);
+        });
+    });
+
+    // Simple syntax highlighter fallback if Prism/HLJS not loaded
+    if (typeof hljs === 'undefined') {
+        window.hljs = {
+            highlightBlock: function(block) {
+                // Minimal highlight for code blocks
+                block.classList.add('hljs');
+            }
+        };
+    }
+</script>
+
+<!-- Include Highlight.js for syntax highlighting (optional enhancement) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+
+</body>
+</html>
+```

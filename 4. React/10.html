@@ -1,0 +1,1036 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter 5: JSX Deep Dive</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00f5ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --border-color: #00c4ff;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .sidebar {
+            background-color: #0d2140;
+            border-right: 2px solid var(--border-color);
+            height: 100vh;
+            position: fixed;
+            overflow-y: auto;
+            padding: 1rem;
+            width: 280px;
+            box-shadow: 5px 0 15px rgba(0, 212, 255, 0.1);
+        }
+
+        .content {
+            margin-left: 280px;
+            padding: 2rem;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.3rem;
+            margin-top: 2rem;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: var(--amber);
+            border-bottom: 3px solid var(--amber);
+        }
+
+        .toc-item {
+            margin: 0.5rem 0;
+            padding: 0.4rem;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            color: var(--text-light);
+        }
+
+        .toc-item:hover {
+            background-color: rgba(0, 245, 255, 0.1);
+            padding-left: 0.8rem;
+        }
+
+        .toc-item.active {
+            background-color: rgba(0, 245, 255, 0.2);
+            border-left: 3px solid var(--cyan);
+        }
+
+        .toc-subitem {
+            margin-left: 1.5rem;
+            font-size: 0.9rem;
+            color: #b8c4d6;
+            padding: 0.2rem 0;
+        }
+
+        .toc-subitem:hover {
+            background-color: rgba(0, 245, 255, 0.08);
+            padding-left: 0.5rem;
+        }
+
+        .search-box {
+            margin: 1rem 0;
+            background-color: #1a2a40;
+            border: 1px solid var(--border-color);
+            color: var(--text-light);
+        }
+
+        .code-block {
+            background-color: #121e33;
+            border-left: 4px solid var(--amber);
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            overflow-x: auto;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            box-shadow: 0 4px 8px rgba(0, 212, 255, 0.1);
+        }
+
+        pre code {
+            color: var(--cyan);
+            display: block;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.2);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-weight: 500;
+        }
+
+        .note {
+            background-color: rgba(0, 245, 255, 0.1);
+            border-left: 4px solid var(--cyan);
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .warning {
+            background-color: rgba(255, 183, 77, 0.15);
+            border-left: 4px solid var(--amber);
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        details {
+            margin: 1.5rem 0;
+            border: 1px solid rgba(0, 245, 255, 0.3);
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #0d1b33;
+        }
+
+        summary {
+            padding: 1rem;
+            background-color: #122647;
+            cursor: pointer;
+            font-weight: bold;
+            color: var(--cyan);
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.3s ease;
+        }
+
+        summary:hover {
+            background-color: #1a3155;
+        }
+
+        summary::before {
+            content: "▶ ";
+            font-size: 0.9rem;
+            transition: transform 0.3s ease;
+        }
+
+        details[open] > summary::before {
+            content: "▼ ";
+            transform: rotate(90deg);
+        }
+
+        .btn-control {
+            margin-bottom: 1rem;
+            background-color: rgba(0, 245, 255, 0.15);
+            border: 1px solid var(--border-color);
+            color: var(--cyan);
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+        }
+
+        .btn-control:hover {
+            background-color: rgba(0, 245, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .author-info {
+            color: #b8c4d6;
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border-bottom: 1px solid rgba(0, 245, 255, 0.2);
+        }
+
+        .section-marker {
+            color: var(--amber);
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        .jsx-tag {
+            color: var(--amber);
+        }
+
+        .jsx-attr {
+            color: #a0eaff;
+        }
+
+        .jsx-value {
+            color: #a8f5ff;
+        }
+
+        .keyword {
+            color: #ff9e6d;
+        }
+
+        .comment {
+            color: #5a7e9d;
+            font-style: italic;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 991px) {
+            .sidebar {
+                width: 250px;
+            }
+            .content {
+                margin-left: 250px;
+                padding: 1rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                position: relative;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 2px solid var(--border-color);
+            }
+            .content {
+                margin-left: 0;
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Left Sidebar -->
+    <div class="sidebar">
+        <h3 class="text-center mb-4">Chapter 5: JSX Deep Dive</h3>
+        <p class="author-info">Mastered by React Tutor • For Deep Understanding</p>
+
+        <div class="mb-4">
+            <input type="text" class="form-control search-box" id="searchToc" placeholder="Search topics...">
+        </div>
+
+        <div class="mb-3">
+            <button class="btn btn-sm btn-control w-100" id="expandAll">Expand All</button>
+            <button class="btn btn-sm btn-control w-100 mt-2" id="collapseAll">Collapse All</button>
+        </div>
+
+        <div class="toc">
+            <div class="toc-item" data-target="section-5-1">5.1 JSX Rules and Syntax</div>
+            <div class="toc-item" data-target="section-5-2">5.2 Embedding JavaScript in JSX</div>
+            <div class="toc-item" data-target="section-5-3">5.3 JSX Attributes and Props</div>
+            <div class="toc-item" data-target="section-5-4">5.4 Conditional Rendering</div>
+            <div class="toc-item" data-target="section-5-5">5.5 Lists and Keys</div>
+            <div class="toc-item" data-target="section-5-6">5.6 Fragments</div>
+            <div class="toc-item" data-target="section-5-7">5.7 JSX vs createElement()</div>
+            <div class="toc-item" data-target="section-5-8">5.8 Common JSX Gotchas</div>
+        </div>
+    </div>
+
+    <!-- Right Content Panel -->
+    <div class="content">
+        <div id="section-5-1">
+            <h2><span class="section-marker">5.1</span> JSX Rules and Syntax</h2>
+            <details>
+                <summary>Introduction to JSX</summary>
+                <p>JSX stands for <strong>JavaScript XML</strong>. It's a syntax extension for JavaScript that allows you to write HTML-like code inside your JavaScript files. JSX is not valid JavaScript — it gets compiled into regular JavaScript function calls using React.createElement().</p>
+                
+                <div class="note">
+                    <strong>Note:</strong> JSX makes React components more readable and expressive. It's optional but highly recommended because it closely mirrors how you'd structure UI in HTML.
+                </div>
+            </details>
+
+            <details>
+                <summary>Syntax Rules</summary>
+                <ul>
+                    <li>JSX elements must have exactly one root element.</li>
+                    <li>Tags must be closed properly (self-closing tags like <code>&lt;img /&gt;</code>).</li>
+                    <li>Use camelCase for HTML attributes (<code>className</code> instead of <code>class</code>, <code>htmlFor</code> instead of <code>for</code>).</li>
+                    <li>JSX expressions are enclosed in curly braces <code>{}</code>.</li>
+                    <li>You can't use JavaScript keywords as attribute names (e.g., <code>class</code> → <code>className</code>).</li>
+                </ul>
+
+                <div class="code-block">
+                    <code>
+{`// ✅ Valid JSX
+const element = &lt;div&gt;
+  &lt;h1&gt;Hello World&lt;/h1&gt;
+  &lt;img src="image.jpg" alt="description" /&gt;
+&lt;/div&gt;;
+
+// ❌ Invalid JSX - multiple roots
+const element = &lt;h1&gt;Title&lt;/h1&gt;
+&lt;p&gt;Content&lt;/p&gt;;
+
+// ❌ Invalid - uses 'class'
+const element = &lt;div class="container"&gt;...&lt;/div&gt;;`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Why These Rules?</summary>
+                <p>These rules exist because JSX needs to be safely transpiled into JavaScript. React needs to distinguish between HTML attributes and JavaScript properties. The <code>class</code> keyword is reserved in JavaScript for defining classes, so React uses <code>className</code> instead. This prevents conflicts and ensures predictable behavior.</p>
+                
+                <div class="warning">
+                    <strong>Important:</strong> Even if you're writing a single element, wrap it in a parent tag or fragment. React requires a single root node for component rendering.
+                </div>
+            </details>
+        </div>
+
+        <div id="section-5-2">
+            <h2><span class="section-marker">5.2</span> Embedding JavaScript in JSX</h2>
+            <details>
+                <summary>Introduction</summary>
+                <p>JSX allows you to embed any valid JavaScript expression inside curly braces <code>{}</code>. This includes variables, functions, conditionals, arithmetic operations, and even other JSX elements.</p>
+            </details>
+
+            <details>
+                <summary>Syntax and Examples</summary>
+                <div class="code-block">
+                    <code>
+{`const name = "Alice";
+const age = 25;
+const isLoggedIn = true;
+
+function getGreeting() {
+  return "Welcome back!";
+}
+
+// Embedded expressions in JSX
+const element = (
+  &lt;div&gt;
+    &lt;h1&gt;Hello {name}&lt;/h1&gt;
+    &lt;p&gt;You are {age} years old.&lt;/p&gt;
+    &lt;p&gt;{isLoggedIn ? getGreeting() : "Please log in"}&lt;/p&gt;
+    &lt;p&gt;Next year you'll be {age + 1}&lt;/p&gt;
+    &lt;div&gt;{&lt;span&gt;Nested JSX!&lt;/span&gt;}&lt;/div&gt;
+  &lt;/div&gt;
+);`}
+                    </code>
+                </div>
+
+                <p><strong>What works in curly braces:</strong></p>
+                <ul>
+                    <li>Variables: <code>{username}</code></li>
+                    <li>Function calls: <code>{calculateTotal()}</code></li>
+                    <li>Arithmetic: <code>{price * tax}</code></li>
+                    <li>Conditional logic: <code>{isVisible ? &lt;Button /&gt; : null}</code></li>
+                    <li>Arrays: <code>{items.map(item =&gt; &lt;li&gt;{item}&lt;/li&gt;)}</code></li>
+                </ul>
+
+                <div class="note">
+                    <strong>Pro Tip:</strong> Only expressions work — not statements. You cannot put <code>if</code>, <code>for</code>, or <code>const</code> directly inside JSX braces.
+                </div>
+            </details>
+
+            <details>
+                <summary>Handling Falsy Values</summary>
+                <p>React automatically skips rendering falsy values like <code>null</code>, <code>undefined</code>, <code>false</code>, and <code>0</code> when they appear as children.</p>
+                
+                <div class="code-block">
+                    <code>
+{`const count = 0;
+const message = null;
+
+// This renders: &lt;p&gt;Count: 0&lt;/p&gt; (not "Count: false")
+&lt;p&gt;Count: {count}&lt;/p&gt;
+
+// This renders nothing (message is null)
+&lt;p&gt;Message: {message}&lt;/p&gt;
+
+// This renders: &lt;p&gt;You have no items&lt;/p&gt;
+&lt;p&gt;{items.length === 0 ? "You have no items" : null}&lt;/p&gt;`}
+                    </code>
+                </div>
+            </details>
+        </div>
+
+        <div id="section-5-3">
+            <h2><span class="section-marker">5.3</span> JSX Attributes and Props</h2>
+            <details>
+                <summary>Understanding Props</summary>
+                <p>Props (short for "properties") are how you pass data from a parent component to a child component. In JSX, props are passed as attributes on custom elements.</p>
+            </details>
+
+            <details>
+                <summary>JSX Attribute Syntax</summary>
+                <p>Attributes follow the same rules as HTML attributes but with two key differences:</p>
+                <ol>
+                    <li>Use camelCase: <code>tabIndex</code> instead of <code>tab-index</code></li>
+                    <li>Boolean attributes: If present, value is <code>true</code>; if absent, <code>false</code></li>
+                </ol>
+
+                <div class="code-block">
+                    <code>
+{`// ✅ Correct JSX attribute usage
+const Button = ({ label, disabled, onClick }) =&gt; (
+  &lt;button 
+    className="btn" 
+    disabled={disabled}
+    onClick={onClick}
+    aria-label={label}
+    tabIndex={0}
+  &gt;
+    {label}
+  &lt;/button&gt;
+);
+
+// Usage
+&lt;Button label="Submit" disabled={true} onClick={() =&gt; alert('Clicked!')} /&gt;`}
+                    </code>
+                </div>
+
+                <div class="note">
+                    <strong>Important:</strong> Always use quotes for string values, and curly braces for JavaScript expressions.
+                </div>
+            </details>
+
+            <details>
+                <summary>Passing Complex Data</summary>
+                <p>You can pass objects, arrays, functions, and even other JSX elements as props.</p>
+                
+                <div class="code-block">
+                    <code>
+{`const Card = ({ title, data, action, children }) =&gt; (
+  &lt;div className="card"&gt;
+    &lt;h3&gt;{title}&lt;/h3&gt;
+    &lt;p&gt;Data: {JSON.stringify(data)}&lt;/p&gt;
+    &lt;button onClick={action}&gt;Click Me&lt;/button&gt;
+    {children}
+  &lt;/div&gt;
+);
+
+// Usage with complex props
+&lt;Card 
+  title="User Profile" 
+  data={{ name: "Bob", age: 30 }} 
+  action={() =&gt; console.log("Action triggered")}
+&gt;
+  &lt;p&gt;This is custom content passed as children!&lt;/p&gt;
+&lt;/Card&gt;`}
+                    </code>
+                </div>
+            </details>
+        </div>
+
+        <div id="section-5-4">
+            <h2><span class="section-marker">5.4</span> Conditional Rendering</h2>
+            <details>
+                <summary>Why Conditional Rendering Matters</summary>
+                <p>UIs often need to show different content based on state. JSX doesn't support traditional <code>if</code> statements inside markup, so we use JavaScript expressions with operators like <code>&amp;&amp;</code>, ternary operators, or early returns.</p>
+            </details>
+
+            <details>
+                <summary>Method 1: Logical AND (&amp;&amp;)</summary>
+                <p>Useful for showing content only when a condition is truthy.</p>
+                
+                <div class="code-block">
+                    <code>
+{`function Notification({ hasMessages }) {
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Dashboard&lt;/h2&gt;
+      {hasMessages &amp;&amp; &lt;p&gt;You have 3 new messages!&lt;/p&gt;}
+    &lt;/div&gt;
+  );
+}`}
+                    </code>
+                </div>
+                
+                <p>This works because: <code>true &amp;&amp; &lt;Element/&gt;</code> → <code>&lt;Element/&gt;</code>, while <code>false &amp;&amp; &lt;Element/&gt;</code> → <code>false</code> (which React ignores).</p>
+            </details>
+
+            <details>
+                <summary>Method 2: Ternary Operator</summary>
+                <p>Best for two mutually exclusive options.</p>
+                
+                <div class="code-block">
+                    <code>
+{`function UserGreeting({ isLoggedIn }) {
+  return (
+    &lt;div&gt;
+      {isLoggedIn ? (
+        &lt;h3&gt;Welcome back, Admin!&lt;/h3&gt;
+      ) : (
+        &lt;h3&gt;Please sign in&lt;/h3&gt;
+      )}
+    &lt;/div&gt;
+  );
+}`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Method 3: Early Return</summary>
+                <p>Useful in functions to avoid deeply nested JSX.</p>
+                
+                <div class="code-block">
+                    <code>
+{`function UserProfile({ user }) {
+  if (!user) return &lt;p&gt;Loading...&lt;/p&gt;;
+  
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;{user.name}&lt;/h2&gt;
+      &lt;p&gt;Email: {user.email}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Method 4: Switch Statements / Lookup Objects</summary>
+                <p>For multiple conditions, consider using lookup objects.</p>
+                
+                <div class="code-block">
+                    <code>
+{`const statusMessages = {
+  pending: &lt;span className="badge bg-warning"&gt;Pending&lt;/span&gt;,
+  approved: &lt;span className="badge bg-success"&gt;Approved&lt;/span&gt;,
+  rejected: &lt;span className="badge bg-danger"&gt;Rejected&lt;/span&gt;
+};
+
+function StatusDisplay({ status }) {
+  return &lt;div&gt;{statusMessages[status] || &lt;span&gt;Unknown&lt;/span&gt;}&lt;/div&gt;;
+}`}
+                    </code>
+                </div>
+            </details>
+        </div>
+
+        <div id="section-5-5">
+            <h2><span class="section-marker">5.5</span> Lists and Keys</h2>
+            <details>
+                <summary>The Problem</summary>
+                <p>When rendering lists in React, you need a special prop called <code>key</code>. Without keys, React can't efficiently track which items changed, were added, or removed.</p>
+            </details>
+
+            <details>
+                <summary>Basic List Rendering</summary>
+                <p>Use <code>map()</code> to transform an array into a list of JSX elements.</p>
+                
+                <div class="code-block">
+                    <code>
+{`function TodoList({ todos }) {
+  return (
+    &lt;ul&gt;
+      {todos.map(todo =&gt; (
+        &lt;li key={todo.id}&gt;{todo.text}&lt;/li&gt;
+      ))}
+    &lt;/ul&gt;
+  );
+}
+
+// Usage
+const todoList = [
+  { id: 1, text: "Learn JSX" },
+  { id: 2, text: "Build a component" },
+  { id: 3, text: "Deploy app" }
+];
+
+&lt;TodoList todos={todoList} /&gt;`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Why Keys Are Crucial</summary>
+                <p>Keys help React identify which items have changed, been added, or removed. They should be unique among siblings.</p>
+                
+                <div class="warning">
+                    <strong>❌ Never use index as key unless list is static!</strong><br/>
+                    Using index as key causes bugs when items are reordered or deleted:
+                    <pre><code>// BAD - Don't do this!
+todos.map((todo, index) =&gt; &lt;li key={index}&gt;{todo.text}&lt;/li&gt;)
+</code></pre>
+                    When you delete item at index 1, React reuses the DOM element for the next item, causing state confusion.
+                </div>
+            </details>
+
+            <details>
+                <summary>Best Practices for Keys</summary>
+                <ul>
+                    <li>Use a stable, unique identifier from your data (e.g., <code>id</code> from database)</li>
+                    <li>If no ID exists, consider generating a UUID</li>
+                    <li>Avoid using index as key unless the list never changes order</li>
+                    <li>Keys must be unique only among siblings, not globally</li>
+                </ul>
+                
+                <div class="code-block">
+                    <code>
+{`// GOOD - using unique IDs
+const items = [
+  { id: 'abc123', name: 'Apple' },
+  { id: 'def456', name: 'Banana' }
+];
+
+{items.map(item =&gt; (
+  &lt;li key={item.id}&gt;{item.name}&lt;/li&gt;
+))}
+
+// Also good - using unique strings
+const colors = ['red', 'blue', 'green'];
+{colors.map(color =&gt; (
+  &lt;li key={color}&gt;{color}&lt;/li&gt;
+))}`}
+                    </code>
+                </div>
+            </details>
+        </div>
+
+        <div id="section-5-6">
+            <h2><span class="section-marker">5.6</span> Fragments</h2>
+            <details>
+                <summary>What Are Fragments?</summary>
+                <p>Fragments let you group a list of children without adding extra nodes to the DOM. This is crucial when you need to return multiple elements from a component but don't want to wrap them in a div.</p>
+            </details>
+
+            <details>
+                <summary>Syntax Options</summary>
+                <p>Two ways to use fragments:</p>
+                
+                <div class="code-block">
+                    <code>
+{`// Option 1: Short syntax (recommended)
+function Row() {
+  return (
+    &lt;&gt;
+      &lt;td&gt;Cell 1&lt;/td&gt;
+      &lt;td&gt;Cell 2&lt;/td&gt;
+    &lt;&gt;
+  );
+}
+
+// Option 2: Full syntax
+function Row() {
+  return (
+    &lt;React.Fragment&gt;
+      &lt;td&gt;Cell 1&lt;/td&gt;
+      &lt;td&gt;Cell 2&lt;/td&gt;
+    &lt;/React.Fragment&gt;
+  );
+}`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Why Use Fragments?</summary>
+                <p>Without fragments, you might be tempted to wrap elements in a div:</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ❌ Avoid this - unnecessary div wrapper
+function TableRows() {
+  return (
+    &lt;div&gt; // Extra DOM node
+      &lt;tr&gt;&lt;td&gt;A&lt;/td&gt;&lt;/tr&gt;
+      &lt;tr&gt;&lt;td&gt;B&lt;/td&gt;&lt;/tr&gt;
+    &lt;/div&gt;
+  );
+}
+
+// ✅ Better - no extra wrapper
+function TableRows() {
+  return (
+    &lt;&gt;
+      &lt;tr&gt;&lt;td&gt;A&lt;/td&gt;&lt;/tr&gt;
+      &lt;tr&gt;&lt;td&gt;B&lt;/td&gt;&lt;/tr&gt;
+    &lt;&gt;
+  );
+}`}
+                    </code>
+                </div>
+                
+                <div class="note">
+                    <strong>Performance Benefit:</strong> Fragments reduce DOM tree size and prevent layout issues caused by extra wrappers (especially important in tables, lists, and flexbox layouts).
+                </div>
+            </details>
+
+            <details>
+                <summary>Fragment with Key</summary>
+                <p>If you're rendering a list of fragments, you need to use the full syntax to assign keys.</p>
+                
+                <div class="code-block">
+                    <code>
+{`function ListItem({ id, title, description }) {
+  return (
+    &lt;React.Fragment key={id}&gt;
+      &lt;h3&gt;{title}&lt;/h3&gt;
+      &lt;p&gt;{description}&lt;/p&gt;
+    &lt;/React.Fragment&gt;
+  );
+}
+
+// Used in a list
+{items.map(item =&gt; (
+  &lt;ListItem key={item.id} {...item} /&gt;
+))}`}
+                    </code>
+                </div>
+            </details>
+        </div>
+
+        <div id="section-5-7">
+            <h2><span class="section-marker">5.7</span> JSX vs createElement()</h2>
+            <details>
+                <summary>Under the Hood</summary>
+                <p>JSX is syntactic sugar. Every JSX element compiles to a call to <code>React.createElement()</code>. Understanding this helps debug and optimize your code.</p>
+            </details>
+
+            <details>
+                <summary>JSX → createElement() Conversion</summary>
+                <p>Let's convert some JSX to its equivalent <code>createElement()</code> form:</p>
+                
+                <div class="code-block">
+                    <code>
+{`// JSX
+const element = &lt;h1 className="title" id="header"&gt;
+  Hello {name}
+&lt;/h1&gt;;
+
+// Equivalent createElement()
+const element = React.createElement(
+  'h1',
+  { className: 'title', id: 'header' },
+  'Hello ', name
+);`}
+                    </code>
+                </div>
+                
+                <p>Structure: <code>React.createElement(type, props, ...children)</code></p>
+                <ul>
+                    <li><strong>type</strong>: String (like 'div') or Component (like MyButton)</li>
+                    <li><strong>props</strong>: Object containing attributes</li>
+                    <li><strong>children</strong>: Strings, numbers, or other elements</li>
+                </ul>
+            </details>
+
+            <details>
+                <summary>Complex Example</summary>
+                <p>Here's a deeper example with nested elements and props:</p>
+                
+                <div class="code-block">
+                    <code>
+{`// JSX
+const button = (
+  &lt;Button 
+    variant="primary" 
+    onClick={handleClick}
+    disabled={isLoading}
+  &gt;
+    &lt;Icon name="save" /&gt;
+    Save Changes
+  &lt;/Button&gt;
+);
+
+// Equivalent createElement()
+const button = React.createElement(
+  Button,
+  {
+    variant: "primary",
+    onClick: handleClick,
+    disabled: isLoading
+  },
+  React.createElement(Icon, { name: "save" }),
+  "Save Changes"
+);`}
+                    </code>
+                </div>
+                
+                <div class="note">
+                    <strong>Insight:</strong> This reveals why React is so flexible — you could theoretically write apps without JSX entirely! But JSX is much more readable.
+                </div>
+            </details>
+
+            <details>
+                <summary>When to Use createElement()</summary>
+                <ul>
+                    <li>Dynamic component creation where type is determined at runtime</li>
+                    <li>Building UI libraries or tools that generate components programmatically</li>
+                    <li>Debugging React internals</li>
+                    <li>Server-side rendering optimizations</li>
+                </ul>
+                
+                <div class="warning">
+                    <strong>Don't use createElement() for everyday development.</strong> JSX is cleaner, safer, and better supported by tooling (IDEs, linters, etc.).
+                </div>
+            </details>
+        </div>
+
+        <div id="section-5-8">
+            <h2><span class="section-marker">5.8</span> Common JSX Gotchas</h2>
+            <details>
+                <summary>Gotcha #1: Self-Closing Tags</summary>
+                <p>Only void elements (like <code>img</code>, <code>input</code>) can be self-closed. Custom components must always be closed.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ✅ Correct
+&lt;img src="photo.jpg" alt="Portrait" /&gt;
+&lt;MyComponent /&gt; // Custom component
+
+// ❌ Wrong
+&lt;MyComponent&gt; // Missing closing tag
+&lt;div /&gt; // OK, but unnecessary - div isn't void
+&lt;h1 /&gt; // ❌ Invalid! h1 is not a void element`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Gotcha #2: Class vs ClassName</summary>
+                <p>React uses <code>className</code> instead of <code>class</code> because <code>class</code> is a reserved keyword in JavaScript.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ❌ Will cause error
+&lt;div class="container"&gt;...&lt;/div&gt;
+
+// ✅ Correct
+&lt;div className="container"&gt;...&lt;/div&gt;
+
+// Also correct with dynamic class
+&lt;div className={isActive ? 'active' : 'inactive'}&gt;...&lt;/div&gt;`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Gotcha #3: JSX Comments</summary>
+                <p>HTML comments won't work. Use JavaScript comment syntax wrapped in braces.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ❌ Won't work
+&lt;div&gt;
+  &lt;!-- This won't render as a comment --&gt;
+  &lt;p&gt;Hello&lt;/p&gt;
+&lt;/div&gt;
+
+// ✅ Correct
+&lt;div&gt;
+  {/** This is a JSX comment */}
+  &lt;p&gt;Hello&lt;/p&gt;
+&lt;/div&gt;
+
+// Or inline
+&lt;p&gt;{/* Comment here */} Welcome&lt;/p&gt;`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Gotcha #4: Boolean Prop Misunderstanding</summary>
+                <p>Be careful with boolean props — omitting them means false, including them means true.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ✅ All equivalent
+&lt;Modal isOpen={true} /&gt;
+&lt;Modal isOpen /&gt;
+
+// ❌ This is WRONG
+&lt;Modal isOpen={false} /&gt; // Explicitly sets to false
+&lt;Modal /&gt; // isOpen defaults to undefined, which is falsy
+
+// ⚠️ Be explicit if default matters
+function Modal({ isOpen = false }) {
+  return isOpen ? &lt;div&gt;Modal Content&lt;/div&gt; : null;
+}`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Gotcha #5: Returning Multiple Roots Without Fragment</summary>
+                <p>Components must return a single root element.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ❌ INVALID - multiple top-level elements
+function Header() {
+  return (
+    &lt;h1&gt;Title&lt;/h1&gt;
+    &lt;p&gt;Subtitle&lt;/p&gt; // Error: Adjacent JSX elements must be wrapped in an enclosing tag
+  );
+}
+
+// ✅ FIXES
+// Option 1: Wrap in div
+return &lt;div&gt;&lt;h1&gt;Title&lt;/h1&gt;&lt;p&gt;Subtitle&lt;/p&gt;&lt;/div&gt;;
+
+// Option 2: Use fragment (BEST)
+return (
+  &lt;&gt;
+    &lt;h1&gt;Title&lt;/h1&gt;
+    &lt;p&gt;Subtitle&lt;/p&gt;
+  &lt;&gt;
+);`}
+                    </code>
+                </div>
+            </details>
+
+            <details>
+                <summary>Gotcha #6: Event Handlers</summary>
+                <p>Always pass a function reference, not the result of calling a function.</p>
+                
+                <div class="code-block">
+                    <code>
+{`// ❌ Wrong - executes immediately on render
+&lt;button onClick={handleClick()}&gt;Click me&lt;/button&gt;
+
+// ✅ Correct - passes function reference
+&lt;button onClick={handleClick}&gt;Click me&lt;/button&gt;
+
+// ✅ With parameters
+&lt;button onClick={() =&gt; handleClick(id)}&gt;Delete&lt;/button&gt;`}
+                    </code>
+                </div>
+                
+                <div class="note">
+                    <strong>Why?</strong> <code>onClick={handleClick()}</code> calls the function during render, not on click. You're assigning the <em>return value</em> of the function, not the function itself.
+                </div>
+            </details>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Expand/Collapse All Controls
+        document.getElementById('expandAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.setAttribute('open', '');
+            });
+        });
+
+        document.getElementById('collapseAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.removeAttribute('open');
+            });
+        });
+
+        // Search functionality for TOC
+        document.getElementById('searchToc').addEventListener('input', function(e) {
+            const query = e.target.value.toLowerCase();
+            const tocItems = document.querySelectorAll('.toc-item');
+            
+            tocItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(query)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        // Smooth scrolling for TOC navigation
+        document.querySelectorAll('.toc-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const targetId = this.getAttribute('data-target');
+                const targetElement = document.getElementById(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Highlight active item
+                    document.querySelectorAll('.toc-item').forEach(el => el.classList.remove('active'));
+                    this.classList.add('active');
+                }
+            });
+        });
+
+        // Highlight code snippets with simple syntax highlighting
+        document.querySelectorAll('pre code').forEach(block => {
+            // Simple syntax highlighting for JSX
+            const content = block.textContent;
+            
+            // Highlight JSX tags
+            let highlighted = content
+                .replace(/(&lt;\/?)([a-zA-Z][a-zA-Z0-9]*)(&gt;)/g, '$1<span class="jsx-tag">$2</span>$3')
+                .replace(/([a-zA-Z]+)=/g, '<span class="jsx-attr">$1</span>=')
+                .replace(/=["'][^"']*["']/g, match => `<span class="jsx-value">${match}</span>`)
+                .replace(/(true|false|null|undefined)/g, '<span class="keyword">$1</span>')
+                .replace(/\/\/.*$/gm, match => `<span class="comment">${match}</span>`);
+            
+            block.innerHTML = highlighted;
+        });
+
+        // Initialize first section as active
+        document.querySelector('.toc-item').classList.add('active');
+
+        // Add smooth scroll to all anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

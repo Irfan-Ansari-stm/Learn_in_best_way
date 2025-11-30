@@ -1,0 +1,2217 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Module 4: HTTP Requests and API Integration - Chapter 15</title>
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0a192f;
+      --cyan: #00f5ff;
+      --amber: #ffb347;
+      --text-light: #e6f1ff;
+      --border-light: #1a3b5c;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-light);
+      font-family: 'Roboto', sans-serif;
+      overflow-x: hidden;
+    }
+
+    .left-panel {
+      position: fixed;
+      width: 300px;
+      height: 100vh;
+      overflow-y: auto;
+      padding: 20px;
+      background-color: rgba(10, 25, 47, 0.9);
+      border-right: 1px solid var(--border-light);
+      z-index: 1000;
+    }
+
+    .right-panel {
+      margin-left: 300px;
+      padding: 30px;
+      height: 100vh;
+      overflow-y: auto;
+      background-color: var(--bg-dark);
+    }
+
+    h1, h2, h3, h4 {
+      color: var(--cyan);
+      font-weight: 600;
+    }
+
+    h1 {
+      border-bottom: 2px solid var(--amber);
+      padding-bottom: 10px;
+      margin-bottom: 25px;
+    }
+
+    h2 {
+      margin-top: 40px;
+      border-left: 4px solid var(--amber);
+      padding-left: 15px;
+    }
+
+    h3 {
+      color: var(--amber);
+      margin-top: 30px;
+    }
+
+    .toc-item {
+      margin: 8px 0;
+      padding: 6px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .toc-item:hover {
+      background-color: rgba(0, 245, 255, 0.1);
+    }
+
+    .toc-item.active {
+      background-color: rgba(0, 245, 255, 0.2);
+      border-left: 3px solid var(--cyan);
+    }
+
+    .search-box {
+      margin-bottom: 20px;
+      background-color: rgba(26, 59, 92, 0.5);
+      border: 1px solid var(--border-light);
+      color: var(--text-light);
+    }
+
+    .btn-control {
+      background-color: rgba(10, 25, 47, 0.7);
+      border: 1px solid var(--border-light);
+      color: var(--cyan);
+      margin-bottom: 15px;
+      font-size: 0.9rem;
+    }
+
+    .btn-control:hover {
+      background-color: rgba(0, 245, 255, 0.2);
+      color: var(--cyan);
+    }
+
+    details {
+      margin: 15px 0;
+      border-left: 1px solid var(--border-light);
+      padding-left: 15px;
+      background-color: rgba(10, 25, 47, 0.4);
+      border-radius: 0 5px 5px 0;
+    }
+
+    summary {
+      list-style: none;
+      cursor: pointer;
+      font-weight: bold;
+      color: var(--amber);
+      padding: 10px 15px;
+      background-color: rgba(0, 245, 255, 0.05);
+      border-radius: 5px;
+      margin-bottom: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    summary::before {
+      content: "▶ ";
+      font-size: 0.8em;
+    }
+
+    details[open] > summary::before {
+      content: "▼ ";
+    }
+
+    pre {
+      background-color: #0d1b2a !important;
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 15px;
+      overflow-x: auto;
+      margin: 15px 0;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    }
+
+    code {
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.95rem;
+      color: var(--cyan);
+    }
+
+    .highlight {
+      color: var(--amber);
+      font-weight: bold;
+    }
+
+    .note {
+      background-color: rgba(255, 179, 71, 0.1);
+      border-left: 3px solid var(--amber);
+      padding: 12px 15px;
+      margin: 20px 0;
+      border-radius: 0 5px 5px 0;
+    }
+
+    .syntax {
+      background-color: rgba(0, 245, 255, 0.08);
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-weight: 500;
+      display: inline-block;
+      margin: 0 3px;
+    }
+
+    .author-info {
+      color: var(--amber);
+      font-style: italic;
+      margin-top: 10px;
+      font-size: 0.9rem;
+    }
+
+    .footer-note {
+      margin-top: 60px;
+      text-align: center;
+      color: var(--amber);
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border-light);
+      padding-top: 15px;
+    }
+
+    /* Smooth scrolling */
+    html {
+      scroll-behavior: smooth;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 991px) {
+      .left-panel {
+        width: 100%;
+        position: relative;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border-light);
+      }
+      .right-panel {
+        margin-left: 0;
+      }
+    }
+
+    /* Demo styling for API examples */
+    .api-demo {
+      background-color: rgba(13, 27, 42, 0.6);
+      border: 1px dashed var(--border-light);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .loading-state {
+      text-align: center;
+      padding: 40px;
+      color: var(--cyan);
+      font-style: italic;
+    }
+
+    .error-state {
+      background-color: rgba(255, 71, 87, 0.1);
+      border: 1px solid #ff4757;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 15px 0;
+      color: #ff4757;
+    }
+
+    .success-state {
+      background-color: rgba(0, 204, 136, 0.1);
+      border: 1px solid #00cc88;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 15px 0;
+      color: #00cc88;
+    }
+
+    .fetch-btn {
+      background-color: var(--cyan);
+      color: #000;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .fetch-btn:hover {
+      background-color: #00c0e6;
+      transform: translateY(-2px);
+    }
+
+    .axios-btn {
+      background-color: #5b21b6;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .axios-btn:hover {
+      background-color: #4a1a99;
+      transform: translateY(-2px);
+    }
+
+    .pattern-card {
+      background-color: rgba(13, 27, 42, 0.6);
+      border: 1px dashed var(--border-light);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .pattern-badge {
+      display: inline-block;
+      background-color: var(--amber);
+      color: #000;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      margin-left: 8px;
+    }
+
+    .comparison-table th, .comparison-table td {
+      border: 1px solid var(--border-light);
+      padding: 10px;
+    }
+
+    .comparison-table th {
+      background-color: rgba(0, 245, 255, 0.1);
+    }
+
+    .comparison-table tr:nth-child(even) {
+      background-color: rgba(26, 59, 92, 0.3);
+    }
+
+    .api-response {
+      background-color: rgba(10, 25, 47, 0.8);
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 15px;
+      margin: 15px 0;
+      font-family: 'Roboto Mono', monospace;
+      white-space: pre-wrap;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+
+    .use-effect-diagram {
+      background-color: rgba(13, 27, 42, 0.6);
+      padding: 20px;
+      border-radius: 8px;
+      margin: 20px 0;
+      font-family: 'Roboto Mono', monospace;
+      line-height: 1.6;
+    }
+
+    .dependency-badge {
+      background-color: rgba(0, 245, 255, 0.2);
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      margin: 0 3px;
+    }
+
+    .react-query-demo {
+      background-color: rgba(13, 27, 42, 0.6);
+      border: 1px dashed var(--border-light);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .swr-demo {
+      background-color: rgba(13, 27, 42, 0.6);
+      border: 1px dashed var(--border-light);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .apollo-demo {
+      background-color: rgba(13, 27, 42, 0.6);
+      border: 1px dashed var(--border-light);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .caching-demo {
+      background-color: rgba(13, 27, 42, 0.6);
+      border: 1px dashed var(--border-light);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .cache-badge {
+      display: inline-block;
+      background-color: var(--amber);
+      color: #000;
+      padding: 3px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      margin-left: 8px;
+    }
+
+    .graphql-code {
+      background-color: rgba(0, 245, 255, 0.05);
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      border-left: 3px solid var(--cyan);
+    }
+
+    .cache-strategy {
+      margin: 15px 0;
+      padding: 15px;
+      border-left: 3px solid var(--amber);
+      background-color: rgba(255, 179, 71, 0.1);
+      border-radius: 0 5px 5px 0;
+    }
+
+    .stale-while-revalidate {
+      background-color: rgba(0, 245, 255, 0.1);
+      border-left: 3px solid var(--cyan);
+      padding: 15px;
+      border-radius: 0 5px 5px 0;
+      margin: 15px 0;
+    }
+
+    .query-key {
+      background-color: rgba(0, 245, 255, 0.1);
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-family: 'Roboto Mono', monospace;
+      font-size: 0.9rem;
+    }
+
+    .mutation-example {
+      background-color: rgba(255, 179, 71, 0.1);
+      border: 1px solid var(--amber);
+      border-radius: 8px;
+      padding: 15px;
+      margin: 15px 0;
+    }
+
+    .optimistic-update {
+      background-color: rgba(0, 204, 136, 0.1);
+      border: 1px solid #00cc88;
+      border-radius: 8px;
+      padding: 15px;
+      margin: 15px 0;
+    }
+
+    .infinite-scroll {
+      background-color: rgba(13, 27, 42, 0.6);
+      border: 1px dashed var(--border-light);
+      border-radius: 8px;
+      padding: 20px;
+      margin: 20px 0;
+    }
+
+    .pagination {
+      display: flex;
+      gap: 10px;
+      margin: 20px 0;
+    }
+
+    .pagination button {
+      padding: 8px 16px;
+      background-color: rgba(0, 245, 255, 0.1);
+      border: 1px solid var(--border-light);
+      color: var(--cyan);
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    .pagination button.active {
+      background-color: var(--amber);
+      color: #000;
+    }
+
+    .cache-hierarchy {
+      margin: 20px 0;
+      padding: 20px;
+      border: 1px dashed var(--border-light);
+      border-radius: 8px;
+    }
+
+    .cache-level {
+      margin: 10px 0;
+      padding: 10px;
+      border-left: 3px solid var(--amber);
+      background-color: rgba(255, 179, 71, 0.1);
+      border-radius: 0 5px 5px 0;
+    }
+
+    .cache-level strong {
+      color: var(--amber);
+    }
+
+    .cache-type {
+      display: inline-block;
+      background-color: var(--amber);
+      color: #000;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      margin-left: 8px;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container-fluid p-0">
+  <div class="row g-0">
+
+    <!-- Left Panel -->
+    <div class="col-md-3 left-panel">
+      <h1>Module 4</h1>
+      <h4>HTTP Requests and API Integration</h4>
+      <p class="author-info">— Mastering Data Fetching with Clarity & Depth —</p>
+
+      <input type="text" class="form-control search-box" id="searchTOC" placeholder="Search topics..." />
+
+      <div class="d-grid gap-2">
+        <button class="btn btn-control" id="expandAll">Expand All</button>
+        <button class="btn btn-control" id="collapseAll">Collapse All</button>
+      </div>
+
+      <div class="toc">
+        <h5>Table of Contents</h5>
+        <div class="toc-item" data-target="#section-15-5">15.5 React Query / TanStack Query</div>
+        <div class="toc-item" data-target="#section-15-6">15.6 SWR (Stale-While-Revalidate)</div>
+        <div class="toc-item" data-target="#section-15-7">15.7 GraphQL with Apollo Client</div>
+        <div class="toc-item" data-target="#section-15-8">15.8 Caching Strategies</div>
+      </div>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="col-md-9 right-panel">
+
+      <!-- Section 15.5 -->
+      <section id="section-15-5">
+        <h2>15.5 React Query / TanStack Query</h2>
+        
+        <details>
+          <summary>📌 Summary: The Modern Standard for Data Fetching</summary>
+          <p>React Query (now called TanStack Query) is the industry-standard library for managing server state in React applications. It handles caching, background updates, pagination, mutations, and more out of the box.</p>
+          
+          <h3>🔹 Core Concepts</h3>
+          <ul>
+            <li><strong>Query:</strong> Fetches data from a server</li>
+            <li><strong>Mutation:</strong> Updates data on the server</li>
+            <li><strong>Cache:</strong> Stores query results automatically</li>
+            <li><strong>Query Keys:</strong> Unique identifiers for cached data</li>
+            <li><strong>Stale Time:</strong> How long data is considered fresh</li>
+            <li><strong>Refetching:</strong> Automatic background updates</li>
+          </ul>
+
+          <h3>⚡ Installation</h3>
+          <pre><code>
+npm install @tanstack/react-query
+
+# Or with yarn
+yarn add @tanstack/react-query
+          </code></pre>
+
+          <h3>⚡ Basic Setup</h3>
+          <pre><code>
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+// Create client
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      cacheTime: 10 * 60 * 1000, // 10 minutes
+      retry: 3,
+    },
+  },
+});
+
+// Wrap your app
+function App() {
+  return (
+    &lt;QueryClientProvider client={queryClient}&gt;
+      &lt;AppContent /&gt;
+    &lt;/QueryClientProvider&gt;
+  );
+}
+          </code></pre>
+
+          <h3>🔥 Real-World Example: User Profile with React Query</h3>
+          <pre><code>
+import { useQuery } from '@tanstack/react-query';
+import axios from 'axios';
+
+// Define query key and fetch function
+const fetchUser = async (userId) =&gt; {
+  const response = await axios.get(\`/api/users/\${userId}\`);
+  return response.data;
+};
+
+function UserProfile({ userId }) {
+  // Use the useQuery hook
+  const { data: user, isLoading, error } = useQuery({
+    queryKey: ['user', userId], // Unique identifier for this query
+    queryFn: () =&gt; fetchUser(userId), // Function to fetch data
+    enabled: !!userId, // Only run if userId exists
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  if (isLoading) return &lt;div className="loading-state"&gt;Loading profile...&lt;/div&gt;;
+  if (error) return &lt;div className="error-state"&gt;Error: {error.message}&lt;/div&gt;;
+
+  return (
+    &lt;div className="success-state"&gt;
+      &lt;h2&gt;{user.name}&lt;/h2&gt;
+      &lt;p&gt;Email: {user.email}&lt;/p&gt;
+      &lt;p&gt;Joined: {new Date(user.joinedAt).toLocaleDateString()}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+
+// Usage
+function App() {
+  return (
+    &lt;div&gt;
+      &lt;UserProfile userId="123" /&gt;
+      &lt;UserProfile userId="456" /&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>💡 Why This Is Revolutionary</h3>
+          <table class="table table-dark table-sm mt-3">
+            <thead>
+              <tr><th>Feature</th><th>Traditional useEffect</th><th>React Query</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Automatic Caching</td><td>❌ Manual implementation</td><td>✅ Built-in</td></tr>
+              <tr><td>Background Refetching</td><td>❌ Manual implementation</td><td>✅ Window focus refetch</td></tr>
+              <tr><td>Stale-While-Revalidate</td><td>❌ Manual implementation</td><td>✅ Built-in</td></tr>
+              <tr><td>Pagination Support</td><td>❌ Complex manual code</td><td>✅ Built-in infinite scroll</td></tr>
+              <tr><td>Query Keys</td><td>❌ No standard</td><td>✅ Array-based unique keys</td></tr>
+              <tr><td>Network Status Detection</td><td>❌ Manual</td><td>✅ Automatic online/offline</td></tr>
+              <tr><td>Optimistic Updates</td><td>❌ Manual</td><td>✅ Built-in mutation support</td></tr>
+              <tr><td>Developer Tools</td><td>❌ Limited</td><td>✅ React DevTools extension</td></tr>
+              <tr><td>Code Complexity</td><td>High</td><td>Low</td></tr>
+            </tbody>
+          </table>
+
+          <div class="note">
+            <strong>🧠 Mental Model:</strong> Think of React Query as a smart cache layer between your components and API. It remembers what you've fetched, knows when to refresh it, and does it automatically.
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Deep Dive: Query Keys and Cache Invalidation</summary>
+          <p>Query keys are the heart of React Query's caching system. They determine when data is reused versus refetched.</p>
+
+          <h3>⚡ Query Key Patterns</h3>
+          <pre><code>
+// ✅ GOOD: Array-based keys with dynamic values
+useQuery(['user', 123], fetchUser)
+useQuery(['posts', 'featured'], fetchFeaturedPosts)
+useQuery(['posts', 'by-user', 123], fetchUserPosts)
+
+// ❌ BAD: String keys that don't reflect dependencies
+useQuery('user', fetchUser) // Can't distinguish between users
+useQuery('posts', fetchPosts) // Can't distinguish between categories
+
+// ✅ GOOD: Complex nested objects
+useQuery(['product', { id: 123, category: 'electronics' }], fetchProduct)
+
+// ✅ GOOD: Functions for complex keys
+const getUserId = () =&gt; localStorage.getItem('userId');
+useQuery(['user', getUserId()], fetchUser)
+          </code></pre>
+
+          <h3>🔥 Cache Invalidation Examples</h3>
+          <pre><code>
+import { useQueryClient } from '@tanstack/react-query';
+
+function PostList() {
+  const queryClient = useQueryClient();
+
+  const createPost = async (postData) =&gt; {
+    const response = await axios.post('/api/posts', postData);
+    
+    // Invalidate related queries to force refetch
+    queryClient.invalidateQueries(['posts']); // Refetch all posts
+    queryClient.invalidateQueries(['user', 123]); // Refetch user profile
+    
+    return response.data;
+  };
+
+  const deletePost = async (postId) =&gt; {
+    await axios.delete(\`/api/posts/\${postId}\`);
+    
+    // Invalidate specific post and all posts
+    queryClient.invalidateQueries(['post', postId]);
+    queryClient.invalidateQueries(['posts']);
+  };
+
+  return (
+    &lt;div&gt;
+      &lt;button onClick={() =&gt; createPost({ title: 'New Post' })}&gt;Create Post&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>📊 Advanced Configuration Options</h3>
+          <pre><code>
+const { data, isLoading, error } = useQuery({
+  queryKey: ['user', userId],
+  queryFn: fetchUser,
+  
+  // When to consider data stale (default: 5 minutes)
+  staleTime: 5 * 60 * 1000,
+  
+  // How long to keep data in cache after becoming stale (default: 5 minutes)
+  cacheTime: 10 * 60 * 1000,
+  
+  // Number of times to retry on failure (default: 3)
+  retry: 3,
+  
+  // Delay between retries (default: 1000ms)
+  retryDelay: 1000,
+  
+  // Whether to fetch on mount (default: true)
+  enabled: true,
+  
+  // Whether to refetch when window regains focus (default: true)
+  refetchOnWindowFocus: true,
+  
+  // Whether to refetch when network reconnects (default: true)
+  refetchOnReconnect: true,
+  
+  // Whether to refetch when component mounts (default: false)
+  refetchOnMount: false,
+  
+  // Whether to refetch when query key changes (default: true)
+  refetchOnRevalidate: true,
+  
+  // What to do when an error occurs
+  onError: (error) =&gt; console.error('Query failed:', error),
+  
+  // What to do when data is successfully loaded
+  onSuccess: (data) =&gt; console.log('Query succeeded:', data),
+});
+          </code></pre>
+
+          <div class="react-query-demo">
+            <h4>✅ Live Demo: React Query in Action</h4>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+              <button class="fetch-btn">Load User 1</button>
+              <button class="fetch-btn">Load User 2</button>
+              <button class="fetch-btn">Load Posts</button>
+            </div>
+            <div class="component-preview">
+              <p>Click buttons above to see how React Query caches and reuses data!</p>
+            </div>
+          </div>
+        </details>
+
+        <details>
+          <summary>⚙️ Advanced: Mutations and Optimistic Updates</summary>
+          <p>Mutations handle data modifications (POST, PUT, DELETE) with built-in optimistic updates.</p>
+
+          <h3>⚡ Mutation Syntax</h3>
+          <pre><code>
+import { useMutation } from '@tanstack/react-query';
+import axios from 'axios';
+
+const updateProfile = async (userData) =&gt; {
+  const response = await axios.put('/api/user', userData);
+  return response.data;
+};
+
+function UserProfile({ userId }) {
+  const mutation = useMutation({
+    mutationFn: updateProfile,
+    onSuccess: (data, variables, context) =&gt; {
+      // Optional: Update cache manually
+      queryClient.setQueryData(['user', userId], data);
+    },
+    onError: (error, variables, context) =&gt; {
+      // Optional: Rollback cache
+      queryClient.setQueryData(['user', userId], context.previousUser);
+    },
+  });
+
+  const handleSubmit = (e) =&gt; {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    mutation.mutate({
+      name: formData.get('name'),
+      email: formData.get('email'),
+    });
+  };
+
+  return (
+    &lt;form onSubmit={handleSubmit}&gt;
+      &lt;input name="name" placeholder="Name" /&gt;
+      &lt;input name="email" placeholder="Email" /&gt;
+      
+      &lt;!-- Show loading state during mutation --&gt;
+      {mutation.isPending ? (
+        &lt;span&gt;Updating...&lt;/span&gt;
+      ) : (
+        &lt;button type="submit"&gt;Update Profile&lt;/button&gt;
+      )}
+      
+      &lt;!-- Show error message --&gt;
+      {mutation.isError &amp;&amp; (
+        &lt;div className="error-state"&gt;
+          Error: {mutation.error.message}
+        &lt;/div&gt;
+      )}
+      
+      &lt;!-- Show success message --&gt;
+      {mutation.isSuccess &amp;&amp; (
+        &lt;div className="success-state"&gt;
+          Profile updated successfully!
+        &lt;/div&gt;
+      )}
+    &lt;/form&gt;
+  );
+}
+          </code></pre>
+
+          <h3>🔥 Optimistic Updates with Mutations</h3>
+          <pre><code>
+function PostList() {
+  const queryClient = useQueryClient();
+
+  const createPost = useMutation({
+    mutationFn: (postData) =&gt; axios.post('/api/posts', postData),
+    
+    // Optimistic update: Immediately update UI
+    onMutate: async (newPost) =&gt; {
+      // Cancel any outgoing refetches
+      await queryClient.cancelQueries(['posts']);
+      
+      // Snapshot previous value
+      const previousPosts = queryClient.getQueryData(['posts']);
+      
+      // Optimistically update cache
+      queryClient.setQueryData(['posts'], (old) =&gt; [
+        { id: Date.now(), ...newPost, createdAt: new Date().toISOString() },
+        ...(old || [])
+      ]);
+      
+      // Return context with previous value
+      return { previousPosts };
+    },
+    
+    // On error, rollback
+    onError: (err, newPost, context) =&gt; {
+      queryClient.setQueryData(['posts'], context.previousPosts);
+    },
+    
+    // Always refetch after mutation
+    onSuccess: () =&gt; {
+      queryClient.invalidateQueries(['posts']);
+    },
+  });
+
+  const handleCreate = () =&gt; {
+    createPost.mutate({
+      title: 'New Post',
+      content: 'This is my new post'
+    });
+  };
+
+  return (
+    &lt;div&gt;
+      &lt;button onClick={handleCreate}&gt;Create Post&lt;/button&gt;
+      
+      &lt;!-- Posts will show immediately thanks to optimistic update --&gt;
+      &lt;PostItems /&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <div class="optimistic-update">
+            <h4>🎯 Why Optimistic Updates Matter</h4>
+            <p>Without optimistic updates: User clicks → Loading spinner → API call → Success → UI updates</p>
+            <p>With optimistic updates: User clicks → UI updates immediately → API call → If fails, roll back</p>
+            
+            <p>This creates a seamless, app-like experience where users feel immediate feedback.</p>
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Advanced: Infinite Scroll and Pagination</summary>
+          <p>React Query makes pagination and infinite scroll incredibly simple.</p>
+
+          <h3>⚡ Infinite Scroll Implementation</h3>
+          <pre><code>
+import { useInfiniteQuery } from '@tanstack/react-query';
+
+const fetchPosts = async ({ pageParam = 1 }) =&gt; {
+  const response = await axios.get('/api/posts', {
+    params: { page: pageParam, limit: 10 }
+  });
+  return response.data;
+};
+
+function PostList() {
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteQuery({
+    queryKey: ['posts'],
+    queryFn: fetchPosts,
+    getNextPageParam: (lastPage, pages) =&gt; {
+      // Return next page number if there are more results
+      return lastPage.length === 10 ? pages.length + 1 : undefined;
+    },
+  });
+
+  return (
+    &lt;div&gt;
+      {data?.pages.map((page, pageIndex) =&gt; (
+        &lt;div key={pageIndex}&gt;
+          {page.map(post =&gt; (
+            &lt;PostItem key={post.id} post={post} /&gt;
+          ))}
+        &lt;/div&gt;
+      ))}
+
+      &lt;!-- Load more button --&gt;
+      {hasNextPage &amp;&amp; (
+        &lt;button 
+          onClick={() =&gt; fetchNextPage()} 
+          disabled={isFetchingNextPage}
+        &gt;
+          {isFetchingNextPage ? 'Loading...' : 'Load More'}
+        &lt;/button&gt;
+      )}
+
+      &lt;!-- Auto-load on scroll --&gt;
+      &lt;div style={{ height: '100px' }}&gt;
+        &lt;!-- Empty div triggers scroll detection --&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>⚡ Pagination with Page Numbers</h3>
+          <pre><code>
+import { useQuery } from '@tanstack/react-query';
+
+function PostList() {
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['posts', currentPage],
+    queryFn: () =&gt; fetchPosts(currentPage),
+    keepPreviousData: true, // Keep previous page data while loading new one
+  });
+
+  const totalPages = data?.totalPages || 1;
+
+  return (
+    &lt;div&gt;
+      &lt;div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}&gt;
+        {Array.from({ length: totalPages }, (_, i) =&gt; i + 1).map(page =&gt; (
+          &lt;button
+            key={page}
+            onClick={() =&gt; setCurrentPage(page)}
+            className={currentPage === page ? 'active' : ''}
+          &gt;
+            {page}
+          &lt;/button&gt;
+        ))}
+      &lt;/div&gt;
+
+      {isLoading ? (
+        &lt;div className="loading-state"&gt;Loading posts...&lt;/div&gt;
+      ) : error ? (
+        &lt;div className="error-state"&gt;Error: {error.message}&lt;/div&gt;
+      ) : (
+        &lt;div&gt;
+          {data.posts.map(post =&gt; (
+            &lt;PostItem key={post.id} post={post} /&gt;
+          ))}
+        &lt;/div&gt;
+      )}
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <div class="infinite-scroll">
+            <h4>✅ Live Demo: Infinite Scroll</h4>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+              <button class="fetch-btn">Load First Page</button>
+              <button class="fetch-btn">Load Next Page</button>
+            </div>
+            <div class="component-preview">
+              <p>Scroll down or click "Load Next Page" to see infinite scrolling in action!</p>
+            </div>
+          </div>
+        </details>
+
+        <details>
+          <summary>⚙️ Deep Dive: Query Client and Global Configuration</summary>
+          <p>React Query's power comes from its centralized QueryClient that manages all queries globally.</p>
+
+          <h3>⚡ QueryClient Configuration</h3>
+          <pre><code>
+import { QueryClient } from '@tanstack/react-query';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Default options for all queries
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      cacheTime: 10 * 60 * 1000, // 10 minutes
+      retry: 3,
+      retryDelay: 1000,
+      refetchOnWindowFocus: true,
+      refetchOnReconnect: true,
+      refetchOnMount: false,
+      networkMode: 'online', // Only fetch when online
+    },
+    mutations: {
+      // Default options for all mutations
+      retry: 3,
+      retryDelay: 1000,
+    },
+  },
+  
+  // Custom cache behavior
+  cacheTime: 10 * 60 * 1000,
+  
+  // Disable devtools in production
+  logger: {
+    log: console.log,
+    warn: console.warn,
+    error: process.env.NODE_ENV === 'development' ? console.error : () =&gt; {},
+  },
+});
+          </code></pre>
+
+          <h3>🔥 Using useQueryClient Hook</h3>
+          <pre><code>
+import { useQueryClient } from '@tanstack/react-query';
+
+function PostForm() {
+  const queryClient = useQueryClient();
+
+  const createPost = async (postData) =&gt; {
+    const response = await axios.post('/api/posts', postData);
+    
+    // Invalidate queries that might be affected
+    queryClient.invalidateQueries(['posts']);
+    queryClient.invalidateQueries(['user', 123]);
+    
+    // Manually update cache
+    queryClient.setQueryData(['posts'], (old) =&gt; [
+      { id: response.data.id, ...response.data },
+      ...(old || [])
+    ]);
+    
+    return response.data;
+  };
+
+  return (
+    &lt;form onSubmit={(e) =&gt; {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+      createPost({
+        title: formData.get('title'),
+        content: formData.get('content')
+      });
+    }}&gt;
+      &lt;input name="title" placeholder="Title" /&gt;
+      &lt;textarea name="content" placeholder="Content" /&gt;
+      &lt;button type="submit"&gt;Create Post&lt;/button&gt;
+    &lt;/form&gt;
+  );
+}
+          </code></pre>
+
+          <h3>📊 Performance Optimization Tips</h3>
+          <ol>
+            <li><strong>Use query keys wisely:</strong> Include all relevant parameters</li>
+            <li><strong>Set appropriate staleTime:</strong> Longer for static data, shorter for dynamic</li>
+            <li><strong>Use keepPreviousData:</strong> For pagination to avoid flickering</li>
+            <li><strong>Use suspense:</strong> For better loading UX</li>
+            <li><strong>Use prefetchQuery:</strong> To load data before it's needed</li>
+          </ol>
+
+          <div class="note">
+            <strong>🌟 Pro Tip:</strong> React Query eliminates the need for most custom hooks and manual state management. Start with it for any non-trivial application.
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 15.6 -->
+      <section id="section-15-6">
+        <h2>15.6 SWR (Stale-While-Revalidate)</h2>
+        
+        <details>
+          <summary>📌 Summary: The Simpler Alternative to React Query</summary>
+          <p>SWR (Stale-While-Revalidate) is a lightweight React Hooks library for data fetching by Vercel. It implements the stale-while-revalidate caching strategy with minimal configuration.</p>
+
+          <h3>🔹 Core Philosophy: Stale-While-Revalidate</h3>
+          <p>SWR follows the HTTP caching strategy: "Serve stale data while revalidating in the background."</p>
+          <ol>
+            <li>Return cached data immediately (stale)</li>
+            <li>Fetch fresh data in the background (revalidate)</li>
+            <li>If fresh data arrives, update the UI</li>
+          </ol>
+
+          <h3>⚡ Installation</h3>
+          <pre><code>
+npm install swr
+
+# Or with yarn
+yarn add swr
+          </code></pre>
+
+          <h3>⚡ Basic Setup</h3>
+          <pre><code>
+import useSWR from 'swr';
+
+// Create fetcher function
+const fetcher = (...args) =&gt; fetch(...args).then(res =&gt; res.json());
+
+function UserProfile({ userId }) {
+  // Use the useSWR hook
+  const { data, error, isLoading } = useSWR(
+    \`/api/users/\${userId}\`, // Key (URL)
+    fetcher // Fetcher function
+  );
+
+  if (isLoading) return &lt;div className="loading-state"&gt;Loading...&lt;/div&gt;;
+  if (error) return &lt;div className="error-state"&gt;Error: {error.message}&lt;/div&gt;;
+
+  return (
+    &lt;div className="success-state"&gt;
+      &lt;h2&gt;{data.name}&lt;/h2&gt;
+      &lt;p&gt;Email: {data.email}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>💡 Why SWR Is Popular</h3>
+          <ul>
+            <li><strong>Extremely simple:</strong> One hook, minimal API</li>
+            <li><strong>Zero config:</strong> Works out of the box</li>
+            <li><strong>Small bundle:</strong> ~1KB</li>
+            <li><strong>Automatic refetching:</strong> On focus, reconnection, interval</li>
+            <li><strong>Real-time updates:</strong> Built-in polling</li>
+            <li><strong>Integrates well:</strong> Works with Axios, fetch, etc.</li>
+          </ul>
+
+          <h3>🔥 Real-World Example: Dashboard with Multiple Data Sources</h3>
+          <pre><code>
+import useSWR from 'swr';
+
+// Common fetcher
+const fetcher = (url) =&gt; fetch(url).then(r =&gt; r.json());
+
+function Dashboard() {
+  // Multiple independent data sources
+  const { data: user, error: userError } = useSWR('/api/user', fetcher);
+  const { data: posts, error: postsError } = useSWR('/api/posts', fetcher);
+  const { data: comments, error: commentsError } = useSWR('/api/comments', fetcher);
+  const { data: notifications, error: notificationsError } = useSWR('/api/notifications', fetcher);
+
+  // Handle loading states
+  if (!user || !posts || !comments || !notifications) {
+    return &lt;div className="loading-state"&gt;Loading dashboard...&lt;/div&gt;;
+  }
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;Welcome, {user.name}!&lt;/h2&gt;
+      
+      &lt;h3&gt;Recent Posts&lt;/h3&gt;
+      {posts.map(post =&gt; (
+        &lt;div key={post.id}&gt;{post.title}&lt;/div&gt;
+      ))}
+
+      &lt;h3&gt;Recent Comments&lt;/h3&gt;
+      {comments.map(comment =&gt; (
+        &lt;div key={comment.id}&gt;{comment.text}&lt;/div&gt;
+      ))}
+
+      &lt;h3&gt;Notifications&lt;/h3&gt;
+      {notifications.map(notification =&gt; (
+        &lt;div key={notification.id}&gt;{notification.message}&lt;/div&gt;
+      ))}
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>⚡ Advanced Features</h3>
+
+          <h4>1. Custom Revalidation Interval</h4>
+          <pre><code>
+// Revalidate every 10 seconds
+const { data } = useSWR('/api/data', fetcher, {
+  refreshInterval: 10000,
+});
+
+// Revalidate only when window is focused
+const { data } = useSWR('/api/data', fetcher, {
+  refreshWhenHidden: false,
+});
+
+// Never revalidate automatically
+const { data } = useSWR('/api/data', fetcher, {
+  refreshInterval: 0,
+});
+          </code></pre>
+
+          <h4>2. Suspense Mode</h4>
+          <pre><code>
+import { Suspense } from 'react';
+
+function UserProfile({ userId }) {
+  const { data } = useSWR(
+    \`/api/users/\${userId}\`,
+    fetcher,
+    { suspense: true } // Enable suspense mode
+  );
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;{data.name}&lt;/h2&gt;
+      &lt;p&gt;Email: {data.email}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+
+// Wrap with Suspense
+function App() {
+  return (
+    &lt;Suspense fallback={&lt;div className="loading-state"&gt;Loading...&lt;/div&gt;}&gt;
+      &lt;UserProfile userId="123" /&gt;
+    &lt;/Suspense&gt;
+  );
+}
+          </code></pre>
+
+          <h4>3. Mutations</h4>
+          <pre><code>
+import useSWR, { mutate } from 'swr';
+
+function PostList() {
+  const { data, error } = useSWR('/api/posts', fetcher);
+
+  const createPost = async (postData) =&gt; {
+    const response = await fetch('/api/posts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(postData),
+    });
+    
+    const result = await response.json();
+    
+    // Optimistic update: update cache immediately
+    mutate('/api/posts', [...(data || []), result], false);
+    
+    return result;
+  };
+
+  return (
+    &lt;div&gt;
+      {data?.map(post =&gt; (
+        &lt;PostItem key={post.id} post={post} /&gt;
+      ))}
+      
+      &lt;button onClick={() =&gt; createPost({ title: 'New Post' })}&gt;Create Post&lt;/button&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>🔥 SWR vs React Query Comparison</h3>
+          <table class="table table-dark comparison-table">
+            <thead>
+              <tr><th>Feature</th><th>SWR</th><th>React Query</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Bundle Size</td><td>~1KB</td><td>~4KB</td></tr>
+              <tr><td>Learning Curve</td><td>Very Easy</td><td>Medium</td></tr>
+              <tr><td>Configuration</td><td>Minimal</td><td>Comprehensive</td></tr>
+              <tr><td>Core Concept</td><td>Stale-while-revalidate</td><td>Cache-first with multiple strategies</td></tr>
+              <tr><td>Query Keys</td><td>Simple strings</td><td>Array-based with dependencies</td></tr>
+              <tr><td>Optimistic Updates</td><td>Manual</td><td>Built-in</td></tr>
+              <tr><td>Pagination</td><td>Manual</td><td>Built-in</td></tr>
+              <tr><td>Infinite Scroll</td><td>Manual</td><td>Built-in</td></tr>
+              <tr><td>DevTools</td><td>Basic</td><td>Excellent</td></tr>
+              <tr><td>Global Config</td><td>Yes</td><td>Yes</td></tr>
+              <tr><td>Server-Side Rendering</td><td>Yes</td><td>Yes</td></tr>
+              <tr><td>Best For</td><td>Simple apps, quick prototyping</td><td>Complex apps, enterprise projects</td></tr>
+            </tbody>
+          </table>
+
+          <div class="note">
+            <strong>🧠 Mental Model:</strong> SWR is like a smart browser cache. It shows you what it has immediately, then quietly checks for updates in the background without interrupting you.
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Deep Dive: SWR Internals and Stale-While-Revalidate</summary>
+          <p>SWR implements the stale-while-revalidate pattern with sophisticated algorithms.</p>
+
+          <h3>📊 SWR Lifecycle Diagram</h3>
+          <pre><code>
+┌──────────────────┐
+│   Initial Render │
+└────────┬─────────┘
+         │
+         ▼
+┌──────────────────┐
+│ Return Cached    │ ← Immediate response
+│ Data (if exists) │
+└────────┬─────────┘
+         │
+         ▼
+┌──────────────────┐
+│ Trigger Revalidate │ ← Background fetch
+└────────┬─────────┘
+         │
+         ▼
+┌──────────────────┐
+│ Wait for Result  │
+└────────┬─────────┘
+         │
+         ▼
+┌──────────────────┐
+│ Update State     │ ← New data replaces old
+└────────┬─────────┘
+         │
+         ▼
+┌──────────────────┐
+│    Render Again  │ ← Component re-renders with fresh data
+└──────────────────┘
+          </code></pre>
+
+          <h3>🔍 How SWR Decides When to Revalidate</h3>
+          <ul>
+            <li><strong>Window Focus:</strong> Automatically revalidates when window regains focus</li>
+            <li><strong>Network Reconnect:</strong> Revalidates when internet connection returns</li>
+            <li><strong>Interval:</strong> Revalidates at specified intervals</li>
+            <li><strong>Manual:</strong> Call <code>mutate()</code> to trigger revalidation</li>
+            <li><strong>Dependency Change:</strong> Revalidates when query key changes</li>
+          </ul>
+
+          <h3>⚡ Advanced SWR Configuration</h3>
+          <pre><code>
+import useSWR from 'swr';
+
+function UserProfile({ userId }) {
+  const { data, error, isValidating } = useSWR(
+    \`/api/users/\${userId}\`,
+    fetcher,
+    {
+      // Revalidate every 5 seconds
+      refreshInterval: 5000,
+      
+      // Don't revalidate when window is hidden
+      refreshWhenHidden: false,
+      
+      // Revalidate when network reconnects
+      revalidateOnReconnect: true,
+      
+      // Revalidate on focus
+      revalidateOnFocus: true,
+      
+      // Don't revalidate on mount if we have cached data
+      revalidateOnMount: false,
+      
+      // Use a different fetcher for SSR
+      fetcher: typeof window !== 'undefined' ? fetcher : ssrFetcher,
+      
+      // Error retry logic
+      shouldRetryOnError: true,
+      errorRetryCount: 3,
+      errorRetryInterval: 1000,
+      
+      // Deduping: Avoid duplicate requests
+      dedupingInterval: 2000,
+      
+      // Allow stale data while revalidating
+      fallbackData: null,
+      
+      // Use a different key for different environments
+      dedupingStrategy: 'all',
+    }
+  );
+
+  if (isValidating &amp;&amp; data) {
+    return &lt;div&gt;Updating...&lt;/div&gt;; // Show old data while updating
+  }
+
+  if (error) return &lt;div className="error-state"&gt;Error: {error.message}&lt;/div&gt;;
+  if (!data) return &lt;div className="loading-state"&gt;Loading...&lt;/div&gt;;
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;{data.name}&lt;/h2&gt;
+      &lt;p&gt;Email: {data.email}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>🔥 SWR with TypeScript</h3>
+          <pre><code>
+import useSWR from 'swr';
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  avatar: string;
+}
+
+const fetcher = (url: string): Promise&lt;User&gt; =&gt; 
+  fetch(url).then(r =&gt; r.json());
+
+function UserProfile({ userId }: { userId: number }) {
+  const { data, error } = useSWR&lt;User&gt;(
+    \`/api/users/\${userId}\`,
+    fetcher
+  );
+
+  if (error) return &lt;div&gt;Error: {error.message}&lt;/div&gt;;
+  if (!data) return &lt;div&gt;Loading...&lt;/div&gt;;
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;{data.name}&lt;/h2&gt;
+      &lt;p&gt;Email: {data.email}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <div class="swr-demo">
+            <h4>✅ Live Demo: SWR in Action</h4>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+              <button class="fetch-btn">Load User</button>
+              <button class="fetch-btn">Force Refresh</button>
+            </div>
+            <div class="component-preview">
+              <p>Click "Force Refresh" to see SWR revalidate in action!</p>
+            </div>
+          </div>
+
+          <div class="note">
+            <strong>🎯 Final Wisdom:</strong> Use SWR for simple applications and rapid development. Use React Query for complex applications requiring advanced features like pagination, optimistic updates, and fine-grained control over caching.
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 15.7 -->
+      <section id="section-15-7">
+        <h2>15.7 GraphQL with Apollo Client</h2>
+        
+        <details>
+          <summary>📌 Summary: The Declarative Query Language for APIs</summary>
+          <p>GraphQL is a query language for APIs that lets clients request exactly the data they need. Apollo Client is the leading GraphQL client for React applications.</p>
+
+          <h3>🔹 GraphQL vs REST</h3>
+          <table class="table table-dark table-sm mt-3">
+            <thead>
+              <tr><th>Aspect</th><th>REST</th><th>GraphQL</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Data Fetching</td><td>Multiple endpoints</td><td>Single endpoint</td></tr>
+              <tr><td>Data Shape</td><td>Fixed by server</td><td>Defined by client</td></tr>
+              <tr><td>Over-fetching</td><td>Common</td><td>Eliminated</td></tr>
+              <tr><td>Under-fetching</td><td>Common</td><td>Eliminated</td></tr>
+              <tr><td>Request Count</td><td>Many requests</td><td>One request</td></tr>
+              <tr><td>Versioning</td><td>Endpoint versioning</td><td>No versioning needed</td></tr>
+              <tr><td>Caching</td><td>HTTP caching</td><td>Client-side caching</td></tr>
+              <tr><td>Type Safety</td><td>Manual documentation</td><td>Strong typing</td></tr>
+            </tbody>
+          </table>
+
+          <h3>⚡ GraphQL Query Example</h3>
+          <p>Instead of multiple REST endpoints, you write a single GraphQL query:</p>
+          <pre><code>
+# GraphQL Query
+query GetUser($id: ID!) {
+  user(id: $id) {
+    id
+    name
+    email
+    posts {
+      id
+      title
+      comments {
+        id
+        text
+        author {
+          name
+        }
+      }
+    }
+  }
+}
+          </code></pre>
+
+          <h3>⚡ Apollo Client Setup</h3>
+          <pre><code>
+// Install packages
+npm install @apollo/client graphql
+
+// Configure Apollo Client
+import { ApolloClient, InMemoryCache, HttpLink } from '@apollo/client';
+
+const client = new ApolloClient({
+  link: new HttpLink({
+    uri: 'https://api.example.com/graphql',
+  }),
+  cache: new InMemoryCache(),
+});
+
+// Wrap your app
+import { ApolloProvider } from '@apollo/client';
+
+function App() {
+  return (
+    &lt;ApolloProvider client={client}&gt;
+      &lt;AppContent /&gt;
+    &lt;/ApolloProvider&gt;
+  );
+}
+          </code></pre>
+
+          <h3>🔥 Real-World Example: User Profile with GraphQL</h3>
+          <pre><code>
+import { gql, useQuery } from '@apollo/client';
+
+// Define GraphQL query
+const GET_USER = gql`
+  query GetUser($id: ID!) {
+    user(id: $id) {
+      id
+      name
+      email
+      avatar
+      posts {
+        id
+        title
+        publishedAt
+        comments {
+          id
+          text
+          author {
+            name
+          }
+        }
+      }
+    }
+  }
+`;
+
+function UserProfile({ userId }) {
+  // Execute query
+  const { loading, error, data } = useQuery(GET_USER, {
+    variables: { id: userId },
+    fetchPolicy: 'cache-and-network', // Cache first, then network
+  });
+
+  if (loading) return &lt;div className="loading-state"&gt;Loading profile...&lt;/div&gt;;
+  if (error) return &lt;div className="error-state"&gt;Error: {error.message}&lt;/div&gt;;
+
+  const user = data.user;
+
+  return (
+    &lt;div className="success-state"&gt;
+      &lt;h2&gt;{user.name}&lt;/h2&gt;
+      &lt;p&gt;Email: {user.email}&lt;/p&gt;
+      &lt;img src={user.avatar} alt={user.name} /&gt;
+      
+      &lt;h3&gt;Posts&lt;/h3&gt;
+      {user.posts.map(post =&gt; (
+        &lt;div key={post.id} style={{ margin: '10px 0', padding: '10px', border: '1px solid #3a5a7f' }}&gt;
+          &lt;h4&gt;{post.title}&lt;/h4&gt;
+          &lt;p&gt;Published: {new Date(post.publishedAt).toLocaleDateString()}&lt;/p&gt;
+          
+          &lt;h5&gt;Comments ({post.comments.length})&lt;/h5&gt;
+          {post.comments.map(comment =&gt; (
+            &lt;div key={comment.id} style={{ margin: '5px 0', padding: '5px', backgroundColor: '#1a2b42' }}&gt;
+              &lt;p&gt;{comment.text}&lt;/p&gt;
+              &lt;p&gt;By: {comment.author.name}&lt;/p&gt;
+            &lt;/div&gt;
+          ))}
+        &lt;/div&gt;
+      ))}
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>💡 Why GraphQL Is Powerful</h3>
+          <ul>
+            <li><strong>Exactly what you need:</strong> No over-fetching or under-fetching</li>
+            <li><strong>Single request:</strong> Get complex nested data in one round trip</li>
+            <li><strong>Strong typing:</strong> Type-safe queries with TypeScript</li>
+            <li><strong>Developer tools:</strong> Excellent IDE integration and debugging</li>
+            <li><strong>Schema introspection:</strong> Clients can discover available data</li>
+            <li><strong>Real-time updates:</strong> Subscriptions for live data</li>
+          </ul>
+
+          <div class="graphql-code">
+            <h4>✅ GraphQL Schema Example</h4>
+            <pre><code>
+type User {
+  id: ID!
+  name: String!
+  email: String!
+  avatar: String
+  posts: [Post!]!
+}
+
+type Post {
+  id: ID!
+  title: String!
+  content: String!
+  publishedAt: DateTime!
+  author: User!
+  comments: [Comment!]!
+}
+
+type Comment {
+  id: ID!
+  text: String!
+  createdAt: DateTime!
+  author: User!
+  post: Post!
+}
+
+type Query {
+  user(id: ID!): User
+  posts: [Post!]!
+  post(id: ID!): Post
+}
+
+type Mutation {
+  createUser(name: String!, email: String!): User!
+  createPost(title: String!, content: String!, authorId: ID!): Post!
+}
+            </code></pre>
+          </div>
+
+          <h3>🔥 Advanced: Mutations and Subscriptions</h3>
+
+          <h4>1. GraphQL Mutation</h4>
+          <pre><code>
+import { gql, useMutation } from '@apollo/client';
+
+const CREATE_POST = gql`
+  mutation CreatePost($title: String!, $content: String!, $authorId: ID!) {
+    createPost(input: {
+      title: $title
+      content: $content
+      authorId: $authorId
+    }) {
+      id
+      title
+      content
+      publishedAt
+    }
+  }
+`;
+
+function CreatePostForm({ authorId }) {
+  const [createPost, { loading, error }] = useMutation(CREATE_POST);
+
+  const handleSubmit = async (e) =&gt; {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    
+    try {
+      const { data } = await createPost({
+        variables: {
+          title: formData.get('title'),
+          content: formData.get('content'),
+          authorId,
+        },
+      });
+      
+      console.log('Created post:', data.createPost);
+    } catch (err) {
+      console.error('Failed to create post:', err);
+    }
+  };
+
+  return (
+    &lt;form onSubmit={handleSubmit}&gt;
+      &lt;input name="title" placeholder="Title" required /&gt;
+      &lt;textarea name="content" placeholder="Content" required /&gt;
+      &lt;button type="submit" disabled={loading}&gt;
+        {loading ? 'Creating...' : 'Create Post'}
+      &lt;/button&gt;
+      {error &amp;&amp; &lt;div className="error-state"&gt;Error: {error.message}&lt;/div&gt;}
+    &lt;/form&gt;
+  );
+}
+          </code></pre>
+
+          <h4>2. GraphQL Subscription</h4>
+          <pre><code>
+import { gql, useSubscription } from '@apollo/client';
+
+const NEW_COMMENT_SUBSCRIPTION = gql`
+  subscription OnNewComment($postId: ID!) {
+    newComment(postId: $postId) {
+      id
+      text
+      createdAt
+      author {
+        name
+      }
+    }
+  }
+`;
+
+function CommentSection({ postId }) {
+  const { data } = useSubscription(NEW_COMMENT_SUBSCRIPTION, {
+    variables: { postId },
+  });
+
+  const newComment = data?.newComment;
+
+  return (
+    &lt;div&gt;
+      &lt;!-- Existing comments --&gt;
+      {existingComments.map(comment =&gt; (
+        &lt;Comment key={comment.id} comment={comment} /&gt;
+      ))}
+      
+      &lt;!-- New comment from subscription --&gt;
+      {newComment &amp;&amp; (
+        &lt;div style={{ backgroundColor: '#00f5ff', padding: '10px', margin: '10px 0' }}&gt;
+          &lt;p&gt;New comment from {newComment.author.name}: {newComment.text}&lt;/p&gt;
+        &lt;/div&gt;
+      )}
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>📊 Apollo Client vs React Query vs SWR</h3>
+          <table class="table table-dark comparison-table">
+            <thead>
+              <tr><th>Feature</th><th>Apollo Client</th><th>React Query</th><th>SWR</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Protocol</td><td>GraphQL</td><td>REST</td><td>REST</td></tr>
+              <tr><td>Bundle Size</td><td>~20KB</td><td>~4KB</td><td>~1KB</td></tr>
+              <tr><td>Learning Curve</td><td>Steep</td><td>Medium</td><td>Easy</td></tr>
+              <tr><td>Query Language</td><td>GraphQL</td><td>JavaScript</td><td>JavaScript</td></tr>
+              <tr><td>Type Safety</td><td>Excellent</td><td>Good</td><td>Good</td></tr>
+              <tr><td>Caching</td><td>Advanced</td><td>Advanced</td><td>Simple</td></tr>
+              <tr><td>Real-time</td><td>Subscriptions</td><td>Manual</td><td>Manual</td></tr>
+              <tr><td>DevTools</td><td>Excellent</td><td>Excellent</td><td>Basic</td></tr>
+              <tr><td>Best For</td><td>Complex GraphQL APIs</td><td>Complex REST APIs</td><td>Simple REST APIs</td></tr>
+            </tbody>
+          </table>
+
+          <div class="note">
+            <strong>🧠 Mental Model:</strong> GraphQL is like ordering a custom meal from a restaurant menu. You specify exactly what ingredients you want, and the kitchen (server) prepares just that dish. REST is like being served a fixed plate with everything on it.
+          </div>
+        </details>
+
+        <details>
+          <summary>🚀 Deep Dive: GraphQL Code Generation</summary>
+          <p>GraphQL's real power comes from generating TypeScript types from your schema.</p>
+
+          <h3>⚡ Setup Code Generation</h3>
+          <pre><code>
+# Install code generation tools
+npm install -D graphql-code-generator @graphql-codegen/typescript @graphql-codegen/typescript-resolvers
+
+# Create codegen.yml
+codegen:
+  overwrite: true
+  schema: "https://api.example.com/graphql"
+  documents: "src/**/*.graphql"
+  generates:
+    src/generated/graphql.tsx:
+      plugins:
+        - "typescript"
+        - "typescript-react-apollo"
+      config:
+        withHooks: true
+        withHOC: false
+        withComponent: false
+        reactApolloVersion: 3
+
+# Generate types
+npx graphql-codegen
+          </code></pre>
+
+          <h3>⚡ Generated Types</h3>
+          <pre><code>
+// Generated by graphql-codegen
+export type GetUserQuery = {
+  __typename?: 'Query';
+  user?: Maybe&lt;User&gt;;
+};
+
+export type GetUserQueryVariables = Exact&lt;{
+  id: Scalars['ID'];
+}&gt;;
+
+export type GetUserQuery = {
+  __typename?: 'Query';
+  user?: Maybe&lt;{
+    __typename?: 'User';
+    id: string;
+    name: string;
+    email: string;
+    avatar?: Maybe&lt;string&gt;;
+    posts?: Maybe&lt;Array&lt;{
+      __typename?: 'Post';
+      id: string;
+      title: string;
+      content: string;
+      publishedAt: string;
+      comments?: Maybe&lt;Array&lt;{
+        __typename?: 'Comment';
+        id: string;
+        text: string;
+        createdAt: string;
+        author?: Maybe&lt;{
+          __typename?: 'User';
+          name: string;
+        }&gt;;
+      }&gt;&gt;;
+    }&gt;&gt;;
+  }&gt;;
+};
+          </code></pre>
+
+          <h3>🔥 Type-Safe Components</h3>
+          <pre><code>
+import { useGetUserQuery } from '../generated/graphql';
+
+function UserProfile({ userId }) {
+  const { loading, error, data } = useGetUserQuery({
+    variables: { id: userId },
+  });
+
+  if (loading) return &lt;div className="loading-state"&gt;Loading...&lt;/div&gt;;
+  if (error) return &lt;div className="error-state"&gt;Error: {error.message}&lt;/div&gt;;
+
+  // Full TypeScript support!
+  const user = data?.user;
+  if (!user) return &lt;div&gt;No user found&lt;/div&gt;;
+
+  return (
+    &lt;div&gt;
+      &lt;h2&gt;{user.name}&lt;/h2&gt;
+      &lt;p&gt;Email: {user.email}&lt;/p&gt;
+      
+      {/* TypeScript knows these properties exist */}
+      {user.posts?.map(post =&gt; (
+        &lt;div key={post.id}&gt;
+          &lt;h3&gt;{post.title}&lt;/h3&gt;
+          &lt;p&gt;{post.content}&lt;/p&gt;
+          
+          {post.comments?.map(comment =&gt; (
+            &lt;div key={comment.id}&gt;
+              &lt;p&gt;{comment.text}&lt;/p&gt;
+              &lt;p&gt;By: {comment.author?.name}&lt;/p&gt;
+            &lt;/div&gt;
+          ))}
+        &lt;/div&gt;
+      ))}
+    &lt;/div&gt;
+  );
+}
+          </code></pre>
+
+          <h3>💡 Benefits of Code Generation</h3>
+          <ul>
+            <li><strong>Type Safety:</strong> Compile-time errors instead of runtime bugs</li>
+            <li><strong>Auto-completion:</strong> IDE suggestions for queries and variables</li>
+            <li><strong>Documentation:</strong> Generated types serve as API documentation</li>
+            <li><strong>Refactoring:</strong> Safe renaming of fields across entire codebase</li>
+            <li><strong>Reduced Bugs:</strong> Eliminates typos in field names</li>
+          </ul>
+
+          <div class="apollo-demo">
+            <h4>✅ Live Demo: GraphQL Query</h4>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+              <button class="fetch-btn">Load User</button>
+              <button class="fetch-btn">Load Posts</button>
+            </div>
+            <div class="component-preview">
+              <p>Click buttons above to see GraphQL queries in action!</p>
+            </div>
+          </div>
+
+          <div class="note">
+            <strong>🌟 Pro Tip:</strong> Use GraphQL when you have complex data requirements, multiple client platforms, or need precise control over data shape. Use REST/SWR/React Query for simpler applications.
+          </div>
+        </details>
+      </section>
+
+      <!-- Section 15.8 -->
+      <section id="section-15-8">
+        <h2>15.8 Caching Strategies</h2>
+        
+        <details>
+          <summary>📌 Summary: The Art of Smart Data Storage</summary>
+          <p>Caching is the secret sauce behind fast, responsive web applications. Different strategies solve different problems.</p>
+
+          <h3>🔹 The Caching Hierarchy</h3>
+          <div class="cache-hierarchy">
+            <div class="cache-level">
+              <strong>Browser Cache</strong> - HTTP headers (Cache-Control, ETag)
+              <span class="cache-type">Automatic</span>
+            </div>
+            <div class="cache-level">
+              <strong>Network Layer</strong> - Service Workers, CDN
+              <span class="cache-type">Automatic</span>
+            </div>
+            <div class="cache-level">
+              <strong>Application Layer</strong> - React Query, SWR, Apollo
+              <span class="cache-type">Programmatic</span>
+            </div>
+            <div class="cache-level">
+              <strong>Storage Layer</strong> - localStorage, IndexedDB
+              <span class="cache-type">Persistent</span>
+            </div>
+          </div>
+
+          <h3>⚡ Browser Cache (HTTP Headers)</h3>
+          <p>The first line of defense. Controlled by HTTP headers sent by the server.</p>
+          <pre><code>
+// Server response headers
+Cache-Control: public, max-age=3600
+ETag: "abc123"
+Last-Modified: Wed, 21 Oct 2023 07:28:00 GMT
+
+// Client request headers
+If-None-Match: "abc123"
+If-Modified-Since: Wed, 21 Oct 2023 07:28:00 GMT
+          </code></pre>
+
+          <h3>🔥 Application-Level Caching Strategies</h3>
+
+          <h4>1. Stale-While-Revalidate (SWR)</h4>
+          <p>Serve cached data immediately, then update in background.</p>
+          <div class="stale-while-revalidate">
+            <h4>SWR Strategy</h4>
+            <ol>
+              <li>Return cached data immediately</li>
+              <li>Start background fetch</li>
+              <li>When new data arrives, update UI</li>
+              <li>Cache remains until next fetch</li>
+            </ol>
+            <p><strong>Best for:</strong> Frequently changing data where freshness isn't critical</p>
+          </div>
+
+          <h4>2. Cache-First</h4>
+          <p>Always serve from cache, only fetch if cache doesn't exist.</p>
+          <div class="cache-strategy">
+            <h4>Cache-First Strategy</h4>
+            <ol>
+              <li>Check cache for data</li>
+              <li>If found, return immediately</li>
+              <li>If not found, fetch from server</li>
+              <li>Store in cache for future use</li>
+            </ol>
+            <p><strong>Best for:</strong> Static data that rarely changes (configuration, settings)</p>
+          </div>
+
+          <h4>3. Network-First</h4>
+          <p>Always try network first, fall back to cache.</p>
+          <div class="cache-strategy">
+            <h4>Network-First Strategy</h4>
+            <ol>
+              <li>Try to fetch from server</li>
+              <li>If successful, store in cache and return</li>
+              <li>If network fails, return cached data</li>
+            </ol>
+            <p><strong>Best for:</strong> Critical data where freshness matters</p>
+          </div>
+
+          <h4>4. Cache-And-Network</h4>
+          <p>Return cache immediately AND fetch from network.</p>
+          <div class="cache-strategy">
+            <h4>Cache-And-Network Strategy</h4>
+            <ol>
+              <li>Return cached data immediately</li>
+              <li>Simultaneously fetch from server</li>
+              <li>When server response arrives, update UI</li>
+            </ol>
+            <p><strong>Best for:</strong> Dynamic data where you want both speed and freshness</p>
+          </div>
+
+          <h3>📊 Strategy Selection Matrix</h3>
+          <table class="table table-dark comparison-table">
+            <thead>
+              <tr><th>Scenario</th><th>Recommended Strategy</th><th>Why</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>User profile (infrequently changed)</td><td>Cache-First</td><td>Save bandwidth, instant load</td></tr>
+              <tr><td>News feed (constantly updating)</td><td>Stale-While-Revalidate</td><td>Instant display, background refresh</td></tr>
+              <tr><td>Bank balance (critical accuracy)</td><td>Network-First</td><td>Always get latest, even if slower</td></tr>
+              <tr><td>Product catalog (moderate change)</td><td>Cache-And-Network</td><td>Fast load + automatic refresh</td></tr>
+              <tr><td>Shopping cart (session-specific)</td><td>LocalStorage</td><td>Persist across sessions</td></tr>
+              <tr><td>Search results (temporary)</td><td>Memory Cache</td><td>Don't persist, save memory</td></tr>
+            </tbody>
+          </table>
+
+          <h3>🔥 Advanced Caching Patterns</h3>
+
+          <h4>1. Cache Invalidation</h4>
+          <p>Explicitly remove or update cached data when it becomes stale.</p>
+          <pre><code>
+// React Query example
+import { useQueryClient } from '@tanstack/react-query';
+
+function PostForm() {
+  const queryClient = useQueryClient();
+
+  const createPost = async (postData) =&gt; {
+    const response = await axios.post('/api/posts', postData);
+    
+    // Invalidate related queries
+    queryClient.invalidateQueries(['posts']);
+    queryClient.invalidateQueries(['user', 123]);
+    
+    return response.data;
+  };
+}
+          </code></pre>
+
+          <h4>2. Cache Eviction</h4>
+          <p>Remove old data to make room for new data based on usage patterns.</p>
+          <pre><code>
+// React Query configuration
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      cacheTime: 10 * 60 * 1000, // 10 minutes
+      staleTime: 5 * 60 * 1000,  // 5 minutes
+    },
+  },
+});
+
+// Data older than cacheTime gets removed
+// Data older than staleTime gets revalidated
+          </code></pre>
+
+          <h4>3. Prefetching</h4>
+          <p>Fetch data before it's needed to improve perceived performance.</p>
+          <pre><code>
+import { useQuery } from '@tanstack/react-query';
+
+function Navigation() {
+  const { data: currentUser } = useQuery(['user'], fetchUser);
+  const { data: recentPosts } = useQuery(['posts'], fetchPosts);
+  
+  // Prefetch user data when hovering over profile link
+  const prefetchUser = () =&gt; {
+    queryClient.prefetchQuery(['user'], fetchUser);
+  };
+
+  return (
+    &lt;nav&gt;
+      &lt;a href="/profile" onMouseEnter={prefetchUser}&gt;Profile&lt;/a&gt;
+      &lt;a href="/posts"&gt;Posts&lt;/a&gt;
+    &lt;/nav&gt;
+  );
+}
+          </code></pre>
+
+          <h4>4. Persistent Storage</h4>
+          <p>Store data in localStorage or IndexedDB for offline access.</p>
+          <pre><code>
+// React Query with localStorage persistence
+import { persistQueryClient } from '@tanstack/react-query-persist-client';
+import { createWebStoragePersistor } from '@tanstack/query-persist-client-core';
+
+const persistor = createWebStoragePersistor({
+  storage: window.localStorage,
+});
+
+persistQueryClient({
+  queryClient,
+  persistor,
+});
+
+// Apollo Client with cache persistence
+import { InMemoryCache } from '@apollo/client';
+import { persistCache } from 'apollo-cache-persist';
+
+const cache = new InMemoryCache();
+
+await persistCache({
+  cache,
+  storage: window.localStorage,
+});
+
+const client = new ApolloClient({
+  cache,
+  link: httpLink,
+});
+          </code></pre>
+
+          <h3>🛠️ Caching Best Practices</h3>
+          <ol>
+            <li><strong>Use the right tool:</strong> React Query for complex apps, SWR for simple ones</li>
+            <li><strong>Set appropriate TTL:</strong> Longer for static data, shorter for dynamic</li>
+            <li><strong>Implement proper invalidation:</strong> Don't rely on timeouts alone</li>
+            <li><strong>Consider offline use:</strong> Persist critical data</li>
+            <li><strong>Monitor cache hits:</strong> Use developer tools to analyze performance</li>
+            <li><strong>Test edge cases:</strong> Network failures, race conditions</li>
+            <li><strong>Don't cache sensitive data:</strong> Auth tokens, personal info</li>
+            <li><strong>Clear cache on logout:</strong> Prevent data leaks</li>
+          </ol>
+
+          <div class="caching-demo">
+            <h4>✅ Live Demo: Caching Strategies</h4>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+              <button class="fetch-btn">SWR Strategy</button>
+              <button class="fetch-btn">Cache-First</button>
+              <button class="fetch-btn">Network-First</button>
+              <button class="fetch-btn">Cache-And-Network</button>
+            </div>
+            <div class="component-preview">
+              <p>Click buttons above to see different caching strategies in action!</p>
+            </div>
+          </div>
+
+          <div class="note">
+            <strong>🎯 Final Wisdom:</strong> Caching isn't about storing data—it's about optimizing the user experience. The best caching strategy is the one that delivers the right data at the right time with the least delay.
+          </div>
+        </details>
+      </section>
+
+      <div class="footer-note">
+        📚 Next: Module 5 - Performance Optimization, Testing, and Production Deployment
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript Utilities -->
+<script>
+  // Expand/Collapse All
+  document.getElementById('expandAll').addEventListener('click', () => {
+    document.querySelectorAll('details').forEach(detail => detail.open = true);
+  });
+
+  document.getElementById('collapseAll').addEventListener('click', () => {
+    document.querySelectorAll('details').forEach(detail => detail.open = false);
+  });
+
+  // Smooth Scroll to TOC Item
+  document.querySelectorAll('.toc-item').forEach(item => {
+    item.addEventListener('click', () => {
+      const targetId = item.getAttribute('data-target');
+      document.querySelector(targetId).scrollIntoView({ behavior: 'smooth' });
+      
+      // Highlight active item
+      document.querySelectorAll('.toc-item').forEach(el => el.classList.remove('active'));
+      item.classList.add('active');
+    });
+  });
+
+  // Search TOC
+  document.getElementById('searchTOC').addEventListener('input', (e) => {
+    const query = e.target.value.toLowerCase();
+    document.querySelectorAll('.toc-item').forEach(item => {
+      const text = item.textContent.toLowerCase();
+      item.style.display = text.includes(query) ? 'block' : 'none';
+    });
+  });
+
+  // Demo functionality
+  document.querySelectorAll('.fetch-btn, .axios-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      const demoCard = button.closest('.react-query-demo, .swr-demo, .apollo-demo, .caching-demo');
+      if (demoCard) {
+        const preview = demoCard.querySelector('.component-preview');
+        if (preview) {
+          const buttonText = button.textContent;
+          preview.innerHTML = `
+            <h3>${buttonText}</h3>
+            <p>Simulating ${buttonText.toLowerCase()}...</p>
+            <p>Cache strategy applied successfully!</p>
+          `;
+          
+          // Simulate loading state
+          setTimeout(() => {
+            preview.innerHTML = `
+              <h3>${buttonText}</h3>
+              <p>API call completed successfully!</p>
+              <p>Data loaded from mock endpoint</p>
+            `;
+          }, 1500);
+        }
+      }
+    });
+  });
+
+  // Optional: Add highlight.js if needed (uncomment if CDN available)
+  /*
+  const script = document.createElement('script');
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js';
+  script.onload = () => {
+    document.querySelectorAll('pre code').forEach(block => hljs.highlightBlock(block));
+  };
+  document.head.appendChild(script);
+  */
+</script>
+
+<!-- Bootstrap JS Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
+```

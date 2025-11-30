@@ -1,0 +1,2534 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chapter 24: Gatsby and Static Site Generation</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00d1ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --text-muted: #a0b8d8;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            background-color: #0c213d;
+            border-right: 1px solid rgba(0, 209, 255, 0.1);
+            height: 100vh;
+            position: fixed;
+            width: 300px;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 5px 0 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid rgba(0, 209, 255, 0.2);
+            padding-bottom: 8px;
+            margin-top: 30px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 15px;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            margin-top: 40px;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            margin-top: 35px;
+        }
+
+        .subtitle {
+            color: var(--amber);
+            font-style: italic;
+            margin-bottom: 25px;
+        }
+
+        .author-info {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        .toc-item {
+            margin: 8px 0;
+            padding: 6px 10px;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .toc-item:hover {
+            background-color: rgba(0, 209, 255, 0.1);
+            color: var(--cyan);
+        }
+
+        .toc-item.active {
+            background-color: rgba(0, 209, 255, 0.2);
+            color: var(--cyan);
+            border-left: 3px solid var(--cyan);
+        }
+
+        .toc-subitem {
+            margin-left: 20px;
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            padding: 4px 10px;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .toc-subitem:hover {
+            background-color: rgba(0, 209, 255, 0.1);
+            color: var(--cyan);
+        }
+
+        .search-input {
+            background-color: #153350;
+            border: 1px solid rgba(0, 209, 255, 0.3);
+            color: var(--text-light);
+            margin-bottom: 20px;
+            padding: 8px 12px;
+            border-radius: 6px;
+        }
+
+        .btn-control {
+            background-color: rgba(0, 209, 255, 0.1);
+            border: 1px solid rgba(0, 209, 255, 0.3);
+            color: var(--cyan);
+            margin: 10px 0;
+            padding: 6px 12px;
+            font-size: 0.9rem;
+            border-radius: 5px;
+        }
+
+        .btn-control:hover {
+            background-color: rgba(0, 209, 255, 0.2);
+            color: var(--cyan);
+        }
+
+        .details-container {
+            margin-bottom: 30px;
+            border-left: 3px solid var(--amber);
+            border-radius: 0 8px 8px 0;
+            overflow: hidden;
+        }
+
+        .details-container summary {
+            list-style: none;
+            cursor: pointer;
+            padding: 15px;
+            background-color: rgba(255, 183, 77, 0.1);
+            color: var(--amber);
+            font-weight: bold;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0;
+        }
+
+        .details-container summary:hover {
+            background-color: rgba(255, 183, 77, 0.2);
+        }
+
+        .details-container summary::before {
+            content: "▶";
+            font-size: 0.8rem;
+            transition: transform 0.3s ease;
+        }
+
+        .details-container[open] summary::before {
+            content: "▼";
+            transform: rotate(90deg);
+        }
+
+        .details-container > div {
+            padding: 15px;
+            background-color: #0f2540;
+            border-radius: 0 0 8px 8px;
+            margin-top: 0;
+            border: 1px solid rgba(255, 183, 77, 0.1);
+        }
+
+        pre code {
+            display: block;
+            padding: 16px;
+            overflow-x: auto;
+            background-color: #0a192f;
+            border-radius: 8px;
+            border-left: 4px solid var(--amber);
+            font-size: 0.95rem;
+            line-height: 1.5;
+            color: #e6f1ff;
+            font-family: 'Courier New', Courier, monospace;
+            margin: 15px 0;
+        }
+
+        code {
+            background-color: rgba(255, 183, 77, 0.1);
+            color: var(--amber);
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.95rem;
+        }
+
+        .highlight {
+            background-color: rgba(0, 209, 255, 0.15);
+            padding: 10px;
+            border-left: 3px solid var(--cyan);
+            margin: 20px 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .formula {
+            background-color: rgba(0, 209, 255, 0.1);
+            padding: 12px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-family: 'Cambria Math', serif;
+            text-align: center;
+            color: var(--cyan);
+            font-size: 1.1rem;
+        }
+
+        .use-case {
+            background-color: rgba(255, 183, 77, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 3px solid var(--amber);
+        }
+
+        .example-box {
+            background-color: rgba(10, 25, 47, 0.8);
+            border: 1px solid rgba(0, 209, 255, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: #000;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 8px;
+        }
+
+        .nav-link {
+            color: var(--text-muted) !important;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--cyan) !important;
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 991px) {
+            .left-panel {
+                width: 250px;
+            }
+            .right-panel {
+                margin-left: 250px;
+                padding: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .left-panel {
+                position: relative;
+                width: 100%;
+                height: auto;
+                border-right: none;
+                border-bottom: 1px solid rgba(0, 209, 255, 0.1);
+            }
+            .right-panel {
+                margin-left: 0;
+                padding: 15px;
+            }
+        }
+
+        .section-marker {
+            position: absolute;
+            top: -100px;
+            visibility: hidden;
+        }
+
+        /* Copy button styling */
+        .copy-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 209, 255, 0.2);
+            color: #00d1ff;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            z-index: 10;
+        }
+
+        pre {
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Left Panel -->
+            <div class="col-md-3 left-panel">
+                <h1>Chapter 24</h1>
+                <h3 class="subtitle">Gatsby and Static Site Generation</h3>
+                <p class="author-info">By: React Mastery Tutor | For Advanced Students</p>
+
+                <input type="text" class="form-control search-input" id="searchToc" placeholder="Search topics...">
+                
+                <button class="btn btn-sm btn-control w-100 mb-2" id="expandAll">Expand All</button>
+                <button class="btn btn-sm btn-control w-100 mb-3" id="collapseAll">Collapse All</button>
+
+                <div id="tocContainer">
+                    <div class="toc-item" data-target="24-1">24.1 Gatsby Introduction</div>
+                    <div class="toc-subitem" data-target="24-1-1">• What is Gatsby?</div>
+                    <div class="toc-subitem" data-target="24-1-2">• SSG vs SSR vs CSR</div>
+                    <div class="toc-subitem" data-target="24-1-3">• Gatsby vs Next.js</div>
+                    
+                    <div class="toc-item" data-target="24-2">24.2 GraphQL Data Layer</div>
+                    <div class="toc-subitem" data-target="24-2-1">• GraphQL Fundamentals</div>
+                    <div class="toc-subitem" data-target="24-2-2">• Gatsby's GraphQL Schema</div>
+                    <div class="toc-subitem" data-target="24-2-3">• Querying Data in Components</div>
+                    <div class="toc-subitem" data-target="24-2-4">• GraphiQL Explorer</div>
+                    
+                    <div class="toc-item" data-target="24-3">24.3 Plugins and Themes</div>
+                    <div class="toc-subitem" data-target="24-3-1">• Core Plugins</div>
+                    <div class="toc-subitem" data-target="24-3-2">• Source Plugins</div>
+                    <div class="toc-subitem" data-target="24-3-3">• Transform Plugins</div>
+                    <div class="toc-subitem" data-target="24-3-4">• Creating Custom Plugins</div>
+                    <div class="toc-subitem" data-target="24-3-5">• Gatsby Themes</div>
+                    
+                    <div class="toc-item" data-target="24-4">24.4 Content Management Integration</div>
+                    <div class="toc-subitem" data-target="24-4-1">• Markdown Files</div>
+                    <div class="toc-subitem" data-target="24-4-2">• Headless CMS (Contentful)</div>
+                    <div class="toc-subitem" data-target="24-4-3">• WordPress Integration</div>
+                    <div class="toc-subitem" data-target="24-4-4">• Sanity.io Setup</div>
+                    
+                    <div class="toc-item" data-target="24-5">24.5 Performance Optimization</div>
+                    <div class="toc-subitem" data-target="24-5-1">• Image Optimization</div>
+                    <div class="toc-subitem" data-target="24-5-2">• Code Splitting</div>
+                    <div class="toc-subitem" data-target="24-5-3">• Prefetching & Preloading</div>
+                    <div class="toc-subitem" data-target="24-5-4">• Lighthouse Optimization</div>
+                    
+                    <div class="toc-item" data-target="24-6">24.6 Deployment Strategies</div>
+                    <div class="toc-subitem" data-target="24-6-1">• Vercel Deployment</div>
+                    <div class="toc-subitem" data-target="24-6-2">• Netlify Deployment</div>
+                    <div class="toc-subitem" data-target="24-6-3">• GitHub Pages</div>
+                    <div class="toc-subitem" data-target="24-6-4">• CI/CD Pipelines</div>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="col-md-9 right-panel">
+                <div class="section-marker" id="24-1"></div>
+                <h2>24.1 Gatsby Introduction</h2>
+                <p>Gatsby is a React-based framework that specializes in building lightning-fast static websites and applications using modern web technologies.</p>
+
+                <div class="details-container">
+                    <summary>Definition</summary>
+                    <div>
+                        Gatsby is an open-source React framework that enables developers to build high-performance websites and applications by generating static HTML files at build time. It combines the power of React with a robust data layer based on GraphQL to pull content from various sources.
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Detail</summary>
+                    <div>
+                        <p>Gatsby operates on the principle of <strong>Static Site Generation (SSG)</strong>. Unlike traditional React apps that render in the browser (CSR), Gatsby generates all pages as static HTML during the build process. This means:</p>
+                        
+                        <ul>
+                            <li><strong>No JavaScript waiting:</strong> Users get fully rendered pages instantly</li>
+                            <li><strong>Zero server requirements:</strong> Host on any static hosting service</li>
+                            <li><strong>Maximum performance:</strong> Pages load in milliseconds</li>
+                            <li><strong>Perfect SEO:</strong> Search engines crawl complete HTML content</li>
+                        </ul>
+                        
+                        <p>The magic happens through Gatsby's data layer:</p>
+                        <ol>
+                            <li>Gatsby pulls data from multiple sources (Markdown files, CMS, APIs, databases)</li>
+                            <li>It transforms this data into a unified GraphQL schema</li>
+                            <li>React components query this data using GraphQL</li>
+                            <li>At build time, Gatsby renders each page with its specific data</li>
+                            <li>Output is pure HTML, CSS, and JavaScript files ready for deployment</li>
+                        </ol>
+                        
+                        <p>This architecture makes Gatsby ideal for blogs, documentation sites, marketing pages, portfolios, and e-commerce product catalogs.</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>SSG vs SSR vs CSR</summary>
+                    <div>
+                        <table class="table table-dark table-striped mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Feature</th>
+                                    <th>SSG (Gatsby)</th>
+                                    <th>SSR (Next.js)</th>
+                                    <th>CSR (Plain React)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Rendering Time</td>
+                                    <td>Build time</td>
+                                    <td>Request time</td>
+                                    <td>Browser time</td>
+                                </tr>
+                                <tr>
+                                    <td>Initial Load Speed</td>
+                                    <td>⚡ Extremely Fast</td>
+                                    <td>⚡ Fast</td>
+                                    <td>🐢 Slow</td>
+                                </tr>
+                                <tr>
+                                    <td>Server Requirements</td>
+                                    <td>None</td>
+                                    <td>Required</td>
+                                    <td>None</td>
+                                </tr>
+                                <tr>
+                                    <td>SEO Friendliness</td>
+                                    <td>✅ Excellent</td>
+                                    <td>✅ Excellent</td>
+                                    <td>⚠️ Poor (without SSR)</td>
+                                </tr>
+                                <tr>
+                                    <td>Dynamic Content</td>
+                                    <td>Requires rebuild</td>
+                                    <td>Real-time updates</td>
+                                    <td>Real-time updates</td>
+                                </tr>
+                                <tr>
+                                    <td>Cost</td>
+                                    <td>Lowest (static hosting)</td>
+                                    <td>Moderate (server costs)</td>
+                                    <td>Lowest (static hosting)</td>
+                                </tr>
+                                <tr>
+                                    <td>Best For</td>
+                                    <td>Blogs, docs, marketing sites</td>
+                                    <td>Dashboard, e-commerce, user portals</td>
+                                    <td>Web apps with heavy interactivity</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <p class="highlight"><strong>Key Insight:</strong> Gatsby excels when your content doesn't change frequently but needs maximum speed and SEO. Use Next.js when you need real-time personalization or frequent content updates.</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Gatsby vs Next.js</summary>
+                    <div>
+                        <table class="table table-dark table-striped mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Feature</th>
+                                    <th>Gatsby</th>
+                                    <th>Next.js</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Primary Focus</td>
+                                    <td>Static Site Generation (SSG)</td>
+                                    <td>Hybrid (SSG + SSR + CSR)</td>
+                                </tr>
+                                <tr>
+                                    <td>Data Layer</td>
+                                    <td>GraphQL (mandatory)</td>
+                                    <td>Flexible (fetch, SWR, etc.)</td>
+                                </tr>
+                                <tr>
+                                    <td>Routing</td>
+                                    <td>File system based</td>
+                                    <td>File system based</td>
+                                </tr>
+                                <tr>
+                                    <td>Image Optimization</td>
+                                    <td>gatsby-plugin-image</td>
+                                    <td>next/image</td>
+                                </tr>
+                                <tr>
+                                    <td>API Routes</td>
+                                    <td>Not native</td>
+                                    <td>Native support</td>
+                                </tr>
+                                <tr>
+                                    <td>Server-side Rendering</td>
+                                    <td>Not available</td>
+                                    <td>Yes</td>
+                                </tr>
+                                <tr>
+                                    <td>Incremental Static Regeneration</td>
+                                    <td>Not available</td>
+                                    <td>Yes</td>
+                                </tr>
+                                <tr>
+                                    <td>Learning Curve</td>
+                                    <td>Steeper (GraphQL required)</td>
+                                    <td>Moderate</td>
+                                </tr>
+                                <tr>
+                                    <td>Performance</td>
+                                    <td>⚡ Faster for static content</td>
+                                    <td>⚡ Fast, more flexible</td>
+                                </tr>
+                                <tr>
+                                    <td>Best For</td>
+                                    <td>Content-heavy sites, blogs, docs</td>
+                                    <td>Applications requiring dynamic features</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <p><strong>When to choose Gatsby:</strong></p>
+                        <ul>
+                            <li>You're building a blog, portfolio, or documentation site</li>
+                            <li>Your content comes from Markdown, CMS, or APIs</li>
+                            <li>You want maximum performance and SEO</li>
+                            <li>You don't need real-time user-specific data</li>
+                        </ul>
+                        
+                        <p><strong>When to choose Next.js:</strong></p>
+                        <ul>
+                            <li>You need user authentication or dashboards</li>
+                            <li>Your content changes frequently</li>
+                            <li>You need API routes or server-side logic</li>
+                            <li>You want both SSG and SSR capabilities</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Example</summary>
+                    <div class="example-box">
+                        <p><strong>Creating a Gatsby site:</strong></p>
+                        
+                        <pre><code># Create new Gatsby site
+npm create gatsby@latest my-gatsby-site
+
+# Or use yarn
+yarn create gatsby
+
+# Navigate to project
+cd my-gatsby-site
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run develop
+
+# Build for production
+npm run build
+
+# Preview production build
+npm run serve</code></pre>
+                        
+                        <p>After running <code>npm create gatsby@latest</code>, you'll be prompted with options:</p>
+                        <ul>
+                            <li><strong>Project name:</strong> my-gatsby-site</li>
+                            <li><strong>Add TypeScript?</strong> Yes/No</li>
+                            <li><strong>Add ESLint?</strong> Yes/No</li>
+                            <li><strong>Add Tailwind CSS?</strong> Yes/No</li>
+                            <li><strong>Add Cypress for E2E testing?</strong> Yes/No</li>
+                        </ul>
+                        
+                        <p>Default project structure:</p>
+                        <pre><code>my-gatsby-site/
+├── src/
+│   ├── pages/
+│   │   ├── index.js          ← Home page (/)
+│   │   └── about.js          ← About page (/about)
+│   ├── components/
+│   │   └── layout.js         ← Shared layout component
+│   └── assets/
+│       └── images/
+├── gatsby-config.js          ← Main configuration file
+├── gatsby-node.js            ← Node APIs for customizations
+├── package.json
+└── README.md</code></pre>
+                        
+                        <p>The magic happens in <code>src/pages/</code> - every JavaScript file here becomes a page automatically!</p>
+                        
+                        <p>Visit <a href="http://localhost:8000" target="_blank">http://localhost:8000</a> to see your first Gatsby site!</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Uses</summary>
+                    <div class="use-case">
+                        <ul>
+                            <li><strong>Blogs and news sites:</strong> Perfect for content-heavy sites with frequent updates</li>
+                            <li><strong>Documentation portals:</strong> Fast loading improves user experience</li>
+                            <li><strong>Marketing websites:</strong> Instant load times boost conversions</li>
+                            <li><strong>Portfolio websites:</strong> Showcase work with optimal performance</li>
+                            <li><strong>E-commerce product catalogs:</strong> Thousands of product pages generated statically</li>
+                            <li><strong>Developer communities:</strong> Documentation sites like React, Vue, and Angular use Gatsby</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="section-marker" id="24-2"></div>
+                <h2>24.2 GraphQL Data Layer</h2>
+                <p>Gatsby's powerful GraphQL data layer allows you to query data from multiple sources and unify it into a single schema for your components.</p>
+
+                <div class="details-container">
+                    <summary>Definition</summary>
+                    <div>
+                        GraphQL is a query language for APIs and a runtime for fulfilling those queries with your existing data. In Gatsby, it serves as the central data layer that connects content from various sources to your React components.
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Detail</summary>
+                    <div>
+                        <p>Traditional web development often involves juggling multiple data sources:</p>
+                        <ul>
+                            <li>Markdown files for blog posts</li>
+                            <li>CMS for articles</li>
+                            <li>JSON files for configuration</li>
+                            <li>Images from local folder</li>
+                            <li>External APIs for data</li>
+                        </ul>
+                        
+                        <p>Gatsby solves this complexity by creating a unified GraphQL schema from all these sources. Think of it as a database that knows about everything in your project.</p>
+                        
+                        <p>How it works:</p>
+                        <ol>
+                            <li>Gatsby plugins fetch data from various sources</li>
+                            <li>They transform this data into standardized nodes</li>
+                            <li>All nodes are combined into a single GraphQL schema</li>
+                            <li>React components query exactly what they need using GraphQL</li>
+                            <li>At build time, Gatsby executes these queries and injects data into pages</li>
+                        </ol>
+                        
+                        <p>Key advantages:</p>
+                        <ul>
+                            <li><strong>Type safety:</strong> Strong typing prevents errors</li>
+                            <li><strong>Efficiency:</strong> Only fetch what you need</li>
+                            <li><strong>Flexibility:</strong> Combine data from any source</li>
+                            <li><strong>Developer experience:</strong> Auto-completion and documentation</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Syntax</summary>
+                    <div>
+                        <pre><code>// Basic GraphQL query in a page component
+import { graphql } from 'gatsby';
+
+export default function HomePage({ data }) {
+  return (
+    &lt;div&gt;
+      &lt;h1&gt;{data.site.siteMetadata.title}&lt;/h1&gt;
+      &lt;p&gt;Welcome to {data.site.siteMetadata.description}&lt;/p&gt;
+    &lt;/div&gt;
+  );
+}
+
+export const query = graphql`
+  query MyQuery {
+    site {
+      siteMetadata {
+        title
+        description
+      }
+    }
+  }
+`;</code></pre>
+                        
+                        <p>GraphQL uses a declarative syntax:</p>
+                        <ul>
+                            <li><strong>query:</strong> The operation type</li>
+                            <li><strong>field names:</strong> What data you want</li>
+                            <li><strong>nested objects:</strong> Drill down into relationships</li>
+                            <li><strong>fragments:</strong> Reusable query pieces</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Example</summary>
+                    <div class="example-box">
+                        <p><strong>Real-world example: Blog with markdown posts</strong></p>
+                        
+                        <p>First, create some content in <code>content/posts/</code>:</p>
+                        <pre><code>--- 
+title: "My First Blog Post"
+date: "2023-12-01"
+author: "John Doe"
+tags: ["react", "gatsby"]
+---
+
+This is my first blog post written in Markdown!
+
+## Second Heading
+
+Here's some more content with **bold** and *italic* text.
+</code></pre>
+                        
+                        <p>Then query it in your blog listing page:</p>
+                        
+                        <pre><code>// src/pages/blog.js
+import { Link, graphql } from 'gatsby';
+import React from 'react';
+
+export default function BlogPage({ data }) {
+  return (
+    &lt;div style={{ padding: '2rem' }}&gt;
+      &lt;h1&gt;My Blog&lt;/h1&gt;
+      
+      &lt;div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem', marginTop: '2rem' }}&gt;
+        {data.allMdx.nodes.map(post =&gt; (
+          &lt;article key={post.id} style={{ border: '1px solid #1a2a3f', borderRadius: '8px', padding: '1.5rem' }}&gt;
+            &lt;h2 style={{ color: '#00d1ff', marginBottom: '0.5rem' }}&gt;
+              &lt;Link to={post.frontmatter.slug} style={{ color: '#00d1ff', textDecoration: 'none' }}&gt;
+                {post.frontmatter.title}
+              &lt;/Link&gt;
+            &lt;/h2&gt;
+            
+            &lt;div style={{ color: '#a0b8d8', fontSize: '0.9rem', marginBottom: '1rem' }}&gt;
+              By {post.frontmatter.author} • {post.frontmatter.date}
+            &lt;/div&gt;
+            
+            &lt;p style={{ color: '#e6f1ff', marginBottom: '1rem' }}&gt;
+              {post.excerpt}
+            &lt;/p&gt;
+            
+            &lt;div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '1rem' }}&gt;
+              {post.frontmatter.tags.map(tag =&gt; (
+                &lt;span 
+                  key={tag} 
+                  style={{ 
+                    backgroundColor: '#0f2540', 
+                    color: '#00d1ff', 
+                    padding: '0.25rem 0.75rem', 
+                    borderRadius: '12px', 
+                    fontSize: '0.8rem'
+                  }}
+                &gt;
+                  #{tag}
+                &lt;/span&gt;
+              ))}
+            &lt;/div&gt;
+            
+            &lt;Link 
+              to={post.frontmatter.slug} 
+              style={{ 
+                color: '#ffb74d', 
+                fontWeight: 'bold', 
+                textDecoration: 'none' 
+              }}
+            &gt;
+              Read More →
+            &lt;/Link&gt;
+          &lt;/article&gt;
+        ))}
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+export const query = graphql`
+  query BlogQuery {
+    allMdx(
+      sort: { frontmatter: { date: DESC } }
+      filter: { frontmatter: { draft: { ne: true } } }
+    ) {
+      nodes {
+        id
+        frontmatter {
+          title
+          date(formatString: "MMMM DD, YYYY")
+          author
+          slug
+          tags
+        }
+        excerpt(pruneLength: 160)
+      }
+    }
+  }
+`;</code></pre>
+                        
+                        <p>And create a detail page for each post:</p>
+                        
+                        <pre><code>// src/templates/post.js
+import { graphql, Link } from 'gatsby';
+import React from 'react';
+
+export default function PostTemplate({ data }) {
+  const post = data.mdx;
+  
+  return (
+    &lt;div style={{ padding: '2rem', maxWidth: '800px', margin: '0 auto' }}&gt;
+      &lt;Link to="/blog" style={{ color: '#00d1ff', marginBottom: '1rem', display: 'inline-block' }}&gt;
+        ← Back to Blog
+      &lt;/Link&gt;
+      
+      &lt;h1 style={{ color: '#00d1ff', marginBottom: '1rem' }}&gt;{post.frontmatter.title}&lt;/h1&gt;
+      
+      &lt;div style={{ color: '#a0b8d8', fontSize: '0.9rem', marginBottom: '2rem' }}&gt;
+        By {post.frontmatter.author} • {post.frontmatter.date}
+      &lt;/div&gt;
+      
+      &lt;div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginBottom: '2rem' }}&gt;
+        {post.frontmatter.tags.map(tag =&gt; (
+          &lt;span 
+            key={tag} 
+            style={{ 
+              backgroundColor: '#0f2540', 
+              color: '#00d1ff', 
+              padding: '0.25rem 0.75rem', 
+              borderRadius: '12px', 
+              fontSize: '0.8rem'
+            }}
+          &gt;
+            #{tag}
+          &lt;/span&gt;
+        ))}
+      &lt;/div&gt;
+      
+      &lt;div style={{ 
+        backgroundColor: '#0f2540', 
+        padding: '2rem', 
+        borderRadius: '8px',
+        lineHeight: '1.7'
+      }}&gt;
+        {post.body}
+      &lt;/div&gt;
+    &lt;/div&gt;
+  );
+}
+
+export const query = graphql`
+  query PostQuery($slug: String!) {
+    mdx(frontmatter: { slug: { eq: $slug } }) {
+      frontmatter {
+        title
+        date(formatString: "MMMM DD, YYYY")
+        author
+        tags
+      }
+      body
+    }
+  }
+`;</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Gatsby's GraphQL Schema</summary>
+                    <div>
+                        <p>Gatsby automatically creates a comprehensive GraphQL schema from your data sources. Here's how it works:</p>
+                        
+                        <pre><code>type Site {
+  siteMetadata: SiteSiteMetadata
+}
+
+type SiteSiteMetadata {
+  title: String!
+  description: String
+  author: String
+  siteUrl: String
+}
+
+type MdxNode {
+  id: ID!
+  frontmatter: MdxFrontmatter
+  excerpt: String
+  body: String
+  fileAbsolutePath: String
+}
+
+type MdxFrontmatter {
+  title: String
+  date: Date
+  author: String
+  slug: String
+  tags: [String]
+  draft: Boolean
+}</code></pre>
+                        
+                        <p>Each plugin contributes types to this schema:</p>
+                        <ul>
+                            <li><code>gatsby-source-filesystem</code>: Adds File and Mdx types</li>
+                            <li><code>gatsby-source-wordpress</code>: Adds WordPressPost, WordPressMedia, etc.</li>
+                            <li><code>gatsby-source-contentful</code>: Adds ContentfulBlogPost, ContentfulAsset, etc.</li>
+                        </ul>
+                        
+                        <p>Queries can include filtering, sorting, pagination, and nested relationships:</p>
+                        <pre><code>query {
+  allMdx(
+    filter: { frontmatter: { tags: { eq: "react" } } }
+    sort: { frontmatter: { date: DESC } }
+    limit: 10
+    skip: 0
+  ) {
+    nodes {
+      frontmatter {
+        title
+        date
+      }
+      excerpt
+    }
+    totalCount
+  }
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>GraphiQL Explorer</summary>
+                    <div>
+                        <p>Gatsby provides an amazing built-in tool called GraphiQL for exploring your schema:</p>
+                        
+                        <ol>
+                            <li>Start development server: <code>npm run develop</code></li>
+                            <li>Visit <a href="http://localhost:8000/__graphql" target="_blank">http://localhost:8000/__graphql</a></li>
+                            <li>Explore your schema in the left panel</li>
+                            <li>Write and test queries in the center panel</li>
+                            <li>See results in the right panel</li>
+                        </ol>
+                        
+                        <p>Features:</p>
+                        <ul>
+                            <li><strong>Auto-complete:</strong> Press Ctrl+Space for suggestions</li>
+                            <li><strong>Documentation:</strong> Click on types to see descriptions</li>
+                            <li><strong>Validation:</strong> Real-time error checking</li>
+                            <li><strong>History:</strong> Save and reuse queries</li>
+                        </ul>
+                        
+                        <p>Pro tip: Use the "Docs" tab to explore all available types and fields!</p>
+                        
+                        <p>Example query in GraphiQL:</p>
+                        <pre><code>{%
+  allMdx(sort: {frontmatter: {date: DESC}}, limit: 5) {
+    nodes {
+      frontmatter {
+        title
+        date
+        author
+        slug
+      }
+      excerpt(pruneLength: 200)
+    }
+  }
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Uses</summary>
+                    <div class="use-case">
+                        <ul>
+                            <li><strong>Unified data access:</strong> Query everything from one place</li>
+                            <li><strong>Strong typing:</strong> Catch errors at build time</li>
+                            <li><strong>Performance optimization:</strong> Only fetch needed data</li>
+                            <li><strong>Flexibility:</strong> Connect to any data source</li>
+                            <li><strong>Developer experience:</strong> Amazing tooling and autocomplete</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="section-marker" id="24-3"></div>
+                <h2>24.3 Plugins and Themes</h2>
+                <p>Gatsby's ecosystem revolves around plugins and themes that extend functionality and provide reusable configurations.</p>
+
+                <div class="details-container">
+                    <summary>Definition</summary>
+                    <div>
+                        Gatsby plugins are npm packages that extend Gatsby's functionality by adding new features, integrating with external services, or transforming data. Themes are collections of plugins, configurations, and components designed to solve specific use cases.
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Detail</summary>
+                    <div>
+                        <p>Gatsby plugins follow a simple pattern:</p>
+                        <ul>
+                            <li><strong>Source plugins:</strong> Fetch data from external sources (files, APIs, CMS)</li>
+                            <li><strong>Transform plugins:</strong> Convert data into different formats (Markdown to HTML, images to optimized versions)</li>
+                            <li><strong>Theme plugins:</strong> Provide complete solutions with bundled components and configurations</li>
+                            <li><strong>Other plugins:</strong> Add functionality like analytics, sitemaps, RSS feeds</li>
+                        </ul>
+                        
+                        <p>Plugins are configured in <code>gatsby-config.js</code>:</p>
+                        <pre><code>module.exports = {
+  plugins: [
+    'gatsby-plugin-react-helmet',
+    'gatsby-plugin-sitemap',
+    {
+      resolve: 'gatsby-source-filesystem',
+      options: {
+        name: 'pages',
+        path: `${__dirname}/src/pages`,
+      },
+    },
+  ],
+};</code></pre>
+                        
+                        <p>Themes are essentially "plugins on steroids" - they bundle multiple plugins, configurations, and even components together to provide a complete solution.</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Core Plugins</summary>
+                    <div>
+                        <table class="table table-dark table-striped mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Plugin</th>
+                                    <th>Purpose</th>
+                                    <th>Installation</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>gatsby-plugin-react-helmet</code></td>
+                                    <td>Manage document head elements (title, meta tags)</td>
+                                    <td><code>npm install gatsby-plugin-react-helmet</code></td>
+                                </tr>
+                                <tr>
+                                    <td><code>gatsby-plugin-sitemap</code></td>
+                                    <td>Generate sitemap.xml for SEO</td>
+                                    <td><code>npm install gatsby-plugin-sitemap</code></td>
+                                </tr>
+                                <tr>
+                                    <td><code>gatsby-plugin-manifest</code></td>
+                                    <td>Create PWA manifest.json and icons</td>
+                                    <td><code>npm install gatsby-plugin-manifest</code></td>
+                                </tr>
+                                <tr>
+                                    <td><code>gatsby-plugin-offline</code></td>
+                                    <td>Add service worker for offline support</td>
+                                    <td><code>npm install gatsby-plugin-offline</code></td>
+                                </tr>
+                                <tr>
+                                    <td><code>gatsby-plugin-sharp</code></td>
+                                    <td>Optimize image processing</td>
+                                    <td><code>npm install gatsby-plugin-sharp</code></td>
+                                </tr>
+                                <tr>
+                                    <td><code>gatsby-transformer-sharp</code></td>
+                                    <td>Transform images into multiple formats</td>
+                                    <td><code>npm install gatsby-transformer-sharp</code></td>
+                                </tr>
+                                <tr>
+                                    <td><code>gatsby-plugin-mdx</code></td>
+                                    <td>Enable MDX (Markdown with JSX)</td>
+                                    <td><code>npm install gatsby-plugin-mdx @mdx-js/react @mdx-js/loader</code></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Source Plugins</summary>
+                    <div>
+                        <p>Source plugins connect Gatsby to external data sources:</p>
+                        
+                        <table class="table table-dark table-striped mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Plugin</th>
+                                    <th>Source</th>
+                                    <th>Use Case</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>gatsby-source-filesystem</code></td>
+                                    <td>Local files</td>
+                                    <td>Markdown, JSON, images</td>
+                                </tr>
+                                <tr>
+                                    <td><code>gatsby-source-contentful</code></td>
+                                    <td>Contentful CMS</td>
+                                    <td>Headless CMS content</td>
+                                </tr>
+                                <tr>
+                                    <td><code>gatsby-source-wordpress</code></td>
+                                    <td>WordPress</td>
+                                    <td>Migrate WordPress sites</td>
+                                </tr>
+                                <tr>
+                                    <td><code>gatsby-source-stripe</code></td>
+                                    <td>Stripe</td>
+                                    <td>E-commerce product data</td>
+                                </tr>
+                                <tr>
+                                    <td><code>gatsby-source-drupal</code></td>
+                                    <td>Drupal</td>
+                                    <td>Enterprise CMS integration</td>
+                                </tr>
+                                <tr>
+                                    <td><code>gatsby-source-graphql</code></td>
+                                    <td>Any GraphQL API</td>
+                                    <td>Custom backend integrations</td>
+                                </tr>
+                                <tr>
+                                    <td><code>gatsby-source-airtable</code></td>
+                                    <td>Airtable</td>
+                                    <td>Spreadsheet-based content</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <p>Example: Connecting to local Markdown files:</p>
+                        <pre><code>// gatsby-config.js
+module.exports = {
+  plugins: [
+    {
+      resolve: 'gatsby-source-filesystem',
+      options: {
+        name: 'markdown-pages',
+        path: `${__dirname}/src/content/posts`,
+      },
+    },
+    'gatsby-transformer-remark',
+  ],
+};</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Transform Plugins</summary>
+                    <div>
+                        <p>Transform plugins convert data into different formats:</p>
+                        
+                        <table class="table table-dark table-striped mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Plugin</th>
+                                    <th>Transformation</th>
+                                    <th>Result</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>gatsby-transformer-remark</code></td>
+                                    <td>Markdown → HTML + AST</td>
+                                    <td>Rich text content with headings, lists</td>
+                                </tr>
+                                <tr>
+                                    <td><code>gatsby-transformer-json</code></td>
+                                    <td>JSON → GraphQL nodes</td>
+                                    <td>Structured data from JSON files</td>
+                                </tr>
+                                <tr>
+                                    <td><code>gatsby-transformer-sharp</code></td>
+                                    <td>Images → optimized versions</td>
+                                    <td>Multiple sizes, WebP format</td>
+                                </tr>
+                                <tr>
+                                    <td><code>gatsby-transformer-yaml</code></td>
+                                    <td>YAML → GraphQL nodes</td>
+                                    <td>Configuration data from YAML files</td>
+                                </tr>
+                                <tr>
+                                    <td><code>gatsby-transformer-csv</code></td>
+                                    <td>CSV → GraphQL nodes</td>
+                                    <td>Data from spreadsheets</td>
+                                </tr>
+                                <tr>
+                                    <td><code>gatsby-transformer-xml</code></td>
+                                    <td>XML → GraphQL nodes</td>
+                                    <td>Feed data from XML sources</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <p>Example: Processing images with Sharp:</p>
+                        <pre><code>// gatsby-config.js
+module.exports = {
+  plugins: [
+    {
+      resolve: 'gatsby-source-filesystem',
+      options: {
+        name: 'images',
+        path: `${__dirname}/src/images`,
+      },
+    },
+    'gatsby-transformer-sharp',
+    'gatsby-plugin-sharp',
+  ],
+};</code></pre>
+                        
+                        <p>Now you can query optimized images:</p>
+                        <pre><code>query {
+  file(relativePath: { eq: "hero.jpg" }) {
+    childImageSharp {
+      gatsbyImageData(
+        width: 800
+        quality: 90
+        layout: CONSTRAINED
+      )
+    }
+  }
+}</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Creating Custom Plugins</summary>
+                    <div>
+                        <p>To create a custom plugin:</p>
+                        
+                        <ol>
+                            <li>Create directory: <code>my-gatsby-plugin/</code></li>
+                            <li>Create <code>package.json</code>:</li>
+                            <pre><code>{
+  "name": "my-gatsby-plugin",
+  "version": "1.0.0",
+  "main": "gatsby-node.js",
+  "keywords": ["gatsby-plugin"],
+  "peerDependencies": {
+    "gatsby": "^5.0.0"
+  }
+}</code></pre>
+                            
+                            <li>Create <code>gatsby-node.js</code>:</li>
+                            <pre><code>exports.sourceNodes = ({ actions, createNodeId, createContentDigest }) =&gt; {
+  const { createNode } = actions;
+  
+  // Create a custom node
+  const data = {
+    id: createNodeId('custom-data'),
+    internal: {
+      type: 'CustomData',
+      contentDigest: createContentDigest({ message: 'Hello World!' }),
+    },
+    message: 'Hello from custom plugin!',
+  };
+  
+  createNode(data);
+};
+
+exports.onCreateWebpackConfig = ({ stage, actions }) =&gt; {
+  if (stage === 'build-javascript') {
+    actions.setWebpackConfig({
+      resolve: {
+        alias: {
+          '@components': `${__dirname}/src/components`,
+        },
+      },
+    });
+  }
+};</code></pre>
+                            
+                            <li>Install locally: <code>npm install ../my-gatsby-plugin</code></li>
+                            <li>Use in <code>gatsby-config.js</code>: <code>'my-gatsby-plugin'</code></li>
+                        </ol>
+                        
+                        <p>Common plugin types:</p>
+                        <ul>
+                            <li><strong>sourceNodes:</strong> Create nodes from data sources</li>
+                            <li><strong>onCreateWebpackConfig:</strong> Modify Webpack config</li>
+                            <li><strong>createPages:</strong> Programmatically create pages</li>
+                            <li><strong>onPreBootstrap:</strong> Run before Gatsby starts</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Gatsby Themes</summary>
+                    <div>
+                        <p>Gatsby themes are packages that bundle plugins, configurations, and components to solve specific problems:</p>
+                        
+                        <table class="table table-dark table-striped mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Theme</th>
+                                    <th>Purpose</th>
+                                    <th>Usage</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>gatsby-theme-blog</code></td>
+                                    <td>Complete blogging solution</td>
+                                    <td><code>npm install gatsby-theme-blog</code></td>
+                                </tr>
+                                <tr>
+                                    <td><code>gatsby-theme-notes</code></td>
+                                    <td>Documentation site template</td>
+                                    <td><code>npm install gatsby-theme-notes</code></td>
+                                </tr>
+                                <tr>
+                                    <td><code>gatsby-theme-carbon</code></td>
+                                    <td>Carbon Design System theme</td>
+                                    <td><code>npm install gatsby-theme-carbon</code></td>
+                                </tr>
+                                <tr>
+                                    <td><code>gatsby-theme-minimal</code></td>
+                                    <td>Minimalist design template</td>
+                                    <td><code>npm install gatsby-theme-minimal</code></td>
+                                </tr>
+                                <tr>
+                                    <td><code>gatsby-theme-portfolio</code></td>
+                                    <td>Portfolio website template</td>
+                                    <td><code>npm install gatsby-theme-portfolio</code></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <p>Example: Using gatsby-theme-blog:</p>
+                        <pre><code>// gatsby-config.js
+module.exports = {
+  plugins: [
+    {
+      resolve: 'gatsby-theme-blog',
+      options: {
+        basePath: '/blog',
+        contentPath: 'content/posts',
+        assetPath: 'content/assets',
+        markdownExcerptSeparator: '&lt;!-- excerpt --&gt;',
+      },
+    },
+  ],
+};</code></pre>
+                        
+                        <p>Themes can be customized via options and shadowing:</p>
+                        <ul>
+                            <li><strong>Shadowing:</strong> Override theme components by creating files with same path in your project</li>
+                            <li><strong>Options:</strong> Configure behavior through plugin options</li>
+                        </ul>
+                        
+                        <p>Shadowing example:</p>
+                        <pre><code># Override theme's BlogLayout component
+src/
+  gatsby-theme-blog/
+    components/
+      blog-layout.js  ← Your custom version
+</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Uses</summary>
+                    <div class="use-case">
+                        <ul>
+                            <li><strong>Accelerated development:</strong> Reuse proven patterns</li>
+                            <li><strong>Consistent experiences:</strong> Standardize across projects</li>
+                            <li><strong>Reduced maintenance:</strong> Update once, apply everywhere</li>
+                            <li><strong>Community ecosystem:</strong> Leverage thousands of plugins</li>
+                            <li><strong>Specialized solutions:</strong> Blogging, documentation, e-commerce themes</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="section-marker" id="24-4"></div>
+                <h2>24.4 Content Management Integration</h2>
+                <p>Gatsby seamlessly integrates with headless CMS platforms, allowing you to manage content through familiar interfaces while enjoying the performance benefits of static generation.</p>
+
+                <div class="details-container">
+                    <summary>Definition</summary>
+                    <div>
+                        Content Management Integration in Gatsby refers to connecting your static site to a headless CMS, enabling non-technical users to create and edit content through a web interface while Gatsby builds the site with the latest content at deploy time.
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Detail</summary>
+                    <div>
+                        <p>Traditional CMS systems (like WordPress) generate HTML on every request, which can be slow. Headless CMS separates content management from presentation:</p>
+                        
+                        <ul>
+                            <li><strong>Headless CMS:</strong> Provides content via API (JSON/XML)</li>
+                            <li><strong>Frontend:</strong> React/Gatsby consumes API and builds static site</li>
+                        </ul>
+                        
+                        <p>Benefits of headless CMS with Gatsby:</p>
+                        <ul>
+                            <li><strong>Non-technical editors:</strong> Writers use familiar WYSIWYG interfaces</li>
+                            <li><strong>Performance:</strong> Still get static site speeds</li>
+                            <li><strong>Flexibility:</strong> Same content can power web, mobile, and other platforms</li>
+                            <li><strong>Version control:</strong> Content changes trigger new builds</li>
+                            <li><strong>Security:</strong> No direct database exposure</li>
+                        </ul>
+                        
+                        <p>Popular headless CMS options:</p>
+                        <ul>
+                            <li><strong>Contentful:</strong> Most popular, excellent developer experience</li>
+                            <li><strong>Sanity:</strong> Highly customizable, real-time collaboration</li>
+                            <li><strong>Strapi:</strong> Open-source, self-hosted</li>
+                            <li><strong>WordPress:</strong> Legacy but widely used</li>
+                            <li><strong>Markdown files:</strong> Simplest option, version-controlled</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Markdown Files</summary>
+                    <div>
+                        <p>Markdown files are the simplest and most common content source in Gatsby:</p>
+                        
+                        <pre><code>---
+title: "My Blog Post"
+date: "2023-12-01"
+author: "John Doe"
+tags: ["react", "gatsby"]
+draft: false
+---
+
+This is my blog post content.
+
+## Section 1
+
+Some content here.
+
+## Section 2
+
+More content with **bold** and *italic* text.
+</code></pre>
+                        
+                        <p>Configure source plugin:</p>
+                        <pre><code>// gatsby-config.js
+module.exports = {
+  plugins: [
+    {
+      resolve: 'gatsby-source-filesystem',
+      options: {
+        name: 'posts',
+        path: `${__dirname}/src/content/posts`,
+      },
+    },
+    'gatsby-transformer-remark',
+  ],
+};</code></pre>
+                        
+                        <p>Query in component:</p>
+                        <pre><code>query {
+  allMdx(
+    filter: { frontmatter: { draft: { ne: true } } }
+    sort: { frontmatter: { date: DESC } }
+  ) {
+    nodes {
+      frontmatter {
+        title
+        date
+        author
+        tags
+      }
+      excerpt
+      body
+    }
+  }
+}</code></pre>
+                        
+                        <p>Advantages:</p>
+                        <ul>
+                            <li>No external service dependency</li>
+                            <li>Version controlled with Git</li>
+                            <li>Simple and lightweight</li>
+                            <li>Fast builds</li>
+                        </ul>
+                        
+                        <p>Disadvantages:</p>
+                        <ul>
+                            <li>Requires technical knowledge to update</li>
+                            <li>No WYSIWYG editor</li>
+                            <li>No preview functionality</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Headless CMS (Contentful)</summary>
+                    <div>
+                        <p>Contentful is a popular headless CMS that integrates beautifully with Gatsby:</p>
+                        
+                        <ol>
+                            <li>Sign up at <a href="https://www.contentful.com" target="_blank">contentful.com</a></li>
+                            <li>Create a space and get your Space ID and Access Token</li>
+                            <li>Install plugin: <code>npm install gatsby-source-contentful</code></li>
+                            <li>Configure in <code>gatsby-config.js</code>:</li>
+                        </ol>
+                        
+                        <pre><code>// gatsby-config.js
+module.exports = {
+  plugins: [
+    {
+      resolve: 'gatsby-source-contentful',
+      options: {
+        spaceId: 'your-space-id',
+        accessToken: 'your-access-token',
+        host: 'cdn.contentful.com', // Default
+        environment: 'master', // Default
+        downloadLocal: true, // Download media files locally
+      },
+    },
+  ],
+};</code></pre>
+                        
+                        <p>Create a content model in Contentful:</p>
+                        <ul>
+                            <li>Name: Blog Post</li>
+                            <li>Fields: Title (Text), Body (Rich Text), Author (Text), Date (Date), Tags (Text)</li>
+                        </ul>
+                        
+                        <p>Query in component:</p>
+                        <pre><code>query {
+  allContentfulBlogPost(
+    sort: { fields: [publishDate], order: DESC }
+  ) {
+    nodes {
+      title
+      body {
+        raw
+      }
+      author
+      publishDate(formatString: "MMMM DD, YYYY")
+      tags
+    }
+  }
+}</code></pre>
+                        
+                        <p>Advantages:</p>
+                        <ul>
+                            <li>Beautiful admin interface</li>
+                            <li>Visual content modeling</li>
+                            <li>Media library</li>
+                            <li>Preview functionality</li>
+                            <li>Team collaboration</li>
+                        </ul>
+                        
+                        <p>Disadvantages:</p>
+                        <ul>
+                            <li>Free tier has limits</li>
+                            <li>Monthly cost for higher usage</li>
+                            <li>Requires internet connection</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>WordPress Integration</summary>
+                    <div>
+                        <p>Integrate existing WordPress sites with Gatsby:</p>
+                        
+                        <ol>
+                            <li>Install WordPress REST API plugin (usually included)</li>
+                            <li>Install Gatsby plugin: <code>npm install gatsby-source-wordpress</code></li>
+                            <li>Configure:</li>
+                        </ol>
+                        
+                        <pre><code>// gatsby-config.js
+module.exports = {
+  plugins: [
+    {
+      resolve: 'gatsby-source-wordpress',
+      options: {
+        url: 'https://your-wp-site.com/graphql', // Use GraphQL endpoint
+        // OR use REST API:
+        // url: 'https://your-wp-site.com/wp-json',
+        
+        // Settings for WordPress
+        verboseOutput: false,
+        perPage: 100,
+        concurrentRequests: 10,
+        
+        // Media settings
+        protocol: 'https',
+        hostingWPCOM: false,
+        useACF: true,
+        acfOptionPageIds: [],
+        
+        // Type configuration
+        type: {
+          Post: {
+            limit: 500,
+          },
+          Page: {
+            limit: 500,
+          },
+          MediaItem: {
+            limit: 1000,
+          },
+        },
+      },
+    },
+  ],
+};</code></pre>
+                        
+                        <p>Query in component:</p>
+                        <pre><code>query {
+  allWpPost(sort: { fields: [date], order: DESC }) {
+    nodes {
+      title
+      content
+      date
+      excerpt
+      featuredImage {
+        node {
+          localFile {
+            childImageSharp {
+              gatsbyImageData(width: 800)
+            }
+          }
+        }
+      }
+      categories {
+        nodes {
+          name
+        }
+      }
+    }
+  }
+}</code></pre>
+                        
+                        <p>Advantages:</p>
+                        <ul>
+                            <li>Migrate existing WordPress sites</li>
+                            <li>Leverage existing content</li>
+                            <li>Use familiar WordPress interface</li>
+                            <li>Large plugin ecosystem</li>
+                        </ul>
+                        
+                        <p>Disadvantages:</p>
+                        <ul>
+                            <li>Slower builds due to large datasets</li>
+                            <li>Complex configuration</li>
+                            <li>Performance impact with many posts</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Sanity.io Setup</summary>
+                    <div>
+                        <p>Sanity.io is a modern, open-source headless CMS with exceptional developer experience:</p>
+                        
+                        <ol>
+                            <li>Install Sanity CLI: <code>npm install -g @sanity/cli</code></li>
+                            <li>Create project: <code>sanity init</code></li>
+                            <li>Follow prompts to create dataset</li>
+                            <li>Install Gatsby plugin: <code>npm install gatsby-source-sanity</code></li>
+                            <li>Configure in <code>gatsby-config.js</code>:</li>
+                        </ol>
+                        
+                        <pre><code>// gatsby-config.js
+module.exports = {
+  plugins: [
+    {
+      resolve: 'gatsby-source-sanity',
+      options: {
+        projectId: 'your-project-id',
+        dataset: 'production',
+        token: process.env.SANITY_TOKEN, // Optional: for draft preview
+        watchMode: true, // Enable live previews in dev
+        overlayDrafts: true, // Show drafts in dev
+      },
+    },
+  ],
+};</code></pre>
+                        
+                        <p>Create schema in Sanity (<code>schema/types/post.js</code>):</p>
+                        <pre><code>export default {
+  name: 'post',
+  title: 'Post',
+  type: 'document',
+  fields: [
+    {
+      name: 'title',
+      title: 'Title',
+      type: 'string',
+    },
+    {
+      name: 'slug',
+      title: 'Slug',
+      type: 'slug',
+      options: {
+        source: 'title',
+        maxLength: 96,
+      },
+    },
+    {
+      name: 'body',
+      title: 'Body',
+      type: 'blockContent',
+    },
+    {
+      name: 'author',
+      title: 'Author',
+      type: 'reference',
+      to: [{ type: 'author' }],
+    },
+    {
+      name: 'publishedAt',
+      title: 'Published at',
+      type: 'datetime',
+    },
+  ],
+}</code></pre>
+                        
+                        <p>Query in component:</p>
+                        <pre><code>query {
+  allSanityPost(
+    sort: { fields: [publishedAt], order: DESC }
+  ) {
+    nodes {
+      title
+      slug {
+        current
+      }
+      body {
+        ... on BlockContent {
+          _key
+          _type
+          children {
+            _key
+            text
+          }
+        }
+      }
+      author {
+        name
+      }
+      publishedAt
+    }
+  }
+}</code></pre>
+                        
+                        <p>Advantages:</p>
+                        <ul>
+                            <li>Real-time collaboration</li>
+                            <li>Schema-as-code approach</li>
+                            <li>Powerful querying</li>
+                            <li>Excellent developer tools</li>
+                            <li>Open-source</li>
+                        </ul>
+                        
+                        <p>Disadvantages:</p>
+                        <ul>
+                            <li>Steeper learning curve</li>
+                            <li>Requires setup</li>
+                            <li>Self-hosting adds complexity</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Uses</summary>
+                    <div class="use-case">
+                        <ul>
+                            <li><strong>Blogs:</strong> Editors write posts in CMS</li>
+                            <li><strong>News sites:</strong> Journalists publish stories</li>
+                            <li><strong>E-commerce:</strong> Product managers update inventory</li>
+                            <li><strong>Documentation:</strong> Technical writers maintain guides</li>
+                            <li><strong>Portfolios:</strong> Artists upload new work</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="section-marker" id="24-5"></div>
+                <h2>24.5 Performance Optimization</h2>
+                <p>Gatsby excels at performance optimization, but there are additional techniques to make your site even faster and more efficient.</p>
+
+                <div class="details-container">
+                    <summary>Definition</summary>
+                    <div>
+                        Performance optimization in Gatsby involves implementing techniques to reduce page load times, minimize resource sizes, improve rendering speed, and enhance user experience metrics like Core Web Vitals.
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Detail</summary>
+                    <div>
+                        <p>Gatsby automatically optimizes many aspects of your site:</p>
+                        <ul>
+                            <li>Code splitting by page</li>
+                            <li>Image optimization</li>
+                            <li>Preloading critical resources</li>
+                            <li>Minification and compression</li>
+                            <li>Cache headers</li>
+                        </ul>
+                        
+                        <p>However, you can go further with these advanced techniques:</p>
+                        
+                        <h4>Core Web Vitals Metrics:</h4>
+                        <ul>
+                            <li><strong>Largest Contentful Paint (LCP):</strong> When largest element loads</li>
+                            <li><strong>First Input Delay (FID):</strong> Responsiveness</li>
+                            <li><strong>Cumulative Layout Shift (CLS):</strong> Visual stability</li>
+                        </ul>
+                        
+                        <p>Target scores:</p>
+                        <ul>
+                            <li>LCP: Less than 2.5s</li>
+                            <li>FID: Less than 100ms</li>
+                            <li>CLS: Less than 0.1</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Image Optimization</summary>
+                    <div>
+                        <p>Gatsby's image optimization is powered by Sharp and offers multiple approaches:</p>
+                        
+                        <h4>1. gatsby-plugin-image (Recommended)</h4>
+                        <pre><code>// Install
+npm install gatsby-plugin-image gatsby-plugin-sharp gatsby-transformer-sharp</code></pre>
+                        
+                        <pre><code>// gatsby-config.js
+module.exports = {
+  plugins: [
+    'gatsby-plugin-sharp',
+    'gatsby-transformer-sharp',
+    'gatsby-plugin-image',
+  ],
+};</code></pre>
+                        
+                        <pre><code>// In component
+import { GatsbyImage, getImage } from 'gatsby-plugin-image';
+
+export default function Hero() {
+  const image = getImage(data.file.childImageSharp);
+  
+  return (
+    &lt;GatsbyImage 
+      image={image} 
+      alt="Hero image" 
+      layout="fullWidth"
+      quality={90}
+    /&gt;
+  );
+}</code></pre>
+                        
+                        <h4>2. gatsby-source-filesystem + gatsby-transformer-sharp</h4>
+                        <pre><code>query {
+  file(relativePath: { eq: "hero.jpg" }) {
+    childImageSharp {
+      gatsbyImageData(
+        width: 800
+        quality: 90
+        layout: CONSTRAINED
+        formats: [AUTO, WEBP, AVIF]
+      )
+    }
+  }
+}</code></pre>
+                        
+                        <h4>3. Lazy loading and placeholders</h4>
+                        <pre><code>&lt;GatsbyImage 
+  image={image} 
+  alt="Product image" 
+  loading="lazy"
+  placeholder="blurred"
+/&gt;</code></pre>
+                        
+                        <p>Pro tips:</p>
+                        <ul>
+                            <li>Always specify width and height</li>
+                            <li>Use appropriate quality (70-90% is usually sufficient)</li>
+                            <li>Convert PNG to JPG when transparency isn't needed</li>
+                            <li>Use WebP/AVIF formats</li>
+                            <li>Compress images before uploading</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Code Splitting</summary>
+                    <div>
+                        <p>Gatsby automatically splits code by page, but you can optimize further:</p>
+                        
+                        <h4>1. Dynamic Imports for Heavy Components</h4>
+                        <pre><code>// Instead of importing at top
+import HeavyComponent from './HeavyComponent';
+
+// Use dynamic import
+import { lazy, Suspense } from 'react';
+
+const HeavyComponent = lazy(() =&gt; import('./HeavyComponent'));
+
+export default function Page() {
+  return (
+    &lt;div&gt;
+      &lt;Suspense fallback="Loading..."&gt;
+        &lt;HeavyComponent /&gt;
+      &lt;/Suspense&gt;
+    &lt;/div&gt;
+  );
+}</code></pre>
+                        
+                        <h4>2. Route-Based Code Splitting</h4>
+                        <p>Ensure large libraries are loaded only when needed:</p>
+                        <pre><code>// Don't do this (loads everywhere)
+import moment from 'moment';
+
+// Do this (load only when needed)
+const loadMoment = async () =&gt; {
+  const moment = await import('moment');
+  return moment.default;
+};
+
+// Use in effect
+useEffect(() =&gt; {
+  loadMoment().then(moment =&gt; {
+    // Use moment here
+  });
+}, []);</code></pre>
+                        
+                        <h4>3. Bundle Analysis</h4>
+                        <pre><code>// Install analyzer
+npm install --save-dev gatsby-plugin-webpack-bundle-analyser-v2
+
+// gatsby-config.js
+module.exports = {
+  plugins: [
+    {
+      resolve: 'gatsby-plugin-webpack-bundle-analyser-v2',
+      options: {
+        analyzer: 'static',
+        openAnalyzer: false,
+        reportFilename: 'bundle-report.html',
+      },
+    },
+  ],
+};</code></pre>
+                        
+                        <p>Run: <code>npm run build</code> then check <code>public/bundle-report.html</code></p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Prefetching & Preloading</summary>
+                    <div>
+                        <p>Optimize navigation between pages:</p>
+                        
+                        <h4>1. Gatsby's Automatic Prefetching</h4>
+                        <p>Gatsby automatically prefetches linked pages as you hover over links.</p>
+                        
+                        <h4>2. Manual Prefetching</h4>
+                        <pre><code>import { navigate } from 'gatsby';
+
+// Prefetch a page
+export const prefetchPage = (path) =&gt; {
+  if (typeof window !== 'undefined') {
+    window.___loader.enqueue(path);
+  }
+};
+
+// Usage
+&lt;a 
+  href="/about" 
+  onMouseEnter={() =&gt; prefetchPage('/about')}
+  onClick={(e) =&gt; {
+    e.preventDefault();
+    navigate('/about');
+  }}
+&gt;
+  About
+&lt;/a&gt;</code></pre>
+                        
+                        <h4>3. Preloading Critical Resources</h4>
+                        <pre><code>// gatsby-ssr.js
+exports.onRenderBody = ({ setHeadComponents }) =&gt; {
+  setHeadComponents([
+    &lt;link
+      key="preload-font"
+      rel="preload"
+      as="font"
+      type="font/woff2"
+      href="/fonts/inter-var-latin.woff2"
+      crossOrigin="anonymous"
+    /&gt;
+  ]);
+};</code></pre>
+                        
+                        <h4>4. Preconnect for External Domains</h4>
+                        <pre><code>// gatsby-ssr.js
+exports.onRenderBody = ({ setHeadComponents }) =&gt; {
+  setHeadComponents([
+    &lt;link
+      key="preconnect-google-analytics"
+      rel="preconnect"
+      href="https://www.googletagmanager.com"
+    /&gt;
+  ]);
+};</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Lighthouse Optimization</summary>
+                    <div>
+                        <p>Run Lighthouse audits regularly:</p>
+                        
+                        <ol>
+                            <li>In Chrome DevTools → Lighthouse tab</li>
+                            <li>Or run from command line: <code>npx lighthouse https://your-site.com</code></li>
+                            <li>Or use online tools: <a href="https://pagespeed.web.dev/" target="_blank">pagespeed.web.dev</a></li>
+                        </ol>
+                        
+                        <p>Common issues and fixes:</p>
+                        
+                        <table class="table table-dark table-striped mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Issue</th>
+                                    <th>Fix</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Unoptimized images</td>
+                                    <td>Use gatsby-plugin-image with proper sizing</td>
+                                </tr>
+                                <tr>
+                                    <td>Render-blocking resources</td>
+                                    <td>Move scripts to bottom, use defer/async</td>
+                                </tr>
+                                <tr>
+                                    <td>Unused CSS/JS</td>
+                                    <td>Remove unused libraries, code-split</td>
+                                </tr>
+                                <tr>
+                                    <td>Large JavaScript bundles</td>
+                                    <td>Analyze with webpack bundle analyzer</td>
+                                </tr>
+                                <tr>
+                                    <td>Missing alt text</td>
+                                    <td>Add descriptive alt attributes to all images</td>
+                                </tr>
+                                <tr>
+                                    <td>Slow server response</td>
+                                    <td>Use CDN, optimize build process</td>
+                                </tr>
+                                <tr>
+                                    <td>Large DOM size</td>
+                                    <td>Reduce unnecessary elements, virtualize lists</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <p>Target score: 90+ for best practices, 95+ for performance</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Uses</summary>
+                    <div class="use-case">
+                        <ul>
+                            <li><strong>E-commerce:</strong> Faster load times increase conversion rates</li>
+                            <li><strong>Blogs:</strong> Improved retention with fast reading experience</li>
+                            <li><strong>Marketing sites:</strong> Better SEO rankings</li>
+                            <li><strong>Documentation:</strong> Professional appearance with snappy performance</li>
+                            <li><strong>Global audiences:</strong> Reduced latency worldwide</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="section-marker" id="24-6"></div>
+                <h2>24.6 Deployment Strategies</h2>
+                <p>Deploying your Gatsby site involves publishing the static files generated during the build process to a hosting platform.</p>
+
+                <div class="details-container">
+                    <summary>Definition</summary>
+                    <div>
+                        Deployment strategies in Gatsby refer to the methods and platforms used to publish the static HTML, CSS, and JavaScript files generated during the build process to make them accessible to users on the internet.
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Detail</summary>
+                    <div>
+                        <p>Since Gatsby generates static files, you have incredible flexibility in deployment:</p>
+                        
+                        <ul>
+                            <li><strong>Static hosting:</strong> Serve files from CDN (fastest)</li>
+                            <li><strong>CI/CD pipelines:</strong> Automate builds on code changes</li>
+                            <li><strong>Git integration:</strong> Deploy directly from repositories</li>
+                            <li><strong>Environment variables:</strong> Manage secrets securely</li>
+                            <li><strong>Preview deployments:</strong> Test changes before merging</li>
+                        </ul>
+                        
+                        <p>Key advantage: No servers to manage! Just upload files.</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Vercel Deployment</summary>
+                    <div>
+                        <p>Vercel is the official platform for Gatsby and offers seamless integration:</p>
+                        
+                        <ol>
+                            <li>Go to <a href="https://vercel.com" target="_blank">vercel.com</a> and sign up</li>
+                            <li>Click "Add New Project"</li>
+                            <li>Connect your GitHub/GitLab/Bitbucket account</li>
+                            <li>Select your Gatsby repository</li>
+                            <li>Configure build settings:</li>
+                        </ol>
+                        
+                        <pre><code>Build Command: npm run build
+Output Directory: public</code></pre>
+                        
+                        <p>That's it! Vercel will:</p>
+                        <ul>
+                            <li>Automatically detect Gatsby project</li>
+                            <li>Run <code>npm run build</code> on every push</li>
+                            <li>Deploy to global CDN</li>
+                            <li>Provide HTTPS by default</li>
+                            <li>Generate preview URLs for PRs</li>
+                        </ul>
+                        
+                        <p>For environment variables:</p>
+                        <ul>
+                            <li>Go to Project Settings → Environment Variables</li>
+                            <li>Add variables like <code>CONTENTFUL_SPACE_ID</code>, <code>CONTENTFUL_ACCESS_TOKEN</code></li>
+                            <li>Mark as "Secret" for sensitive values</li>
+                        </ul>
+                        
+                        <p>Pro tip: Enable "Automatic Deploys" so every push triggers a new build!</p>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Netlify Deployment</summary>
+                    <div>
+                        <p>Netlify is another excellent option for Gatsby sites:</p>
+                        
+                        <ol>
+                            <li>Go to <a href="https://app.netlify.com" target="_blank">netlify.com</a> and sign up</li>
+                            <li>Click "New site from Git"</li>
+                            <li>Connect your GitHub/GitLab/Bitbucket account</li>
+                            <li>Select your repository</li>
+                            <li>Configure build settings:</li>
+                        </ol>
+                        
+                        <pre><code>Build command: npm run build
+Publish directory: public</code></pre>
+                        
+                        <p>Netlify will automatically:</p>
+                        <ul>
+                            <li>Run your build script</li>
+                            <li>Deploy to global CDN</li>
+                            <li>Provide free SSL certificates</li>
+                            <li>Generate unique URL</li>
+                        </ul>
+                        
+                        <p>Advanced features:</p>
+                        <ul>
+                            <li><strong>Forms:</strong> Handle form submissions without backend</li>
+                            <li><strong>Redirects:</strong> Create redirects in netlify.toml</li>
+                            <li><strong>Headers:</strong> Set cache headers</li>
+                            <li><strong>Functions:</strong> Serverless functions</li>
+                        </ul>
+                        
+                        <p>Example netlify.toml:</p>
+                        <pre><code>[build]
+  publish = "public"
+  command = "npm run build"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000"
+
+[[redirects]]
+  from = "/old-page"
+  to = "/new-page"
+  status = 301</code></pre>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>GitHub Pages</summary>
+                    <div>
+                        <p>GitHub Pages is a free hosting option for static sites:</p>
+                        
+                        <ol>
+                            <li>Create a repository named <code>&lt;username&gt;.github.io</code> (for user sites)</li>
+                            <li>Or use any repository for project sites</li>
+                            <li>Install gh-pages package: <code>npm install gh-pages --save-dev</code></li>
+                            <li>Add scripts to package.json:</li>
+                        </ol>
+                        
+                        <pre><code>// package.json
+{
+  "scripts": {
+    "build": "gatsby build",
+    "deploy": "gh-pages -d public"
+  }
+}</code></pre>
+                        
+                        <ol start="4">
+                            <li>Configure Gatsby site URL in gatsby-config.js:</li>
+                        </ol>
+                        
+                        <pre><code>// gatsby-config.js
+module.exports = {
+  siteMetadata: {
+    siteUrl: 'https://yourusername.github.io/your-repo-name',
+  },
+  // ...
+};</code></pre>
+                        
+                        <ol start="5">
+                            <li>Commit and push to GitHub</li>
+                            <li>Run: <code>npm run deploy</code></li>
+                            <li>Go to repository → Settings → Pages</li>
+                            <li>Set source to "GitHub Actions" or "gh-pages" branch</li>
+                        </ol>
+                        
+                        <p>Advantages:</p>
+                        <ul>
+                            <li>Free hosting</li>
+                            <li>Integration with GitHub</li>
+                            <li>Simple workflow</li>
+                        </ul>
+                        
+                        <p>Disadvantages:</p>
+                        <ul>
+                            <li>Only for public repositories</li>
+                            <li>Slower CDN than Vercel/Netlify</li>
+                            <li>No automatic previews</li>
+                            <li>Custom domains require manual DNS setup</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>CI/CD Pipelines</summary>
+                    <div>
+                        <p>Automate your deployment workflow:</p>
+                        
+                        <pre><code># .github/workflows/deploy.yml
+name: Deploy to Vercel
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build
+        run: npm run build
+        
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          org-id: ${{ secrets.VERCEL_ORG_ID }}
+          project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          scope: ${{ secrets.VERCEL_SCOPE }}</code></pre>
+                        
+                        <p>For Netlify:</p>
+                        <pre><code># .github/workflows/deploy.yml
+name: Deploy to Netlify
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build
+        run: npm run build
+        
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v1.1
+        with:
+          publish-dir: './public'
+          production-deployment: true
+          enable-pull-request-comment: false
+          enable-commit-comment: false
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}</code></pre>
+                        
+                        <p>Benefits of CI/CD:</p>
+                        <ul>
+                            <li>Consistent builds</li>
+                            <li>Automatic rollback on failure</li>
+                            <li>Test before deploy</li>
+                            <li>Notifications on success/failure</li>
+                            <li>Deployment history</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Final Checklist Before Deployment</summary>
+                    <div>
+                        <ul>
+                            <li>✅ Run <code>npm run build</code> locally to test production build</li>
+                            <li>✅ Check for broken links with <code>gatsby-develop</code> or link checker</li>
+                            <li>✅ Optimize all images with gatsby-plugin-image</li>
+                            <li>✅ Configure environment variables for CMS connections</li>
+                            <li>✅ Set up proper canonical URLs</li>
+                            <li>✅ Generate sitemap.xml and robots.txt</li>
+                            <li>✅ Test on mobile devices and different browsers</li>
+                            <li>✅ Run Lighthouse audit (target 90+)</li>
+                            <li>✅ Verify analytics tracking is working</li>
+                            <li>✅ Set up custom domain and SSL certificate</li>
+                            <li>✅ Configure redirects for old URLs</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="details-container">
+                    <summary>Deployment Comparison</summary>
+                    <div>
+                        <table class="table table-dark table-striped mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Platform</th>
+                                    <th>Speed</th>
+                                    <th>Free Tier</th>
+                                    <th>CI/CD</th>
+                                    <th>Preview</th>
+                                    <th>Best For</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Vercel</td>
+                                    <td>⭐⭐⭐⭐⭐</td>
+                                    <td>Yes</td>
+                                    <td>Yes</td>
+                                    <td>Yes</td>
+                                    <td>Most Gatsby sites</td>
+                                </tr>
+                                <tr>
+                                    <td>Netlify</td>
+                                    <td>⭐⭐⭐⭐⭐</td>
+                                    <td>Yes</td>
+                                    <td>Yes</td>
+                                    <td>Yes</td>
+                                    <td>Complex sites with forms</td>
+                                </tr>
+                                <tr>
+                                    <td>GitHub Pages</td>
+                                    <td>⭐⭐⭐</td>
+                                    <td>Yes</td>
+                                    <td>Manual</td>
+                                    <td>No</td>
+                                    <td>Simple personal sites</td>
+                                </tr>
+                                <tr>
+                                    <td>Cloudflare Pages</td>
+                                    <td>⭐⭐⭐⭐</td>
+                                    <td>Yes</td>
+                                    <td>Yes</td>
+                                    <td>Yes</td>
+                                    <td>Performance-focused sites</td>
+                                </tr>
+                                <tr>
+                                    <td>Amazon S3 + CloudFront</td>
+                                    <td>⭐⭐⭐⭐</td>
+                                    <td>Pay-as-you-go</td>
+                                    <td>Manual</td>
+                                    <td>No</td>
+                                    <td>Enterprise scale</td>
+                                </tr>
+                                <tr>
+                                    <td>Google Cloud Storage</td>
+                                    <td>⭐⭐⭐⭐</td>
+                                    <td>Pay-as-you-go</td>
+                                    <td>Manual</td>
+                                    <td>No</td>
+                                    <td>Existing Google ecosystem</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <p class="highlight"><strong>Recommendation:</strong> For most Gatsby sites, choose Vercel. It's the most seamless integration with zero configuration and excellent developer experience.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS + Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Expand/Collapse All Controls
+            document.getElementById('expandAll').addEventListener('click', function() {
+                document.querySelectorAll('.details-container').forEach(el => {
+                    el.setAttribute('open', '');
+                });
+            });
+
+            document.getElementById('collapseAll').addEventListener('click', function() {
+                document.querySelectorAll('.details-container').forEach(el => {
+                    el.removeAttribute('open');
+                });
+            });
+
+            // TOC Search
+            document.getElementById('searchToc').addEventListener('input', function(e) {
+                const searchTerm = e.target.value.toLowerCase();
+                const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
+                
+                tocItems.forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    if (text.includes(searchTerm)) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+
+            // Smooth Scroll to TOC items
+            document.querySelectorAll('.toc-item, .toc-subitem').forEach(item => {
+                item.addEventListener('click', function() {
+                    const targetId = this.getAttribute('data-target');
+                    const element = document.getElementById(targetId);
+                    if (element) {
+                        window.scrollTo({
+                            top: element.offsetTop - 100,
+                            behavior: 'smooth'
+                        });
+                        
+                        // Highlight active item
+                        document.querySelectorAll('.toc-item').forEach(i => i.classList.remove('active'));
+                        document.querySelectorAll('.toc-subitem').forEach(i => i.classList.remove('active'));
+                        this.classList.add('active');
+                    }
+                });
+            });
+
+            // Auto highlight current section on scroll
+            const sections = document.querySelectorAll('[id^="24-"]');
+            const navLinks = document.querySelectorAll('.toc-item, .toc-subitem');
+
+            window.addEventListener('scroll', () => {
+                let current = '';
+
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop - 150;
+                    const sectionHeight = section.clientHeight;
+                    if (pageYOffset >= sectionTop && pageYOffset < sectionTop + sectionHeight) {
+                        current = section.id;
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('data-target') === current) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+
+            // Add copy button to code blocks
+            document.querySelectorAll('pre').forEach(pre => {
+                const button = document.createElement('button');
+                button.innerHTML = '<i class="fas fa-copy"></i>';
+                button.className = 'copy-btn';
+                button.style.position = 'absolute';
+                button.style.top = '10px';
+                button.style.right = '10px';
+                button.style.background = 'rgba(0, 209, 255, 0.2)';
+                button.style.color = '#00d1ff';
+                button.style.border = 'none';
+                button.style.padding = '5px 10px';
+                button.style.borderRadius = '4px';
+                button.style.cursor = 'pointer';
+                button.style.fontSize = '0.8rem';
+                button.style.zIndex = '10';
+                
+                button.addEventListener('click', () => {
+                    const text = pre.querySelector('code').textContent;
+                    navigator.clipboard.writeText(text).then(() => {
+                        button.innerHTML = '<i class="fas fa-check"></i>';
+                        setTimeout(() => {
+                            button.innerHTML = '<i class="fas fa-copy"></i>';
+                        }, 1500);
+                    });
+                });
+                
+                pre.style.position = 'relative';
+                pre.appendChild(button);
+            });
+        });
+    </script>
+
+    <!-- Highlight.js for syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/monokai.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+</html>
+```
