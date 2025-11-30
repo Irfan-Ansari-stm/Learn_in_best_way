@@ -1,0 +1,922 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 12: CSS Custom Properties (Variables)</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0a192f;
+            --bg-secondary: #112240;
+            --text-primary: #e6f1ff;
+            --text-secondary: #b8c5d6;
+            --accent-cyan: #00f5ff;
+            --accent-amber: #ffb74d;
+            --border-color: #2d4a70;
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: 'Roboto', sans-serif;
+            overflow-x: hidden;
+        }
+
+        .container-fluid {
+            display: flex;
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Left Panel - Fixed Width */
+        .left-panel {
+            width: 300px;
+            background-color: var(--bg-secondary);
+            border-right: 1px solid var(--border-color);
+            padding: 20px;
+            overflow-y: auto;
+            position: fixed;
+            height: 100vh;
+            box-shadow: 4px 0 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .left-panel h3 {
+            color: var(--accent-cyan);
+            border-bottom: 1px solid var(--accent-cyan);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+        .left-panel .toc-item {
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .left-panel .toc-item:hover {
+            color: var(--accent-amber);
+        }
+
+        .left-panel .toc-subitem {
+            margin-left: 15px;
+            margin-bottom: 6px;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .left-panel .toc-subitem:hover {
+            color: var(--accent-amber);
+        }
+
+        .search-box {
+            background-color: var(--bg-primary);
+            border: 1px solid var(--accent-cyan);
+            color: var(--text-primary);
+            margin-bottom: 20px;
+            padding: 8px 12px;
+            border-radius: 4px;
+            width: 100%;
+        }
+
+        .btn-toggle-all {
+            background-color: var(--accent-cyan);
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            font-size: 0.85rem;
+            margin-bottom: 15px;
+            width: 100%;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-toggle-all:hover {
+            background-color: var(--accent-amber);
+        }
+
+        .author-info {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px dashed var(--border-color);
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* Right Panel - Scrollable Content */
+        .right-panel {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 40px 50px;
+            max-height: 100vh;
+            background-color: var(--bg-primary);
+        }
+
+        .right-panel h1, .right-panel h2, .right-panel h3, .right-panel h4 {
+            color: var(--accent-cyan);
+            margin-top: 30px;
+            margin-bottom: 15px;
+            font-weight: 700;
+        }
+
+        .right-panel h1 {
+            font-size: 2.2rem;
+            border-bottom: 2px solid var(--accent-cyan);
+            padding-bottom: 10px;
+        }
+
+        .right-panel h2 {
+            font-size: 1.8rem;
+            border-left: 4px solid var(--accent-amber);
+            padding-left: 15px;
+        }
+
+        .right-panel h3 {
+            font-size: 1.5rem;
+            color: var(--accent-amber);
+        }
+
+        .right-panel p {
+            line-height: 1.7;
+            margin-bottom: 20px;
+            color: var(--text-secondary);
+        }
+
+        .right-panel code {
+            background-color: rgba(0, 245, 255, 0.1);
+            color: var(--accent-cyan);
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Roboto Mono', monospace;
+            font-size: 0.95rem;
+        }
+
+        pre {
+            background-color: var(--bg-secondary);
+            border-left: 4px solid var(--accent-cyan);
+            border-radius: 6px;
+            padding: 18px;
+            margin: 20px 0;
+            overflow-x: auto;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        pre code {
+            background: transparent;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+        }
+
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.1);
+            border-left: 3px solid var(--accent-amber);
+            padding: 12px;
+            margin: 20px 0;
+            border-radius: 0 6px 6px 0;
+        }
+
+        details {
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            overflow: hidden;
+            background-color: rgba(17, 34, 64, 0.5);
+        }
+
+        summary {
+            padding: 14px 20px;
+            background-color: var(--bg-primary);
+            color: var(--accent-cyan);
+            font-weight: 700;
+            cursor: pointer;
+            list-style: none;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 1.1rem;
+            position: relative;
+        }
+
+        summary::before {
+            content: "▶";
+            margin-right: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        details[open] > summary::before {
+            transform: rotate(90deg);
+        }
+
+        details > div {
+            padding: 18px 20px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .formula {
+            background-color: rgba(0, 245, 255, 0.1);
+            border: 1px solid var(--accent-cyan);
+            padding: 12px;
+            border-radius: 6px;
+            margin: 15px 0;
+            font-family: 'Roboto Mono', monospace;
+            text-align: center;
+            color: var(--accent-cyan);
+            font-size: 1.1rem;
+        }
+
+        .badge {
+            background-color: var(--accent-amber);
+            color: var(--bg-primary);
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-left: 8px;
+        }
+
+        .table-of-contents a {
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .table-of-contents a:hover {
+            color: var(--accent-amber);
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 991px) {
+            .container-fluid {
+                flex-direction: column;
+            }
+            .left-panel {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .right-panel {
+                padding: 20px;
+            }
+        }
+
+        /* Smooth scrolling for anchor links */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Syntax Highlighting for Code Blocks */
+        .language-css { color: var(--accent-cyan); }
+        .language-js { color: var(--accent-amber); }
+        .property { color: var(--accent-cyan); }
+        .value { color: var(--accent-amber); }
+        .comment { color: #888; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+  
+        <!-- Right Panel -->
+        <div class="right-panel">
+            <h1>CSS Custom Properties (Variables)</h1>
+            <p><em>Unlock dynamic, maintainable, and theme-ready styles with native CSS variables — the modern way to manage design systems.</em></p>
+
+            <!-- Section 12.1 -->
+            <section id="section-12-1">
+                <h2>12.1 Custom Property Basics</h2>
+
+                <details>
+                    <summary>Defining and using custom properties</summary>
+                    <div>
+                        <p><strong>Definition:</strong> CSS Custom Properties (also called CSS Variables) are entities defined by authors that contain specific values to be reused throughout a document. They are set using the <code>--*</code> syntax.</p>
+                        
+                        <p><strong>Syntax:</strong></p>
+                        <pre><code class="language-css">:root {
+  --primary-color: #00f5ff;
+  --font-size-base: 16px;
+  --spacing-unit: 8px;
+}
+
+.button {
+  background-color: var(--primary-color);
+  font-size: var(--font-size-base);
+  padding: calc(var(--spacing-unit) * 2);
+}</code></pre>
+
+                        <p><strong>Key Points:</strong></p>
+                        <ul>
+                            <li>Variables must be declared within a selector context — typically <code>:root</code> for global scope.</li>
+                            <li>Use <code>var(--name)</code> to reference them anywhere in your CSS.</li>
+                            <li>Variable names are case-sensitive: <code>--Color</code> ≠ <code>--color</code>.</li>
+                        </ul>
+
+                        <p><strong>Example:</strong> Define a color palette globally and reuse it across components.</p>
+                        <div class="highlight">
+                            <pre><code class="language-css">:root {
+  --brand-accent: #ffb74d;
+  --text-dark: #1a1a1a;
+  --text-light: #f5f5f5;
+}
+
+header { background: var(--brand-accent); color: var(--text-light); }
+footer { background: var(--text-dark); color: var(--text-light); }</code></pre>
+                        </div>
+                    </div>
+                </details>
+
+                <details>
+                    <summary>Inheritance and scope</summary>
+                    <div>
+                        <p><strong>Definition:</strong> CSS variables inherit down the DOM tree like regular CSS properties. Their value is determined by the nearest ancestor declaration.</p>
+
+                        <p><strong>Detail:</strong> Unlike preprocessors (Sass/Less), CSS variables are <em>runtime</em> variables — they follow the cascade and inheritance model of CSS itself.</p>
+
+                        <p><strong>Example:</strong></p>
+                        <pre><code class="language-css">:root {
+  --color: blue;
+}
+
+.container {
+  --color: red;
+}
+
+.box {
+  color: var(--color); /* → red */
+}
+
+.inner-box {
+  --color: green;
+}
+
+.inner-box .box {
+  color: var(--color); /* → green */
+}</code></pre>
+
+                        <p><strong>Visualization:</strong></p>
+                        <div class="highlight">
+                            <p>Imagine variables as water flowing through pipes — each parent can change the flow, and children receive the latest version.</p>
+                        </div>
+
+                        <p><strong>Best Practice:</strong> Always define global variables on <code>:root</code>. Override locally only when needed for component-specific customization.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary>Fallback values</summary>
+                    <div>
+                        <p><strong>Definition:</strong> The <code>var()</code> function accepts an optional second argument — a fallback value — used if the variable is undefined or invalid.</p>
+
+                        <p><strong>Syntax:</strong></p>
+                        <pre><code class="language-css">element {
+  color: var(--undefined-variable, #000);
+  padding: var(--padding, 10px);
+}</code></pre>
+
+                        <p><strong>Example:</strong></p>
+                        <pre><code class="language-css">.card {
+  border-color: var(--card-border, #ccc);
+  border-width: var(--card-border-width, 1px);
+  border-style: solid;
+}</code></pre>
+
+                        <p>If <code>--card-border</code> is not defined anywhere, the browser uses <code>#ccc</code> automatically.</p>
+
+                        <p><strong>Advanced Fallback Chain:</strong></p>
+                        <pre><code class="language-css">background-color: var(--theme-bg, var(--default-bg, #fff));</code></pre>
+                        <p>This checks <code>--theme-bg</code> first, then falls back to <code>--default-bg</code>, then finally <code>#fff</code>.</p>
+
+                        <p><strong>Why it matters:</strong> Fallbacks make your CSS resilient during development, debugging, or when using third-party themes.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary>vs preprocessor variables</summary>
+                    <div>
+                        <p><strong>Preprocessor Variables (Sass/Less):</strong></p>
+                        <ul>
+                            <li>Compile-time substitution — replaced before CSS is sent to browser.</li>
+                            <li>Cannot change at runtime.</li>
+                            <li>No inheritance or cascade — static replacement.</li>
+                            <li>Require build step (Node.js, Webpack, etc.)</li>
+                        </ul>
+
+                        <p><strong>CSS Custom Properties:</strong></p>
+                        <ul>
+                            <li>Runtime variables — modifiable via JavaScript.</li>
+                            <li>Follow CSS cascade and inheritance.</li>
+                            <li>Dynamic theming without rebuilds.</li>
+                            <li>No build tools required — pure CSS.</li>
+                        </ul>
+
+                        <p><strong>Example Comparison:</strong></p>
+                        <pre><code class="language-scss">// Sass (compile-time)
+$primary: #00f5ff;
+.btn { background: $primary; } 
+// → compiles to: .btn { background: #00f5ff; }
+
+/* CSS Variable (runtime) */
+:root { --primary: #00f5ff; }
+.btn { background: var(--primary); }
+// → remains dynamic — can be changed in JS!</code></pre>
+
+                        <p><strong>Takeaway:</strong> Use CSS variables for dynamic UIs (themes, user preferences). Use preprocessors for complex logic (mixins, functions, loops).</p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- Section 12.2 -->
+            <section id="section-12-2">
+                <h2>12.2 Advanced Custom Property Techniques</h2>
+
+                <details>
+                    <summary>CSS custom properties with calc()</summary>
+                    <div>
+                        <p><strong>Definition:</strong> The <code>calc()</code> function allows mathematical expressions with CSS units and variables.</p>
+
+                        <p><strong>Syntax:</strong></p>
+                        <pre><code class="language-css">element {
+  width: calc(var(--base-width) + 20px);
+  margin: calc(var(--spacing) / 2);
+  font-size: calc(1rem + 0.5vw);
+}</code></pre>
+
+                        <p><strong>Important Rules:</strong></p>
+                        <ul>
+                            <li>Always use spaces around operators: <code>calc(10px + 5px)</code> ✅, <code>calc(10px+5px)</code> ❌</li>
+                            <li>You can mix units: pixels, percentages, ems, rems, vw/vh</li>
+                            <li>Variables inside <code>calc()</code> resolve at runtime</li>
+                        </ul>
+
+                        <p><strong>Real-World Example: Fluid Typography Scale</strong></p>
+                        <pre><code class="language-css">:root {
+  --base-font: 16px;
+  --scale-factor: 1.2;
+}
+
+h1 { font-size: calc(var(--base-font) * var(--scale-factor) * 2); }
+h2 { font-size: calc(var(--base-font) * var(--scale-factor)); }
+h3 { font-size: var(--base-font); }</code></pre>
+
+                        <p><strong>Responsive Enhancement:</strong></p>
+                        <pre><code class="language-css">@media (min-width: 768px) {
+  :root {
+    --base-font: 18px;
+  }
+}</code></pre>
+                        <p>Now <em>all</em> headings scale responsively without rewriting rules!</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary>Dynamic theming and dark mode</summary>
+                    <div>
+                        <p><strong>Definition:</strong> CSS variables enable real-time theme switching — perfect for dark/light mode toggles.</p>
+
+                        <p><strong>Implementation Strategy:</strong></p>
+                        <ol>
+                            <li>Define two sets of variables: one for light, one for dark.</li>
+                            <li>Toggle a class on <code>&lt;html&gt;</code> or <code>&lt;body&gt;</code>.</li>
+                            <li>Override variables based on that class.</li>
+                        </ol>
+
+                        <p><strong>Code Example:</strong></p>
+                        <pre><code class="language-css">:root {
+  --bg-color: #ffffff;
+  --text-color: #333333;
+  --card-bg: #f8f9fa;
+  --border-color: #e0e0e0;
+}
+
+[data-theme="dark"] {
+  --bg-color: #0a192f;
+  --text-color: #e6f1ff;
+  --card-bg: #112240;
+  --border-color: #2d4a70;
+}
+
+body {
+  background-color: var(--bg-color);
+  color: var(--text-color);
+}
+
+.card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+}</code></pre>
+
+                        <p><strong>JavaScript Toggle:</strong></p>
+                        <pre><code class="language-javascript">const toggleTheme = () => {
+  const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+  const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', newTheme);
+  localStorage.setItem('theme', newTheme);
+};
+
+// On page load
+if (localStorage.getItem('theme') === 'dark') {
+  document.documentElement.setAttribute('data-theme', 'dark');
+}</code></pre>
+
+                        <p><strong>Benefits:</strong></p>
+                        <ul>
+                            <li>No page reload needed</li>
+                            <li>Smooth transitions possible with <code>transition: all 0.3s ease</code></li>
+                            <li>Accessible via OS preference using <code>prefers-color-scheme</code></li>
+                        </ul>
+                    </div>
+                </details>
+
+                <details>
+                    <summary>Component-level custom properties</summary>
+                    <div>
+                        <p><strong>Definition:</strong> Declare custom properties directly on a component's root element to allow consumers to override styling without modifying the component’s CSS file.</p>
+
+                        <p><strong>Why It Matters:</strong> Enables true component reusability — think “design tokens” per instance.</p>
+
+                        <p><strong>Example: Reusable Button Component</strong></p>
+                        <pre><code class="language-css">.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  font-weight: bold;
+  cursor: pointer;
+  background-color: var(--btn-bg, #00f5ff);
+  color: var(--btn-text, #000);
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  background-color: var(--btn-bg-hover, #00c7d6);
+}</code></pre>
+
+                        <p><strong>HTML Usage:</strong></p>
+                        <pre><code class="language-html">&lt;button class="btn" style="--btn-bg: #ffb74d; --btn-text: #000; --btn-bg-hover: #e6a33d"&gt;
+  Warning Button
+&lt;/button&gt;
+
+&lt;button class="btn" style="--btn-bg: #00f5ff; --btn-text: #000; --btn-bg-hover: #00c7d6"&gt;
+  Info Button
+&lt;/button&gt;</code></pre>
+
+                        <p><strong>Advantage:</strong> No need for 10 different CSS classes (<code>.btn-warning</code>, <code>.btn-info</code>) — one component, infinite variations.</p>
+
+                        <p><strong>Pro Tip:</strong> Combine with CSS classes for defaults:</p>
+                        <pre><code class="language-css">.btn--danger {
+  --btn-bg: #ff4757;
+  --btn-text: #fff;
+  --btn-bg-hover: #ff3344;
+}</code></pre>
+                    </div>
+                </details>
+
+                <details>
+                    <summary>CSS custom properties and JavaScript</summary>
+                    <div>
+                        <p><strong>Definition:</strong> JavaScript can read and write CSS custom properties using the <code>getPropertyValue()</code> and <code>setProperty()</code> methods on the <code>style</code> property.</p>
+
+                        <p><strong>Reading Values:</strong></p>
+                        <pre><code class="language-javascript">const root = document.documentElement;
+const primaryColor = getComputedStyle(root).getPropertyValue('--primary-color');
+console.log(primaryColor); // → "rgb(0, 245, 255)"</code></pre>
+
+                        <p><strong>Writing Values Dynamically:</strong></p>
+                        <pre><code class="language-javascript">document.documentElement.style.setProperty('--primary-color', '#ffb74d');</code></pre>
+
+                        <p><strong>Real-Time Slider Example:</strong></p>
+                        <pre><code class="language-html">&lt;input type="range" min="10" max="30" value="16" id="fontSizeSlider"&gt;
+&lt;p id="demoText"&gt;Adjust font size with slider!&lt;/p&gt;</code></pre>
+
+                        <pre><code class="language-javascript">const slider = document.getElementById('fontSizeSlider');
+const demoText = document.getElementById('demoText');
+
+slider.addEventListener('input', () => {
+  document.documentElement.style.setProperty('--base-font', slider.value + 'px');
+  demoText.textContent = `Current font size: ${slider.value}px`;
+});</code></pre>
+
+                        <p><strong>Use Cases:</strong></p>
+                        <ul>
+                            <li>Live theme editors</li>
+                            <li>User preference panels</li>
+                            <li>Animation triggers</li>
+                            <li>Dynamic grid layouts based on viewport</li>
+                        </ul>
+
+                        <p><strong>Performance Note:</strong> Writing to CSS variables is fast — no layout recalculations unless the property affects layout (like <code>width</code> or <code>font-size</code>).</p>
+                    </div>
+                </details>
+            </section>
+
+            <!-- Section 12.3 -->
+            <section id="section-12-3">
+                <h2>12.3 Design Systems with Custom Properties</h2>
+
+                <details>
+                    <summary>Color systems and semantic naming</summary>
+                    <div>
+                        <p><strong>Definition:</strong> Semantic naming means using meaningful names instead of literal colors (e.g., <code>--primary-color</code> instead of <code>--blue-500</code>).</p>
+
+                        <p><strong>Bad Practice:</strong></p>
+                        <pre><code class="language-css">:root {
+  --blue-500: #00f5ff;
+  --red-500: #ff4757;
+}
+
+.header { background: var(--blue-500); }
+.alert { color: var(--red-500); }</code></pre>
+
+                        <p><strong>Good Practice — Semantic Naming:</strong></p>
+                        <pre><code class="language-css">:root {
+  --color-primary: #00f5ff;
+  --color-danger: #ff4757;
+  --color-success: #2ed573;
+}
+
+.header { background: var(--color-primary); }
+.alert { color: var(--color-danger); }
+.success-badge { background: var(--color-success); }</code></pre>
+
+                        <p><strong>Why?</strong> If you later decide to change the primary color from cyan to amber, you only update one variable — not every occurrence of <code>#00f5ff</code>.</p>
+
+                        <p><strong>Scale Example:</strong></p>
+                        <pre><code class="language-css">:root {
+  --color-neutral-50: #f8f9fa;
+  --color-neutral-100: #e9ecef;
+  --color-neutral-200: #dee2e6;
+  --color-neutral-300: #ced4da;
+  --color-neutral-400: #adb5bd;
+  --color-neutral-500: #6c757d;
+  --color-neutral-600: #495057;
+  --color-neutral-700: #343a40;
+  --color-neutral-800: #212529;
+  --color-neutral-900: #1a1a1a;
+}</code></pre>
+
+                        <p>Now you can create consistent tones across UI elements while keeping meaning clear.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary>Spacing scales and typography scales</summary>
+                    <div>
+                        <p><strong>Definition:</strong> A spacing scale defines a system of consistent distances (margins, paddings). A typography scale defines consistent font sizes.</p>
+
+                        <p><strong>Spacing Scale Example:</strong></p>
+                        <pre><code class="language-css">:root {
+  --space-0: 0px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 16px;
+  --space-4: 24px;
+  --space-5: 32px;
+  --space-6: 48px;
+}
+
+.container {
+  padding: var(--space-4);
+}
+
+.card {
+  margin-bottom: var(--space-3);
+  padding: var(--space-2);
+}
+
+.btn {
+  padding: var(--space-2) var(--space-4);
+}</code></pre>
+
+                        <p><strong>Typography Scale Example (Using Ratio):</strong></p>
+                        <pre><code class="language-css">:root {
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+}</code></pre>
+
+                        <p><strong>Combine with CSS Units for Responsiveness:</strong></p>
+                        <pre><code class="language-css">@media (min-width: 768px) {
+  :root {
+    --font-size-md: 1.1rem;
+    --font-size-lg: 1.25rem;
+  }
+}</code></pre>
+
+                        <p><strong>Benefit:</strong> Your entire UI becomes predictable, scalable, and easy to audit. Designers and developers speak the same language.</p>
+                    </div>
+                </details>
+
+                <details>
+                    <summary>Component tokens and global tokens</summary>
+                    <div>
+                        <p><strong>Global Tokens:</strong> Shared across the entire application. Define foundational values.</p>
+                        <pre><code class="language-css">:root {
+  --color-primary: #00f5ff;
+  --font-main: 'Roboto', sans-serif;
+  --radius-small: 4px;
+  --shadow-default: 0 4px 8px rgba(0,0,0,0.1);
+  --transition-fast: 0.2s ease;
+}</code></pre>
+
+                        <p><strong>Component Tokens:</strong> Specific to a component, often overriding or extending global tokens.</p>
+                        <pre><code class="language-css">.modal {
+  --modal-bg: rgba(10, 25, 47, 0.95);
+  --modal-shadow: 0 20px 40px rgba(0, 245, 255, 0.2);
+  --modal-radius: 12px;
+  --modal-padding: 2rem;
+}</code></pre>
+
+                        <p><strong>Usage Pattern:</strong></p>
+                        <pre><code class="language-css">.modal {
+  background: var(--modal-bg, var(--bg-color));
+  border-radius: var(--modal-radius, var(--radius-small));
+  box-shadow: var(--modal-shadow, var(--shadow-default));
+  padding: var(--modal-padding, var(--space-4));
+}</code></pre>
+
+                        <p><strong>Benefits:</strong></p>
+                        <ul>
+                            <li>Components are self-contained but still theme-aware.</li>
+                            <li>Designers can tweak component appearance without touching core tokens.</li>
+                            <li>Easy to swap entire themes by changing just global tokens.</li>
+                        </ul>
+
+                        <p><strong>Tooling Tip:</strong> Document tokens in a JSON or Markdown file:</p>
+                        <pre><code class="language-json">{
+  "global": {
+    "color-primary": "#00f5ff",
+    "font-main": "'Roboto', sans-serif"
+  },
+  "component-modal": {
+    "bg": "rgba(10,25,47,0.95)",
+    "shadow": "0 20px 40px rgba(0,245,255,0.2)"
+  }
+}</code></pre>
+                    </div>
+                </details>
+
+                <details>
+                    <summary>Maintenance and documentation strategies</summary>
+                    <div>
+                        <p><strong>Problem:</strong> Without documentation, custom properties become a mystery over time.</p>
+
+                        <p><strong>Strategy 1: Centralized Token File</strong></p>
+                        <pre><code class="language-css">/* tokens.css */
+:root {
+  /* COLORS */
+  --color-primary: #00f5ff;
+  --color-secondary: #ffb74d;
+  
+  /* SPACING */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  
+  /* TYPOGRAPHY */
+  --font-size-h1: 2.5rem;
+  --font-family-heading: 'Inter', sans-serif;
+  
+  /* SHADOWS & EFFECTS */
+  --shadow-elevated: 0 8px 20px rgba(0,0,0,0.15);
+}</code></pre>
+
+                        <p><strong>Strategy 2: Documentation Comments</strong></p>
+                        <pre><code class="language-css">/**
+ * Global Design Tokens
+ * 
+ * Color Palette:
+ *   --color-primary     : Cyan accent (main brand)
+ *   --color-secondary   : Amber accent (CTA buttons)
+ * 
+ * Spacing System:
+ *   --space-xs          : 4px  (icon padding)
+ *   --space-sm          : 8px  (button inner padding)
+ *   --space-md          : 16px (card padding)
+ * 
+ * Typography:
+ *   --font-size-h1      : 2.5rem (Page headers)
+ *   --font-size-body    : 1rem   (Default paragraph)
+ */</code></pre>
+
+                        <p><strong>Strategy 3: Style Guide Integration</strong></p>
+                        <p>Generate a live style guide using tools like:</p>
+                        <ul>
+                            <li><strong>Style Dictionary</strong> — converts CSS vars to JSON, SCSS, iOS/Android configs</li>
+                            <li><strong>Storybook</strong> — visualize components with token overrides</li>
+                            <li><strong>CSS Custom Properties Inspector</strong> — browser dev tools show all custom props</li>
+                        </ul>
+
+                        <p><strong>Strategy 4: Version Control & Naming Conventions</strong></p>
+                        <p>Adopt a strict naming pattern:</p>
+                        <pre><code class="language-css">--[category]-[name]--[modifier]
+Examples:
+--color-text-primary
+--spacing-card-vertical
+--radius-button
+--transition-hover
+--z-index-dropdown</code></pre>
+
+                        <p><strong>Final Tip:</strong> Treat CSS variables like API endpoints — once published, avoid breaking changes. Use deprecation notices and gradual migration.</p>
+                    </div>
+                </details>
+            </section>
+
+            <hr style="border-color: var(--border-color); margin: 50px 0;">
+            <h3 style="color: var(--accent-amber);">🎓 Summary: Why CSS Variables Are Revolutionary</h3>
+            <ul>
+                <li><strong>Dynamic</strong> — change at runtime with JavaScript</li>
+                <li><strong>Inheritable</strong> — respect CSS cascade</li>
+                <li><strong>Universal</strong> — supported everywhere (no build step)</li>
+                <li><strong>Scalable</strong> — foundation for enterprise design systems</li>
+                <li><strong>Accessible</strong> — enables user-customizable themes easily</li>
+            </ul>
+            <p class="mt-4"><strong>Next Step:</strong> Build a full design system using these principles — start with a color scale, then spacing, then component tokens. Document everything.</p>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Expand/Collapse All
+        document.getElementById('toggleAll').addEventListener('click', function() {
+            const details = document.querySelectorAll('details');
+            const isAllOpen = Array.from(details).every(d => d.open);
+            
+            details.forEach(detail => {
+                detail.open = !isAllOpen;
+            });
+            
+            this.textContent = isAllOpen ? 'Expand All' : 'Collapse All';
+        });
+
+        // Search TOC
+        document.getElementById('searchTOC').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
+            
+            tocItems.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (text.includes(searchTerm)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        // Smooth Scroll to Section on Click
+        document.querySelectorAll('[data-target]').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('data-target');
+                const targetElement = document.getElementById(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Auto-scroll to hash on page load
+        window.addEventListener('load', function() {
+            if (window.location.hash) {
+                const target = document.querySelector(window.location.hash);
+                if (target) {
+                    setTimeout(() => {
+                        window.scrollTo({
+                            top: target.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }, 100);
+                }
+            }
+        });
+
+        // Simple syntax highlighting (basic)
+        document.querySelectorAll('pre code').forEach(block => {
+            hljs.highlightBlock(block);
+        });
+
+        // Initialize highlight.js (if available)
+        if (typeof hljs !== 'undefined') {
+            hljs.configure({ languages: ['css', 'javascript'] });
+        }
+    </script>
+</body>
+</html>
+```

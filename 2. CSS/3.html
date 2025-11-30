@@ -1,0 +1,1178 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 3: The Box Model</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00d1ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --text-muted: #b3cde6;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            background-color: rgba(10, 25, 47, 0.9);
+            border-right: 1px solid var(--cyan);
+            height: 100vh;
+            position: fixed;
+            width: 300px;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 5px 0 15px rgba(0, 209, 255, 0.1);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--amber);
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: var(--amber);
+            border-bottom: 2px solid var(--amber);
+        }
+
+        .toc-item {
+            margin: 8px 0;
+            padding-left: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .toc-item a {
+            color: var(--text-muted);
+            text-decoration: none;
+            display: block;
+            transition: color 0.3s;
+        }
+
+        .toc-item a:hover {
+            color: var(--cyan);
+        }
+
+        .toc-subitem {
+            margin-left: 20px;
+            font-size: 0.9em;
+            color: var(--text-muted);
+        }
+
+        .toc-subitem a {
+            color: var(--text-muted);
+        }
+
+        .toc-subitem a:hover {
+            color: var(--cyan);
+        }
+
+        details {
+            margin: 15px 0;
+            border-left: 3px solid var(--amber);
+            padding-left: 15px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border-radius: 0 5px 5px 0;
+        }
+
+        summary {
+            cursor: pointer;
+            color: var(--amber);
+            font-weight: bold;
+            font-size: 1.1rem;
+            list-style: none;
+            padding: 10px;
+            background-color: rgba(0, 209, 255, 0.05);
+            border-radius: 5px;
+            margin-bottom: 5px;
+            transition: all 0.3s ease;
+        }
+
+        summary:hover {
+            background-color: rgba(0, 209, 255, 0.1);
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary::before {
+            content: "▶ ";
+            color: var(--amber);
+        }
+
+        details[open] summary::before {
+            content: "▼ ";
+            color: var(--amber);
+        }
+
+        pre code {
+            display: block;
+            padding: 16px;
+            overflow-x: auto;
+            background-color: #0d1b2a;
+            border-radius: 5px;
+            border-left: 4px solid var(--amber);
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--cyan);
+        }
+
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.1);
+            padding: 2px 5px;
+            border-radius: 3px;
+            color: var(--amber);
+            font-weight: 500;
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: #000;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+
+        .btn-control {
+            background-color: rgba(0, 209, 255, 0.1);
+            border: 1px solid var(--cyan);
+            color: var(--cyan);
+            margin: 10px 0;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .btn-control:hover {
+            background-color: var(--cyan);
+            color: #000;
+            transform: translateY(-2px);
+        }
+
+        .search-box {
+            background-color: rgba(0, 209, 255, 0.1);
+            border: 1px solid var(--cyan);
+            color: var(--text-light);
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            width: 100%;
+        }
+
+        .section-header {
+            border-bottom: 2px dashed var(--cyan);
+            padding-bottom: 10px;
+            margin: 30px 0 20px;
+            color: var(--amber);
+        }
+
+        .box-model-diagram {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: rgba(13, 27, 42, 0.7);
+            border: 1px dashed var(--cyan);
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .box-layer {
+            position: absolute;
+            border: 1px dashed var(--cyan);
+            background-color: rgba(0, 209, 255, 0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--cyan);
+            font-size: 0.8rem;
+            font-weight: bold;
+            text-align: center;
+            pointer-events: none;
+        }
+
+        .content-layer {
+            background-color: rgba(10, 25, 47, 0.8);
+            border: 1px solid var(--amber);
+            color: var(--amber);
+        }
+
+        .padding-layer {
+            background-color: rgba(0, 209, 255, 0.1);
+        }
+
+        .border-layer {
+            background-color: rgba(255, 183, 77, 0.1);
+            border: 1px solid var(--amber);
+        }
+
+        .margin-layer {
+            background-color: rgba(10, 25, 47, 0.3);
+            border: 1px dashed var(--cyan);
+        }
+
+        .dimension-label {
+            position: absolute;
+            color: var(--amber);
+            font-size: 0.7rem;
+            font-weight: bold;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        .code-example {
+            background-color: rgba(13, 27, 42, 0.7);
+            border-left: 3px solid var(--cyan);
+            padding: 12px;
+            border-radius: 0 5px 5px 0;
+            margin: 15px 0;
+        }
+
+        .margin-collapse-demo {
+            margin: 20px 0;
+            padding: 15px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border: 1px dashed var(--cyan);
+            border-radius: 5px;
+        }
+
+        .centering-demo {
+            margin: 20px auto;
+            width: 200px;
+            height: 100px;
+            background-color: var(--amber);
+            color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-weight: bold;
+        }
+
+        .border-radius-demo {
+            width: 150px;
+            height: 150px;
+            background-color: var(--cyan);
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+            font-weight: bold;
+        }
+
+        .aspect-ratio-demo {
+            width: 300px;
+            height: 150px;
+            background-color: var(--amber);
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #000;
+            font-weight: bold;
+            border: 1px dashed var(--cyan);
+        }
+
+        .footer-note {
+            margin-top: 50px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid rgba(0, 209, 255, 0.2);
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 991px) {
+            .left-panel {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding: 15px;
+            }
+            .right-panel {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Left Panel -->
+            <div class="col-md-3 left-panel">
+                <h2>Module 3: The Box Model</h2>
+                <p class="text-muted small">The fundamental concept that governs every element's space on the web</p>
+                <hr>
+                
+                <div class="mb-3">
+                    <input type="text" class="search-box" id="toc-search" placeholder="Search topics...">
+                </div>
+
+                <button class="btn-control w-100 mb-2" id="expand-all">Expand All</button>
+                <button class="btn-control w-100 mb-3" id="collapse-all">Collapse All</button>
+
+                <h5 class="text-uppercase text-muted fw-bold mb-3">Table of Contents</h5>
+                
+                <div class="toc-item">
+                    <a href="#sec-3-1">3.1 Understanding the Box Model</a>
+                    <div class="toc-subitem">
+                        <a href="#content-padding-border-margin">• Content, padding, border, margin</a>
+                        <a href="#box-sizing">• Box-sizing property (content-box vs border-box)</a>
+                        <a href="#dev-tools">• Visual representation and developer tools</a>
+                    </div>
+                </div>
+                
+                <div class="toc-item">
+                    <a href="#sec-3-2">3.2 Margins and Padding</a>
+                    <div class="toc-subitem">
+                        <a href="#shorthand-longhand">• Shorthand vs longhand properties</a>
+                        <a href="#margin-collapse">• Margin collapse behavior</a>
+                        <a href="#negative-margins">• Negative margins and their uses</a>
+                        <a href="#auto-margins">• Auto margins for centering</a>
+                    </div>
+                </div>
+                
+                <div class="toc-item">
+                    <a href="#sec-3-3">3.3 Borders and Outlines</a>
+                    <div class="toc-subitem">
+                        <a href="#border-properties">• Border properties (width, style, color)</a>
+                        <a href="#border-radius">• Border radius for rounded corners</a>
+                        <a href="#border-images">• Border images</a>
+                        <a href="#outlines-vs-borders">• Outlines vs borders</a>
+                    </div>
+                </div>
+                
+                <div class="toc-item">
+                    <a href="#sec-3-4">3.4 Width and Height</a>
+                    <div class="toc-subitem">
+                        <a href="#setting-dimensions">• Setting dimensions</a>
+                        <a href="#min-max-dimensions">• Min/max width and height</a>
+                        <a href="#percentage-vs-fixed">• Percentage vs fixed units</a>
+                        <a href="#aspect-ratios">• Aspect ratios and maintaining proportions</a>
+                    </div>
+                </div>
+                
+                <div class="mt-5">
+                    <p class="text-muted small">
+                        <strong>Author:</strong> Web Dev Mentor<br>
+                        <small>For Deep Understanding Only</small>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="col-md-9 right-panel">
+                <h1>The Box Model</h1>
+                <p class="lead text-muted">Every HTML element is a box — master its dimensions to control layout with precision</p>
+
+                <!-- 3.1 Understanding the Box Model -->
+                <section id="sec-3-1">
+                    <h2>3.1 Understanding the Box Model</h2>
+                    <p class="text-muted">The box model is the foundation of CSS layout. Every element is treated as a rectangular box composed of four layers.</p>
+
+                    <details>
+                        <summary>Content, padding, border, margin</summary>
+                        <p>Imagine a package you're sending in the mail:</p>
+                        <ul>
+                            <li><strong>Content:</strong> The actual item inside (text, image, video)</li>
+                            <li><strong>Padding:</strong> Bubble wrap around the item (space between content and border)</li>
+                            <li><strong>Border:</strong> The cardboard box itself</li>
+                            <li><strong>Margin:</strong> The space between your box and other boxes on the shelf</li>
+                        </ul>
+                        <div class="box-model-diagram" style="position: relative; width: 400px; height: 200px;">
+                            <!-- Margin Layer -->
+                            <div class="box-layer margin-layer" style="width: 100%; height: 100%; top: 0; left: 0;">
+                                Margin
+                            </div>
+                            <!-- Border Layer -->
+                            <div class="box-layer border-layer" style="width: 90%; height: 90%; top: 5%; left: 5%;">
+                                Border
+                            </div>
+                            <!-- Padding Layer -->
+                            <div class="box-layer padding-layer" style="width: 80%; height: 80%; top: 10%; left: 10%;">
+                                Padding
+                            </div>
+                            <!-- Content Layer -->
+                            <div class="box-layer content-layer" style="width: 70%; height: 70%; top: 15%; left: 15%;">
+                                Content
+                            </div>
+
+                            <!-- Labels -->
+                            <div class="dimension-label" style="top: -15px; left: 150px;">height</div>
+                            <div class="dimension-label" style="top: 90px; left: -30px;">width</div>
+                            
+                            <!-- Arrows -->
+                            <svg style="position: absolute; width: 100%; height: 100%; top: 0; left: 0; pointer-events: none;" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Vertical arrow -->
+                                <line x1="200" y1="20" x2="200" y2="180" stroke="#00d1ff" stroke-width="1" stroke-dasharray="4,2"/>
+                                <polygon points="195,175 200,185 205,175" fill="#00d1ff"/>
+                                
+                                <!-- Horizontal arrow -->
+                                <line x1="20" y1="100" x2="380" y2="100" stroke="#00d1ff" stroke-width="1" stroke-dasharray="4,2"/>
+                                <polygon points="375,95 385,100 375,105" fill="#00d1ff"/>
+                            </svg>
+                        </div>
+                        <p><strong>Visual Formula:</strong></p>
+                        <pre><code>
+Total Element Width = width + padding-left + padding-right + border-left + border-right + margin-left + margin-right
+
+Total Element Height = height + padding-top + padding-bottom + border-top + border-bottom + margin-top + margin-bottom
+                        </code></pre>
+                        <p><strong>Example:</strong></p>
+                        <div class="code-example">
+                            <pre><code>
+.box {
+    width: 200px;
+    padding: 20px;
+    border: 5px solid amber;
+    margin: 10px;
+}
+
+/* Total width = 200 + 20 + 20 + 5 + 5 + 10 + 10 = 270px */
+/* Total height = 200 + 20 + 20 + 5 + 5 + 10 + 10 = 270px */
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Box-sizing property (content-box vs border-box)</summary>
+                        <p>By default, CSS uses <code>content-box</code> — which makes sizing unpredictable. Use <code>border-box</code> for sanity!</p>
+                        <table class="table table-dark mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Property</th>
+                                    <th>Width Includes</th>
+                                    <th>Behavior</th>
+                                    <th>Use Case</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>content-box</code> (default)</td>
+                                    <td>Only content</td>
+                                    <td>Padding and border add to total width</td>
+                                    <td>Rarely used in modern design</td>
+                                </tr>
+                                <tr>
+                                    <td><code>border-box</code></td>
+                                    <td>Content + padding + border</td>
+                                    <td>Total width stays exactly as set</td>
+                                    <td>✅ Recommended for ALL projects</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p><strong>Example Comparison:</strong></p>
+                        <div class="code-example">
+                            <pre><code>
+/* Default behavior (content-box) */
+.box1 {
+    width: 200px;
+    padding: 20px;
+    border: 5px solid amber;
+    /* Actual width = 250px! */
+}
+
+/* Modern behavior (border-box) */
+.box2 {
+    width: 200px;
+    padding: 20px;
+    border: 5px solid amber;
+    box-sizing: border-box;
+    /* Actual width = 200px! */
+}
+                            </code></pre>
+                        </div>
+                        <p><strong>Pro Tip:</strong> Set this globally at the start of your CSS:</p>
+                        <pre><code>
+* {
+    box-sizing: border-box;
+}
+                        </code></pre>
+                        <p>This single line prevents 90% of layout bugs in modern web development.</p>
+                    </details>
+
+                    <details>
+                        <summary>Visual representation and developer tools</summary>
+                        <p>Chrome DevTools show the box model visually — your best friend for debugging!</p>
+                        <ol>
+                            <li>Right-click any element → "Inspect"</li>
+                            <li>In Elements panel → Styles tab → Scroll to "Computed" section</li>
+                            <li>Look for the box model diagram below the styles</li>
+                        </ol>
+                        <p><strong>What you'll see:</strong></p>
+                        <div class="code-example">
+                            <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAAEsCAYAAAB5fY51AAAABHNCSVQICAgIfAhkiAAAAAlwSFlzAAALEgAACxIB0t1+/AAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoAAAGWSURBVFiF7ZZNTsMwEIXvV+qKkR1WuB8A5OYD0GnIwQ/g6i04oCvJrTt0wQ24sA640g24cB88AIdO4B7k3o04jg+8x38k8Z3Y899fZu51u61q975Z5u48T2v75v39+748393u57759897227v388f5v799205968/3557P77/2773339/798X9+93v777972/v7//+72/f9+3759f3773339/798X9+93v777972/v7//+72/f9+3759f3773339/798X9+93v777972/v7//+72/f9+3759f3773339/798X9+93v777972/v7//+72/f9+3759f3773339/798X9+93v777972/v7//+72/f9+3759f3773339/798X9+93v777972/v7//+72/f9+3759f3773339/798X9+93v777972/v7//+72/f9+3759f3773339/798X9+93v777972/v7//+72/f9+3759f3773339/798X9+93v777972/v7//+72/f9+3759f3773339/798X9+93v777972/v7//+72/f9+3759f3773339/798X9+93v777972/v7//+72/f9+3759f3773339/798X9+93v777972/v7//+72/f9+3759f3773339/798X9+93v777972/v7//+72/f9+3759f3773339/798X9+93v777972/v7//+72/f9+3759f3773339/798X9+93v777972/v7//+72/f9+......" alt="Box Model Visualization in DevTools" style="max-width: 100%; height: auto; border-radius: 5px;">
+                        </div>
+                        <p><strong>Key Features:</strong></p>
+                        <ul>
+                            <li>Color-coded layers (blue = margin, green = border, yellow = padding, red = content)</li>
+                            <li>Interactive dimensions — hover over values to see highlights</li>
+                            <li>Real-time editing — change values and see immediate visual feedback</li>
+                        </ul>
+                        <p><strong>Pro Tip:</strong> Use this tool when your layout doesn't look right. The box model diagram reveals exactly where space is being consumed.</p>
+                    </details>
+                </section>
+
+                <!-- 3.2 Margins and Padding -->
+                <section id="sec-3-2">
+                    <h2>3.2 Margins and Padding</h2>
+                    <p class="text-muted">Margins control external spacing, padding controls internal spacing — both are crucial for visual harmony.</p>
+
+                    <details>
+                        <summary>Shorthand vs longhand properties</summary>
+                        <p>CSS provides shorthand notations to write margins and padding more efficiently.</p>
+                        <table class="table table-dark mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Property</th>
+                                    <th>Longhand</th>
+                                    <th>Shorthand</th>
+                                    <th>Example</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Margin</td>
+                                    <td>margin-top, margin-right, margin-bottom, margin-left</td>
+                                    <td>margin: top right bottom left;</td>
+                                    <td><code>margin: 10px 20px 15px 5px;</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Padding</td>
+                                    <td>padding-top, padding-right, padding-bottom, padding-left</td>
+                                    <td>padding: top right bottom left;</td>
+                                    <td><code>padding: 10px 20px 15px 5px;</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Two-value</td>
+                                    <td>margin-top/bottom, margin-left/right</td>
+                                    <td>margin: vertical horizontal;</td>
+                                    <td><code>margin: 10px 20px;</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Three-value</td>
+                                    <td>margin-top, margin-left/right, margin-bottom</td>
+                                    <td>margin: top horizontal bottom;</td>
+                                    <td><code>margin: 10px 20px 15px;</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Single-value</td>
+                                    <td>All four sides equal</td>
+                                    <td>margin: all;</td>
+                                    <td><code>margin: 15px;</code></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p><strong>Memory Trick:</strong> Think "TRouBLe" — Top, Right, Bottom, Left</p>
+                        <pre><code>
+/* All these are equivalent */
+margin-top: 10px;
+margin-right: 20px;
+margin-bottom: 15px;
+margin-left: 5px;
+
+/* Shorthand version */
+margin: 10px 20px 15px 5px;
+                        </code></pre>
+                        <p><strong>Best Practice:</strong> Always use shorthand when possible — it's cleaner and less error-prone.</p>
+                    </details>
+
+                    <details>
+                        <summary>Margin collapse behavior</summary>
+                        <p>Vertical margins between adjacent elements "collapse" — they don't add up, they merge into the larger one.</p>
+                        <p><strong>When does it happen?</strong></p>
+                        <ul>
+                            <li>Between two adjacent block elements</li>
+                            <li>Between a parent and its first/last child (if no border/padding separates them)</li>
+                        </ul>
+                        <p><strong>Example:</strong></p>
+                        <div class="margin-collapse-demo">
+                            <div style="background-color: var(--cyan); padding: 10px; margin-bottom: 20px;">Element A<br>margin-bottom: 20px</div>
+                            <div style="background-color: var(--amber); padding: 10px; margin-top: 30px;">Element B<br>margin-top: 30px</div>
+                        </div>
+                        <p><strong>Result:</strong> The actual space between them is 30px (not 50px)! The margins collapsed.</p>
+                        <p><strong>Why it matters:</strong> This prevents double spacing between paragraphs or list items.</p>
+                        <p><strong>How to prevent it:</strong></p>
+                        <ol>
+                            <li>Add a border to the parent</li>
+                            <li>Add padding to the parent</li>
+                            <li>Use flexbox or grid (they don't collapse margins)</li>
+                            <li>Float the elements</li>
+                            <li>Use absolute positioning</li>
+                        </ol>
+                        <p><strong>Modern Solution:</strong> Use Flexbox — it eliminates margin collapse entirely!</p>
+                    </details>
+
+                    <details>
+                        <summary>Negative margins and their uses</summary>
+                        <p>Negative margins pull elements closer together or outside their container — powerful but dangerous!</p>
+                        <pre><code>
+/* Pull an element out of its container */
+.card {
+    margin: -20px;
+}
+
+/* Overlap elements */
+.overlay {
+    margin-top: -50px;
+}
+
+/* Create full-width sections within constrained containers */
+.container {
+    width: 1200px;
+    margin: 0 auto;
+}
+
+.full-width-section {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    margin-right: calc(-50vw + 50%);
+}
+                        </code></pre>
+                        <p><strong>Common Use Cases:</strong></p>
+                        <ul>
+                            <li>Creating overlapping cards or design elements</li>
+                            <li>Removing unwanted spacing in grids</li>
+                            <li>Creating negative space effects</li>
+                            <li>Full-width backgrounds within centered containers</li>
+                        </ul>
+                        <p><strong>Warning:</strong> Negative margins can break layout flow. Always test responsiveness!</p>
+                    </details>
+
+                    <details>
+                        <summary>Auto margins for centering</summary>
+                        <p>Using <code>margin: 0 auto;</code> is the classic way to horizontally center block elements.</p>
+                        <pre><code>
+.centered-box {
+    width: 500px;
+    margin: 0 auto; /* horizontal centering */
+    background-color: var(--amber);
+    padding: 20px;
+    text-align: center;
+}
+                        </code></pre>
+                        <div class="centering-demo">Centered Box</div>
+                        <p><strong>How it works:</strong> Auto distributes available space equally on left and right.</p>
+                        <p><strong>Important Conditions:</strong></p>
+                        <ul>
+                            <li>Element must have a defined width (not 100%)</li>
+                            <li>Element must be a block-level element</li>
+                            <li>Parent must have sufficient width</li>
+                        </ul>
+                        <p><strong>Vertical centering with Flexbox:</strong></p>
+                        <pre><code>
+.parent {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+.child {
+    margin: 0; /* No need for auto margins here */
+}
+                        </code></pre>
+                        <p><strong>Pro Tip:</strong> For modern layouts, use Flexbox or Grid instead of relying on auto margins for complex centering.</p>
+                    </details>
+                </section>
+
+                <!-- 3.3 Borders and Outlines -->
+                <section id="sec-3-3">
+                    <h2>3.3 Borders and Outlines</h2>
+                    <p class="text-muted">Borders define edges; outlines highlight focus states — understand the difference.</p>
+
+                    <details>
+                        <summary>Border properties (width, style, color)</summary>
+                        <p>Borders have three components: width, style, and color.</p>
+                        <pre><code>
+.border-example {
+    border-width: 2px;
+    border-style: solid;
+    border-color: var(--amber);
+}
+
+/* Or combine into shorthand */
+.border-example {
+    border: 2px solid var(--amber);
+}
+
+/* Individual sides */
+.border-top {
+    border-top: 4px dashed var(--cyan);
+}
+
+.border-right {
+    border-right: 1px dotted #fff;
+}
+
+.border-bottom {
+    border-bottom: 3px double var(--amber);
+}
+
+.border-left {
+    border-left: 5px groove var(--cyan);
+}
+                        </code></pre>
+                        <p><strong>Border Styles:</strong></p>
+                        <ul>
+                            <li><code>solid</code> — continuous line</li>
+                            <li><code>dashed</code> — series of dashes</li>
+                            <li><code>dotted</code> — series of dots</li>
+                            <li><code>double</code> — two parallel lines</li>
+                            <li><code>groove</code> — 3D groove effect</li>
+                            <li><code>ridge</code> — 3D ridge effect</li>
+                            <li><code>inset</code> — 3D inset effect</li>
+                            <li><code>outset</code> — 3D outset effect</li>
+                            <li><code>none</code> — no border</li>
+                            <li><code>hidden</code> — same as none, but affects table borders</li>
+                        </ul>
+                        <p><strong>Pro Tip:</strong> Border width affects total element size! Remember the box model.</p>
+                    </details>
+
+                    <details>
+                        <summary>Border radius for rounded corners</summary>
+                        <p>Create smooth, modern designs with rounded corners using <code>border-radius</code>.</p>
+                        <pre><code>
+.rounded {
+    border-radius: 10px;
+}
+
+.circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background-color: var(--cyan);
+}
+
+.oval {
+    width: 200px;
+    height: 100px;
+    border-radius: 50%;
+    background-color: var(--amber);
+}
+
+/* Different radii per corner */
+.irregular-round {
+    border-top-left-radius: 20px;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 20px;
+    border-bottom-left-radius: 5px;
+}
+
+/* Shorthand: top-left, top-right, bottom-right, bottom-left */
+.shorthand-round {
+    border-radius: 20px 5px 20px 5px;
+}
+
+/* Two values: top/bottom, left/right */
+.two-values {
+    border-radius: 20px 5px;
+}
+
+/* Single value: all corners */
+.single-value {
+    border-radius: 15px;
+}
+                        </code></pre>
+                        <div class="border-radius-demo" style="border-radius: 10px;">Border Radius: 10px</div>
+                        <div class="border-radius-demo" style="border-radius: 50%;">Circle (border-radius: 50%)</div>
+                        <div class="border-radius-demo" style="width: 200px; height: 80px; border-radius: 50%;">Oval (border-radius: 50%)</div>
+                        <p><strong>Pro Tip:</strong> Use <code>border-radius: 9999px;</code> for perfect circles regardless of size.</p>
+                    </details>
+
+                    <details>
+                        <summary>Border images</summary>
+                        <p>Replace standard borders with custom images using <code>border-image</code>.</p>
+                        <pre><code>
+.image-border {
+    border: 15px solid transparent;
+    border-image-source: url('border-pattern.png');
+    border-image-slice: 30;
+    border-image-repeat: round;
+    border-image-width: 15px;
+}
+                        </code></pre>
+                        <p><strong>Properties explained:</strong></p>
+                        <ul>
+                            <li><code>border-image-source</code>: Path to image file</li>
+                            <li><code>border-image-slice</code>: How to divide the image (percentage or pixels)</li>
+                            <li><code>border-image-repeat</code>: stretch, repeat, round, space</li>
+                            <li><code>border-image-width</code>: Width of the border image</li>
+                        </ul>
+                        <p><strong>Browser Support:</strong> Excellent in modern browsers. Use as progressive enhancement.</p>
+                        <p><strong>Use Case:</strong> Creating fancy buttons, decorative frames, or non-rectangular borders.</p>
+                    </details>
+
+                    <details>
+                        <summary>Outlines vs borders</summary>
+                        <p>Both draw lines around elements, but they behave very differently.</p>
+                        <table class="table table-dark mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Feature</th>
+                                    <th>Border</th>
+                                    <th>Outline</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Space Taken</td>
+                                    <td>Takes up space in layout</td>
+                                    <td>Does NOT take up space</td>
+                                </tr>
+                                <tr>
+                                    <td>Shape</td>
+                                    <td>Follows element's border-radius</td>
+                                    <td>Always rectangular</td>
+                                </tr>
+                                <tr>
+                                    <td>Multiple Sides</td>
+                                    <td>Can set individually</td>
+                                    <td>Always all sides</td>
+                                </tr>
+                                <tr>
+                                    <td>Stacking</td>
+                                    <td>Part of box model</td>
+                                    <td>Drawn on top of everything</td>
+                                </tr>
+                                <tr>
+                                    <td>Primary Use</td>
+                                    <td>Design styling</td>
+                                    <td>Focus indication (accessibility)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p><strong>Example:</strong></p>
+                        <div class="code-example">
+                            <pre><code>
+.focused-button {
+    border: 2px solid var(--amber);
+    outline: 3px solid var(--cyan);
+    outline-offset: 5px; /* Space between border and outline */
+}
+
+/* Remove default outline (only for accessibility-aware designs) */
+button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(0, 209, 255, 0.5);
+}
+                            </code></pre>
+                        </div>
+                        <p><strong>Accessibility Rule:</strong> Never remove outlines without providing an alternative focus indicator!</p>
+                    </details>
+                </section>
+
+                <!-- 3.4 Width and Height -->
+                <section id="sec-3-4">
+                    <h2>3.4 Width and Height</h2>
+                    <p class="text-muted">Controlling dimensions is essential for responsive, predictable layouts.</p>
+
+                    <details>
+                        <summary>Setting dimensions</summary>
+                        <p>Use <code>width</code> and <code>height</code> properties to define element sizes.</p>
+                        <pre><code>
+.box {
+    width: 300px;
+    height: 200px;
+}
+
+.image-container {
+    width: 100%;
+    height: 400px;
+}
+
+.button {
+    width: fit-content;
+    height: fit-content;
+}
+                        </code></pre>
+                        <p><strong>Unit Types:</strong></p>
+                        <ul>
+                            <li><strong>Fixed:</strong> px, pt, cm, mm — absolute measurements</li>
+                            <li><strong>Relative:</strong> %, em, rem, vw, vh — relative to parent or viewport</li>
+                            <li><strong>Content-based:</strong> fit-content, max-content, min-content</li>
+                        </ul>
+                        <p><strong>Best Practice:</strong> Avoid fixed heights unless necessary. Let content determine height.</p>
+                    </details>
+
+                    <details>
+                        <summary>Min/max width and height</summary>
+                        <p>Set boundaries for how small or large an element can grow.</p>
+                        <pre><code>
+.responsive-card {
+    width: 100%;
+    max-width: 400px;
+    min-width: 250px;
+    height: auto;
+    max-height: 600px;
+    min-height: 200px;
+}
+
+.text-container {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+}
+                        </code></pre>
+                        <p><strong>Why use them?</strong></p>
+                        <ul>
+                            <li><strong>max-width:</strong> Prevents text from becoming too wide on large screens (readability)</li>
+                            <li><strong>min-width:</strong> Prevents elements from becoming too narrow on mobile</li>
+                            <li><strong>max-height:</strong> Prevents modal windows from overflowing</li>
+                            <li><strong>min-height:</strong> Ensures containers have minimum space</li>
+                        </ul>
+                        <p><strong>Real-world Example:</strong></p>
+                        <div class="code-example">
+                            <pre><code>
+/* Text readability: never wider than 80 characters */
+.article-content {
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+/* Mobile-first approach */
+.sidebar {
+    width: 100%;
+    min-width: 250px;
+}
+
+@media (min-width: 768px) {
+    .sidebar {
+        width: 250px;
+    }
+}
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Percentage vs fixed units</summary>
+                        <p>Choose the right unit for the job.</p>
+                        <table class="table table-dark mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Unit</th>
+                                    <th>Description</th>
+                                    <th>Use Case</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>px</code></td>
+                                    <td>Pixels — absolute size</td>
+                                    <td>Icons, borders, fixed-size elements</td>
+                                </tr>
+                                <tr>
+                                    <td><code>%</code></td>
+                                    <td>Percentage of parent</td>
+                                    <td>Responsive layouts, fluid containers</td>
+                                </tr>
+                                <tr>
+                                    <td><code>em</code></td>
+                                    <td>Relative to parent font-size</td>
+                                    <td>Typography, spacing that scales with text</td>
+                                </tr>
+                                <tr>
+                                    <td><code>rem</code></td>
+                                    <td>Relative to root font-size (html)</td>
+                                    <td>Consistent sizing across entire site</td>
+                                </tr>
+                                <tr>
+                                    <td><code>vw</code></td>
+                                    <td>Viewport width (1vw = 1% of viewport width)</td>
+                                    <td>Full-width banners, hero sections</td>
+                                </tr>
+                                <tr>
+                                    <td><code>vh</code></td>
+                                    <td>Viewport height (1vh = 1% of viewport height)</td>
+                                    <td>Fullscreen sections, modals</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p><strong>Example Comparison:</strong></p>
+                        <div class="code-example">
+                            <pre><code>
+/* Fixed — won't change on different screens */
+.small-box {
+    width: 200px;
+    height: 100px;
+}
+
+/* Responsive — adapts to screen size */
+.large-box {
+    width: 80%;
+    height: 50vh;
+}
+
+/* Scalable — follows font size changes */
+.typography-container {
+    width: 30em;
+    padding: 1em;
+}
+                            </code></pre>
+                        </div>
+                        <p><strong>Modern Recommendation:</strong> Use <code>rem</code> for most sizing, <code>%</code> and <code>vw/vh</code> for responsive layouts.</p>
+                    </details>
+
+                    <details>
+                        <summary>Aspect ratios and maintaining proportions</summary>
+                        <p>Keep elements proportional even when resizing.</p>
+                        <pre><code>
+/* Modern CSS: aspect-ratio property */
+.video-container {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background-color: #000;
+}
+
+/* Legacy method: padding trick */
+.aspect-ratio-box {
+    position: relative;
+    width: 100%;
+    height: 0;
+    padding-bottom: 56.25%; /* 16:9 ratio = 9/16 = 0.5625 */
+}
+
+.aspect-ratio-box video,
+.aspect-ratio-box img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+                        </code></pre>
+                        <div class="aspect-ratio-demo">Aspect Ratio: 2:1 (Width:Height)</div>
+                        <p><strong>Common Ratios:</strong></p>
+                        <ul>
+                            <li><strong>16:9</strong> — Standard video (56.25%)</li>
+                            <li><strong>4:3</strong> — Traditional TV (75%)</li>
+                            <li><strong>1:1</strong> — Square (100%)</li>
+                            <li><strong>3:2</strong> — Photo (66.67%)</li>
+                        </ul>
+                        <p><strong>Pro Tip:</strong> Use <code>object-fit: cover</code> with images to maintain aspect ratio while filling container.</p>
+                        <p><strong>Modern Approach:</strong> Use <code>aspect-ratio</code> property — supported in all modern browsers since 2021.</p>
+                    </details>
+                </section>
+
+                <div class="footer-note">
+                    🌟 Mastery Tip: The box model is the foundation of every layout. Master it before learning Flexbox or Grid.<br>
+                    Always use <code>box-sizing: border-box</code> globally — it's the single most important CSS rule you'll ever write.<br>
+                    When debugging layout issues, open DevTools and examine the box model visualization — it tells you exactly what's happening.
+                    <br><br>
+                    Next Module: Flexbox Layout System
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Expand/Collapse All
+            document.getElementById('expand-all').addEventListener('click', () => {
+                document.querySelectorAll('details').forEach(detail => {
+                    detail.open = true;
+                });
+            });
+
+            document.getElementById('collapse-all').addEventListener('click', () => {
+                document.querySelectorAll('details').forEach(detail => {
+                    detail.open = false;
+                });
+            });
+
+            // Search functionality
+            document.getElementById('toc-search').addEventListener('input', function(e) {
+                const query = e.target.value.toLowerCase();
+                const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
+                
+                tocItems.forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    if (text.includes(query)) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+
+            // Smooth scrolling for TOC links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+
+            // Highlight active section in TOC as user scrolls
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.toc-item a');
+
+            window.addEventListener('scroll', () => {
+                let current = '';
+                
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+                    if (pageYOffset >= sectionTop - 100) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === '#' + current) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+```

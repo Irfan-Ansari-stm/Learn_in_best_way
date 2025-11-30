@@ -1,0 +1,929 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 17: Modern CSS Features</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00d1ff;
+            --amber: #ffb347;
+            --text-light: #e6f1ff;
+            --text-secondary: #b8c6d8;
+            --card-bg: #112240;
+            --border-color: #2a4a6e;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            height: 100vh;
+            position: fixed;
+            width: 300px;
+            overflow-y: auto;
+            padding: 1rem;
+            box-shadow: 2px 0 10px rgba(0, 209, 255, 0.1);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 2rem;
+            overflow-y: auto;
+            max-height: 100vh;
+            height: 100vh;
+        }
+
+        .section-title {
+            color: var(--cyan);
+            border-bottom: 2px solid var(--amber);
+            padding-bottom: 0.5rem;
+            margin-top: 2rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .subsection-title {
+            color: var(--amber);
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            padding-left: 0.5rem;
+            border-left: 3px solid var(--cyan);
+        }
+
+        .toc-item {
+            margin: 0.5rem 0;
+            transition: all 0.3s ease;
+        }
+
+        .toc-item a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: block;
+            padding: 0.3rem 0.5rem;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .toc-item a:hover {
+            background-color: rgba(0, 209, 255, 0.1);
+            color: var(--cyan);
+        }
+
+        .toc-item.active a {
+            color: var(--cyan);
+            background-color: rgba(0, 209, 255, 0.15);
+        }
+
+        .toc-heading {
+            color: var(--cyan);
+            font-weight: 600;
+            margin: 1rem 0 0.5rem 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .toc-heading i {
+            margin-right: 0.5rem;
+            transition: transform 0.3s;
+        }
+
+        .toc-heading.collapsed i {
+            transform: rotate(-90deg);
+        }
+
+        pre code {
+            background-color: #0d1b2a !important;
+            color: var(--text-light) !important;
+            padding: 1rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            border-left: 3px solid var(--amber);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        code {
+            background-color: rgba(13, 27, 42, 0.8);
+            color: var(--amber);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        details {
+            margin: 1.2rem 0;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: rgba(17, 34, 64, 0.5);
+        }
+
+        summary {
+            padding: 0.8rem 1rem;
+            background-color: var(--card-bg);
+            color: var(--cyan);
+            font-weight: 600;
+            cursor: pointer;
+            list-style: none;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary::before {
+            content: "+";
+            color: var(--amber);
+            margin-right: 0.5rem;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        details[open] summary::before {
+            content: "−";
+        }
+
+        .control-buttons {
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .control-btn {
+            background-color: var(--card-bg);
+            border: 1px solid var(--amber);
+            color: var(--amber);
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            background-color: var(--amber);
+            color: var(--bg-dark);
+        }
+
+        .highlight {
+            background-color: rgba(255, 179, 71, 0.1);
+            border-left: 4px solid var(--amber);
+            padding: 0.8rem 1rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .formula {
+            background-color: rgba(0, 209, 255, 0.1);
+            border: 1px dashed var(--cyan);
+            padding: 0.8rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+            font-family: 'Cambria Math', serif;
+            text-align: center;
+            color: var(--cyan);
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: var(--bg-dark);
+            font-size: 0.8rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            margin-left: 0.5rem;
+        }
+
+        .example-box {
+            background-color: rgba(10, 25, 47, 0.7);
+            border: 1px solid var(--cyan);
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        @media (max-width: 991px) {
+            .left-panel {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            .right-panel {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+            <!-- Left Panel -->
+            <div class="col-md-3 left-panel">
+                <div class="text-center mb-4">
+                    <h3 class="text-cyan">Module 17</h3>
+                    <h5 class="text-amber">Modern CSS Features</h5>
+                    <p class="text-secondary">Master the cutting-edge of modern styling</p>
+                    <small class="text-muted">By CSS Mastery Tutor</small>
+                </div>
+
+                <div class="control-buttons">
+                    <button id="expandAll" class="control-btn"><i class="bi bi-plus-circle"></i> Expand All</button>
+                    <button id="collapseAll" class="control-btn"><i class="bi bi-dash-circle"></i> Collapse All</button>
+                </div>
+
+                <div class="toc-section">
+                    <div class="toc-heading" data-target="section-17-1">
+                        <span>17.1 CSS Logical Properties</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                    <div class="toc-subitems" id="section-17-1">
+                        <div class="toc-item">
+                            <a href="#logical-block-inline">Block and inline directions</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#logical-margins-padding">Logical margins, padding, borders</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#logical-text-align-float">text-align and float logical values</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#writing-mode">Writing mode considerations</a>
+                        </div>
+                    </div>
+
+                    <div class="toc-heading" data-target="section-17-2">
+                        <span>17.2 CSS Scroll Snap</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                    <div class="toc-subitems" id="section-17-2">
+                        <div class="toc-item">
+                            <a href="#scroll-snap-type-align">scroll-snap-type and scroll-snap-align</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#scroll-snap-stop">Scroll snap stop and strictness</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#scroll-carousel-gallery">Creating carousel and gallery effects</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#scroll-accessibility">Accessibility considerations</a>
+                        </div>
+                    </div>
+
+                    <div class="toc-heading" data-target="section-17-3">
+                        <span>17.3 CSS Houdini</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                    <div class="toc-subitems" id="section-17-3">
+                        <div class="toc-item">
+                            <a href="#custom-properties-api">Custom properties and values API</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#paint-worklets">Paint worklets</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#animation-worklets">Animation worklets</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#layout-worklets">Layout worklets</a>
+                        </div>
+                    </div>
+
+                    <div class="toc-heading" data-target="section-17-4">
+                        <span>17.4 CSS Containment & Performance</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                    <div class="toc-subitems" id="section-17-4">
+                        <div class="toc-item">
+                            <a href="#layout-containment">Layout containment strategies</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#paint-containment">Paint containment optimization</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#style-containment">Style containment benefits</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#size-containment">Size containment use cases</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="col-md-9 right-panel">
+                <h1 class="text-center mb-5 text-cyan">Module 17: Modern CSS Features</h1>
+                <p class="text-secondary text-center mb-5">Advanced techniques for responsive, performant, and internationalized web design</p>
+
+                <!-- 17.1 CSS Logical Properties -->
+                <section id="section-17-1">
+                    <h2 class="section-title">17.1 CSS Logical Properties</h2>
+                    <p class="text-secondary">Traditional CSS uses physical directions (top, bottom, left, right) which don't adapt to different writing modes. Logical properties use semantic directions based on the document's writing mode.</p>
+
+                    <details>
+                        <summary>Definition: What are Logical Properties?</summary>
+                        <p>Logical properties define styles based on the <strong>logical flow</strong> of the document rather than physical dimensions. They respond intelligently to writing modes like horizontal-tb (default), vertical-rl, or vertical-lr.</p>
+                        <p>This is crucial for global websites supporting languages with different reading directions (Arabic, Japanese, Chinese, etc.).</p>
+                    </details>
+
+                    <details>
+                        <summary>Detail: Block and inline directions</summary>
+                        <p>In any writing system, there are two fundamental axes:</p>
+                        <ul>
+                            <li><strong>Inline direction</strong>: The direction text flows within a line (left-to-right in English, right-to-left in Arabic)</li>
+                            <li><strong>Block direction</strong>: The direction new lines/sections stack (top-to-bottom in English, left-to-right in traditional Japanese)</li>
+                        </ul>
+                        <div class="example-box">
+                            <p><strong>English (horizontal-tb, ltr):</strong> Inline = left → right, Block = top → bottom</p>
+                            <p><strong>Japanese (vertical-rl):</strong> Inline = top → bottom, Block = right → left</p>
+                        </div>
+                        <p>Instead of <code>margin-left</code>, you use <code>margin-inline-start</code> — it automatically adapts!</p>
+                    </details>
+
+                    <details>
+                        <summary>Syntax: Logical Property Equivalents</summary>
+                        <pre><code>/* Physical (traditional) */
+padding-left: 1rem;
+margin-top: 1rem;
+border-right: 1px solid #ccc;
+
+/* Logical (modern) */
+padding-inline-start: 1rem;
+margin-block-start: 1rem;
+border-inline-end: 1px solid #ccc;</code></pre>
+                        <p><strong>Key mappings:</strong></p>
+                        <table class="table table-dark table-sm mt-2">
+                            <thead>
+                                <tr>
+                                    <th>Physical</th>
+                                    <th>Logical Equivalent</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>top</td><td>block-start</td></tr>
+                                <tr><td>bottom</td><td>block-end</td></tr>
+                                <tr><td>left</td><td>inline-start</td></tr>
+                                <tr><td>right</td><td>inline-end</td></tr>
+                                <tr><td>width</td><td>inline-size</td></tr>
+                                <tr><td>height</td><td>block-size</td></tr>
+                            </tbody>
+                        </table>
+                    </details>
+
+                    <details>
+                        <summary>Example: Responsive Multilingual Layout</summary>
+                        <div class="example-box">
+                            <pre><code>&lt;!-- HTML --&gt;
+&lt;div class="card"&gt;
+  &lt;p&gt;Hello World! 🌍&lt;/p&gt;
+&lt;/div&gt;
+
+&lt;!-- CSS --&gt;
+.card {
+  padding: 1rem;
+  border: 1px solid var(--amber);
+  border-start-start-radius: 8px;
+  border-start-end-radius: 8px;
+  margin-inline-start: 2rem;
+}
+
+/* When writing-mode changes to vertical-rl, 
+   margin-inline-start becomes margin-block-end! */</code></pre>
+                        </div>
+                        <p>Try changing your browser's writing mode via DevTools → Elements → style → writing-mode: vertical-rl. Notice how the layout adapts without changing CSS!</p>
+                    </details>
+
+                    <details>
+                        <summary>Uses: Why Use Logical Properties?</summary>
+                        <ul>
+                            <li><strong>Internationalization</strong>: Your site works perfectly in RTL languages without extra CSS</li>
+                            <li><strong>Future-proofing</strong>: Works with emerging writing modes</li>
+                            <li><strong>Consistency</strong>: One set of rules for all layouts</li>
+                            <li><strong>Reduced complexity</strong>: No need for media queries just to flip layouts</li>
+                        </ul>
+                        <p class="badge">Pro Tip: Always prefer logical properties over physical ones when possible!</p>
+                    </details>
+
+                    <details>
+                        <summary>Text-align and float logical values</summary>
+                        <p>Even alignment and floating have logical equivalents:</p>
+                        <pre><code>/* Instead of */
+text-align: left;
+float: left;
+
+/* Use */
+text-align: start;
+float: inline-start;</code></pre>
+                        <p>The value <code>start</code> means "beginning of the inline direction" — so in English it's left, in Arabic it's right!</p>
+                        <p><strong>Important:</strong> <code>float</code> is deprecated in modern layouts. Use Flexbox or Grid instead, but understanding these concepts helps with legacy code.</p>
+                    </details>
+
+                    <details>
+                        <summary>Writing mode considerations</summary>
+                        <p>Always consider the full writing mode context:</p>
+                        <pre><code>body {
+  writing-mode: horizontal-tb; /* default */
+  text-orientation: mixed;
+}
+
+/* For vertical Japanese text */
+.japanese {
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+}</code></pre>
+                        <p>Use <code>direction: rtl</code> for RTL languages alongside appropriate writing modes.</p>
+                        <p>Test your designs in different modes using browser DevTools!</p>
+                    </details>
+                </section>
+
+                <!-- 17.2 CSS Scroll Snap -->
+                <section id="section-17-2">
+                    <h2 class="section-title">17.2 CSS Scroll Snap</h2>
+                    <p class="text-secondary">CSS Scroll Snap allows you to create precise scrolling experiences where content "snaps" into place at designated points — perfect for carousels, galleries, and step-by-step interfaces.</p>
+
+                    <details>
+                        <summary>Definition: What is Scroll Snap?</summary>
+                        <p>Scroll snapping is a CSS feature that forces the scroll container to stop at specific points during scrolling, creating a more controlled, intentional user experience.</p>
+                        <p>It transforms natural, free-scrolling into guided navigation — ideal for mobile apps and immersive web experiences.</p>
+                    </details>
+
+                    <details>
+                        <summary>Syntax: scroll-snap-type and scroll-snap-align</summary>
+                        <p>Two key properties control scroll snapping:</p>
+                        <pre><code>/* Parent container: Defines snapping behavior */
+.scroll-container {
+  scroll-snap-type: [x | y | both] [mandatory | proximity];
+  overflow-y: scroll; /* or overflow-x */
+  height: 100vh;
+}
+
+/* Child items: Define snap points */
+.snap-item {
+  scroll-snap-align: start | end | center | none;
+}</code></pre>
+                        <p><strong>Values explained:</strong></p>
+                        <ul>
+                            <li><code>mandatory</code>: Must snap — no partial scrolls allowed</li>
+                            <li><code>proximity</code>: Snaps if user stops near a point (more forgiving)</li>
+                            <li><code>start/end/center</code>: Where the element should align with the viewport</li>
+                        </ul>
+                    </details>
+
+                    <details>
+                        <summary>Example: Vertical Gallery with Mandatory Snap</summary>
+                        <div class="example-box">
+                            <pre><code>&lt;!-- HTML --&gt;
+&lt;div class="gallery"&gt;
+  &lt;div class="slide"&gt;&lt;img src="image1.jpg"&gt;&lt;/div&gt;
+  &lt;div class="slide"&gt;&lt;img src="image2.jpg"&gt;&lt;/div&gt;
+  &lt;div class="slide"&gt;&lt;img src="image3.jpg"&gt;&lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- CSS --&gt;
+.gallery {
+  scroll-snap-type: y mandatory;
+  overflow-y: scroll;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.slide {
+  height: 100vh;
+  scroll-snap-align: start;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 3rem;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}</code></pre>
+                        </div>
+                        <p>Now, when users scroll, each image snaps perfectly to fill the screen!</p>
+                    </details>
+
+                    <details>
+                        <summary>Detail: Scroll snap stop and strictness</summary>
+                        <p>Newer browsers support <code>scroll-snap-stop: always | normal</code>:</p>
+                        <pre><code>.slide {
+  scroll-snap-align: start;
+  scroll-snap-stop: always; /* Forces stop at every snap point */
+}</code></pre>
+                        <p><code>always</code> prevents skipping multiple slides with one scroll gesture — great for tutorials or step-by-step guides.</p>
+                        <p><code>normal</code> (default) allows momentum to skip multiple snaps — better for galleries.</p>
+                        <p>Combine with <code>scroll-behavior: smooth</code> for silky transitions!</p>
+                    </details>
+
+                    <details>
+                        <summary>Example: Horizontal Carousel</summary>
+                        <div class="example-box">
+                            <pre><code>&lt;div class="carousel"&gt;
+  &lt;div class="item"&gt;Product A&lt;/div&gt;
+  &lt;div class="item"&gt;Product B&lt;/div&gt;
+  &lt;div class="item"&gt;Product C&lt;/div&gt;
+&lt;/div&gt;
+
+.carousel {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none; /* Firefox */
+}
+.carousel::-webkit-scrollbar { display: none; } /* Chrome/Safari */
+
+.item {
+  min-width: 100%;
+  scroll-snap-align: start;
+  padding: 2rem;
+  text-align: center;
+  background: linear-gradient(45deg, #00d1ff, #1e3c72);
+  color: white;
+}</code></pre>
+                        </div>
+                        <p>Result: A touch-friendly, keyboard-navigable carousel with zero JavaScript!</p>
+                    </details>
+
+                    <details>
+                        <summary>Accessibility considerations</summary>
+                        <p>Scroll snap can be problematic if not handled thoughtfully:</p>
+                        <ul>
+                            <li><strong>Reduce motion preference</strong>: Respect <code>@media (prefers-reduced-motion: reduce)</code></li>
+                            <li><strong>Keyboard navigation</strong>: Ensure Tab key moves between snap points properly</li>
+                            <li><strong>Screen readers</strong>: Use ARIA labels to describe sections</li>
+                            <li><strong>Don't trap users</strong>: Avoid mandatory snapping on long pages</li>
+                        </ul>
+                        <pre><code>@media (prefers-reduced-motion: reduce) {
+  .gallery {
+    scroll-snap-type: none;
+    scroll-behavior: auto;
+  }
+}</code></pre>
+                        <p>Always test with real users who rely on assistive technologies!</p>
+                    </details>
+                </section>
+
+                <!-- 17.3 CSS Houdini -->
+                <section id="section-17-3">
+                    <h2 class="section-title">17.3 CSS Houdini (Where Available)</h2>
+                    <p class="text-secondary">CSS Houdini exposes low-level CSS APIs allowing developers to extend CSS with custom behaviors using JavaScript — essentially giving you superpowers to create new CSS features.</p>
+
+                    <details>
+                        <summary>Definition: What is CSS Houdini?</summary>
+                        <p>Houdini is a collection of low-level CSS APIs that expose parts of the browser’s CSS engine. It lets you hook into the CSS parsing, layout, painting, and animation pipelines.</p>
+                        <p>Think of it as "JavaScript for CSS engines" — you're not fighting CSS, you're extending it.</p>
+                        <p><strong>Note:</strong> Browser support is still evolving. Chrome, Edge, and Safari have good support; Firefox is catching up.</p>
+                    </details>
+
+                    <details>
+                        <summary>Custom Properties and Values API</summary>
+                        <p>Define custom CSS types beyond simple strings!</p>
+                        <pre><code>// Register a custom property with type
+CSS.registerProperty({
+  name: '--my-color',
+  syntax: '&lt;color&gt;',
+  inherits: false,
+  initialValue: '#ff0000'
+});
+
+// Now you can animate it!
+.element {
+  --my-color: blue;
+  color: var(--my-color);
+  transition: --my-color 0.5s ease;
+}</code></pre>
+                        <p>Before Houdini, you couldn't animate custom properties because CSS didn't know their type. Now, you can animate colors, lengths, numbers — even complex shapes!</p>
+                    </details>
+
+                    <details>
+                        <summary>Paint Worklets</summary>
+                        <p>Create custom backgrounds, borders, or patterns with JavaScript!</p>
+                        <pre><code>// paint.js
+class GradientCirclePainter {
+  static get inputProperties() { return ['--circle-color', '--circle-size']; }
+  
+  paint(ctx, geom, props) {
+    const color = props.get('--circle-color');
+    const size = parseFloat(props.get('--circle-size'));
+    
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.arc(geom.width / 2, geom.height / 2, size, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+registerPaint('gradient-circle', GradientCirclePainter);
+
+// CSS usage
+.circle-bg {
+  background-image: paint(gradient-circle);
+  --circle-color: cyan;
+  --circle-size: 50px;
+}</code></pre>
+                        <p>Result: A dynamic circle painted exactly where needed — no images, no SVG, pure JS-powered CSS!</p>
+                    </details>
+
+                    <details>
+                        <summary>Animation Worklets</summary>
+                        <p>Run high-performance animations on the compositor thread (not main thread) — avoiding jank!</p>
+                        <pre><code>// anim.js
+class PulseAnimator {
+  constructor(options) {}
+  
+  update(input) {
+    const time = input.currentTime / 1000; // seconds
+    const progress = Math.sin(time * 2) * 0.5 + 0.5; // oscillate 0-1
+    input.setTransform([progress * 2, 0, 0, progress * 2]);
+  }
+}
+
+registerAnimator('pulse', PulseAnimator);
+
+// CSS
+.animated-element {
+  animation: pulse 2s infinite;
+  animation-timeline: view();
+  animation-range: entry 0% exit 100%;
+}</code></pre>
+                        <p>This runs at 60fps even during heavy JS tasks — perfect for micro-interactions!</p>
+                    </details>
+
+                    <details>
+                        <summary>Layout Worklets</summary>
+                        <p>Create entirely new CSS layout algorithms!</p>
+                        <pre><code>// grid-layout.js
+class GridLayout {
+  async layout(children, edges, constraints) {
+    const rows = [];
+    let currentRow = [];
+    
+    for (const child of children) {
+      currentRow.push(child);
+      if (currentRow.length >= 3) {
+        rows.push(currentRow);
+        currentRow = [];
+      }
+    }
+    
+    return { rows };
+  }
+}
+
+registerLayout('grid-layout', GridLayout);
+
+// CSS
+.container {
+  display: layout(grid-layout);
+  grid-layout-columns: repeat(3, 1fr);
+}</code></pre>
+                        <p>You could build a custom masonry layout, circular layout, or spiral grid — all defined in CSS!</p>
+                        <p class="badge">Note: This is experimental and requires significant performance testing.</p>
+                    </details>
+
+                    <details>
+                        <summary>When to Use Houdini</summary>
+                        <ul>
+                            <li>✅ Complex visual effects that require pixel-perfect control</li>
+                            <li>✅ High-performance animations that need compositor thread access</li>
+                            <li>✅ Custom layout systems for unique designs</li>
+                            <li>❌ Don't use for simple styling — stick to standard CSS first!</li>
+                            <li>❌ Avoid if targeting older browsers</li>
+                        </ul>
+                        <p>Best practice: Use Houdini as an enhancement layer, not a foundation.</p>
+                    </details>
+                </section>
+
+                <!-- 17.4 CSS Containment and Performance -->
+                <section id="section-17-4">
+                    <h2 class="section-title">17.4 CSS Containment and Performance</h2>
+                    <p class="text-secondary">Containment tells the browser "this element is independent" — enabling powerful optimizations that dramatically improve rendering performance.</p>
+
+                    <details>
+                        <summary>Definition: What is CSS Containment?</summary>
+                        <p>CSS Containment is a performance optimization that isolates an element's subtree from the rest of the page. It limits the scope of layout, style, and paint calculations.</p>
+                        <p>Think of it as putting a component in a sandbox — changes inside won't trigger expensive recalculations outside.</p>
+                        <p>Three types: <code>layout</code>, <code>paint</code>, and <code>style</code> containment.</p>
+                    </details>
+
+                    <details>
+                        <summary>Syntax: Layout Containment Strategies</summary>
+                        <pre><code>.widget {
+  contain: layout; /* or contain: strict; */
+}
+
+/* Equivalent to */
+.widget {
+  layout-contain: strict;
+  style-contain: strict;
+  paint-contain: strict;
+}</code></pre>
+                        <p><strong>Layout containment</strong> means: "The size and position of this element depends only on its children — not siblings or parents."</p>
+                        <p>Use case: Cards, modals, widgets with fixed dimensions.</p>
+                        <p>Benefit: If a child resizes, the browser doesn't recalculate the entire page layout!</p>
+                    </details>
+
+                    <details>
+                        <summary>Detail: Paint Containment Optimization</summary>
+                        <p>Paint containment restricts painting to the element's bounds.</p>
+                        <pre><code>.sidebar {
+  contain: paint;
+  overflow: hidden;
+}</code></pre>
+                        <p>What this does:</p>
+                        <ul>
+                            <li>If a child overflows visually, it won't affect other elements' painting</li>
+                            <li>Browser can skip repainting areas outside this container</li>
+                            <li>Great for scrollable lists, sidebars, headers</li>
+                        </ul>
+                        <div class="highlight">
+                            <p><strong>Performance Impact:</strong> In a list with 1000 items, paint containment can reduce repaint area by 90%!</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Style Containment Benefits</summary>
+                        <p>Style containment prevents CSS selectors from affecting elements outside the container.</p>
+                        <pre><code>.modal {
+  contain: style;
+}
+
+/* Now these selectors WON'T reach outside */
+.modal .btn { ... }
+.modal h1 { ... }
+.modal > div { ... }</code></pre>
+                        <p>Benefits:</p>
+                        <ul>
+                            <li>Prevents accidental style leakage</li>
+                            <li>Improves selector matching speed</li>
+                            <li>Essential for web components and reusable UI libraries</li>
+                        </ul>
+                        <p>Combined with Shadow DOM, it's the ultimate encapsulation tool.</p>
+                    </details>
+
+                    <details>
+                        <summary>Size Containment Use Cases</summary>
+                        <p>Size containment is often used with layout containment to specify expected dimensions.</p>
+                        <pre><code>.avatar {
+  contain: size layout;
+  width: 48px;
+  height: 48px;
+}</code></pre>
+                        <p>Why? The browser now knows <em>exactly</em> how much space this element will take — even before loading its content!</p>
+                        <p>Use cases:</p>
+                        <ul>
+                            <li>Avatar placeholders</li>
+                            <li>Image previews</li>
+                            <li>Card skeletons</li>
+                            <li>Ad containers</li>
+                        </ul>
+                        <p>Result: Zero layout shift! Pages load faster and feel smoother.</p>
+                        <p>Combine with <code>aspect-ratio</code> for perfect responsiveness:</p>
+                        <pre><code>.card {
+  contain: size layout;
+  aspect-ratio: 16 / 9;
+}</code></pre>
+                    </details>
+
+                    <details>
+                        <summary>Performance Comparison: With vs Without Containment</summary>
+                        <table class="table table-dark table-sm mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Scenario</th>
+                                    <th>No Containment</th>
+                                    <th>With Containment</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Change inner text</td><td>Recalculates entire page</td><td>Only updates container</td></tr>
+                                <tr><td>Resize parent</td><td>Reflows all descendants</td><td>Only reflows container</td></tr>
+                                <tr><td>Apply animation</td><td>Triggers layout/paint</td><td>Can use compositor thread</td></tr>
+                                <tr><td>Page load speed</td><td>Slower due to cascading</td><td>Faster, predictable</td></tr>
+                            </tbody>
+                        </table>
+                        <p class="badge">Pro Tip: Use <code>contain: strict</code> for components you own — it enables all three types of containment!</p>
+                    </details>
+
+                    <details>
+                        <summary>Best Practices Summary</summary>
+                        <ol>
+                            <li>Use containment on large, isolated components (modals, carousels, widgets)</li>
+                            <li>Start with <code>contain: layout</code> then add <code>paint</code> as needed</li>
+                            <li>Never apply containment to root elements or frequently changing content</li>
+                            <li>Test performance impact with Chrome DevTools → Performance tab</li>
+                            <li>Combine with virtual scrolling for huge lists</li>
+                        </ol>
+                        <p>Containment isn't magic — it's intelligent optimization. Use it wisely!</p>
+                    </details>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Utilities -->
+    <script>
+        // Expand/Collapse All
+        document.getElementById('expandAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.open = true;
+            });
+        });
+
+        document.getElementById('collapseAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.open = false;
+            });
+        });
+
+        // Toggle TOC Sections
+        document.querySelectorAll('.toc-heading').forEach(section => {
+            section.addEventListener('click', () => {
+                const target = section.getAttribute('data-target');
+                const subItems = document.getElementById(target);
+                section.classList.toggle('collapsed');
+                // Just toggle the icon - we're not hiding content, just controlling expand/collapse state
+            });
+        });
+
+        // Smooth Scrolling for TOC Links
+        document.querySelectorAll('.toc-item a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Highlight active TOC item
+                    document.querySelectorAll('.toc-item.active').forEach(el => {
+                        el.classList.remove('active');
+                    });
+                    this.parentElement.classList.add('active');
+                }
+            });
+        });
+
+        // Auto-highlight active section as user scrolls
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.toc-item a');
+            
+            let current = '';
+            
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= sectionTop - 100) {
+                    current = section.id;
+                }
+            });
+            
+            navLinks.forEach(link => {
+                link.parentElement.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.parentElement.classList.add('active');
+                }
+            });
+        });
+
+        // Syntax highlighting for code blocks
+        document.querySelectorAll('pre code').forEach(block => {
+            hljs.highlightBlock(block);
+        });
+
+        // Add fallback for highlight.js if not loaded
+        window.hljs = window.hljs || {
+            highlightBlock: (el) => {
+                // Minimal fallback: just add classes
+                el.classList.add('language-css');
+            }
+        };
+    </script>
+
+    <!-- Optional: Include Highlight.js for better syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+</html>
+```

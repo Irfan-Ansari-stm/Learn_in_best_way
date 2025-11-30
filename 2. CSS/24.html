@@ -1,0 +1,1377 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 22: Professional CSS Development</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00d1ff;
+            --amber: #ffb347;
+            --text-light: #e6f1ff;
+            --text-secondary: #b8c6d8;
+            --card-bg: #112240;
+            --border-color: #2a4a6e;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            height: 100vh;
+            position: fixed;
+            width: 300px;
+            overflow-y: auto;
+            padding: 1rem;
+            box-shadow: 2px 0 10px rgba(0, 209, 255, 0.1);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 2rem;
+            overflow-y: auto;
+            max-height: 100vh;
+            height: 100vh;
+        }
+
+        .section-title {
+            color: var(--cyan);
+            border-bottom: 2px solid var(--amber);
+            padding-bottom: 0.5rem;
+            margin-top: 2rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .subsection-title {
+            color: var(--amber);
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            padding-left: 0.5rem;
+            border-left: 3px solid var(--cyan);
+        }
+
+        .toc-item {
+            margin: 0.5rem 0;
+            transition: all 0.3s ease;
+        }
+
+        .toc-item a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: block;
+            padding: 0.3rem 0.5rem;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .toc-item a:hover {
+            background-color: rgba(0, 209, 255, 0.1);
+            color: var(--cyan);
+        }
+
+        .toc-item.active a {
+            color: var(--cyan);
+            background-color: rgba(0, 209, 255, 0.15);
+        }
+
+        .toc-heading {
+            color: var(--cyan);
+            font-weight: 600;
+            margin: 1rem 0 0.5rem 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .toc-heading i {
+            margin-right: 0.5rem;
+            transition: transform 0.3s;
+        }
+
+        .toc-heading.collapsed i {
+            transform: rotate(-90deg);
+        }
+
+        pre code {
+            background-color: #0d1b2a !important;
+            color: var(--text-light) !important;
+            padding: 1rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            border-left: 3px solid var(--amber);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        code {
+            background-color: rgba(13, 27, 42, 0.8);
+            color: var(--amber);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        details {
+            margin: 1.2rem 0;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: rgba(17, 34, 64, 0.5);
+        }
+
+        summary {
+            padding: 0.8rem 1rem;
+            background-color: var(--card-bg);
+            color: var(--cyan);
+            font-weight: 600;
+            cursor: pointer;
+            list-style: none;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary::before {
+            content: "+";
+            color: var(--amber);
+            margin-right: 0.5rem;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        details[open] summary::before {
+            content: "−";
+        }
+
+        .control-buttons {
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .control-btn {
+            background-color: var(--card-bg);
+            border: 1px solid var(--amber);
+            color: var(--amber);
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            background-color: var(--amber);
+            color: var(--bg-dark);
+        }
+
+        .highlight {
+            background-color: rgba(255, 179, 71, 0.1);
+            border-left: 4px solid var(--amber);
+            padding: 0.8rem 1rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .formula {
+            background-color: rgba(0, 209, 255, 0.1);
+            border: 1px dashed var(--cyan);
+            padding: 0.8rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+            font-family: 'Cambria Math', serif;
+            text-align: center;
+            color: var(--cyan);
+        }
+
+        .example-box {
+            background-color: rgba(10, 25, 47, 0.7);
+            border: 1px solid var(--cyan);
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: var(--bg-dark);
+            font-size: 0.8rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            margin-left: 0.5rem;
+        }
+
+        .code-quality-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .quality-card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            background-color: rgba(17, 34, 64, 0.5);
+        }
+
+        .quality-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+            color: var(--cyan);
+        }
+
+        .design-system-tree {
+            position: relative;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border: 1px dashed var(--cyan);
+            border-radius: 8px;
+            background-color: rgba(0, 209, 255, 0.05);
+        }
+
+        .design-system-node {
+            margin: 0.5rem 0;
+            padding: 0.5rem;
+            background-color: rgba(17, 34, 64, 0.7);
+            border-radius: 4px;
+            border-left: 3px solid var(--amber);
+        }
+
+        .career-path {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .career-step {
+            position: relative;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: rgba(17, 34, 64, 0.5);
+        }
+
+        .career-step:before {
+            content: "";
+            position: absolute;
+            top: -1px;
+            left: -1px;
+            right: -1px;
+            height: 4px;
+            background: linear-gradient(90deg, var(--cyan), var(--amber));
+            border-radius: 4px 4px 0 0;
+        }
+
+        .career-step:after {
+            content: "";
+            position: absolute;
+            top: 50%;
+            left: -12px;
+            width: 20px;
+            height: 20px;
+            background-color: var(--amber);
+            border-radius: 50%;
+            transform: translateY(-50%);
+            z-index: 1;
+        }
+
+        .search-input {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-color);
+            color: var(--text-light);
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 991px) {
+            .left-panel {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            .right-panel {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+            <!-- Left Panel -->
+            <div class="col-md-3 left-panel">
+                <div class="text-center mb-4">
+                    <h3 class="text-cyan">Module 22</h3>
+                    <h5 class="text-amber">Professional CSS Development</h5>
+                    <p class="text-secondary">Elevate your CSS skills from good to exceptional</p>
+                    <small class="text-muted">By CSS Mastery Tutor</small>
+                </div>
+
+                <div class="control-buttons">
+                    <button id="expandAll" class="control-btn"><i class="bi bi-plus-circle"></i> Expand All</button>
+                    <button id="collapseAll" class="control-btn"><i class="bi bi-dash-circle"></i> Collapse All</button>
+                </div>
+
+                <input type="text" class="form-control search-input" id="tocSearch" placeholder="Search topics...">
+
+                <div class="toc-section">
+                    <div class="toc-heading" data-target="section-22-1">
+                        <span>22.1 CSS Code Quality</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                    <div class="toc-subitems" id="section-22-1">
+                        <div class="toc-item">
+                            <a href="#linting-formatting">Linting and formatting tools</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#code-review-best-practices">Code review best practices</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#css-documentation">CSS documentation strategies</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#version-control-css">Version control for CSS</a>
+                        </div>
+                    </div>
+
+                    <div class="toc-heading" data-target="section-22-2">
+                        <span>22.2 Design System Implementation</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                    <div class="toc-subitems" id="section-22-2">
+                        <div class="toc-item">
+                            <a href="#tokens-architecture">Tokens and design system architecture</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#component-library">Component library development</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#css-api-design">CSS API design</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#maintenance-evolution">Maintenance and evolution</a>
+                        </div>
+                    </div>
+
+                    <div class="toc-heading" data-target="section-22-3">
+                        <span>22.3 CSS Career Development</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                    <div class="toc-subitems" id="section-22-3">
+                        <div class="toc-item">
+                            <a href="#css-portfolio">Building a CSS portfolio</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#open-source-contributions">Contributing to open source</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#staying-current">Staying current with specifications</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#teaching-mentoring">Teaching and mentoring others</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="col-md-9 right-panel">
+                <h1 class="text-center mb-5 text-cyan">Module 22: Professional CSS Development</h1>
+                <p class="text-secondary text-center mb-5">Transform from a CSS coder to a CSS professional — mastering the art of scalable, maintainable, and team-friendly styling</p>
+
+                <!-- 22.1 CSS Code Quality -->
+                <section id="section-22-1">
+                    <h2 class="section-title">22.1 CSS Code Quality</h2>
+                    <p class="text-secondary">Professional CSS development isn't just about making things look good — it's about writing code that's maintainable, consistent, and team-friendly.</p>
+
+                    <details>
+                        <summary>Definition: Linting and Formatting Tools</summary>
+                        <p>Linting and formatting tools automatically enforce coding standards and catch errors before they become problems.</p>
+                        <p><strong>Linting:</strong> Checks for potential errors, anti-patterns, and style violations</p>
+                        <p><strong>Formatting:</strong> Automatically structures code for consistency</p>
+                        <p>Together, they eliminate debates about whitespace, semicolons, and ordering — letting teams focus on real problems!</p>
+                    </details>
+
+                    <details>
+                        <summary>Syntax: CSS Linting with Stylelint</summary>
+                        <pre><code>// Install Stylelint
+npm install --save-dev stylelint stylelint-config-recommended
+
+// .stylelintrc.json
+{
+  "extends": ["stylelint-config-recommended"],
+  "rules": {
+    "block-no-empty": true,
+    "color-hex-length": "long",
+    "declaration-block-trailing-semicolon": "always",
+    "declaration-colon-space-after": "always",
+    "declaration-colon-space-before": "never",
+    "indentation": 2,
+    "max-nesting-depth": 3,
+    "no-descending-specificity": true,
+    "selector-pseudo-class-no-unknown": [
+      true,
+      {
+        "ignorePseudoClasses": ["global"]
+      }
+    ],
+    "unit-whitelist": ["em", "rem", "%", "vw", "vh", "px"]
+  }
+}
+
+// Package.json script
+{
+  "scripts": {
+    "lint:css": "stylelint \"src/**/*.css\" \"src/**/*.scss\"",
+    "lint:css:fix": "stylelint \"src/**/*.css\" \"src/**/*.scss\" --fix"
+  }
+}</code></pre>
+                        <p>Key rules explained:</p>
+                        <ul>
+                            <li><code>max-nesting-depth: 3</code> — Prevents overly complex selectors</li>
+                            <li><code>no-descending-specificity</code> — Ensures selectors don't override earlier ones unexpectedly</li>
+                            <li><code>unit-whitelist</code> — Enforces use of relative units for accessibility</li>
+                        </ul>
+                        <p>Integrate with VS Code: Install Stylelint extension and enable "Format On Save"</p>
+                    </details>
+
+                    <details>
+                        <summary>Example: CSS Formatting with Prettier</summary>
+                        <div class="example-box">
+                            <pre><code>// Before Prettier
+.button{padding:1rem;border:none;background:#00d1ff;color:white;font-weight:600;cursor:pointer;}
+
+// After Prettier (with .prettierrc)
+{
+  "semi": true,
+  "singleQuote": true,
+  "printWidth": 80,
+  "tabWidth": 2,
+  "useTabs": false,
+  "bracketSpacing": true,
+  "arrowParens": "avoid"
+}
+
+// Formatted output:
+.button {
+  padding: 1rem;
+  border: none;
+  background: #00d1ff;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}</code></pre>
+                        </div>
+                        <p>Pro tip: Use both Stylelint (for quality) and Prettier (for formatting) together — they complement each other perfectly!</p>
+                    </details>
+
+                    <details>
+                        <summary>Detail: Code Review Best Practices</summary>
+                        <p>Effective CSS code reviews focus on these key areas:</p>
+                        <table class="table table-dark table-sm mt-2">
+                            <thead>
+                                <tr>
+                                    <th>Review Focus</th>
+                                    <th>What to Look For</th>
+                                    <th>Why It Matters</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Specificity</td>
+                                    <td>Are selectors too specific? (e.g., div.container ul li a)</td>
+                                    <td>High specificity makes styles hard to override</td>
+                                </tr>
+                                <tr>
+                                    <td>Reusability</td>
+                                    <td>Can this be abstracted into a component?</td>
+                                    <td>Reduces duplication and maintenance</td>
+                                </tr>
+                                <tr>
+                                    <td>Performance</td>
+                                    <td>Are there expensive properties? (box-shadow, filters)</td>
+                                    <td>Impacts rendering performance</td>
+                                </tr>
+                                <tr>
+                                    <td>Accessibility</td>
+                                    <td>Are contrast ratios sufficient? Is focus visible?</td>
+                                    <td>Legal compliance and inclusion</td>
+                                </tr>
+                                <tr>
+                                    <td>Consistency</td>
+                                    <td>Does this follow our design system?</td>
+                                    <td>Maintains visual harmony</td>
+                                </tr>
+                                <tr>
+                                    <td>Documentation</td>
+                                    <td>Are comments clear? Are variables well-named?</td>
+                                    <td>Helps new team members understand</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p><strong>Code review checklist template:</strong></p>
+                        <pre><code>✅ Does this follow our CSS guidelines?
+✅ Is the specificity appropriate?
+✅ Are there any performance red flags?
+✅ Does it work across browsers?
+✅ Is it accessible?
+✅ Are variable names meaningful?
+✅ Is there documentation if needed?
+✅ Could this be broken into smaller components?
+✅ Has it been tested on mobile devices?
+✅ Does it match the design spec?</code></pre>
+                    </details>
+
+                    <details>
+                        <summary>Syntax: CSS Documentation Strategies</summary>
+                        <p>Good documentation turns CSS from magic to methodology.</p>
+                        <pre><code>// Document your variables
+/**
+ * Primary brand color
+ * Used for buttons, links, and highlights
+ * @type {color}
+ * @default #00d1ff
+ */
+:root {
+  --color-primary: #00d1ff;
+}
+
+/**
+ * Base spacing unit
+ * Used for margins, paddings, and gaps
+ * @type {length}
+ * @default 1rem
+ */
+:root {
+  --spacing-unit: 1rem;
+}
+
+// Document components
+/**
+ * Button Component
+ * Primary interactive element
+ * States: default, hover, active, disabled
+ * Variants: primary, secondary, outline
+ *
+ * @example
+ * &lt;button class="btn btn--primary"&gt;Submit&lt;/button&gt;
+ *
+ * @see https://design-system.example.com/components/button
+ */
+.btn {
+  padding: calc(var(--spacing-unit) * 0.75) calc(var(--spacing-unit) * 1.5);
+  border: none;
+  border-radius: calc(var(--spacing-unit) / 2);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn--primary {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+// Document utility classes
+/**
+ * Utility: Responsive padding
+ * Applies padding based on breakpoint
+ * Usage: .p-md, .p-lg
+ *
+ * @param {string} size - sm, md, lg
+ */
+.p-sm { padding: 0.5rem; }
+.p-md { padding: 1rem; }
+.p-lg { padding: 1.5rem; }</code></pre>
+                        <p>Use tools like <strong>StyleDictionary</strong> to generate documentation from design tokens automatically!</p>
+                    </details>
+
+                    <details>
+                        <summary>Detail: Version Control for CSS</summary>
+                        <p>Version control isn't just for code — it's essential for CSS collaboration.</p>
+                        <p><strong>Best practices:</strong></p>
+                        <ol>
+                            <li><strong>Never commit generated files</strong>: Don't commit minified CSS or vendor prefixes</li>
+                            <li><strong>Use feature branches</strong>: Create branch per component/feature</li>
+                            <li><strong>Atomic commits</strong>: One logical change per commit</li>
+                            <li><strong>Meaningful commit messages</strong>: Use conventional commits format</li>
+                            <li><strong>Separate concerns</strong>: Keep layout, typography, and colors in different files</li>
+                        </ol>
+                        <pre><code>// Good folder structure
+src/
+├── css/
+│   ├── base/
+│   │   ├── reset.css
+│   │   └── typography.css
+│   ├── components/
+│   │   ├── button.css
+│   │   ├── card.css
+│   │   └── modal.css
+│   ├── layouts/
+│   │   ├── header.css
+│   │   └── footer.css
+│   ├── utilities/
+│   │   ├── spacing.css
+│   │   └── visibility.css
+│   └── main.css
+├── sass/
+│   └── _variables.scss
+└── js/
+    └── index.js
+
+// gitignore
+node_modules/
+dist/
+build/
+*.min.css
+*.map
+
+// Commit message examples
+feat: add button component
+fix: resolve button hover state in Safari
+docs: update CSS documentation for spacing tokens
+refactor: extract spacing utilities into separate file</code></pre>
+                        <p>Pro tip: Use Git hooks to run linting before commits!</p>
+                    </details>
+
+                    <details>
+                        <summary>Uses: Why Code Quality Matters</summary>
+                        <ul>
+                            <li><strong>Team productivity:</strong> Everyone understands the codebase</li>
+                            <li><strong>Reduced bugs:</strong> Automated checks catch issues early</li>
+                            <li><strong>Easier onboarding:</strong> New developers get up to speed faster</li>
+                            <li><strong>Scalability:</strong> Codebase grows without becoming unmaintainable</li>
+                            <li><strong>Professional reputation:</strong> High-quality code reflects well on you</li>
+                        </ul>
+                        <p class="badge">Real-world impact: Companies with strong CSS quality standards report 40% fewer CSS-related bugs!</p>
+                    </details>
+                </section>
+
+                <!-- 22.2 Design System Implementation -->
+                <section id="section-22-2">
+                    <h2 class="section-title">22.2 Design System Implementation</h2>
+                    <p class="text-secondary">A design system is a single source of truth for your product's visual language — including CSS components, tokens, and guidelines.</p>
+
+                    <details>
+                        <summary>Definition: Tokens and Design System Architecture</summary>
+                        <p>Design tokens are abstract values (colors, spacing, fonts) that represent design decisions — not hard-coded CSS values.</p>
+                        <p><strong>Architecture layers:</strong></p>
+                        <div class="design-system-tree">
+                            <div class="design-system-node">🎨 Design Tokens<br>(Colors, spacing, typography)</div>
+                            <div class="design-system-node">🧩 Components<br>(Buttons, cards, modals)</div>
+                            <div class="design-system-node">🧱 Patterns<br>(Forms, navigation, layouts)</div>
+                            <div class="design-system-node">📖 Guidelines<br>(Usage, accessibility, animation)</div>
+                        </div>
+                        <p>Tokens are the foundation — everything else builds on them!</p>
+                    </details>
+
+                    <details>
+                        <summary>Syntax: Design Token Structure</summary>
+                        <pre><code>// tokens.json
+{
+  "color": {
+    "primary": {
+      "value": "#00d1ff",
+      "description": "Brand primary color"
+    },
+    "secondary": {
+      "value": "#ffb347",
+      "description": "Accent color for calls-to-action"
+    },
+    "text": {
+      "value": "#e6f1ff",
+      "description": "Primary text color"
+    },
+    "background": {
+      "value": "#0a192f",
+      "description": "Page background"
+    }
+  },
+  "spacing": {
+    "xs": {
+      "value": "0.25rem",
+      "description": "Extra small spacing"
+    },
+    "sm": {
+      "value": "0.5rem",
+      "description": "Small spacing"
+    },
+    "md": {
+      "value": "1rem",
+      "description": "Medium spacing"
+    },
+    "lg": {
+      "value": "1.5rem",
+      "description": "Large spacing"
+    },
+    "xl": {
+      "value": "2rem",
+      "description": "Extra large spacing"
+    }
+  },
+  "typography": {
+    "fontFamily": {
+      "primary": {
+        "value": "Inter, sans-serif",
+        "description": "Primary font family"
+      },
+      "secondary": {
+        "value": "Open Sans, sans-serif",
+        "description": "Secondary font family"
+      }
+    },
+    "fontSize": {
+      "xs": {
+        "value": "0.75rem"
+      },
+      "sm": {
+        "value": "0.875rem"
+      },
+      "md": {
+        "value": "1rem"
+      },
+      "lg": {
+        "value": "1.25rem"
+      },
+      "xl": {
+        "value": "1.5rem"
+      }
+    },
+    "fontWeight": {
+      "normal": {
+        "value": "400"
+      },
+      "medium": {
+        "value": "500"
+      },
+      "bold": {
+        "value": "700"
+      }
+    }
+  },
+  "border": {
+    "radius": {
+      "sm": {
+        "value": "4px"
+      },
+      "md": {
+        "value": "8px"
+      },
+      "lg": {
+        "value": "16px"
+      }
+    }
+  }
+}
+
+// Generate CSS variables
+:root {
+  --color-primary: #00d1ff;
+  --color-secondary: #ffb347;
+  --color-text: #e6f1ff;
+  --color-background: #0a192f;
+  
+  --spacing-xs: 0.25rem;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 1.5rem;
+  --spacing-xl: 2rem;
+  
+  --font-family-primary: Inter, sans-serif;
+  --font-family-secondary: Open Sans, sans-serif;
+  
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-md: 1rem;
+  --font-size-lg: 1.25rem;
+  --font-size-xl: 1.5rem;
+  
+  --border-radius-sm: 4px;
+  --border-radius-md: 8px;
+  --border-radius-lg: 16px;
+}</code></pre>
+                        <p>Tools: StyleDictionary, Figma Tokens, Storybook</p>
+                    </details>
+
+                    <details>
+                        <summary>Example: Component Library Development</summary>
+                        <div class="example-box">
+                            <pre><code>// Button component (CSS)
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: none;
+  border-radius: var(--border-radius-md);
+  font-family: var(--font-family-primary);
+  font-weight: var(--font-weight-medium);
+  font-size: var(--font-size-md);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn--primary {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.btn--primary:hover {
+  background-color: hsl(198, 100%, 65%);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(0, 209, 255, 0.3);
+}
+
+.btn--primary:active {
+  transform: translateY(0);
+}
+
+.btn--outline {
+  background-color: transparent;
+  border: 2px solid var(--color-primary);
+  color: var(--color-primary);
+}
+
+.btn--outline:hover {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.btn--disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+// Button component (HTML usage)
+&lt;button class="btn btn--primary"&gt;Primary Button&lt;/button&gt;
+&lt;button class="btn btn--outline"&gt;Outline Button&lt;/button&gt;
+&lt;button class="btn btn--primary btn--disabled"&gt;Disabled Button&lt;/button&gt;</code></pre>
+                        </div>
+                        <p>Benefits of component libraries:</p>
+                        <ul>
+                            <li>Consistent UI across products</li>
+                            <li>Faster development</li>
+                            <li>Easier updates</li>
+                            <li>Shared knowledge</li>
+                        </ul>
+                    </details>
+
+                    <details>
+                        <summary>Syntax: CSS API Design</summary>
+                        <p>A well-designed CSS API is intuitive, predictable, and extensible.</p>
+                        <pre><code>// ✅ GOOD CSS API Design
+
+/* BEM-inspired naming convention */
+.component-name__element--modifier
+
+/* Clear separation of concerns */
+.card {
+  /* Base styles */
+}
+
+.card__header {
+  /* Element styles */
+}
+
+.card--featured {
+  /* Modifier styles */
+}
+
+/* Logical property order */
+.card {
+  /* Layout */
+  display: flex;
+  flex-direction: column;
+  
+  /* Spacing */
+  padding: var(--spacing-md);
+  margin: var(--spacing-sm);
+  
+  /* Borders */
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  
+  /* Background */
+  background-color: var(--color-background);
+  
+  /* Typography */
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-md);
+  
+  /* Transitions */
+  transition: all 0.3s ease;
+  
+  /* Box model */
+  box-sizing: border-box;
+}
+
+/* Avoid overcomplicating */
+.card--large {
+  font-size: var(--font-size-lg);
+  padding: var(--spacing-lg);
+}
+
+/* Instead of */
+.card-large {
+  font-size: 1.25rem;
+  padding: 1.5rem;
+  border-radius: 12px;
+  background-color: #fff;
+  border: 2px solid #eee;
+}
+
+// Use CSS custom properties for customization
+.card {
+  --card-background: var(--color-background);
+  --card-border: var(--color-border);
+  --card-padding: var(--spacing-md);
+  --card-font-size: var(--font-size-md);
+}
+
+.card[style*="--card-background"] {
+  background-color: var(--card-background);
+  border-color: var(--card-border);
+  padding: var(--card-padding);
+  font-size: var(--card-font-size);
+}</code></pre>
+                        <p>Pro tip: Design your CSS API so that users can customize components with CSS variables without touching the original CSS!</p>
+                    </details>
+
+                    <details>
+                        <summary>Detail: Maintenance and Evolution</summary>
+                        <p>Design systems evolve — here's how to manage it professionally:</p>
+                        <ol>
+                            <li><strong>Versioning:</strong> Use semantic versioning (v1.0.0, v1.1.0, v2.0.0)</li>
+                            <li><strong>Deprecation policy:</strong> Mark old components as deprecated for 2 releases before removal</li>
+                            <li><strong>Change log:</strong> Document every change with rationale</li>
+                            <li><strong>Breaking changes:</strong> Require major version bump</li>
+                            <li><strong>Testing:</strong> Include visual regression tests</li>
+                            <li><strong>Feedback loop:</strong> Collect input from designers and developers</li>
+                        </ol>
+                        <pre><code>// CHANGELOG.md
+## [2.0.0] - 2024-01-15
+### Breaking Changes
+- Removed `.btn--small` — use `.btn` with `--btn-size: sm` instead
+- Renamed `.card--featured` to `.card--highlighted`
+
+### Additions
+- Added `.badge` component
+- Added `--card-shadow` CSS variable
+
+### Deprecations
+- `.btn--ghost` — use `.btn--outline` instead
+
+## [1.5.0] - 2023-12-01
+### Features
+- Added dark mode support
+- Added responsive breakpoints for cards
+
+### Fixes
+- Fixed button focus ring in Safari
+- Improved contrast ratio for text</code></pre>
+                        <p>Automate testing with tools like Chromatic or Percy for visual regression testing!</p>
+                    </details>
+
+                    <details>
+                        <summary>Uses: Why Design Systems Matter</summary>
+                        <ul>
+                            <li><strong>Consistency:</strong> Users get familiar experiences across products</li>
+                            <li><strong>Efficiency:</strong> Developers build faster with reusable components</li>
+                            <li><strong>Quality:</strong> Accessibility and performance baked in</li>
+                            <li><strong>Scalability:</strong> Supports growing teams and products</li>
+                            <li><strong>Branding:</strong> Maintains visual identity</li>
+                        </ul>
+                        <p class="badge">Industry standard: Google, Apple, Microsoft, Airbnb, and Spotify all have sophisticated design systems!</p>
+                    </details>
+                </section>
+
+                <!-- 22.3 CSS Career Development -->
+                <section id="section-22-3">
+                    <h2 class="section-title">22.3 CSS Career Development</h2>
+                    <p class="text-secondary">Mastering CSS opens doors to leadership roles, teaching opportunities, and industry influence — here's how to grow beyond coding.</p>
+
+                    <details>
+                        <summary>Syntax: Building a CSS Portfolio</summary>
+                        <p>Your CSS portfolio should demonstrate expertise, not just aesthetics.</p>
+                        <pre><code>// Portfolio website structure
+/
+├── home/
+│   └── index.html
+├── projects/
+│   ├── modern-css-layouts/
+│   │   ├── index.html
+│   │   ├── README.md
+│   │   └── demo.mp4
+│   ├── design-system-demo/
+│   │   ├── index.html
+│   │   ├── tokens.json
+│   │   └── component-library.css
+│   └── accessibility-first/
+│       ├── index.html
+│       └── audit-report.pdf
+├── blog/
+│   ├── why-css-is-not-dead.md
+│   └── mastering-css-variables.md
+├── about/
+│   └── index.html
+└── contact/
+    └── index.html
+
+// Key project ideas:
+// 1. Re-create a famous website using only CSS Grid/Flexbox
+// 2. Build a complete design system with tokens
+// 3. Implement an accessible form with full keyboard navigation
+// 4. Create a CSS-only animation showcase
+// 5. Demonstrate progressive enhancement techniques
+
+// README.md example for a project
+# Modern CSS Layouts
+
+Demonstrates advanced CSS techniques used in modern web development.
+
+## Technologies Used
+- CSS Grid & Flexbox
+- CSS Custom Properties
+- Feature Queries (@supports)
+- CSS Containment
+- Responsive Design
+
+## Key Features
+- Fully responsive on all devices
+- Accessible keyboard navigation
+- No JavaScript dependencies
+- Performance optimized
+- Cross-browser compatible
+
+## Learnings
+- How to create complex layouts without frameworks
+- The power of logical properties for internationalization
+- Importance of semantic HTML for accessibility
+
+## Live Demo
+https://yourname.github.io/modern-css-layouts
+
+## Repository
+https://github.com/yourname/modern-css-layouts</code></pre>
+                        <p>Pro tip: Include video demos showing your CSS in action — animations, interactions, responsive behavior!</p>
+                    </details>
+
+                    <details>
+                        <summary>Detail: Contributing to Open Source</summary>
+                        <p>Contributing to open source CSS projects builds credibility and community.</p>
+                        <p><strong>Where to start:</strong></p>
+                        <ul>
+                            <li><strong>Bootstrap</strong> — Fix documentation or improve accessibility</li>
+                            <li><strong>Tailwind CSS</strong> — Improve documentation or add examples</li>
+                            <li><strong>Primer</strong> — GitHub's design system</li>
+                            <li><strong>Carbon Design System</strong> — IBM's design system</li>
+                            <li><strong>Stylelint</strong> — Improve rules or documentation</li>
+                        </ul>
+                        <p><strong>First contribution workflow:</strong></p>
+                        <ol>
+                            <li>Find an "up-for-grabs" or "good first issue" label</li>
+                            <li>Read the contribution guidelines</li>
+                            <li>Fork the repository</li>
+                            <li>Create a feature branch</li>
+                            <li>Make your change</li>
+                            <li>Test thoroughly</li>
+                            <li>Write tests if required</li>
+                            <li>Submit pull request with clear description</li>
+                            <li>Respond to feedback professionally</li>
+                        </ol>
+                        <p>Even small contributions count:</p>
+                        <ul>
+                            <li>Fixing typos in documentation</li>
+                            <li>Improving code comments</li>
+                            <li>Adding examples</li>
+                            <li>Reporting bugs</li>
+                            <li>Answering questions in discussions</li>
+                        </ul>
+                    </details>
+
+                    <details>
+                        <summary>Syntax: Staying Current with Specifications</summary>
+                        <p>CSS evolves rapidly. Stay updated with these resources:</p>
+                        <pre><code>// Recommended resources:
+
+// Official Specifications
+- https://www.w3.org/TR/css/
+- https://developer.mozilla.org/en-US/docs/Web/CSS
+
+// Newsletters
+- CSS-Tricks Newsletter
+- Weekly Web Tips
+- Frontend Focus
+
+// Communities
+- CSS Discord servers
+- Reddit r/CSS
+- Twitter/X: Follow CSS experts (@chriscoyier, @rachelandrew, @ericportis)
+
+// Conferences
+- CSSconf EU
+- Smashing Conference
+- An Event Apart
+- Frontend Developer Love
+
+// Learning path:
+1. Read MDN documentation for new features
+2. Test features in Chrome DevTools
+3. Try implementing in personal projects
+4. Write blog posts explaining what you learned
+5. Share with your network
+
+// Example: Tracking CSS Nesting
+// 2022: Experimental feature behind flag
+// 2023: Available in Chrome 118+
+// 2024: Standardized in CSS Level 4
+// 2024: Supported in Firefox 125+
+
+// Always check: https://caniuse.com/</code></pre>
+                        <p>Pro tip: Set a monthly reminder to explore one new CSS feature!</p>
+                    </details>
+
+                    <details>
+                        <summary>Detail: Teaching and Mentoring Others</summary>
+                        <p>Teaching is the fastest way to master CSS — and it builds your professional reputation.</p>
+                        <p><strong>Ways to teach:</strong></p>
+                        <ul>
+                            <li><strong>Internal workshops:</strong> Train junior developers at your company</li>
+                            <li><strong>Blog posts:</strong> Explain concepts in simple terms</li>
+                            <li><strong>YouTube videos:</strong> Show CSS in action</li>
+                            <li><strong>GitHub repositories:</strong> Create educational code examples</li>
+                            <li><strong>Code reviews:</strong> Teach through feedback</li>
+                            <li><strong>Open source:</strong> Help newcomers contribute</li>
+                        </ul>
+                        <p><strong>Teaching framework:</strong></p>
+                        <ol>
+                            <li><strong>Start with WHY:</strong> Why does this matter?</li>
+                            <li><strong>Show the problem:</strong> What happens without this?</li>
+                            <li><strong>Demonstrate:</strong> Show the solution in action</li>
+                            <li><strong>Explain the mechanics:</strong> How does it work under the hood?</li>
+                            <li><strong>Practice:</strong> Give exercises</li>
+                            <li><strong>Provide resources:</strong> Links to docs, further reading</li>
+                        </ol>
+                        <div class="example-box">
+                            <pre><code>// Sample teaching lesson: CSS Variables
+
+WHY: 
+- You're repeating the same color value 20 times
+- Changing the brand color means editing 20 lines
+- Hard to maintain consistency
+
+PROBLEM:
+- Inconsistent colors across the site
+- Time-consuming updates
+- Error-prone manual changes
+
+DEMONSTRATE:
+// BEFORE
+.header { background: #00d1ff; }
+.button { background: #00d1ff; }
+.link { color: #00d1ff; }
+
+// AFTER
+:root {
+  --brand-primary: #00d1ff;
+}
+.header { background: var(--brand-primary); }
+.button { background: var(--brand-primary); }
+.link { color: var(--brand-primary); }
+
+MECHANICS:
+- CSS variables are inherited
+- Can be overridden at any level
+- Work with media queries
+- Can be manipulated with JavaScript
+
+PRACTICE:
+Create a theme switcher that changes --color-primary between blue and orange!
+
+RESOURCES:
+- https://developer.mozilla.org/en-US/docs/Web/CSS/Using_CSS_custom_properties
+- https://css-tricks.com/a-complete-guide-to-css-variables/</code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Example: Career Path Progression</summary>
+                        <div class="career-path">
+                            <div class="career-step">
+                                <h4>Junior CSS Developer</h4>
+                                <p>Writes CSS following existing patterns, focuses on implementation, learns fundamentals</p>
+                                <p>Goals: Master HTML/CSS basics, learn browser dev tools, understand responsive design</p>
+                            </div>
+                            
+                            <div class="career-step">
+                                <h4>Mid-Level CSS Developer</h4>
+                                <p>Creates reusable components, participates in code reviews, contributes to design system</p>
+                                <p>Goals: Understand CSS architecture, implement design tokens, write documentation</p>
+                            </div>
+                            
+                            <div class="career-step">
+                                <h4>Senior CSS Developer</h4>
+                                <p>Leads CSS strategy, designs APIs, mentors juniors, optimizes performance</p>
+                                <p>Goals: Architect scalable systems, evangelize best practices, reduce technical debt</p>
+                            </div>
+                            
+                            <div class="career-step">
+                                <h4>CSS Specialist / Architect</h4>
+                                <p>Defines organization-wide CSS standards, contributes to W3C, speaks at conferences</p>
+                                <p>Goals: Shape industry standards, publish research, lead innovation</p>
+                            </div>
+                            
+                            <div class="career-step">
+                                <h4>Technical Leader / Educator</h4>
+                                <p>Builds communities, teaches globally, influences tooling, shapes future of CSS</p>
+                                <p>Goals: Make CSS more accessible, empower others, leave lasting legacy</p>
+                            </div>
+                        </div>
+                        <p>Progression isn't linear — move at your own pace. Focus on mastery, not titles!</p>
+                    </details>
+
+                    <details>
+                        <summary>Uses: Why Career Development Matters</summary>
+                        <ul>
+                            <li><strong>Higher salary:</strong> CSS specialists command premium rates</li>
+                            <li><strong>Job security:</strong> Experts are always in demand</li>
+                            <li><strong>Leadership opportunities:</strong> Lead teams and projects</li>
+                            <li><strong>Remote work:</strong> Global demand for skilled CSS professionals</li>
+                            <li><strong>Impact:</strong> Influence how millions of websites behave</li>
+                            <li><strong>Personal growth:</strong> Continuous learning keeps your skills sharp</li>
+                        </ul>
+                        <p class="badge">Final Wisdom: "The best CSS developers aren't those who know the most syntax — they're those who understand the most deeply."</p>
+                    </details>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Utilities -->
+    <script>
+        // Expand/Collapse All
+        document.getElementById('expandAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.open = true;
+            });
+        });
+
+        document.getElementById('collapseAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.open = false;
+            });
+        });
+
+        // Toggle TOC Sections
+        document.querySelectorAll('.toc-heading').forEach(section => {
+            section.addEventListener('click', () => {
+                const target = section.getAttribute('data-target');
+                const subItems = document.getElementById(target);
+                section.classList.toggle('collapsed');
+            });
+        });
+
+        // Search functionality
+        document.getElementById('tocSearch').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const tocItems = document.querySelectorAll('.toc-item');
+            
+            tocItems.forEach(item => {
+                const linkText = item.textContent.toLowerCase();
+                if (linkText.includes(searchTerm)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        // Smooth Scrolling for TOC Links
+        document.querySelectorAll('.toc-item a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Highlight active TOC item
+                    document.querySelectorAll('.toc-item.active').forEach(el => {
+                        el.classList.remove('active');
+                    });
+                    this.parentElement.classList.add('active');
+                }
+            });
+        });
+
+        // Auto-highlight active section as user scrolls
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.toc-item a');
+            
+            let current = '';
+            
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= sectionTop - 100) {
+                    current = section.id;
+                }
+            });
+            
+            navLinks.forEach(link => {
+                link.parentElement.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.parentElement.classList.add('active');
+                }
+            });
+        });
+
+        // Syntax highlighting for code blocks
+        document.querySelectorAll('pre code').forEach(block => {
+            hljs.highlightBlock(block);
+        });
+
+        // Add fallback for highlight.js if not loaded
+        window.hljs = window.hljs || {
+            highlightBlock: (el) => {
+                el.classList.add('language-css');
+            }
+        };
+    </script>
+
+    <!-- Optional: Include Highlight.js for better syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+</html>
+```

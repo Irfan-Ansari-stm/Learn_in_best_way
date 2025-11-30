@@ -1,0 +1,1091 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 20: CSS Accessibility</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00d1ff;
+            --amber: #ffb347;
+            --text-light: #e6f1ff;
+            --text-secondary: #b8c6d8;
+            --card-bg: #112240;
+            --border-color: #2a4a6e;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            height: 100vh;
+            position: fixed;
+            width: 300px;
+            overflow-y: auto;
+            padding: 1rem;
+            box-shadow: 2px 0 10px rgba(0, 209, 255, 0.1);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 2rem;
+            overflow-y: auto;
+            max-height: 100vh;
+            height: 100vh;
+        }
+
+        .section-title {
+            color: var(--cyan);
+            border-bottom: 2px solid var(--amber);
+            padding-bottom: 0.5rem;
+            margin-top: 2rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .subsection-title {
+            color: var(--amber);
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            padding-left: 0.5rem;
+            border-left: 3px solid var(--cyan);
+        }
+
+        .toc-item {
+            margin: 0.5rem 0;
+            transition: all 0.3s ease;
+        }
+
+        .toc-item a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: block;
+            padding: 0.3rem 0.5rem;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .toc-item a:hover {
+            background-color: rgba(0, 209, 255, 0.1);
+            color: var(--cyan);
+        }
+
+        .toc-item.active a {
+            color: var(--cyan);
+            background-color: rgba(0, 209, 255, 0.15);
+        }
+
+        .toc-heading {
+            color: var(--cyan);
+            font-weight: 600;
+            margin: 1rem 0 0.5rem 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .toc-heading i {
+            margin-right: 0.5rem;
+            transition: transform 0.3s;
+        }
+
+        .toc-heading.collapsed i {
+            transform: rotate(-90deg);
+        }
+
+        pre code {
+            background-color: #0d1b2a !important;
+            color: var(--text-light) !important;
+            padding: 1rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            border-left: 3px solid var(--amber);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        code {
+            background-color: rgba(13, 27, 42, 0.8);
+            color: var(--amber);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        details {
+            margin: 1.2rem 0;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: rgba(17, 34, 64, 0.5);
+        }
+
+        summary {
+            padding: 0.8rem 1rem;
+            background-color: var(--card-bg);
+            color: var(--cyan);
+            font-weight: 600;
+            cursor: pointer;
+            list-style: none;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary::before {
+            content: "+";
+            color: var(--amber);
+            margin-right: 0.5rem;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        details[open] summary::before {
+            content: "−";
+        }
+
+        .control-buttons {
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .control-btn {
+            background-color: var(--card-bg);
+            border: 1px solid var(--amber);
+            color: var(--amber);
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            background-color: var(--amber);
+            color: var(--bg-dark);
+        }
+
+        .highlight {
+            background-color: rgba(255, 179, 71, 0.1);
+            border-left: 4px solid var(--amber);
+            padding: 0.8rem 1rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .formula {
+            background-color: rgba(0, 209, 255, 0.1);
+            border: 1px dashed var(--cyan);
+            padding: 0.8rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+            font-family: 'Cambria Math', serif;
+            text-align: center;
+            color: var(--cyan);
+        }
+
+        .example-box {
+            background-color: rgba(10, 25, 47, 0.7);
+            border: 1px solid var(--cyan);
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: var(--bg-dark);
+            font-size: 0.8rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            margin-left: 0.5rem;
+        }
+
+        .contrast-checker {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 1px solid #fff;
+            margin: 0 0.5rem;
+            border-radius: 50%;
+        }
+
+        .search-input {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-color);
+            color: var(--text-light);
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border-radius: 4px;
+        }
+
+        .accessibility-demo {
+            border: 1px dashed var(--cyan);
+            padding: 1rem;
+            margin: 1.5rem 0;
+            background-color: rgba(0, 209, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        @media (max-width: 991px) {
+            .left-panel {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            .right-panel {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+            <!-- Left Panel -->
+            <div class="col-md-3 left-panel">
+                <div class="text-center mb-4">
+                    <h3 class="text-cyan">Module 20</h3>
+                    <h5 class="text-amber">CSS Accessibility</h5>
+                    <p class="text-secondary">Build inclusive websites that work for everyone</p>
+                    <small class="text-muted">By CSS Mastery Tutor</small>
+                </div>
+
+                <div class="control-buttons">
+                    <button id="expandAll" class="control-btn"><i class="bi bi-plus-circle"></i> Expand All</button>
+                    <button id="collapseAll" class="control-btn"><i class="bi bi-dash-circle"></i> Collapse All</button>
+                </div>
+
+                <input type="text" class="form-control search-input" id="tocSearch" placeholder="Search topics...">
+
+                <div class="toc-section">
+                    <div class="toc-heading" data-target="section-20-1">
+                        <span>20.1 Visual Accessibility</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                    <div class="toc-subitems" id="section-20-1">
+                        <div class="toc-item">
+                            <a href="#color-contrast-wcag">Color contrast and WCAG guidelines</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#focus-indicators">Focus indicators and keyboard navigation</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#screen-reader-considerations">Screen reader considerations</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#high-contrast-mode">High contrast mode support</a>
+                        </div>
+                    </div>
+
+                    <div class="toc-heading" data-target="section-20-2">
+                        <span>20.2 Responsive Accessibility</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                    <div class="toc-subitems" id="section-20-2">
+                        <div class="toc-item">
+                            <a href="#zoom-text-scaling">Zoom and text scaling support</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#touch-target-sizing">Touch target sizing</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#reduced-motion">Reduced motion preferences</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#accessible-breakpoints">Accessible responsive breakpoints</a>
+                        </div>
+                    </div>
+
+                    <div class="toc-heading" data-target="section-20-3">
+                        <span>20.3 CSS and ARIA</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                    <div class="toc-subitems" id="section-20-3">
+                        <div class="toc-item">
+                            <a href="#css-content-screen-readers">CSS content property and screen readers</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#hiding-content-accessibly">Hiding content accessibly</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#visual-indicators-aria">Visual indicators for ARIA states</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#focus-management-css">Focus management with CSS</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="col-md-9 right-panel">
+                <h1 class="text-center mb-5 text-cyan">Module 20: CSS Accessibility</h1>
+                <p class="text-secondary text-center mb-5">Create inclusive designs that empower users of all abilities — because accessibility isn't optional, it's essential</p>
+
+                <!-- 20.1 Visual Accessibility -->
+                <section id="section-20-1">
+                    <h2 class="section-title">20.1 Visual Accessibility</h2>
+                    <p class="text-secondary">Visual accessibility ensures that users with low vision, color blindness, or other visual impairments can perceive and interact with your content.</p>
+
+                    <details>
+                        <summary>Definition: Color Contrast and WCAG Guidelines</summary>
+                        <p>WCAG (Web Content Accessibility Guidelines) sets international standards for web accessibility. Color contrast is one of the most critical factors.</p>
+                        <p>Contrast ratio measures the difference in luminance between text and its background:</p>
+                        <div class="formula">
+                            Contrast Ratio = (L1 + 0.05) / (L2 + 0.05)<br>
+                            Where L1 = lighter color luminance, L2 = darker color luminance
+                        </div>
+                        <p><strong>WCAG 2.1 Requirements:</strong></p>
+                        <ul>
+                            <li><strong>AA Standard (minimum):</strong> 4.5:1 for normal text, 3:1 for large text (18pt+ or 14pt bold)</li>
+                            <li><strong>AAA Standard (enhanced):</strong> 7:1 for normal text, 4.5:1 for large text</li>
+                        </ul>
+                        <p>Many popular color combinations fail these tests!</p>
+                    </details>
+
+                    <details>
+                        <summary>Example: Testing Color Contrast</summary>
+                        <div class="example-box">
+                            <pre><code>// ❌ BAD - Low contrast
+.text { color: #666; background: #fff; } /* Ratio: 3.1:1 - FAILS AA */
+.button { background: #007bff; color: #fff; } /* Ratio: 4.5:1 - PASS AA */
+
+// ✅ GOOD - High contrast
+.text { color: #1a1a1a; background: #fff; } /* Ratio: 12:1 - PASS AAA */
+.button { background: #0056b3; color: #fff; } /* Ratio: 5.5:1 - PASS AAA */
+
+// Use tools to test:
+// - WebAIM Contrast Checker
+// - Chrome DevTools → Elements → Styles → Color Picker
+// - Lighthouse Accessibility Audit</code></pre>
+                        </div>
+                        <div class="accessibility-demo">
+                            <p><strong>Test this yourself:</strong></p>
+                            <div style="display: flex; gap: 1rem; align-items: center;">
+                                <div class="contrast-checker" style="background-color: #666;"></div>
+                                <span>#666 on white = 3.1:1 (FAIL)</span>
+                            </div>
+                            <div style="display: flex; gap: 1rem; align-items: center;">
+                                <div class="contrast-checker" style="background-color: #1a1a1a;"></div>
+                                <span>#1a1a1a on white = 12:1 (PASS)</span>
+                            </div>
+                        </div>
+                        <p>Pro tip: Always test colors in both light and dark modes!</p>
+                    </details>
+
+                    <details>
+                        <summary>Syntax: Focus Indicators and Keyboard Navigation</summary>
+                        <p>Focus indicators show which element currently has keyboard focus. Many sites remove them for "aesthetic reasons" — a major accessibility violation.</p>
+                        <pre><code>// ❌ BAD: Removing focus styles
+button:focus {
+  outline: none; /* NEVER DO THIS! */
+}
+
+// ✅ GOOD: Customizing focus styles
+button:focus {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(0, 209, 255, 0.3);
+}
+
+// ✅ BETTER: Using system focus styles
+button:focus {
+  outline: auto;
+  outline-offset: 2px;
+}
+
+// For links, ensure they're clearly visible
+a:focus {
+  text-decoration: underline;
+  outline: 2px solid var(--cyan);
+}</code></pre>
+                        <p>Keyboard navigation should work for ALL interactive elements:</p>
+                        <ul>
+                            <li>Tab key moves forward</li>
+                            <li>Shift + Tab moves backward</li>
+                            <li>Enter/Space activates buttons</li>
+                            <li>Arrow keys navigate menus</li>
+                        </ul>
+                        <p>Test: Turn off your mouse and navigate your site using only the keyboard!</p>
+                    </details>
+
+                    <details>
+                        <summary>Detail: Screen Reader Considerations</summary>
+                        <p>Screen readers interpret HTML semantics, not CSS. But CSS can help or hinder their experience.</p>
+                        <p><strong>DOs:</strong></p>
+                        <ul>
+                            <li>Use semantic HTML (h1-h6, nav, button, etc.)</li>
+                            <li>Ensure proper heading hierarchy</li>
+                            <li>Don't hide important content with display: none</li>
+                            <li>Use aria-label for icons without text</li>
+                        </ul>
+                        <p><strong>DON'Ts:</strong></p>
+                        <ul>
+                            <li>Never use display: none on visible content</li>
+                            <li>Avoid CSS-only tooltips (use title attribute instead)</li>
+                            <li>Don't rely solely on color to convey information</li>
+                            <li>Don't change the natural reading order with CSS positioning</li>
+                        </ul>
+                        <div class="highlight">
+                            <p><strong>Common mistake:</strong></p>
+                            <pre><code>&lt;!-- BAD: Icon-only button with no accessible name --&gt;
+&lt;button&gt;&lt;i class="bi bi-search"&gt;&lt;/i&gt;&lt;/button&gt;
+
+&lt;!-- GOOD: Add aria-label --&gt;
+&lt;button aria-label="Search"&gt;&lt;i class="bi bi-search"&gt;&lt;/i&gt;&lt;/button&gt;</code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Example: High Contrast Mode Support</summary>
+                        <p>Windows and macOS have high contrast modes that override website colors. Your CSS must respect these preferences.</p>
+                        <pre><code>// Use media query to detect high contrast mode
+@media (forced-colors: active) {
+  /* Override colors when high contrast is enabled */
+  body {
+    background-color: window;
+    color: windowText;
+  }
+  
+  button {
+    border: 1px solid ButtonText;
+    background-color: ButtonFace;
+    color: ButtonText;
+  }
+  
+  a {
+    color: LinkText;
+    text-decoration: underline;
+  }
+  
+  /* Remove custom shadows and gradients */
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+  }
+}
+
+// Also test with Windows High Contrast theme
+// Settings → Ease of Access → High Contrast</code></pre>
+                        <div class="example-box">
+                            <p><strong>Test it:</strong> On Windows, press Left Alt + Left Shift + Print Screen to toggle high contrast mode.</p>
+                            <p>Your site should remain fully functional with just black, white, and system colors!</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Uses: Why Visual Accessibility Matters</summary>
+                        <ul>
+                            <li><strong>Global impact:</strong> 2.2 billion people live with vision impairment</li>
+                            <li><strong>Legal compliance:</strong> ADA, Section 508, WCAG are legal requirements in many countries</li>
+                            <li><strong>Better UX for all:</strong> High contrast helps everyone in bright sunlight</li>
+                            <li><strong>SEO benefits:</strong> Semantic markup improves search engine understanding</li>
+                            <li><strong>Ethical responsibility:</strong> Inclusion is a human right</li>
+                        </ul>
+                        <p class="badge">Remember: Accessibility features benefit everyone — not just people with disabilities!</p>
+                    </details>
+                </section>
+
+                <!-- 20.2 Responsive Accessibility -->
+                <section id="section-20-2">
+                    <h2 class="section-title">20.2 Responsive Accessibility</h2>
+                    <p class="text-secondary">Responsive design isn't just about screen sizes — it's about accommodating diverse user needs and device capabilities.</p>
+
+                    <details>
+                        <summary>Syntax: Zoom and Text Scaling Support</summary>
+                        <p>Users with low vision often zoom in up to 200% or increase text size. Your layout must adapt gracefully.</p>
+                        <pre><code>// ❌ BAD: Fixed pixel values and absolute positioning
+.container {
+  width: 960px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.header {
+  height: 80px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+}
+
+// ✅ GOOD: Relative units and flexible layouts
+.container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 1rem;
+}
+
+.header {
+  min-height: 4rem; /* Minimum readable height */
+  padding: 1rem;
+  width: 100%;
+}
+
+// Use em/rem for typography
+h1 { font-size: 2rem; }
+h2 { font-size: 1.5rem; }
+p { font-size: 1rem; }
+
+// Allow text to scale beyond 100%
+body {
+  font-size: 100%; /* Don't set base font-size above 100% */
+  line-height: 1.5;
+}</code></pre>
+                        <p>Key rule: Never use pixels for font sizes or container widths — use rem, em, %, or vw/vh!</p>
+                        <p>Test: In browser, go to View → Zoom → 200% and verify everything remains usable!</p>
+                    </details>
+
+                    <details>
+                        <summary>Detail: Touch Target Sizing</summary>
+                        <p>Touch targets should be large enough for fingers to tap accurately. WCAG recommends at least 44×44 CSS pixels.</p>
+                        <pre><code>// ❌ BAD: Tiny touch targets
+.icon-button {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+}
+
+// ✅ GOOD: Adequate touch targets
+.icon-button {
+  width: 44px;
+  height: 44px;
+  padding: 10px; /* Creates extra tap area */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+// Or use pseudo-elements to extend hit area
+.icon-button::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: -10px;
+  right: -10px;
+  bottom: -10px;
+  /* Invisible but clickable */
+}</code></pre>
+                        <p>Important: The 44×44px target includes spacing around the element — don't just make the icon larger!</p>
+                        <div class="example-box">
+                            <p><strong>Real-world example:</strong> A hamburger menu icon should have a 44×44px tap area, even if the icon itself is 24×24px.</p>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Syntax: Reduced Motion Preferences</summary>
+                        <p>Some users experience dizziness or nausea from animations. Respect their preferences with <code>@media (prefers-reduced-motion)</code>.</p>
+                        <pre><code>// ❌ BAD: Aggressive animations
+.animation-element {
+  animation: spin 2s infinite linear;
+  transition: transform 0.5s ease;
+}
+
+// ✅ GOOD: Respect user preferences
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+// Better approach: Create reduced motion variants
+.animation-element {
+  animation: spin 2s infinite linear;
+  transition: transform 0.5s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animation-element {
+    animation: none;
+    transition: none;
+  }
+}
+
+// Optional: Provide toggle control
+button#toggle-animation {
+  /* User can toggle animations on/off */
+}</code></pre>
+                        <p>Test: Enable "Reduce Motion" in your OS settings:</p>
+                        <ul>
+                            <li>Windows: Settings → Ease of Access → Display → Reduce motion</li>
+                            <li>macOS: System Preferences → Accessibility → Display → Reduce motion</li>
+                            <li>iOS: Settings → Accessibility → Motion → Reduce Motion</li>
+                        </ul>
+                    </details>
+
+                    <details>
+                        <summary>Detail: Accessible Responsive Breakpoints</summary>
+                        <p>Breakpoints shouldn't be based on device types — they should be based on content needs.</p>
+                        <pre><code>// ❌ BAD: Device-based breakpoints
+@media (max-width: 768px) { /* Tablet */ }
+@media (max-width: 480px) { /* Mobile */ }
+
+// ✅ GOOD: Content-based breakpoints
+/* When content starts to break */
+@media (max-width: 600px) { 
+  .sidebar {
+    display: none;
+  }
+}
+
+/* When text becomes too narrow */
+@media (max-width: 400px) {
+  .card {
+    padding: 1rem;
+  }
+  
+  h1 {
+    font-size: 1.5rem;
+  }
+}
+
+/* When buttons become hard to tap */
+@media (max-width: 320px) {
+  button {
+    min-height: 44px;
+  }
+}</code></pre>
+                        <p>Test your breakpoints by resizing the browser window gradually — not jumping to preset device sizes.</p>
+                        <p>Also consider: What happens when users zoom in? Your breakpoints should still work!</p>
+                    </details>
+
+                    <details>
+                        <summary>Uses: Why Responsive Accessibility Matters</summary>
+                        <ul>
+                            <li><strong>Mobile users:</strong> 50%+ of web traffic comes from mobile devices</li>
+                            <li><strong>Age-related vision changes:</strong> 1 in 3 adults over 65 have low vision</li>
+                            <li><strong>Environmental factors:</strong> Bright sunlight, poor lighting</li>
+                            <li><strong>Motor impairments:</strong> Users with tremors need larger targets</li>
+                            <li><strong>Temporary conditions:</strong> Broken arm, holding baby, driving</li>
+                        </ul>
+                        <p class="badge">Design Principle: Build for the edge cases — you'll serve everyone better.</p>
+                    </details>
+                </section>
+
+                <!-- 20.3 CSS and ARIA -->
+                <section id="section-20-3">
+                    <h2 class="section-title">20.3 CSS and ARIA</h2>
+                    <p class="text-secondary">ARIA (Accessible Rich Internet Applications) enhances HTML semantics. CSS works hand-in-hand with ARIA to create accessible experiences.</p>
+
+                    <details>
+                        <summary>Syntax: CSS content Property and Screen Readers</summary>
+                        <p>The CSS <code>content</code> property creates dynamic content — but screen readers often ignore it.</p>
+                        <pre><code>// ❌ BAD: Relying on CSS for critical information
+.error-message::before {
+  content: "⚠️ ";
+  color: red;
+}
+
+// ✅ GOOD: Put critical info in HTML, use CSS for styling
+&lt;span class="error-message"&gt;&lt;span class="visually-hidden"&gt;Error:&lt;/span&gt; Invalid email&lt;/span&gt;
+
+.error-message {
+  color: red;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}</code></pre>
+                        <p>Rule: Never put meaningful information in CSS content — it's not accessible!</p>
+                        <p>CSS content is good for decorative elements like quotes or icons that aren't critical to understanding.</p>
+                    </details>
+
+                    <details>
+                        <summary>Detail: Hiding Content Accessibly</summary>
+                        <p>There are multiple ways to hide content — but only some are accessible.</p>
+                        <pre><code>// ❌ BAD: Completely hides from screen readers
+.hidden {
+  display: none;
+}
+
+.invisible {
+  visibility: hidden;
+}
+
+// ✅ GOOD: Hide visually but keep accessible
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// ✅ ALSO GOOD: Hide from visual users but keep accessible
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+// ✅ GOOD: Hide from screen readers but keep visible
+.aria-hidden {
+  aria-hidden: true;
+}</code></pre>
+                        <p>When to use each:</p>
+                        <ul>
+                            <li><code>display: none</code>: Content doesn't exist</li>
+                            <li><code>.visually-hidden</code>: Important content for screen readers</li>
+                            <li><code>aria-hidden="true"</code>: Decorative elements</li>
+                        </ul>
+                        <div class="example-box">
+                            <pre><code>&lt;!-- Hidden from everyone --&gt;
+&lt;div style="display: none;"&gt;This is gone&lt;/div&gt;
+
+&lt;!-- Visible to screen readers only --&gt;
+&lt;span class="visually-hidden"&gt;Skip to main content&lt;/span&gt;
+
+&lt;!-- Visible to sighted users, hidden from screen readers --&gt;
+&lt;span aria-hidden="true"&gt;⭐&lt;/span&gt;</code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Syntax: Visual Indicators for ARIA States</summary>
+                        <p>ARIA states like <code>aria-expanded</code>, <code>aria-selected</code>, and <code>aria-current</code> need visual feedback.</p>
+                        <pre><code>// ✅ GOOD: Style based on ARIA attributes
+button[aria-expanded="false"]::after {
+  content: "▼";
+  margin-left: 0.5rem;
+}
+
+button[aria-expanded="true"]::after {
+  content: "▲";
+  margin-left: 0.5rem;
+}
+
+nav a[aria-current="page"] {
+  font-weight: bold;
+  color: var(--amber);
+  position: relative;
+}
+
+nav a[aria-current="page"]::after {
+  content: "";
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: var(--amber);
+}
+
+// Also style focus states with ARIA
+[aria-invalid="true"] {
+  border-color: #ff4757;
+  box-shadow: 0 0 0 2px rgba(255, 71, 87, 0.3);
+}
+
+[aria-describedby] {
+  outline: 2px dotted var(--cyan);
+}</code></pre>
+                        <p>Always provide visual cues for ARIA states — never rely on screen readers alone!</p>
+                    </details>
+
+                    <details>
+                        <summary>Detail: Focus Management with CSS</summary>
+                        <p>Focus management ensures users know where they are in complex interfaces.</p>
+                        <pre><code>// ✅ GOOD: Highlight focused elements
+:focus {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+  z-index: 10;
+}
+
+// For modals, prevent scrolling behind
+.modal-open {
+  overflow: hidden;
+}
+
+// For dropdowns, manage focus trap
+.dropdown-menu:focus-within {
+  box-shadow: 0 8px 24px rgba(0, 209, 255, 0.3);
+}
+
+// Use CSS to improve keyboard navigation
+nav > *:not(:last-child) {
+  margin-right: 1rem;
+}
+
+/* Ensure tab order makes sense */
+.tab-order-1 { order: 1; }
+.tab-order-2 { order: 2; }
+.tab-order-3 { order: 3; }
+
+// Avoid negative tabindex unless absolutely necessary
+// ⚠️ NEVER do: tabindex="-1" on interactive elements!
+</code></pre>
+                        <p>Focus traps: When opening a modal, trap focus within it and return to trigger when closed.</p>
+                        <p>Test: Use Tab and Shift+Tab to navigate through your interface — does it make logical sense?</p>
+                    </details>
+
+                    <details>
+                        <summary>Example: Accessible Dropdown Menu</summary>
+                        <div class="example-box">
+                            <pre><code>&lt;!-- HTML --&gt;
+&lt;div class="dropdown"&gt;
+  &lt;button 
+    class="dropdown-toggle" 
+    aria-haspopup="true" 
+    aria-expanded="false"
+    aria-controls="menu-id"&gt;
+    Products ▼
+  &lt;/button&gt;
+  &lt;ul id="menu-id" class="dropdown-menu" role="menu" aria-hidden="true"&gt;
+    &lt;li&gt;&lt;a href="#" role="menuitem"&gt;Product A&lt;/a&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a href="#" role="menuitem"&gt;Product B&lt;/a&gt;&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/div&gt;
+
+&lt;!-- CSS --&gt;
+.dropdown-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+}
+
+.dropdown-toggle[aria-expanded="true"]::after {
+  content: "▲";
+}
+
+.dropdown-toggle[aria-expanded="false"]::after {
+  content: "▼";
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #ccc;
+  border-top: none;
+  border-radius: 0 0 4px 4px;
+  padding: 0.5rem 0;
+  z-index: 1000;
+  min-width: 200px;
+}
+
+.dropdown-menu[aria-hidden="true"] {
+  display: none;
+}
+
+.dropdown-menu[aria-hidden="false"] {
+  display: block;
+}
+
+.dropdown-menu a {
+  display: block;
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  color: #333;
+}
+
+.dropdown-menu a:hover,
+.dropdown-menu a:focus {
+  background-color: #f5f5f5;
+}
+
+.dropdown-menu a[aria-current="page"] {
+  background-color: #00d1ff;
+  color: white;
+  font-weight: bold;
+}
+
+/* Focus indicator for keyboard users */
+.dropdown-menu a:focus {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+}</code></pre>
+                        </div>
+                        <p>This dropdown is:</p>
+                        <ul>
+                            <li>Keyboard navigable</li>
+                            <li>Screen reader friendly</li>
+                            <li>Visually clear</li>
+                            <li>ARIA-compliant</li>
+                            <li>Respects reduced motion</li>
+                        </ul>
+                    </details>
+
+                    <details>
+                        <summary>Uses: Why CSS + ARIA Together Matter</summary>
+                        <ul>
+                            <li><strong>Comprehensive accessibility:</strong> HTML provides structure, ARIA adds meaning, CSS provides perception</li>
+                            <li><strong>Progressive enhancement:</strong> Works even if JavaScript fails</li>
+                            <li><strong>Future-proof:</strong> Standards evolve, but principles endure</li>
+                            <li><strong>User trust:</strong> Accessible sites feel more professional and trustworthy</li>
+                            <li><strong>Business advantage:</strong> 71% of users with disabilities will leave a site that's not accessible</li>
+                        </ul>
+                        <p class="badge">Golden Rule: If it's important enough to see, it's important enough to hear.</p>
+                    </details>
+
+                    <details>
+                        <summary>Best Practices Summary</summary>
+                        <ol>
+                            <li><strong>Test with real users:</strong> Include people with disabilities in your testing process</li>
+                            <li><strong>Use automated tools:</strong> Axe DevTools, WAVE, Lighthouse</li>
+                            <li><strong>Follow WCAG 2.1 Level AA:</strong> This is the legal standard in most countries</li>
+                            <li><strong>Color contrast check:</strong> Every text element must pass 4.5:1</li>
+                            <li><strong>Keyboard navigation:</strong> Test without a mouse — every function must work</li>
+                            <li><strong>ARIA usage:</strong> Only use ARIA when native HTML won't suffice</li>
+                            <li><strong>Font scaling:</strong> Everything must work at 200% zoom</li>
+                            <li><strong>Reduced motion:</strong> Respect prefers-reduced-motion</li>
+                            <li><strong>Touch targets:</strong> Minimum 44×44px</li>
+                            <li><strong>Document your decisions:</strong> Keep an accessibility statement on your site</li>
+                        </ol>
+                        <p class="highlight">Final Wisdom: "Accessibility is not a feature. It's a fundamental part of good design." — Design for everyone, not just the average user.</p>
+                    </details>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Utilities -->
+    <script>
+        // Expand/Collapse All
+        document.getElementById('expandAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.open = true;
+            });
+        });
+
+        document.getElementById('collapseAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.open = false;
+            });
+        });
+
+        // Toggle TOC Sections
+        document.querySelectorAll('.toc-heading').forEach(section => {
+            section.addEventListener('click', () => {
+                const target = section.getAttribute('data-target');
+                const subItems = document.getElementById(target);
+                section.classList.toggle('collapsed');
+            });
+        });
+
+        // Search functionality
+        document.getElementById('tocSearch').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const tocItems = document.querySelectorAll('.toc-item');
+            
+            tocItems.forEach(item => {
+                const linkText = item.textContent.toLowerCase();
+                if (linkText.includes(searchTerm)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        // Smooth Scrolling for TOC Links
+        document.querySelectorAll('.toc-item a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Highlight active TOC item
+                    document.querySelectorAll('.toc-item.active').forEach(el => {
+                        el.classList.remove('active');
+                    });
+                    this.parentElement.classList.add('active');
+                }
+            });
+        });
+
+        // Auto-highlight active section as user scrolls
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.toc-item a');
+            
+            let current = '';
+            
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= sectionTop - 100) {
+                    current = section.id;
+                }
+            });
+            
+            navLinks.forEach(link => {
+                link.parentElement.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.parentElement.classList.add('active');
+                }
+            });
+        });
+
+        // Syntax highlighting for code blocks
+        document.querySelectorAll('pre code').forEach(block => {
+            hljs.highlightBlock(block);
+        });
+
+        // Add fallback for highlight.js if not loaded
+        window.hljs = window.hljs || {
+            highlightBlock: (el) => {
+                el.classList.add('language-css');
+            }
+        };
+    </script>
+
+    <!-- Optional: Include Highlight.js for better syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+</html>
+```

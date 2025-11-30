@@ -1,0 +1,1161 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 2: CSS Selectors</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00d1ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --text-muted: #b3cde6;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            background-color: rgba(10, 25, 47, 0.9);
+            border-right: 1px solid var(--cyan);
+            height: 100vh;
+            position: fixed;
+            width: 300px;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 5px 0 15px rgba(0, 209, 255, 0.1);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--amber);
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: var(--amber);
+            border-bottom: 2px solid var(--amber);
+        }
+
+        .toc-item {
+            margin: 8px 0;
+            padding-left: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .toc-item a {
+            color: var(--text-muted);
+            text-decoration: none;
+            display: block;
+            transition: color 0.3s;
+        }
+
+        .toc-item a:hover {
+            color: var(--cyan);
+        }
+
+        .toc-subitem {
+            margin-left: 20px;
+            font-size: 0.9em;
+            color: var(--text-muted);
+        }
+
+        .toc-subitem a {
+            color: var(--text-muted);
+        }
+
+        .toc-subitem a:hover {
+            color: var(--cyan);
+        }
+
+        details {
+            margin: 15px 0;
+            border-left: 3px solid var(--amber);
+            padding-left: 15px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border-radius: 0 5px 5px 0;
+        }
+
+        summary {
+            cursor: pointer;
+            color: var(--amber);
+            font-weight: bold;
+            font-size: 1.1rem;
+            list-style: none;
+            padding: 10px;
+            background-color: rgba(0, 209, 255, 0.05);
+            border-radius: 5px;
+            margin-bottom: 5px;
+            transition: all 0.3s ease;
+        }
+
+        summary:hover {
+            background-color: rgba(0, 209, 255, 0.1);
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary::before {
+            content: "▶ ";
+            color: var(--amber);
+        }
+
+        details[open] summary::before {
+            content: "▼ ";
+            color: var(--amber);
+        }
+
+        pre code {
+            display: block;
+            padding: 16px;
+            overflow-x: auto;
+            background-color: #0d1b2a;
+            border-radius: 5px;
+            border-left: 4px solid var(--amber);
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--cyan);
+        }
+
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.1);
+            padding: 2px 5px;
+            border-radius: 3px;
+            color: var(--amber);
+            font-weight: 500;
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: #000;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+
+        .btn-control {
+            background-color: rgba(0, 209, 255, 0.1);
+            border: 1px solid var(--cyan);
+            color: var(--cyan);
+            margin: 10px 0;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .btn-control:hover {
+            background-color: var(--cyan);
+            color: #000;
+            transform: translateY(-2px);
+        }
+
+        .search-box {
+            background-color: rgba(0, 209, 255, 0.1);
+            border: 1px solid var(--cyan);
+            color: var(--text-light);
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            width: 100%;
+        }
+
+        .section-header {
+            border-bottom: 2px dashed var(--cyan);
+            padding-bottom: 10px;
+            margin: 30px 0 20px;
+            color: var(--amber);
+        }
+
+        .specificity-table th, .specificity-table td {
+            border: 1px solid rgba(0, 209, 255, 0.2);
+            padding: 8px 12px;
+        }
+
+        .specificity-table tr:nth-child(even) {
+            background-color: rgba(0, 209, 255, 0.05);
+        }
+
+        .code-example {
+            background-color: rgba(13, 27, 42, 0.7);
+            border-left: 3px solid var(--cyan);
+            padding: 12px;
+            border-radius: 0 5px 5px 0;
+            margin: 15px 0;
+        }
+
+        .pseudo-class-demo {
+            margin: 15px 0;
+            padding: 15px;
+            background-color: rgba(0, 209, 255, 0.05);
+            border: 1px dashed var(--cyan);
+            border-radius: 5px;
+        }
+
+        .footer-note {
+            margin-top: 50px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid rgba(0, 209, 255, 0.2);
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 991px) {
+            .left-panel {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding: 15px;
+            }
+            .right-panel {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Left Panel -->
+            <div class="col-md-3 left-panel">
+                <h2>Module 2: CSS Selectors</h2>
+                <p class="text-muted small">The power keys to targeting elements with surgical precision</p>
+                <hr>
+                
+                <div class="mb-3">
+                    <input type="text" class="search-box" id="toc-search" placeholder="Search topics...">
+                </div>
+
+                <button class="btn-control w-100 mb-2" id="expand-all">Expand All</button>
+                <button class="btn-control w-100 mb-3" id="collapse-all">Collapse All</button>
+
+                <h5 class="text-uppercase text-muted fw-bold mb-3">Table of Contents</h5>
+                
+                <div class="toc-item">
+                    <a href="#sec-2-1">2.1 Basic Selectors</a>
+                    <div class="toc-subitem">
+                        <a href="#element-selectors">• Element selectors</a>
+                        <a href="#class-selectors">• Class selectors (.class)</a>
+                        <a href="#id-selectors">• ID selectors (#id)</a>
+                        <a href="#universal-selector">• Universal selector (*)</a>
+                        <a href="#specificity-basics">• Selector specificity basics</a>
+                    </div>
+                </div>
+                
+                <div class="toc-item">
+                    <a href="#sec-2-2">2.2 Combinators and Relationships</a>
+                    <div class="toc-subitem">
+                        <a href="#descendant-combinator">• Descendant combinator (space)</a>
+                        <a href="#child-combinator">• Child combinator (&gt;)</a>
+                        <a href="#adjacent-sibling">• Adjacent sibling (+)</a>
+                        <a href="#general-sibling">• General sibling (~)</a>
+                    </div>
+                </div>
+                
+                <div class="toc-item">
+                    <a href="#sec-2-3">2.3 Attribute Selectors</a>
+                    <div class="toc-subitem">
+                        <a href="#basic-attribute">• Basic attribute selectors ([attr])</a>
+                        <a href="#exact-value">• Exact value matching ([attr="value"])</a>
+                        <a href="#partial-matching">• Partial matching ([attr*="value"])</a>
+                        <a href="#beginning-ending">• Beginning/ending matching ([attr^="value"], [attr$="value"])</a>
+                        <a href="#case-insensitive">• Case-insensitive matching</a>
+                    </div>
+                </div>
+                
+                <div class="toc-item">
+                    <a href="#sec-2-4">2.4 Pseudo-classes and Pseudo-elements</a>
+                    <div class="toc-subitem">
+                        <a href="#link-states">• Link states (:hover, :visited, :active)</a>
+                        <a href="#form-states">• Form states (:focus, :disabled, :checked)</a>
+                        <a href="#structural-pseudo">• Structural pseudo-classes (:first-child, :last-child, :nth-child())</a>
+                        <a href="#pseudo-elements">• Pseudo-elements (::before, ::after, ::first-line, ::first-letter)</a>
+                    </div>
+                </div>
+                
+                <div class="mt-5">
+                    <p class="text-muted small">
+                        <strong>Author:</strong> Web Dev Mentor<br>
+                        <small>For Deep Understanding Only</small>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="col-md-9 right-panel">
+                <h1>CSS Selectors</h1>
+                <p class="lead text-muted">Master the language that tells your styles exactly which elements to target</p>
+
+                <!-- 2.1 Basic Selectors -->
+                <section id="sec-2-1">
+                    <h2>2.1 Basic Selectors</h2>
+                    <p class="text-muted">These are the ABCs of CSS targeting — learn them first, master them forever.</p>
+
+                    <details>
+                        <summary>Element selectors</summary>
+                        <p>Target HTML elements by their tag name. Simple, direct, and universally supported.</p>
+                        <pre><code>
+/* Targets ALL paragraph elements */
+p {
+    color: cyan;
+    font-size: 1.1rem;
+}
+
+/* Targets ALL heading level 1 elements */
+h1 {
+    color: amber;
+    text-transform: uppercase;
+}
+                        </code></pre>
+                        <p><strong>Real-world example:</strong></p>
+                        <div class="code-example">
+                            <p>This paragraph will be cyan.</p>
+                            <p>This one too!</p>
+                            <h1>This heading will be amber and uppercase.</h1>
+                        </div>
+                        <p><strong>Pros:</strong> Lightweight, no extra attributes needed.<br>
+                        <strong>Cons:</strong> Too broad — affects every instance of that element.</p>
+                    </details>
+
+                    <details>
+                        <summary>Class selectors (.class)</summary>
+                        <p>Target elements with a specific class attribute. Reusable across multiple elements.</p>
+                        <pre><code>
+/* Targets any element with class="btn" */
+.btn {
+    background-color: #ffa726;
+    color: #000;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+}
+
+/* Targets elements with class="highlight" */
+.highlight {
+    background-color: rgba(255, 183, 77, 0.2);
+    padding: 2px 5px;
+    border-radius: 3px;
+}
+                        </code></pre>
+                        <p><strong>HTML usage:</strong></p>
+                        <pre><code>
+&lt;button class="btn"&gt;Click Me&lt;/button&gt;
+&lt;p class="btn highlight"&gt;This is both a button and highlighted!&lt;/p&gt;
+&lt;span class="highlight"&gt;Just highlighted text.&lt;/span&gt;
+                        </code></pre>
+                        <p><strong>Why classes rock:</strong> One class can style multiple element types. You can apply multiple classes to one element: <code>class="btn primary large"</code></p>
+                        <p><strong>Pro Tip:</strong> Use semantic names like <code>.error-message</code>, not <code>.red-text</code>.</p>
+                    </details>
+
+                    <details>
+                        <summary>ID selectors (#id)</summary>
+                        <p>Target a single, unique element using its ID. Must be unique per page.</p>
+                        <pre><code>
+/* Targets element with id="main-header" */
+#main-header {
+    font-size: 2.5rem;
+    color: #00d1ff;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+/* Targets element with id="sidebar" */
+#sidebar {
+    width: 250px;
+    background-color: #0d1b2a;
+    padding: 20px;
+}
+                        </code></pre>
+                        <p><strong>HTML usage:</strong></p>
+                        <pre><code>
+&lt;header id="main-header"&gt;Welcome to My Site&lt;/header&gt;
+&lt;aside id="sidebar"&gt;...&lt;/aside&gt;
+                        </code></pre>
+                        <p><strong>Key Rules:</strong></p>
+                        <ul>
+                            <li>ID must be unique — never use the same ID twice on a page</li>
+                            <li>Higher specificity than classes (more on this later)</li>
+                            <li>Use for major structural elements: header, footer, main-content</li>
+                        </ul>
+                        <p><strong>Warning:</strong> Avoid overusing IDs. They're hard to reuse and create coupling between HTML and CSS.</p>
+                    </details>
+
+                    <details>
+                        <summary>Universal selector (*)</summary>
+                        <p>Selects EVERY element on the page. Rarely used in production but essential for resets.</p>
+                        <pre><code>
+/* Resets default margin and padding for ALL elements */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Applies border to EVERY element (for debugging) */
+* {
+    border: 1px solid rgba(0, 209, 255, 0.3);
+}
+                        </code></pre>
+                        <p><strong>When to use:</strong></p>
+                        <ul>
+                            <li>CSS resets (normalize browser defaults)</li>
+                            <li>Debugging layout issues</li>
+                            <li>Applying global properties like <code>box-sizing: border-box</code></li>
+                        </ul>
+                        <p><strong>Performance Note:</strong> The universal selector is slowest because it checks every element. Use sparingly.</p>
+                    </details>
+
+                    <details>
+                        <summary>Selector specificity basics</summary>
+                        <p>When multiple rules target the same element, CSS uses specificity to decide which wins.</p>
+                        <p><strong>Specificity Hierarchy (Highest to Lowest):</strong></p>
+                        <ol>
+                            <li><strong>Inline styles</strong> (e.g., <code>style="color:red"</code>) → 1,0,0,0</li>
+                            <li><strong>ID selectors</strong> (#id) → 0,1,0,0</li>
+                            <li><strong>Class selectors, attributes, pseudo-classes</strong> (.class, [type], :hover) → 0,0,1,0</li>
+                            <li><strong>Element selectors, pseudo-elements</strong> (div, p, ::before) → 0,0,0,1</li>
+                            <li><strong>Universal selector, combinators</strong> (*, >, +, ~, ) → 0,0,0,0</li>
+                        </ol>
+                        <p><strong>Example:</strong></p>
+                        <div class="code-example">
+                            <pre><code>
+/* Specificity: 0,0,1,0 */
+.title { color: blue; }
+
+/* Specificity: 0,1,0,0 */
+#header { color: red; }
+
+/* Specificity: 0,0,0,1 */
+h1 { color: green; }
+
+/* Which wins? */
+&lt;h1 id="header" class="title"&gt;Hello World&lt;/h1&gt;
+                            </code></pre>
+                        </div>
+                        <p><strong>Result:</strong> The text will be <span class="highlight">red</span> — ID beats class and element!</p>
+                        <p><strong>Calculating Specificity:</strong> Think of it as a 4-digit number: <code>[inline][id][class][element]</code></p>
+                        <table class="table table-dark specificity-table mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Selector</th>
+                                    <th>Specificity</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>* {}</code></td>
+                                    <td>0,0,0,0</td>
+                                    <td>0</td>
+                                </tr>
+                                <tr>
+                                    <td><code>p {}</code></td>
+                                    <td>0,0,0,1</td>
+                                    <td>1</td>
+                                </tr>
+                                <tr>
+                                    <td><code>.btn {}</code></td>
+                                    <td>0,0,1,0</td>
+                                    <td>10</td>
+                                </tr>
+                                <tr>
+                                    <td><code>#nav {}</code></td>
+                                    <td>0,1,0,0</td>
+                                    <td>100</td>
+                                </tr>
+                                <tr>
+                                    <td><code>div p span {}</code></td>
+                                    <td>0,0,0,3</td>
+                                    <td>3</td>
+                                </tr>
+                                <tr>
+                                    <td><code>div #nav .btn {}</code></td>
+                                    <td>0,1,1,1</td>
+                                    <td>111</td>
+                                </tr>
+                                <tr>
+                                    <td><code>&lt;div style="color:red"&gt;</code></td>
+                                    <td>1,0,0,0</td>
+                                    <td>1000</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p><strong>Rule of Thumb:</strong> Always prefer classes over IDs. Avoid inline styles. Never use <code>!important</code> unless absolutely necessary.</p>
+                    </details>
+                </section>
+
+                <!-- 2.2 Combinators and Relationships -->
+                <section id="sec-2-2">
+                    <h2>2.2 Combinators and Relationships</h2>
+                    <p class="text-muted">Selectors aren't just about naming elements — they're about understanding relationships between them.</p>
+
+                    <details>
+                        <summary>Descendant combinator (space)</summary>
+                        <p>Selects elements that are descendants (children, grandchildren, etc.) of another element.</p>
+                        <pre><code>
+/* Selects ALL li elements inside ul */
+ul li {
+    color: cyan;
+}
+
+/* Selects ALL spans inside ANY div */
+div span {
+    font-weight: bold;
+}
+                        </code></pre>
+                        <p><strong>HTML Example:</strong></p>
+                        <div class="code-example">
+                            <pre><code>
+&lt;div&gt;
+    &lt;ul&gt;
+        &lt;li&gt;Item 1&lt;/li&gt;
+        &lt;li&gt;Item 2&lt;/li&gt;
+        &lt;li&gt;
+            &lt;ul&gt;
+                &lt;li&gt;Nested Item&lt;/li&gt;  ← This gets styled too!
+            &lt;/ul&gt;
+        &lt;/li&gt;
+    &lt;/ul&gt;
+    &lt;span&gt;This span is outside the ul&lt;/span&gt; ← Not styled
+&lt;/div&gt;
+                            </code></pre>
+                        </div>
+                        <p><strong>Key Insight:</strong> Descendant combinator is <strong>greedy</strong> — it selects all levels down.</p>
+                    </details>
+
+                    <details>
+                        <summary>Child combinator (&gt;)</summary>
+                        <p>Selects only DIRECT children — not grandchildren or deeper.</p>
+                        <pre><code>
+/* Selects ONLY li elements that are direct children of ul */
+ul &gt; li {
+    color: amber;
+    font-weight: bold;
+}
+
+/* This won't affect nested lists */
+ul &gt; li &gt; ul &gt; li {
+    color: cyan;
+}
+                        </code></pre>
+                        <p><strong>HTML Example:</strong></p>
+                        <div class="code-example">
+                            <pre><code>
+&lt;ul&gt;
+    &lt;li&gt;Direct child → amber&lt;/li&gt;
+    &lt;li&gt;
+        &lt;ul&gt;
+            &lt;li&gt;Grandchild → NOT amber (unless explicitly targeted)&lt;/li&gt;
+        &lt;/ul&gt;
+    &lt;/li&gt;
+&lt;/ul&gt;
+                            </code></pre>
+                        </div>
+                        <p><strong>Use Case:</strong> When you want precise control — e.g., style top-level navigation items differently from dropdown items.</p>
+                    </details>
+
+                    <details>
+                        <summary>Adjacent sibling combinator (+)</summary>
+                        <p>Selects an element that is immediately preceded by another specific element.</p>
+                        <pre><code>
+/* Selects h2 that comes RIGHT AFTER h1 */
+h1 + h2 {
+    color: cyan;
+    margin-top: 10px;
+}
+
+/* Selects p that comes RIGHT AFTER img */
+img + p {
+    margin-top: 0;
+    font-weight: bold;
+}
+                        </code></pre>
+                        <p><strong>HTML Example:</strong></p>
+                        <div class="code-example">
+                            <pre><code>
+&lt;h1&gt;Main Title&lt;/h1&gt;
+&lt;h2&gt;Subtitle&lt;/h2&gt;      ← This gets styled
+
+&lt;h2&gt;Another Subtitle&lt;/h2&gt;  ← This does NOT get styled (not after h1)
+
+&lt;img src="image.jpg" alt="Sample" /&gt;
+&lt;p&gt;This paragraph follows an image → bold&lt;/p&gt;
+&lt;p&gt;This paragraph follows another paragraph → normal&lt;/p&gt;
+                            </code></pre>
+                        </div>
+                        <p><strong>Use Case:</strong> Styling headings after titles, paragraphs after images, form labels after inputs.</p>
+                    </details>
+
+                    <details>
+                        <summary>General sibling combinator (~)</summary>
+                        <p>Selects elements that follow another element anywhere in the same parent — not necessarily adjacent.</p>
+                        <pre><code>
+/* Selects ALL p elements that come after h1 (anywhere after) */
+h1 ~ p {
+    color: amber;
+    font-style: italic;
+}
+
+/* Selects ALL .note elements after .warning */
+.warning ~ .note {
+    background-color: rgba(255, 183, 77, 0.1);
+    border-left: 3px solid var(--amber);
+}
+                        </code></pre>
+                        <p><strong>HTML Example:</strong></p>
+                        <div class="code-example">
+                            <pre><code>
+&lt;h1&gt;Article Title&lt;/h1&gt;
+&lt;p&gt;First paragraph&lt;/p&gt;
+&lt;div&gt;Some other content&lt;/div&gt;
+&lt;p&gt;Third paragraph → amber and italic&lt;/p&gt;
+&lt;p&gt;Fourth paragraph → amber and italic&lt;/p&gt;
+
+&lt;div class="warning"&gt;Warning message&lt;/div&gt;
+&lt;p&gt;Normal paragraph&lt;/p&gt;
+&lt;div class="note"&gt;Note 1 → styled&lt;/div&gt;
+&lt;div class="note"&gt;Note 2 → styled&lt;/div&gt;
+                            </code></pre>
+                        </div>
+                        <p><strong>Compare:</strong> <code>+</code> = immediate next sibling | <code>~</code> = any following sibling</p>
+                    </details>
+                </section>
+
+                <!-- 2.3 Attribute Selectors -->
+                <section id="sec-2-3">
+                    <h2>2.3 Attribute Selectors</h2>
+                    <p class="text-muted">Target elements based on their attributes — powerful for forms, icons, and dynamic content.</p>
+
+                    <details>
+                        <summary>Basic attribute selectors ([attr])</summary>
+                        <p>Selects elements that have a specific attribute, regardless of its value.</p>
+                        <pre><code>
+/* Targets ALL elements with a title attribute */
+[title] {
+    border-bottom: 1px dotted var(--cyan);
+    cursor: help;
+}
+
+/* Targets ALL links with href attribute */
+[href] {
+    color: var(--amber);
+    text-decoration: none;
+}
+
+/* Targets ALL images with alt attribute */
+[alt] {
+    border: 1px solid rgba(0, 209, 255, 0.3);
+}
+                        </code></pre>
+                        <p><strong>Use Case:</strong> Accessibility styling — highlight elements with descriptive attributes.</p>
+                    </details>
+
+                    <details>
+                        <summary>Exact value matching ([attr="value"])</summary>
+                        <p>Selects elements where the attribute equals EXACTLY the specified value.</p>
+                        <pre><code>
+/* Targets input elements with type="email" */
+input[type="email"] {
+    background-image: url("email-icon.png");
+    background-position: right 10px center;
+    background-repeat: no-repeat;
+}
+
+/* Targets buttons with variant="primary" */
+button[variant="primary"] {
+    background-color: #00d1ff;
+    color: #000;
+}
+
+/* Targets links with target="_blank" */
+a[target="_blank"] {
+    padding-right: 20px;
+    background-image: url("external-link.svg");
+    background-repeat: no-repeat;
+    background-position: right center;
+}
+                        </code></pre>
+                        <p><strong>HTML Examples:</strong></p>
+                        <div class="code-example">
+                            <pre><code>
+&lt;input type="email" placeholder="your@email.com" /&gt;
+&lt;button variant="primary"&gt;Submit&lt;/button&gt;
+&lt;a href="https://google.com" target="_blank"&gt;Visit Google&lt;/a&gt;
+                            </code></pre>
+                        </div>
+                        <p><strong>Important:</strong> Values are case-sensitive. <code>[type="Email"]</code> ≠ <code>[type="email"]</code></p>
+                    </details>
+
+                    <details>
+                        <summary>Partial matching ([attr*="value"])</summary>
+                        <p>Selects elements whose attribute value contains a substring.</p>
+                        <pre><code>
+/* Targets all links containing "github" in href */
+a[href*="github"] {
+    color: #181717;
+    background-color: #f0f0f0;
+    border-radius: 5px;
+    padding: 3px 6px;
+}
+
+/* Targets all images with "logo" in src */
+img[src*="logo"] {
+    width: 100px;
+    margin: 10px auto;
+    display: block;
+}
+
+/* Targets all classes containing "btn" */
+[class*="btn"] {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+}
+                        </code></pre>
+                        <p><strong>Use Case:</strong> Styling social media icons, file type indicators, component variants.</p>
+                    </details>
+
+                    <details>
+                        <summary>Beginning/ending matching ([attr^="value"], [attr$="value"])</summary>
+                        <p>Match attributes starting with or ending with a specific string.</p>
+                        <pre><code>
+/* Links that start with "https://" */
+a[href^="https://"] {
+    background-image: url("lock-icon.svg");
+    background-position: left 5px center;
+    background-repeat: no-repeat;
+    padding-left: 25px;
+}
+
+/* Links that end with ".pdf" */
+a[href$=".pdf"] {
+    background-image: url("pdf-icon.svg");
+    background-position: left 5px center;
+    background-repeat: no-repeat;
+    padding-left: 25px;
+}
+
+/* Elements with class starting with "grid-" */
+[class^="grid-"] {
+    display: grid;
+}
+
+/* Elements with class ending with "-btn" */
+[class$="-btn"] {
+    cursor: pointer;
+}
+                        </code></pre>
+                        <p><strong>Real-World Example:</strong> Styling different file download links:</p>
+                        <div class="code-example">
+                            <pre><code>
+&lt;a href="resume.pdf"&gt;Download Resume&lt;/a&gt;
+&lt;a href="notes.docx"&gt;Download Notes&lt;/a&gt;
+&lt;a href="https://youtube.com"&gt;Watch Video&lt;/a&gt;
+&lt;a href="https://github.com/user/repo"&gt;View Code&lt;/a&gt;
+                            </code></pre>
+                        </div>
+                        <p>All these links can be uniquely styled without adding extra classes!</p>
+                    </details>
+
+                    <details>
+                        <summary>Case-insensitive matching</summary>
+                        <p>Modern browsers support case-insensitive attribute matching using the <code>i</code> flag.</p>
+                        <pre><code>
+/* Matches "PDF", "Pdf", "pdf", "PdF" — all variations */
+a[href$=".pdf" i] {
+    background-image: url("pdf-icon.svg");
+    padding-left: 25px;
+}
+
+/* Matches class="btn-primary", "BTN-PRIMARY", "Btn-Primary" */
+[class*="btn" i] {
+    padding: 8px 16px;
+    border-radius: 4px;
+}
+                        </code></pre>
+                        <p><strong>Browser Support:</strong> Supported in all modern browsers (Chrome 104+, Firefox 104+, Safari 15.4+).</p>
+                        <p><strong>Pro Tip:</strong> Use this for robustness when dealing with user-generated content or CMS systems that may vary casing.</p>
+                    </details>
+                </section>
+
+                <!-- 2.4 Pseudo-classes and Pseudo-elements -->
+                <section id="sec-2-4">
+                    <h2>2.4 Pseudo-classes and Pseudo-elements</h2>
+                    <p class="text-muted">These magical selectors let you style elements based on state or generate content — no HTML changes needed.</p>
+
+                    <details>
+                        <summary>Link states (:hover, :visited, :active)</summary>
+                        <p>Pseudo-classes for link interaction states. Order matters due to specificity cascade.</p>
+                        <pre><code>
+/* Default link state */
+a {
+    color: var(--cyan);
+    text-decoration: none;
+}
+
+/* Hover state */
+a:hover {
+    color: var(--amber);
+    text-decoration: underline;
+    transition: color 0.3s ease;
+}
+
+/* Visited state */
+a:visited {
+    color: #9c58d1;
+}
+
+/* Active state (when clicked) */
+a:active {
+    color: #ff4081;
+    transform: scale(0.98);
+}
+
+/* Focus state (keyboard navigation) */
+a:focus {
+    outline: 2px solid var(--cyan);
+    outline-offset: 2px;
+}
+                        </code></pre>
+                        <p><strong>Remember the LVHA order:</strong> Link → Visited → Hover → Active</p>
+                        <p><strong>Why order matters:</strong> If hover comes before visited, hovering over visited links won't work!</p>
+                        <p><strong>Accessibility Tip:</strong> Always include focus states — keyboard users depend on them!</p>
+                    </details>
+
+                    <details>
+                        <summary>Form states (:focus, :disabled, :checked)</summary>
+                        <p>Style interactive form elements based on user interaction.</p>
+                        <pre><code>
+/* Focus state for inputs */
+input:focus {
+    outline: none;
+    border-color: var(--cyan);
+    box-shadow: 0 0 0 2px rgba(0, 209, 255, 0.3);
+    transition: border-color 0.3s ease;
+}
+
+/* Disabled state */
+input:disabled {
+    background-color: #0d1b2a;
+    color: #555;
+    cursor: not-allowed;
+}
+
+/* Checked state for checkboxes/radios */
+input[type="checkbox"]:checked + label {
+    color: var(--amber);
+    font-weight: bold;
+}
+
+/* Style custom checkbox */
+input[type="checkbox"] {
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--cyan);
+    border-radius: 4px;
+    position: relative;
+}
+
+input[type="checkbox"]:checked::after {
+    content: "✓";
+    position: absolute;
+    top: -2px;
+    left: 5px;
+    font-size: 16px;
+    color: var(--amber);
+}
+                        </code></pre>
+                        <p><strong>Interactive Demo:</strong></p>
+                        <div class="pseudo-class-demo">
+                            <input type="checkbox" id="agree">
+                            <label for="agree">I agree to the terms</label><br><br>
+                            <input type="text" placeholder="Type something..." style="margin-bottom: 10px;">
+                            <input type="text" placeholder="Disabled field" disabled>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Structural pseudo-classes (:first-child, :last-child, :nth-child())</summary>
+                        <p>Target elements based on their position among siblings.</p>
+                        <pre><code>
+/* First child of any parent */
+:first-child {
+    margin-top: 0;
+}
+
+/* Last child of any parent */
+:last-child {
+    margin-bottom: 0;
+}
+
+/* First paragraph in container */
+.container p:first-child {
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+/* Every odd row in a table */
+tr:nth-child(odd) {
+    background-color: rgba(0, 209, 255, 0.05);
+}
+
+/* Every 3rd item */
+li:nth-child(3n) {
+    color: var(--amber);
+    font-weight: bold;
+}
+
+/* First 3 items */
+li:nth-child(-n+3) {
+    font-size: 1.3rem;
+}
+
+/* Only child */
+:only-child {
+    text-align: center;
+}
+
+/* Empty elements */
+:empty {
+    display: none;
+}
+                        </code></pre>
+                        <p><strong>Understanding nth-child(n):</strong></p>
+                        <ul>
+                            <li><code>n</code> = every element</li>
+                            <li><code>2n</code> = even numbers (2,4,6...)</li>
+                            <li><code>2n+1</code> = odd numbers (1,3,5...)</li>
+                            <li><code>3n+2</code> = 2nd, 5th, 8th, 11th...</li>
+                            <li><code>-n+3</code> = first 3 elements</li>
+                        </ul>
+                        <p><strong>Practical Example:</strong> Zebra-striped tables without JavaScript:</p>
+                        <div class="code-example">
+                            <pre><code>
+&lt;table&gt;
+    &lt;tr&gt;&lt;td&gt;Row 1&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td&gt;Row 2&lt;/td&gt;&lt;/tr&gt;
+    &lt;tr&gt;&lt;td&gt;Row 3&lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;
+
+tr:nth-child(odd) { background: #0d1b2a; }
+tr:nth-child(even) { background: #0a192f; }
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Pseudo-elements (::before, ::after, ::first-line, ::first-letter)</summary>
+                        <p>Generate content or style parts of elements without changing HTML.</p>
+                        <pre><code>
+/* Add quotation marks around blockquotes */
+blockquote::before {
+    content: "“";
+    font-size: 3rem;
+    color: var(--amber);
+    opacity: 0.7;
+    position: absolute;
+    top: -10px;
+    left: -10px;
+}
+
+blockquote::after {
+    content: "”";
+    font-size: 3rem;
+    color: var(--amber);
+    opacity: 0.7;
+    position: absolute;
+    bottom: -40px;
+    right: -10px;
+}
+
+/* Add icon before external links */
+a[href^="https"]:not([href*="mydomain.com"])::before {
+    content: "↗ ";
+    font-size: 0.8em;
+    color: var(--amber);
+}
+
+/* Style first letter of paragraphs */
+p::first-letter {
+    font-size: 3rem;
+    font-weight: bold;
+    float: left;
+    line-height: 0.8;
+    margin-right: 5px;
+    color: var(--cyan);
+}
+
+/* Style first line of paragraphs */
+p::first-line {
+    font-weight: bold;
+    color: var(--amber);
+}
+
+/* Add decorative divider after headings */
+h2::after {
+    content: "";
+    display: block;
+    width: 50px;
+    height: 2px;
+    background-color: var(--amber);
+    margin: 10px auto 20px;
+}
+                        </code></pre>
+                        <p><strong>Key Rules:</strong></p>
+                        <ul>
+                            <li>Use double colon <code>::</code> for pseudo-elements (single colon <code>:</code> is legacy)</li>
+                            <li>Content property is REQUIRED for ::before and ::after</li>
+                            <li>Pseudo-elements are not part of DOM — cannot be selected by JavaScript</li>
+                        </ul>
+                        <p><strong>Powerful Use Case:</strong> Creating tooltips without JavaScript:</p>
+                        <div class="code-example">
+                            <pre><code>
+&lt;span class="tooltip" data-tooltip="This is a tooltip"&gt;Hover me&lt;/span&gt;
+
+.tooltip {
+    position: relative;
+    cursor: pointer;
+}
+
+.tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #000;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    opacity: 0;
+    transition: opacity 0.3s;
+    white-space: nowrap;
+}
+
+.tooltip:hover::after {
+    opacity: 1;
+}
+                            </code></pre>
+                        </div>
+                    </details>
+                </section>
+
+                <div class="footer-note">
+                    🌟 Mastery Tip: CSS selectors are like a scalpel — the more precisely you target, the less you override.<br>
+                    Don't fight specificity — understand it. Don't add classes for everything — leverage combinators and attributes.<br>
+                    Practice writing selectors without touching HTML. That's true CSS mastery.
+                    <br><br>
+                    Next Module: Box Model, Layout, and Positioning Fundamentals
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Expand/Collapse All
+            document.getElementById('expand-all').addEventListener('click', () => {
+                document.querySelectorAll('details').forEach(detail => {
+                    detail.open = true;
+                });
+            });
+
+            document.getElementById('collapse-all').addEventListener('click', () => {
+                document.querySelectorAll('details').forEach(detail => {
+                    detail.open = false;
+                });
+            });
+
+            // Search functionality
+            document.getElementById('toc-search').addEventListener('input', function(e) {
+                const query = e.target.value.toLowerCase();
+                const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
+                
+                tocItems.forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    if (text.includes(query)) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+
+            // Smooth scrolling for TOC links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+
+            // Highlight active section in TOC as user scrolls
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.toc-item a');
+
+            window.addEventListener('scroll', () => {
+                let current = '';
+                
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+                    if (pageYOffset >= sectionTop - 100) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === '#' + current) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+```

@@ -1,0 +1,741 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 13: CSS Architecture | Deep Learning Notes</title>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00f5ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --text-muted: #a0c8e0;
+            --border-color: #1e3a5f;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            background-color: #0b1a30;
+            border-right: 1px solid var(--border-color);
+            height: 100vh;
+            position: fixed;
+            width: 300px;
+            overflow-y: auto;
+            padding: 1rem;
+            box-shadow: 2px 0 10px rgba(0, 245, 255, 0.1);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 2rem;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--amber);
+            padding-bottom: 0.3rem;
+            margin-top: 2rem;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            color: var(--amber);
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-style: italic;
+            margin-bottom: 1.5rem;
+        }
+
+        .author-info {
+            color: var(--amber);
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .toc-item {
+            margin: 0.5rem 0;
+        }
+
+        .toc-item a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.3s ease;
+            display: block;
+            padding: 0.4rem 0.6rem;
+            border-radius: 4px;
+            margin-left: 10px;
+        }
+
+        .toc-item a:hover {
+            color: var(--cyan);
+            background-color: rgba(0, 245, 255, 0.1);
+        }
+
+        .toc-subitem {
+            margin-left: 1.5rem;
+            color: var(--text-muted);
+        }
+
+        .toc-subitem a {
+            padding-left: 1rem;
+            font-size: 0.9rem;
+        }
+
+        details {
+            margin: 1rem 0;
+            border-left: 3px solid var(--amber);
+            padding-left: 1rem;
+            background-color: rgba(11, 26, 48, 0.5);
+            border-radius: 0 6px 6px 0;
+        }
+
+        summary {
+            cursor: pointer;
+            list-style: none;
+            color: var(--cyan);
+            font-weight: 600;
+            font-size: 1.1rem;
+            padding: 0.7rem 1rem;
+            background-color: rgba(0, 245, 255, 0.08);
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        summary::before {
+            content: "▶";
+            margin-right: 0.5rem;
+            font-size: 0.8rem;
+            transition: transform 0.3s ease;
+        }
+
+        details[open] summary::before {
+            transform: rotate(90deg);
+        }
+
+        pre code {
+            display: block;
+            padding: 1rem;
+            background-color: #091425;
+            border-radius: 6px;
+            overflow-x: auto;
+            border-left: 3px solid var(--amber);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--cyan);
+        }
+
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.1);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-weight: 600;
+            color: var(--amber);
+        }
+
+        .btn-control {
+            background-color: rgba(0, 245, 255, 0.1);
+            color: var(--cyan);
+            border: 1px solid var(--amber);
+            margin: 1rem 0;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-control:hover {
+            background-color: rgba(0, 245, 255, 0.3);
+            color: white;
+        }
+
+        .search-input {
+            background-color: rgba(0, 245, 255, 0.1);
+            border: 1px solid var(--amber);
+            color: var(--text-light);
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border-radius: 4px;
+            width: 100%;
+        }
+
+        .search-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .code-inline {
+            background-color: rgba(9, 20, 37, 0.7);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--cyan);
+            font-size: 0.9rem;
+        }
+
+        .formula {
+            background-color: rgba(255, 183, 77, 0.1);
+            padding: 0.5rem;
+            border-radius: 6px;
+            display: inline-block;
+            margin: 0.5rem 0;
+            font-family: 'Cambria Math', serif;
+            color: var(--amber);
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: #000;
+            font-weight: bold;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 0.5rem;
+        }
+
+        .scroll-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: rgba(0, 245, 255, 0.1);
+            color: var(--cyan);
+            padding: 0.5rem;
+            border-radius: 50%;
+            font-size: 0.8rem;
+            opacity: 0.7;
+            z-index: 1000;
+        }
+
+        @media (max-width: 991px) {
+            .left-panel {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .right-panel {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Left Panel -->
+        <div class="col-md-3 left-panel">
+            <h1>Module 13</h1>
+            <h2>CSS Architecture</h2>
+            <p class="subtitle">Mastering Scalable, Maintainable, and Organized CSS</p>
+            <p class="author-info">By Your AI Tutor — Designed for Deep Understanding</p>
+
+            <input type="text" class="search-input" id="searchToc" placeholder="Search TOC...">
+
+            <div class="d-grid gap-2">
+                <button class="btn-control" id="expandAll">Expand All</button>
+                <button class="btn-control" id="collapseAll">Collapse All</button>
+            </div>
+
+            <nav id="toc">
+                <ul class="list-unstyled">
+                    <li class="toc-item">
+                        <a href="#section-13-1">13.1 CSS Methodologies</a>
+                        <ul class="list-unstyled">
+                            <li class="toc-subitem"><a href="#bem">BEM (Block Element Modifier)</a></li>
+                            <li class="toc-subitem"><a href="#oocss">OOCSS (Object-Oriented CSS)</a></li>
+                            <li class="toc-subitem"><a href="#smacss">SMACSS (Scalable and Modular Architecture)</a></li>
+                            <li class="toc-subitem"><a href="#atomic-css">Atomic CSS & Utility-First</a></li>
+                        </ul>
+                    </li>
+                    <li class="toc-item">
+                        <a href="#section-13-2">13.2 CSS Organization</a>
+                        <ul class="list-unstyled">
+                            <li class="toc-subitem"><a href="#file-structure">File Structure & Imports</a></li>
+                            <li class="toc-subitem"><a href="#naming-conventions">Naming Conventions</a></li>
+                            <li class="toc-subitem"><a href="#specificity-management">Specificity Management</a></li>
+                            <li class="toc-subitem"><a href="#documentation">Documentation & Style Guides</a></li>
+                        </ul>
+                    </li>
+                    <li class="toc-item">
+                        <a href="#section-13-3">13.3 Scalable CSS Patterns</a>
+                        <ul class="list-unstyled">
+                            <li class="toc-subitem"><a href="#component-architecture">Component-Based Architecture</a></li>
+                            <li class="toc-subitem"><a href="#css-layers">@layer Rule</a></li>
+                            <li class="toc-subitem"><a href="#cascade-layers">Cascade Layers for Specificity</a></li>
+                            <li class="toc-subitem"><a href="#maintenance">Maintenance & Refactoring</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="col-md-9 right-panel">
+            <section id="section-13-1">
+                <h2>13.1 CSS Methodologies</h2>
+                <p class="text-muted">CSS methodologies are systematic approaches to writing scalable, maintainable, and reusable CSS. They solve common problems like specificity wars, naming chaos, and duplication.</p>
+
+                <details>
+                    <summary>BEM (Block Element Modifier)</summary>
+                    <p><strong>Definition:</strong> BEM stands for Block, Element, Modifier — a naming convention that creates clear, predictable, and reusable CSS classes.</p>
+                    <p><strong>Detail:</strong> 
+                        <ul>
+                            <li><strong>Block:</strong> Independent, reusable component (e.g., <code class="code-inline">btn</code>)</li>
+                            <li><strong>Element:</strong> Part of a block (e.g., <code class="code-inline">btn__text</code>)</li>
+                            <li><strong>Modifier:</strong> Variant of a block or element (e.g., <code class="code-inline">btn--primary</code>)</li>
+                        </ul>
+                    </p>
+                    <p><strong>Syntax:</strong></p>
+                    <pre><code>.block {}
+.block__element {}
+.block--modifier {}</code></pre>
+                    <p><strong>Example:</strong></p>
+                    <pre><code>&lt;div class="card"&gt;
+  &lt;img class="card__image" src="..."&gt;
+  &lt;h3 class="card__title"&gt;Title&lt;/h3&gt;
+  &lt;button class="card__btn card__btn--primary"&gt;Click Me&lt;/button&gt;
+&lt;/div&gt;</code></pre>
+                    <p><strong>Uses:</strong> Perfect for large teams, component libraries, and frameworks like React/Vue. Prevents class name collisions and makes HTML self-documenting.</p>
+                    <p class="highlight">💡 Pro Tip: Avoid nesting BEM selectors. Use flat structure for better performance and readability.</p>
+                </details>
+
+                <details>
+                    <summary>OOCSS (Object-Oriented CSS)</summary>
+                    <p><strong>Definition:</strong> OOCSS separates structure from skin and container from content to promote reuse.</p>
+                    <p><strong>Detail:</strong> Two core principles:
+                        <ol>
+                            <li><strong>Separate structure and skin:</strong> Define layout (width, margin) separately from visual styles (color, border).</li>
+                            <li><strong>Separate container and content:</strong> Don’t style based on parent-child relationships.</li>
+                        </ol>
+                    </p>
+                    <p><strong>Syntax:</strong></p>
+                    <pre><code>.btn { /* structure */ padding: 10px; border: 1px solid; }
+.btn-primary { /* skin */ background: blue; color: white; }
+.btn-large { /* size modifier */ font-size: 1.2rem; }</code></pre>
+                    <p><strong>Example:</strong></p>
+                    <pre><code>&lt;button class="btn btn-primary btn-large"&gt;Submit&lt;/button&gt;
+&lt;a class="btn btn-secondary"&gt;Cancel&lt;/a&gt;</code></pre>
+                    <p><strong>Uses:</strong> Ideal for design systems where components need consistent spacing and modular styling. Used by Twitter Bootstrap v3.</p>
+                    <p class="highlight">💡 Pro Tip: Think of CSS classes as Lego bricks — combine them, don't inherit them.</p>
+                </details>
+
+                <details>
+                    <summary>SMACSS (Scalable and Modular Architecture)</summary>
+                    <p><strong>Definition:</strong> SMACSS categorizes CSS rules into five types: Base, Layout, Module, State, and Theme.</p>
+                    <p><strong>Detail:</strong> The five categories:
+                        <ul>
+                            <li><strong>Base:</strong> Default element styles (<code>body</code>, <code>h1</code>, <code>a</code>)</li>
+                            <li><strong>Layout:</strong> Major page divisions (<code>.header</code>, <code>.sidebar</code>)</li>
+                            <li><strong>Module:</strong> Reusable components (<code>.card</code>, <code>.nav</code>)</li>
+                            <li><strong>State:</strong> Dynamic states (<code>.is-hidden</code>, <code>.is-active</code>)</li>
+                            <li><strong>Theme:</strong> Visual variations (<code>.theme-dark</code>)</li>
+                        </ul>
+                    </p>
+                    <p><strong>Syntax:</strong></p>
+                    <pre><code>.layout-header {}      /* Layout */
+.card {}               /* Module */
+.is-active {}          /* State */
+.theme-light {}        /* Theme */</code></pre>
+                    <p><strong>Example:</strong></p>
+                    <pre><code>&lt;nav class="layout-nav"&gt;
+  &lt;ul class="module-menu"&gt;
+    &lt;li class="module-menu__item is-active"&gt;Home&lt;/li&gt;
+  &lt;/ul&gt;
+&lt;/nav&gt;</code></pre>
+                    <p><strong>Uses:</strong> Excellent for enterprise apps with complex hierarchies. Encourages discipline through categorization.</p>
+                    <p class="highlight">💡 Pro Tip: Use state classes via JavaScript, not CSS — they're dynamic, not static.</p>
+                </details>
+
+                <details>
+                    <summary>Atomic CSS and Utility-First Approaches</summary>
+                    <p><strong>Definition:</strong> Atomic CSS assigns single-purpose classes (like <code>pa16</code> for padding 16px) instead of semantic names.</p>
+                    <p><strong>Detail:</strong> Inspired by functional programming — each class does one thing. Popularized by Tailwind CSS.</p>
+                    <p><strong>Syntax:</strong></p>
+                    <pre><code>&lt;div class="p-4 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600"&gt;
+  Click me
+&lt;/div&gt;</code></pre>
+                    <p><strong>Example:</strong></p>
+                    <pre><code>&lt;button class="
+  inline-flex items-center 
+  px-4 py-2 
+  text-sm font-medium 
+  bg-indigo-600 text-white 
+  rounded-md hover:bg-indigo-700
+  focus:outline-none focus:ring-2 focus:ring-indigo-500
+"&gt;
+  Submit
+&lt;/button&gt;</code></pre>
+                    <p><strong>Uses:</strong> Rapid prototyping, component-driven development, and reducing CSS bundle size. Works best with build tools like PostCSS.</p>
+                    <p class="highlight">💡 Pro Tip: Avoid overusing utility classes in markup — balance between readability and DRYness.</p>
+                </details>
+            </section>
+
+            <section id="section-13-2">
+                <h2>13.2 CSS Organization</h2>
+                <p class="text-muted">Organization ensures your CSS remains manageable as projects grow. It’s not just about writing good code — it’s about structuring it so others can understand it.</p>
+
+                <details>
+                    <summary>File Structure and Imports</summary>
+                    <p><strong>Definition:</strong> A logical folder hierarchy that separates concerns (variables, mixins, layouts, components).</p>
+                    <p><strong>Detail:</strong> Common pattern (Sass/SCSS):</p>
+                    <pre><code>styles/
+├── base/
+│   ├── _reset.scss
+│   └── _typography.scss
+├── components/
+│   ├── _button.scss
+│   └── _card.scss
+├── layout/
+│   ├── _header.scss
+│   └── _grid.scss
+├── utilities/
+│   └── _spacing.scss
+├── themes/
+│   └── _dark-theme.scss
+└── main.scss  ← imports everything</code></pre>
+                    <p><strong>Import Strategy:</strong></p>
+                    <pre><code>// main.scss
+@import 'base/reset';
+@import 'base/typography';
+@import 'layout/grid';
+@import 'components/button';
+@import 'utilities/spacing';</code></pre>
+                    <p><strong>Uses:</strong> Enables team collaboration, easier debugging, and faster compilation. Each file has one responsibility.</p>
+                    <p class="highlight">💡 Pro Tip: Never import files directly in HTML. Always use a preprocessor or bundler (Webpack, Vite, etc.).</p>
+                </details>
+
+                <details>
+                    <summary>Naming Conventions and Standards</summary>
+                    <p><strong>Definition:</strong> Consistent rules for naming classes, IDs, variables, and mixins.</p>
+                    <p><strong>Detail:</strong> Best practices include:</p>
+                    <ul>
+                        <li>Use kebab-case: <code>.main-header</code> (not camelCase or snake_case)</li>
+                        <li>Avoid IDs in CSS — too specific</li>
+                        <li>Prefix utility classes: <code>.u-margin-top</code></li>
+                        <li>Use meaningful names: <code>.product-card</code> > <code>.box-3</code></li>
+                    </ul>
+                    <p><strong>Example:</strong></p>
+                    <pre><code>/* ✅ Good */
+.nav-primary
+.footer__copyright
+.button--disabled
+
+/* ❌ Bad */
+.box
+.a123
+#header123</code></pre>
+                    <p><strong>Uses:</strong> Reduces cognitive load, improves team alignment, and enables automated tooling (linters, IDE autocomplete).</p>
+                    <p class="highlight">💡 Pro Tip: Adopt a style guide like Airbnb’s or Google’s CSS guidelines for consistency.</p>
+                </details>
+
+                <details>
+                    <summary>CSS Specificity Management</summary>
+                    <p><strong>Definition:</strong> Specificity determines which CSS rule applies when multiple rules target the same element.</p>
+                    <p><strong>Detail:</strong> Specificity ranking (highest to lowest):
+                        <ol>
+                            <li>Inline styles (<code>style=""</code>)</li>
+                            <li>ID selectors (<code>#header</code>)</li>
+                            <li>Class, attribute, pseudo-class (<code>.btn</code>, <code>:hover</code>)</li>
+                            <li>Type selectors (<code>div</code>, <code>p</code>)</li>
+                            <li>Universal selector (<code>*</code>)</li>
+                        </ol>
+                    </p>
+                    <p><strong>Example:</strong></p>
+                    <pre><code>/* Specificity: 0,1,0 */
+#nav { color: red; }
+
+/* Specificity: 0,2,0 */
+.nav.primary { color: blue; }
+
+/* Specificity: 0,1,1 */
+.nav[data-type="main"] { color: green; }
+
+/* Specificity: 0,0,2 */
+div p { color: yellow; }</code></pre>
+                    <p><strong>Best Practices:</strong></p>
+                    <ul>
+                        <li>Never use IDs in CSS</li>
+                        <li>Prefer classes over tags</li>
+                        <li>Use <code>:is()</code> and <code>:where()</code> for low-specificity grouping</li>
+                        <li>Use cascade layers (see Section 13.3)</li>
+                    </ul>
+                    <p class="highlight">💡 Pro Tip: If you need !important, you’ve already lost. Fix the specificity hierarchy instead.</p>
+                </details>
+
+                <details>
+                    <summary>Documentation and Style Guides</summary>
+                    <p><strong>Definition:</strong> Written standards that define how CSS should be written, organized, and maintained.</p>
+                    <p><strong>Detail:</strong> A good style guide includes:</p>
+                    <ul>
+                        <li>Naming conventions</li>
+                        <li>File structure</li>
+                        <li>Commenting format</li>
+                        <li>Color palette references</li>
+                        <li>Spacing tokens (e.g., $space-xs: 0.25rem)</li>
+                        <li>Responsive breakpoints</li>
+                    </ul>
+                    <p><strong>Example:</strong> Comment template:</p>
+                    <pre><code>/*
+ * Component: Button
+ * Description: Primary action button with hover/focus states
+ * States: default, primary, disabled, loading
+ * Dependencies: None
+ * Variants: size: sm, md, lg
+ */
+
+.btn {
+  /* ... */
+}</code></pre>
+                    <p><strong>Uses:</strong> Essential for onboarding new developers, maintaining legacy code, and ensuring brand consistency across products.</p>
+                    <p class="highlight">💡 Pro Tip: Store your style guide in Markdown (STYLEGUIDE.md) and link it in your README.</p>
+                </details>
+            </section>
+
+            <section id="section-13-3">
+                <h2>13.3 Scalable CSS Patterns</h2>
+                <p class="text-muted">Modern CSS architecture leverages native browser features to reduce complexity and improve maintainability.</p>
+
+                <details>
+                    <summary>Component-Based Architecture</summary>
+                    <p><strong>Definition:</strong> Design UI as independent, reusable components with encapsulated styles.</p>
+                    <p><strong>Detail:</strong> Each component owns its structure, style, and behavior. Examples: React Components, Web Components, Vue SFCs.</p>
+                    <p><strong>Example:</strong></p>
+                    <pre><code>&lt;!-- Card.vue (Vue Single File Component) --&gt;
+&lt;template&gt;
+  &lt;div class="card"&gt;
+    &lt;img class="card__image" src="/image.jpg" /&gt;
+    &lt;h3 class="card__title"&gt;{{ title }}&lt;/h3&gt;
+    &lt;p class="card__desc"&gt;{{ description }}&lt;/p&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+
+&lt;style scoped&gt;
+.card { /* only applies to this component */ }
+.card__title { color: var(--primary); }
+&lt;/style&gt;</code></pre>
+                    <p><strong>Uses:</strong> Enables true reusability, testability, and isolation. Eliminates global CSS pollution.</p>
+                    <p class="highlight">💡 Pro Tip: Use Shadow DOM or CSS Modules for true encapsulation if framework doesn’t support scoped styles.</p>
+                </details>
+
+                <details>
+                    <summary>CSS Layers and @layer Rule</summary>
+                    <p><strong>Definition:</strong> <code>@layer</code> allows you to declare named layers in CSS to control the cascade order independently of specificity.</p>
+                    <p><strong>Detail:</strong> Layers have three tiers: <code>base</code>, <code>components</code>, <code>utilities</code>. Rules in lower layers override higher ones only if equal specificity.</p>
+                    <p><strong>Syntax:</strong></p>
+                    <pre><code>@layer base {
+  h1 { font-size: 2rem; }
+}
+
+@layer components {
+  .btn { padding: 1rem; }
+}
+
+@layer utilities {
+  .text-red { color: red; }
+}</code></pre>
+                    <p><strong>Example:</strong></p>
+                    <pre><code>/* In a third-party library */
+@layer libs {
+  .btn { color: purple; }
+}
+
+/* In your app */
+@layer components {
+  .btn { color: blue; } /* This wins! Even if .btn was defined later in source */
+}</code></pre>
+                    <p><strong>Uses:</strong> Solves the “last rule wins” problem. Lets you prioritize layers over specificity.</p>
+                    <p class="highlight">💡 Pro Tip: Always define layers in order: base → components → utilities. Never mix layers arbitrarily.</p>
+                </details>
+
+                <details>
+                    <summary>Cascade Layers for Specificity Control</summary>
+                    <p><strong>Definition:</strong> Cascade layers allow you to group styles into named layers that respect order of declaration, not just selector strength.</p>
+                    <p><strong>Detail:</strong> Before <code>@layer</code>, you had to fight specificity with <code>!important</code>. Now you can say: “This layer always overrides that layer.”</p>
+                    <p><strong>Example:</strong></p>
+                    <pre><code>@layer reset, base, components, theme;
+
+/* Reset layer (lowest priority) */
+@layer reset {
+  * { margin: 0; padding: 0; }
+}
+
+/* Base layer */
+@layer base {
+  h1 { font-size: 3rem; }
+}
+
+/* Components layer (higher than base) */
+@layer components {
+  .btn { font-size: 1.2rem; } /* Overrides h1's font-size? NO — different elements */
+}
+
+/* Theme layer (highest priority) */
+@layer theme {
+  .btn { background: gold; } /* Always wins over any .btn in lower layers */
+}</code></pre>
+                    <p><strong>Uses:</strong> Perfect for integrating third-party libraries (like Bootstrap) without specificity conflicts. Enables progressive enhancement.</p>
+                    <p class="highlight">💡 Pro Tip: Use <code>@layer</code> to isolate vendor CSS from your own. Keeps your codebase clean.</p>
+                </details>
+
+                <details>
+                    <summary>Maintenance and Refactoring Strategies</summary>
+                    <p><strong>Definition:</strong> Systematic approaches to update, simplify, and improve existing CSS without breaking functionality.</p>
+                    <p><strong>Detail:</strong> Key strategies:</p>
+                    <ol>
+                        <li><strong>Identify duplication:</strong> Use tools like PurgeCSS or Chrome DevTools Coverage tab.</li>
+                        <li><strong>Consolidate similar patterns:</strong> Merge .btn-small and .btn-xs into one with scale tokens.</li>
+                        <li><strong>Replace magic numbers:</strong> Use CSS custom properties: <code>--spacing-xs: 0.25rem;</code></li>
+                        <li><strong>Refactor with atomic classes:</strong> Migrate legacy class names to utility-first if feasible.</li>
+                        <li><strong>Automate testing:</strong> Use visual regression tools (Chromatic, Percy).</li>
+                    </ol>
+                    <p><strong>Example Refactor:</strong></p>
+                    <pre><code>/* BEFORE */
+.header { padding: 16px; }
+.footer { padding: 16px; }
+.sidebar { padding: 16px; }
+
+/* AFTER */
+.p-4 { padding: 1rem; } /* Reusable utility */
+.header { @apply p-4; } /* Using Tailwind's @apply */
+.footer { @apply p-4; }
+.sidebar { @apply p-4; }</code></pre>
+                    <p><strong>Uses:</strong> Critical for long-term project health. Prevents CSS bloat and technical debt.</p>
+                    <p class="highlight">💡 Pro Tip: Refactor incrementally. Use feature flags or branch-by-abstraction to avoid downtime.</p>
+                </details>
+            </section>
+        </div>
+    </div>
+</div>
+
+<!-- Scroll Indicator -->
+<div class="scroll-indicator" id="scrollIndicator">↓</div>
+
+<!-- Bootstrap JS Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Custom JavaScript -->
+<script>
+    // Expand/Collapse All
+    document.getElementById('expandAll').addEventListener('click', () => {
+        document.querySelectorAll('details').forEach(detail => {
+            detail.open = true;
+        });
+    });
+
+    document.getElementById('collapseAll').addEventListener('click', () => {
+        document.querySelectorAll('details').forEach(detail => {
+            detail.open = false;
+        });
+    });
+
+    // Search TOC
+    document.getElementById('searchToc').addEventListener('input', function(e) {
+        const query = e.target.value.toLowerCase();
+        const links = document.querySelectorAll('#toc a');
+        
+        links.forEach(link => {
+            const text = link.textContent.toLowerCase();
+            if (text.includes(query)) {
+                link.parentElement.style.display = '';
+            } else {
+                link.parentElement.style.display = 'none';
+            }
+        });
+    });
+
+    // Smooth scrolling for TOC links
+    document.querySelectorAll('#toc a').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+            
+            if (targetElement) {
+                window.scrollTo({
+                    top: targetElement.offsetTop - 80,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+
+    // Scroll indicator
+    const scrollIndicator = document.getElementById('scrollIndicator');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 100) {
+            scrollIndicator.style.opacity = '1';
+        } else {
+            scrollIndicator.style.opacity = '0.7';
+        }
+    });
+
+    // Syntax highlighting for code blocks
+    document.querySelectorAll('pre code').forEach(block => {
+        hljs.highlightElement(block);
+    });
+
+    // Optional: Highlight current section in TOC
+    window.addEventListener('scroll', () => {
+        const sections = document.querySelectorAll('section');
+        const navLinks = document.querySelectorAll('#toc a');
+        
+        let currentSection = '';
+        
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop - 100;
+            const sectionHeight = section.clientHeight;
+            if (window.pageYOffset >= sectionTop && window.pageYOffset < sectionTop + sectionHeight) {
+                currentSection = section.id;
+            }
+        });
+        
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === '#' + currentSection) {
+                link.classList.add('active');
+                link.style.color = '#fff';
+                link.style.fontWeight = 'bold';
+            } else {
+                link.style.color = '';
+                link.style.fontWeight = '';
+            }
+        });
+    });
+</script>
+
+<!-- Include highlight.js for syntax highlighting -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/darkula.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
+</body>
+</html>
+```

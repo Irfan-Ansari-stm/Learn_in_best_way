@@ -1,0 +1,1718 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 10: Advanced Layout Techniques</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00d1ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --text-muted: #b3cde6;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            background-color: rgba(10, 25, 47, 0.9);
+            border-right: 1px solid var(--cyan);
+            height: 100vh;
+            position: fixed;
+            width: 300px;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 5px 0 15px rgba(0, 209, 255, 0.1);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--amber);
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: var(--amber);
+            border-bottom: 2px solid var(--amber);
+        }
+
+        .toc-item {
+            margin: 8px 0;
+            padding-left: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .toc-item a {
+            color: var(--text-muted);
+            text-decoration: none;
+            display: block;
+            transition: color 0.3s;
+        }
+
+        .toc-item a:hover {
+            color: var(--cyan);
+        }
+
+        .toc-subitem {
+            margin-left: 20px;
+            font-size: 0.9em;
+            color: var(--text-muted);
+        }
+
+        .toc-subitem a {
+            color: var(--text-muted);
+        }
+
+        .toc-subitem a:hover {
+            color: var(--cyan);
+        }
+
+        details {
+            margin: 15px 0;
+            border-left: 3px solid var(--amber);
+            padding-left: 15px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border-radius: 0 5px 5px 0;
+        }
+
+        summary {
+            cursor: pointer;
+            color: var(--amber);
+            font-weight: bold;
+            font-size: 1.1rem;
+            list-style: none;
+            padding: 10px;
+            background-color: rgba(0, 209, 255, 0.05);
+            border-radius: 5px;
+            margin-bottom: 5px;
+            transition: all 0.3s ease;
+        }
+
+        summary:hover {
+            background-color: rgba(0, 209, 255, 0.1);
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary::before {
+            content: "▶ ";
+            color: var(--amber);
+        }
+
+        details[open] summary::before {
+            content: "▼ ";
+            color: var(--amber);
+        }
+
+        pre code {
+            display: block;
+            padding: 16px;
+            overflow-x: auto;
+            background-color: #0d1b2a;
+            border-radius: 5px;
+            border-left: 4px solid var(--amber);
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--cyan);
+        }
+
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.1);
+            padding: 2px 5px;
+            border-radius: 3px;
+            color: var(--amber);
+            font-weight: 500;
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: #000;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+
+        .btn-control {
+            background-color: rgba(0, 209, 255, 0.1);
+            border: 1px solid var(--cyan);
+            color: var(--cyan);
+            margin: 10px 0;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .btn-control:hover {
+            background-color: var(--cyan);
+            color: #000;
+            transform: translateY(-2px);
+        }
+
+        .search-box {
+            background-color: rgba(0, 209, 255, 0.1);
+            border: 1px solid var(--cyan);
+            color: var(--text-light);
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            width: 100%;
+        }
+
+        .section-header {
+            border-bottom: 2px dashed var(--cyan);
+            padding-bottom: 10px;
+            margin: 30px 0 20px;
+            color: var(--amber);
+        }
+
+        .multi-column-demo {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border: 1px dashed var(--cyan);
+            border-radius: 8px;
+            column-count: 3;
+            column-gap: 20px;
+            min-height: 300px;
+        }
+
+        .column-rule-demo {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border: 1px dashed var(--cyan);
+            border-radius: 8px;
+            column-count: 2;
+            column-gap: 20px;
+            column-rule: 2px dashed var(--amber);
+            min-height: 300px;
+        }
+
+        .shape-outside-demo {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border: 1px dashed var(--cyan);
+            border-radius: 8px;
+            min-height: 300px;
+            position: relative;
+        }
+
+        .shape-element {
+            float: left;
+            width: 120px;
+            height: 120px;
+            margin-right: 20px;
+            margin-bottom: 20px;
+            border-radius: 50%;
+            background-color: rgba(0, 209, 255, 0.2);
+            border: 1px solid var(--cyan);
+            shape-outside: circle();
+            shape-margin: 10px;
+        }
+
+        .containment-demo {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border: 1px dashed var(--cyan);
+            border-radius: 8px;
+            contain: layout style paint;
+            min-height: 200px;
+        }
+
+        .container-query-demo {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border: 1px dashed var(--cyan);
+            border-radius: 8px;
+            min-height: 300px;
+            container-type: inline-size;
+            container-name: card;
+        }
+
+        .card-container {
+            display: grid;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .card {
+            background-color: rgba(13, 27, 42, 0.7);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 209, 255, 0.2);
+            color: white;
+            contain: layout style;
+        }
+
+        .card-header {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .card-content {
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        @container card (min-width: 300px) {
+            .card {
+                border: 2px solid var(--amber);
+                box-shadow: 0 4px 8px rgba(255, 183, 77, 0.2);
+            }
+            
+            .card-header {
+                font-size: 1.4rem;
+            }
+            
+            .card-content {
+                font-size: 1rem;
+            }
+        }
+
+        @container card (min-width: 400px) {
+            .card {
+                border: 3px solid var(--cyan);
+                box-shadow: 0 6px 12px rgba(0, 209, 255, 0.3);
+            }
+            
+            .card-header {
+                font-size: 1.6rem;
+            }
+            
+            .card-content {
+                font-size: 1.1rem;
+            }
+        }
+
+        .container-query-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .container-query-card {
+            background-color: rgba(13, 27, 42, 0.7);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 209, 255, 0.2);
+            color: white;
+            contain: layout style;
+        }
+
+        .container-query-card-header {
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .container-query-card-content {
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        @container card (min-width: 300px) {
+            .container-query-card {
+                border: 2px solid var(--amber);
+                box-shadow: 0 4px 8px rgba(255, 183, 77, 0.2);
+            }
+            
+            .container-query-card-header {
+                font-size: 1.4rem;
+            }
+            
+            .container-query-card-content {
+                font-size: 1rem;
+            }
+        }
+
+        @container card (min-width: 400px) {
+            .container-query-card {
+                border: 3px solid var(--cyan);
+                box-shadow: 0 6px 12px rgba(0, 209, 255, 0.3);
+            }
+            
+            .container-query-card-header {
+                font-size: 1.6rem;
+            }
+            
+            .container-query-card-content {
+                font-size: 1.1rem;
+            }
+        }
+
+        .footer-note {
+            margin-top: 50px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid rgba(0, 209, 255, 0.2);
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 991px) {
+            .left-panel {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding: 15px;
+            }
+            .right-panel {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Left Panel -->
+            <div class="col-md-3 left-panel">
+                <h2>Module 10: Advanced Layout Techniques</h2>
+                <p class="text-muted small">Master the cutting-edge CSS features that push the boundaries of web design</p>
+                <hr>
+                
+                <div class="mb-3">
+                    <input type="text" class="search-box" id="toc-search" placeholder="Search topics...">
+                </div>
+
+                <button class="btn-control w-100 mb-2" id="expand-all">Expand All</button>
+                <button class="btn-control w-100 mb-3" id="collapse-all">Collapse All</button>
+
+                <h5 class="text-uppercase text-muted fw-bold mb-3">Table of Contents</h5>
+                
+                <div class="toc-item">
+                    <a href="#sec-10-1">10.1 Multi-Column Layout</a>
+                    <div class="toc-subitem">
+                        <a href="#column-count-width">• column-count and column-width</a>
+                        <a href="#column-gap-rule">• column-gap and column-rule</a>
+                        <a href="#column-span">• column-span for breaking out</a>
+                        <a href="#balancing-columns">• Balancing columns</a>
+                    </div>
+                </div>
+                
+                <div class="toc-item">
+                    <a href="#sec-10-2">10.2 CSS Shapes</a>
+                    <div class="toc-subitem">
+                        <a href="#shape-outside">• shape-outside for text wrapping</a>
+                        <a href="#basic-shapes">• Basic shapes (circle, ellipse, polygon)</a>
+                        <a href="#image-based-shapes">• Image-based shapes</a>
+                        <a href="#shape-margin">• shape-margin for spacing</a>
+                    </div>
+                </div>
+                
+                <div class="toc-item">
+                    <a href="#sec-10-3">10.3 Layout Containment</a>
+                    <div class="toc-subitem">
+                        <a href="#contain-property">• contain property for performance</a>
+                        <a href="#containment-types">• Layout, style, paint, and size containment</a>
+                        <a href="#content-visibility">• content-visibility for rendering optimization</a>
+                    </div>
+                </div>
+                
+                <div class="toc-item">
+                    <a href="#sec-10-4">10.4 Container Queries (Modern CSS)</a>
+                    <div class="toc-subitem">
+                        <a href="#container-rules">• @container rules</a>
+                        <a href="#container-units">• Container query units (cqw, cqh)</a>
+                        <a href="#component-responsive">• Component-based responsive design</a>
+                        <a href="#containment-context">• Containment context</a>
+                    </div>
+                </div>
+                
+                <div class="mt-5">
+                    <p class="text-muted small">
+                        <strong>Author:</strong> Web Dev Mentor<br>
+                        <small>For Deep Understanding Only</small>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="col-md-9 right-panel">
+                <h1>Advanced Layout Techniques</h1>
+                <p class="lead text-muted">Explore the frontier of CSS layout with multi-column, shapes, containment, and container queries</p>
+
+                <!-- 10.1 Multi-Column Layout -->
+                <section id="sec-10-1">
+                    <h2>10.1 Multi-Column Layout</h2>
+                    <p class="text-muted">Create newspaper-style layouts where content flows across multiple columns.</p>
+
+                    <details>
+                        <summary>column-count and column-width</summary>
+                        <p>Control the number of columns or their width — CSS automatically adjusts the other.</p>
+                        <pre><code>
+/* Specify number of columns */
+.multi-column {
+    column-count: 3;
+}
+
+/* Specify column width */
+.auto-width {
+    column-width: 200px;
+}
+
+/* Both properties together */
+.combined {
+    column-count: 4;
+    column-width: 150px;
+}
+                        </code></pre>
+                        <div class="multi-column-demo">
+                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                            <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</p>
+                            <p>Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?</p>
+                        </div>
+                        <div class="column-rule-demo">
+                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                            <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</p>
+                        </div>
+                        <p><strong>How it works:</strong></p>
+                        <ul>
+                            <li>If you specify <code>column-count</code>, CSS calculates optimal column width</li>
+                            <li>If you specify <code>column-width</code>, CSS calculates optimal column count</li>
+                            <li>If you specify both, CSS uses them as minimum/maximum bounds</li>
+                            <li>Content flows from top to bottom, then left to right</li>
+                        </ul>
+                        <p><strong>Pro Tip:</strong> Use <code>column-width</code> for truly responsive layouts — it adapts to container size!</p>
+                        <div class="code-example">
+                            <pre><code>
+/* Responsive multi-column */
+.article {
+    column-width: 250px; /* Perfect for reading */
+    column-gap: 30px;
+    padding: 20px;
+}
+
+@media (max-width: 768px) {
+    .article {
+        column-width: 100%; /* Single column on mobile */
+        column-count: 1;
+    }
+}
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>column-gap and column-rule</summary>
+                        <p>Control the space between columns and add decorative rules.</p>
+                        <pre><code>
+/* Column gap */
+.gapped {
+    column-gap: 30px;
+}
+
+/* Column rule */
+.ruled {
+    column-rule: 2px solid #ffa726;
+}
+
+/* Combined */
+.complex {
+    column-count: 3;
+    column-gap: 40px;
+    column-rule: 3px dashed #00d1ff;
+    column-rule-color: #00d1ff;
+    column-rule-style: dashed;
+    column-rule-width: 3px;
+}
+                        </code></pre>
+                        <div class="column-rule-demo">
+                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                            <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</p>
+                        </div>
+                        <p><strong>Column Rule Properties:</strong></p>
+                        <table class="table table-dark mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Property</th>
+                                    <th>Description</th>
+                                    <th>Values</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>column-rule</code></td>
+                                    <td>Shorthand for rule width, style, and color</td>
+                                    <td><code>width style color</code></td>
+                                </tr>
+                                <tr>
+                                    <td><code>column-rule-width</code></td>
+                                    <td>Thickness of the rule</td>
+                                    <td>thin, medium, thick, px, em, etc.</td>
+                                </tr>
+                                <tr>
+                                    <td><code>column-rule-style</code></td>
+                                    <td>Style of the rule</td>
+                                    <td>solid, dashed, dotted, double, groove, ridge, inset, outset, none</td>
+                                </tr>
+                                <tr>
+                                    <td><code>column-rule-color</code></td>
+                                    <td>Color of the rule</td>
+                                    <td>any valid CSS color</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p><strong>Column Gap:</strong></p>
+                        <ul>
+                            <li>Same as <code>gap</code> in Flexbox/Grid</li>
+                            <li>Controls space between columns only</li>
+                            <li>Does not affect space before first or after last column</li>
+                            <li>Can use any unit: px, em, %, rem, etc.</li>
+                        </ul>
+                        <p><strong>Best Practice:</strong> Use <code>column-gap</code> instead of margins for consistent spacing between columns.</p>
+                    </details>
+
+                    <details>
+                        <summary>column-span for breaking out</summary>
+                        <p>Allow elements to span across all columns — perfect for headings and images.</p>
+                        <pre><code>
+/* Span across all columns */
+.heading {
+    column-span: all;
+}
+
+/* Normal behavior (default) */
+.normal {
+    column-span: none;
+}
+                        </code></pre>
+                        <div class="multi-column-demo">
+                            <h2 style="column-span: all; text-align: center; margin: 20px 0 30px 0; color: var(--amber);">This Heading Spans All Columns</h2>
+                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                            <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</p>
+                            <p>Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?</p>
+                        </div>
+                        <p><strong>Key Points:</strong></p>
+                        <ul>
+                            <li><code>column-span: all;</code> makes element span entire container width</li>
+                            <li>Element is removed from column flow — doesn't break into columns</li>
+                            <li>Perfect for article titles, pull quotes, and large images</li>
+                            <li>Must be a direct child of the multi-column container</li>
+                        </ul>
+                        <p><strong>Common Use Cases:</strong></p>
+                        <ol>
+                            <li>Article headings</li>
+                            <li>Image captions spanning full width</li>
+                            <li>Pull quotes in magazine layouts</li>
+                            <li>Large call-to-action buttons</li>
+                        </ol>
+                        <p><strong>Pro Tip:</strong> Combine with <code>margin</code> for better visual separation:</p>
+                        <div class="code-example">
+                            <pre><code>
+.heading {
+    column-span: all;
+    margin: 30px 0 20px 0;
+    text-align: center;
+    font-size: 2rem;
+    color: var(--amber);
+}
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Balancing columns</summary>
+                        <p>Ensure columns have equal height for a professional appearance.</p>
+                        <pre><code>
+/* Balanced columns (modern browsers) */
+.balanced {
+    column-count: 3;
+    column-gap: 20px;
+    balance: balance; /* Experimental */
+}
+
+/* Legacy approach using flexbox */
+.flex-balanced {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.flex-balanced > div {
+    flex: 1 1 300px;
+    margin: 10px;
+}
+                        </code></pre>
+                        <div class="multi-column-demo">
+                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+                            <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+                            <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
+                            <p>Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                            <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium.</p>
+                            <p>At vero eos et accusamus et iusto odio dignissimos ducimus qui blanditiis praesentium voluptatum deleniti atque corrupti.</p>
+                            <p>Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur.</p>
+                            <p>Vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?</p>
+                        </div>
+                        <p><strong>The Problem:</strong> By default, multi-column layouts don't balance — they fill columns top to bottom, creating uneven heights.</p>
+                        <p><strong>Modern Solution:</strong> The <code>balance</code> property is experimental but supported in some modern browsers:</p>
+                        <div class="code-example">
+                            <pre><code>
+.column-container {
+    column-count: 3;
+    column-gap: 20px;
+    balance: balance; /* Modern browsers */
+}
+                        </code></pre>
+                        </div>
+                        <p><strong>Current Browser Support:</strong> Safari 16.4+, Chrome 116+ (with flag), Firefox 118+</p>
+                        <p><strong>Alternative Solutions:</strong></p>
+                        <ol>
+                            <li><strong>Flexbox Grid:</strong> Use Flexbox with <code>flex-wrap: wrap</code> for true balancing</li>
+                            <li><strong>Grid Layout:</strong> Use CSS Grid for complete control over column heights</li>
+                            <li><strong>JavaScript:</strong> Libraries like Masonry for complex layouts</li>
+                        </ol>
+                        <p><strong>Recommended Approach:</strong> For production sites, use CSS Grid instead of multi-column for balanced layouts:</p>
+                        <div class="code-example">
+                            <pre><code>
+.grid-balanced {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.grid-balanced p {
+    margin-bottom: 15px;
+}
+                            </code></pre>
+                        </div>
+                        <p><strong>Why Grid Wins:</strong> Complete control over sizing, alignment, and responsiveness — no balancing issues!</p>
+                    </details>
+                </section>
+
+                <!-- 10.2 CSS Shapes -->
+                <section id="sec-10-2">
+                    <h2>10.2 CSS Shapes</h2>
+                    <p class="text-muted">Wrap text around custom shapes — create magazine-style layouts without images.</p>
+
+                    <details>
+                        <summary>shape-outside for text wrapping</summary>
+                        <p>Define the shape that text should wrap around — revolutionizes text layout.</p>
+                        <pre><code>
+/* Circle shape */
+.circle {
+    float: left;
+    width: 120px;
+    height: 120px;
+    shape-outside: circle();
+}
+
+/* Ellipse shape */
+.ellipse {
+    float: left;
+    width: 150px;
+    height: 100px;
+    shape-outside: ellipse();
+}
+
+/* Polygon shape */
+.polygon {
+    float: left;
+    width: 120px;
+    height: 120px;
+    shape-outside: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+}
+                        </code></pre>
+                        <div class="shape-outside-demo">
+                            <div class="shape-element"></div>
+                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                            <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</p>
+                            <p>Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?</p>
+                        </div>
+                        <p><strong>Key Requirements:</strong></p>
+                        <ul>
+                            <li>Element must be floated (<code>float: left</code> or <code>float: right</code>)</li>
+                            <li>Must have explicit width and height</li>
+                            <li>Shape-outside must be defined</li>
+                            <li>Text content must follow the floated element</li>
+                        </ul>
+                        <p><strong>Pro Tip:</strong> Shape-outside creates a clipping path — text wraps around the shape's boundary.</p>
+                    </details>
+
+                    <details>
+                        <summary>Basic shapes (circle, ellipse, polygon)</summary>
+                        <p>Create complex shapes using CSS shape functions.</p>
+                        <pre><code>
+/* Circle */
+.circle {
+    shape-outside: circle();
+    /* Or with radius */
+    shape-outside: circle(50%);
+}
+
+/* Ellipse */
+.ellipse {
+    shape-outside: ellipse();
+    /* Or with specific radii */
+    shape-outside: ellipse(60% 40%);
+}
+
+/* Polygon */
+.polygon {
+    shape-outside: polygon(
+        0 0,
+        100% 0,
+        100% 100%,
+        0 100%
+    );
+}
+
+/* Triangle */
+.triangle {
+    shape-outside: polygon(
+        0 0,
+        100% 50%,
+        0 100%
+    );
+}
+
+/* Custom star shape */
+.star {
+    shape-outside: polygon(
+        50% 0%,
+        61% 35%,
+        98% 35%,
+        68% 57%,
+        79% 91%,
+        50% 70%,
+        21% 91%,
+        32% 57%,
+        2% 35%,
+        39% 35%
+    );
+}
+                        </code></pre>
+                        <div class="shape-outside-demo">
+                            <div class="shape-element" style="border-radius: 50%; background-color: rgba(0, 209, 255, 0.2);"></div>
+                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                            
+                            <div class="shape-element" style="width: 150px; height: 100px; border-radius: 50%; background-color: rgba(255, 183, 77, 0.2); shape-outside: ellipse();"></div>
+                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                            
+                            <div class="shape-element" style="width: 120px; height: 120px; background-color: rgba(0, 209, 255, 0.2); shape-outside: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);"></div>
+                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                        </div>
+                        <p><strong>Shape Functions:</strong></p>
+                        <table class="table table-dark mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Function</th>
+                                    <th>Description</th>
+                                    <th>Example</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>circle()</code></td>
+                                    <td>Circular shape</td>
+                                    <td><code>circle(50%)</code> or <code>circle(60px)</code></td>
+                                </tr>
+                                <tr>
+                                    <td><code>ellipse()</code></td>
+                                    <td>Elliptical shape</td>
+                                    <td><code>ellipse(60% 40%)</code> or <code>ellipse(80px 60px)</code></td>
+                                </tr>
+                                <tr>
+                                    <td><code>polygon()</code></td>
+                                    <td>Custom polygon with vertices</td>
+                                    <td><code>polygon(0 0, 100% 0, 100% 100%, 0 100%)</code></td>
+                                </tr>
+                                <tr>
+                                    <td><code>inset()</code></td>
+                                    <td>Rectangle with rounded corners</td>
+                                    <td><code>inset(10px round 20px)</code></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p><strong>Coordinate System:</strong></p>
+                        <ul>
+                            <li>0% = top/left edge</li>
+                            <li>100% = bottom/right edge</li>
+                            <li>0px = absolute pixel value</li>
+                            <li>Coordinates are x y pairs</li>
+                        </ul>
+                        <p><strong>Pro Tip:</strong> Use <code>shape-outside: circle()</code> for profile pictures — it's the most common use case!</p>
+                    </details>
+
+                    <details>
+                        <summary>Image-based shapes</summary>
+                        <p>Use images to define complex text wrapping shapes — perfect for irregular objects.</p>
+                        <pre><code>
+/* Shape from image alpha channel */
+.image-shape {
+    float: left;
+    width: 200px;
+    height: 200px;
+    shape-outside: url('shape-image.png');
+    shape-image-threshold: 0.5;
+}
+
+/* With transparency */
+.transparent-shape {
+    float: left;
+    width: 150px;
+    height: 150px;
+    shape-outside: url('leaf.svg');
+    shape-image-threshold: 0.1;
+}
+                        </code></pre>
+                        <div class="shape-outside-demo">
+                            <div style="float: left; width: 150px; height: 150px; margin-right: 20px; margin-bottom: 20px; background-image: url('data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50,10 C60,30 80,30 90,50 C80,70 60,70 50,90 C40,70 20,70 10,50 C20,30 40,30 50,10 Z' fill='%2300d1ff'/%3E%3C/svg%3E'); background-repeat: no-repeat; shape-outside: url('data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50,10 C60,30 80,30 90,50 C80,70 60,70 50,90 C40,70 20,70 10,50 C20,30 40,30 50,10 Z' fill='%2300d1ff'/%3E%3C/svg%3E'); shape-image-threshold: 0.1; border: 1px dashed var(--cyan);"></div>
+                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                            <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</p>
+                            <p>Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?</p>
+                        </div>
+                        <p><strong>Key Concepts:</strong></p>
+                        <ul>
+                            <li><code>shape-outside: url('image.jpg');</code> — uses image's alpha channel</li>
+                            <li><code>shape-image-threshold: 0.5;</code> — defines opacity threshold (0-1)</li>
+                            <li>Images must have transparent areas for text to wrap</li>
+                            <li>SVG files work best due to scalability</li>
+                        </ul>
+                        <p><strong>Threshold Values:</strong></p>
+                        <ul>
+                            <li><code>0.0</code>: Text wraps around any opaque pixel</li>
+                            <li><code>0.5</code>: Text wraps around pixels with 50%+ opacity</li>
+                            <li><code>1.0</code>: Text wraps only around fully opaque pixels</li>
+                        </ul>
+                        <p><strong>Best Practices:</strong></p>
+                        <ol>
+                            <li>Use SVG for vector shapes — scales perfectly</li>
+                            <li>Keep images simple — complex shapes can cause performance issues</li>
+                            <li>Test across browsers — support varies</li>
+                            <li>Provide fallbacks for unsupported browsers</li>
+                        </ol>
+                        <p><strong>Browser Support:</strong> Excellent in modern browsers (Chrome 107+, Firefox 110+, Safari 15.4+).</p>
+                    </details>
+
+                    <details>
+                        <summary>shape-margin for spacing</summary>
+                        <p>Add extra space between the shape and the wrapped text.</p>
+                        <pre><code>
+/* Add margin around shape */
+.shape-with-margin {
+    float: left;
+    width: 120px;
+    height: 120px;
+    shape-outside: circle();
+    shape-margin: 20px;
+}
+
+/* Multiple values */
+.multi-margin {
+    float: left;
+    width: 150px;
+    height: 100px;
+    shape-outside: ellipse();
+    shape-margin: 10px 20px 15px 25px;
+}
+                        </code></pre>
+                        <div class="shape-outside-demo">
+                            <div class="shape-element" style="background-color: rgba(0, 209, 255, 0.2); shape-outside: circle(); shape-margin: 20px;"></div>
+                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                            <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.</p>
+                            <p>Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?</p>
+                        </div>
+                        <p><strong>Shape Margin Behavior:</strong></p>
+                        <ul>
+                            <li>Similar to regular <code>margin</code> but applied to the shape outline</li>
+                            <li>Creates a buffer zone between shape and text</li>
+                            <li>Can use single value (all sides) or four values (top, right, bottom, left)</li>
+                            <li>Works with all shape types: circle, ellipse, polygon, image</li>
+                        </ul>
+                        <p><strong>Visual Effect:</strong> Without shape-margin, text hugs the shape tightly. With shape-margin, there's breathing room.</p>
+                        <p><strong>Pro Tip:</strong> Always use <code>shape-margin</code> when wrapping text around circular profile pictures — it looks more natural!</p>
+                        <div class="code-example">
+                            <pre><code>
+.profile-picture {
+    float: left;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    shape-outside: circle();
+    shape-margin: 15px;
+    margin-right: 20px;
+}
+                            </code></pre>
+                        </div>
+                        <p><strong>Browser Support:</strong> Excellent in modern browsers — same as shape-outside.</p>
+                    </details>
+                </section>
+
+                <!-- 10.3 Layout Containment -->
+                <section id="sec-10-3">
+                    <h2>10.3 Layout Containment</h2>
+                    <p class="text-muted">Optimize rendering performance by telling the browser what parts of your page are independent.</p>
+
+                    <details>
+                        <summary>contain property for performance</summary>
+                        <p>Tell the browser an element is isolated — enables powerful optimizations.</p>
+                        <pre><code>
+/* Basic containment */
+.contained {
+    contain: layout;
+}
+
+/* Multiple types of containment */
+.comprehensive-containment {
+    contain: layout style paint;
+}
+
+/* All containment types */
+.full-containment {
+    contain: strict;
+}
+
+/* Individual properties */
+.layout-only {
+    contain: layout;
+}
+
+.style-only {
+    contain: style;
+}
+
+.paint-only {
+    contain: paint;
+}
+
+.size-only {
+    contain: size;
+}
+                        </code></pre>
+                        <div class="containment-demo">
+                            <p>This element has containment applied — the browser knows its contents won't affect outside elements.</p>
+                            <div style="margin-top: 15px; padding: 15px; background-color: rgba(13, 27, 42, 0.7); border: 1px dashed var(--amber); border-radius: 5px;">
+                                <p>Contained content inside</p>
+                                <div style="padding: 10px; background-color: rgba(0, 209, 255, 0.1); border-radius: 5px;">Nested content</div>
+                            </div>
+                        </div>
+                        <p><strong>What is containment?</strong></p>
+                        <p>Containment tells the browser that an element is isolated from the rest of the document — changes inside won't affect outside, and vice versa.</p>
+                        <p><strong>Why it matters:</strong> Enables major performance optimizations by limiting the scope of layout, style, and paint calculations.</p>
+                        <p><strong>Real-World Impact:</strong> Can improve rendering performance by up to 40% in complex applications!</p>
+                    </details>
+
+                    <details>
+                        <summary>Layout, style, paint, and size containment</summary>
+                        <p>Four distinct types of containment with different performance benefits.</p>
+                        <table class="table table-dark mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Effect</th>
+                                    <th>Performance Benefit</th>
+                                    <th>When to Use</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>layout</code></td>
+                                    <td>Child layout doesn't affect parent or siblings</td>
+                                    <td>Reduces layout recalculations</td>
+                                    <td>Components with predictable sizes</td>
+                                </tr>
+                                <tr>
+                                    <td><code>style</code></td>
+                                    <td>Descendant counters, quotes, etc., are contained</td>
+                                    <td>Reduces style calculations</td>
+                                    <td>Complex components with counters</td>
+                                </tr>
+                                <tr>
+                                    <td><code>paint</code></td>
+                                    <td>Children don't draw outside their bounds</td>
+                                    <td>Reduces painting area</td>
+                                    <td>Modals, popups, cards</td>
+                                </tr>
+                                <tr>
+                                    <td><code>size</code></td>
+                                    <td>Element size doesn't depend on descendants</td>
+                                    <td>Enables faster size calculations</td>
+                                    <td>Elements with known dimensions</td>
+                                </tr>
+                                <tr>
+                                    <td><code>strict</code></td>
+                                    <td>Combines layout, style, and paint</td>
+                                    <td>Maximum optimization</td>
+                                    <td>Isolated components</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="grid-demo">
+                            <h4>Layout Containment Example</h4>
+                            <div class="grid-container" style="contain: layout; gap: 10px; height: 200px;">
+                                <div class="grid-item item-1" style="height: 100px;">Item 1</div>
+                                <div class="grid-item item-2" style="height: 150px;">Item 2</div>
+                                <div class="grid-item item-3" style="height: 80px;">Item 3</div>
+                            </div>
+                            <p>Even though items have different heights, the container's size is calculated independently — no layout cascade to parent.</p>
+                        </div>
+                        <p><strong>Layout Containment:</strong> When you apply <code>contain: layout</code> to a container, its children's layout doesn't affect siblings or parents.</p>
+                        <p><strong>Style Containment:</strong> Prevents counter values, quotes, and other generated content from affecting outside elements.</p>
+                        <p><strong>Paint Containment:</strong> Ensures children cannot draw outside their bounding box — useful for modals and overlays.</p>
+                        <p><strong>Size Containment:</strong> Tells the browser the element's size is determined by its own properties, not its children.</p>
+                        <p><strong>Strict Containment:</strong> The ultimate performance boost — combines all three types.</p>
+                        <div class="code-example">
+                            <pre><code>
+/* Best practice for isolated components */
+.card {
+    contain: strict;
+    width: 300px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+/* Modern alternative: content-visibility */
+.content-card {
+    content-visibility: auto;
+    contain-intrinsic-size: 300px 200px;
+}
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>content-visibility for rendering optimization</summary>
+                        <p>Modern solution that skips rendering off-screen content — revolutionary for performance.</p>
+                        <pre><code>
+/* Skip rendering until needed */
+.content-section {
+    content-visibility: auto;
+    contain-intrinsic-size: 300px 200px;
+}
+
+/* Always render */
+.always-visible {
+    content-visibility: visible;
+}
+
+/* Never render */
+.never-visible {
+    content-visibility: hidden;
+}
+                        </code></pre>
+                        <div class="containment-demo">
+                            <div style="height: 2000px; overflow-y: auto; padding: 20px;">
+                                <h3>Top Section</h3>
+                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit...</p>
+                                
+                                <div style="content-visibility: auto; contain-intrinsic-size: 300px 200px; background-color: rgba(13, 27, 42, 0.7); padding: 20px; margin: 20px 0; border-radius: 8px; border: 1px dashed var(--amber);">
+                                    <h4>Card with content-visibility</h4>
+                                    <p>This card will only render when scrolled into view!</p>
+                                    <p>It contains many paragraphs, images, and interactive elements.</p>
+                                    <p>But it's not rendered until you scroll to it — saving significant resources!</p>
+                                    <p>Once scrolled into view, it renders normally and stays rendered.</p>
+                                </div>
+                                
+                                <div style="content-visibility: auto; contain-intrinsic-size: 300px 200px; background-color: rgba(13, 27, 42, 0.7); padding: 20px; margin: 20px 0; border-radius: 8px; border: 1px dashed var(--amber);">
+                                    <h4>Another Card</h4>
+                                    <p>Same behavior — rendered only when visible.</p>
+                                </div>
+                                
+                                <div style="content-visibility: auto; contain-intrinsic-size: 300px 200px; background-color: rgba(13, 27, 42, 0.7); padding: 20px; margin: 20px 0; border-radius: 8px; border: 1px dashed var(--amber);">
+                                    <h4>Final Card</h4>
+                                    <p>Scroll down to see this one render!</p>
+                                </div>
+                                
+                                <h3>Bottom Section</h3>
+                                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit...</p>
+                            </div>
+                        </div>
+                        <p><strong>How content-visibility works:</strong></p>
+                        <ol>
+                            <li>When element is off-screen: completely skipped during rendering</li>
+                            <li>When element enters viewport: rendered once and cached</li>
+                            <li>When element leaves viewport: remains rendered (not unrendered)</li>
+                        </ol>
+                        <p><strong>Key Benefits:</strong></p>
+                        <ul>
+                            <li>Massive performance improvement for long pages</li>
+                            <li>Reduces memory usage</li>
+                            <li>Faster initial load times</li>
+                            <li>Smaller repaint areas</li>
+                        </ul>
+                        <p><strong>Important Requirements:</strong></p>
+                        <ul>
+                            <li><code>contain-intrinsic-size</code> is REQUIRED — tells browser expected size</li>
+                            <li>Must be set to reasonable dimensions (width and height)</li>
+                            <li>Without it, content-visibility has no effect</li>
+                        </ul>
+                        <p><strong>Practical Example:</strong></p>
+                        <div class="code-example">
+                            <pre><code>
+/* Blog post with many images */
+.post-content {
+    content-visibility: auto;
+    contain-intrinsic-size: 800px 600px; /* Expected size */
+}
+
+/* Product gallery */
+.gallery-item {
+    content-visibility: auto;
+    contain-intrinsic-size: 300px 400px;
+}
+
+/* Comments section */
+.comments-list {
+    content-visibility: auto;
+    contain-intrinsic-size: 1000px 2000px;
+}
+                            </code></pre>
+                        </div>
+                        <p><strong>Browser Support:</strong> Excellent in modern browsers (Chrome 85+, Firefox 111+, Safari 15.4+).</p>
+                        <p><strong>Pro Tip:</strong> Combine with <code>contain: layout</code> for maximum performance:</p>
+                        <div class="code-example">
+                            <pre><code>
+.card {
+    content-visibility: auto;
+    contain-intrinsic-size: 300px 200px;
+    contain: layout;
+}
+                            </code></pre>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 10.4 Container Queries (Modern CSS) -->
+                <section id="sec-10-4">
+                    <h2>10.4 Container Queries (Modern CSS)</h2>
+                    <p class="text-muted">Style components based on their container size — not the viewport. The future of component-based design.</p>
+
+                    <details>
+                        <summary>@container rules</summary>
+                        <p>Apply styles based on the size of a container element, not the viewport.</p>
+                        <pre><code>
+/* Define a container */
+.card-container {
+    container-type: inline-size;
+    container-name: card;
+}
+
+/* Query the container */
+@container card (min-width: 300px) {
+    .card {
+        border: 2px solid var(--amber);
+        box-shadow: 0 4px 8px rgba(255, 183, 77, 0.2);
+    }
+    
+    .card-header {
+        font-size: 1.4rem;
+    }
+}
+
+@container card (min-width: 400px) {
+    .card {
+        border: 3px solid var(--cyan);
+        box-shadow: 0 6px 12px rgba(0, 209, 255, 0.3);
+    }
+    
+    .card-header {
+        font-size: 1.6rem;
+    }
+}
+                        </code></pre>
+                        <div class="container-query-demo">
+                            <div class="card-container">
+                                <div class="card" style="width: 250px; padding: 20px; background-color: rgba(13, 27, 42, 0.7); border: 1px solid rgba(0, 209, 255, 0.2); border-radius: 8px; color: white;">
+                                    <h3 class="card-header">Card Header</h3>
+                                    <p class="card-content">This card has a width of 250px — below the 300px breakpoint.</p>
+                                </div>
+                                <div class="card" style="width: 350px; padding: 20px; background-color: rgba(13, 27, 42, 0.7); border: 1px solid rgba(0, 209, 255, 0.2); border-radius: 8px; color: white;">
+                                    <h3 class="card-header">Card Header</h3>
+                                    <p class="card-content">This card has a width of 350px — above 300px but below 400px.</p>
+                                </div>
+                                <div class="card" style="width: 450px; padding: 20px; background-color: rgba(13, 27, 42, 0.7); border: 1px solid rgba(0, 209, 255, 0.2); border-radius: 8px; color: white;">
+                                    <h3 class="card-header">Card Header</h3>
+                                    <p class="card-content">This card has a width of 450px — above 400px.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <p><strong>Container Query Components:</strong></p>
+                        <ul>
+                            <li><code>container-type</code>: Defines what dimension to query (inline-size, block-size, size)</li>
+                            <li><code>container-name</code>: Names the container for reference</li>
+                            <li><code>@container</code>: The query rule</li>
+                            <li><code>min-width</code>, <code>max-width</code>, etc.: Standard media query conditions</li>
+                        </ul>
+                        <p><strong>Why this is revolutionary:</strong></p>
+                        <ul>
+                            <li>Components respond to their actual space, not screen size</li>
+                            <li>Identical components behave differently in different contexts</li>
+                            <li>Eliminates the need for wrapper classes</li>
+                            <li>Makes components truly reusable</li>
+                        </ul>
+                        <p><strong>Traditional Media Query Problem:</strong></p>
+                        <div class="code-example">
+                            <pre><code>
+/* Traditional approach - depends on viewport */
+@media (min-width: 768px) {
+    .card {
+        width: 300px;
+    }
+}
+
+/* But what if the card is in a narrow sidebar? */
+&lt;div style="width: 200px;"&gt;
+    &lt;div class="card"&gt;...&lt;/div&gt;
+&lt;/div&gt;
+/* Still gets 300px width because viewport is wide! */
+                            </code></pre>
+                        </div>
+                        <p><strong>Container Query Solution:</strong></p>
+                        <div class="code-example">
+                            <pre><code>
+/* Component responds to its container */
+@container card (min-width: 300px) {
+    .card {
+        width: 300px;
+    }
+}
+
+&lt;div style="width: 200px;"&gt;
+    &lt;div class="card"&gt;...&lt;/div&gt;
+&lt;/div&gt;
+/* Now correctly sized to 200px! */
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Container query units (cqw, cqh)</summary>
+                        <p>Use new units based on container dimensions for precise sizing.</p>
+                        <pre><code>
+/* Container query units */
+.container-element {
+    width: 50cqw; /* 50% of container width */
+    height: 30cqh; /* 30% of container height */
+    font-size: 2cqw; /* 2% of container width */
+}
+
+/* Combining with existing units */
+.flexible-element {
+    width: calc(100% - 20cqw);
+    padding: 10cqw;
+    margin: 5cqw;
+}
+                        </code></pre>
+                        <div class="container-query-demo">
+                            <div class="card-container" style="width: 500px; padding: 20px;">
+                                <div style="width: 50cqw; height: 100px; background-color: rgba(0, 209, 255, 0.2); margin: 10px; text-align: center; line-height: 100px; color: white; border-radius: 5px;">
+                                    50cqw (50% of container width)
+                                </div>
+                                <div style="width: 25cqw; height: 100px; background-color: rgba(255, 183, 77, 0.2); margin: 10px; text-align: center; line-height: 100px; color: #000; border-radius: 5px;">
+                                    25cqw (25% of container width)
+                                </div>
+                                <div style="width: 100cqw; height: 100px; background-color: rgba(0, 209, 255, 0.2); margin: 10px; text-align: center; line-height: 100px; color: white; border-radius: 5px;">
+                                    100cqw (100% of container width)
+                                </div>
+                            </div>
+                        </div>
+                        <p><strong>Container Units Explained:</strong></p>
+                        <table class="table table-dark mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Unit</th>
+                                    <th>Description</th>
+                                    <th>Equivalent</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>cqw</code></td>
+                                    <td>Container Query Width</td>
+                                    <td>1cqw = 1% of container width</td>
+                                </tr>
+                                <tr>
+                                    <td><code>cqh</code></td>
+                                    <td>Container Query Height</td>
+                                    <td>1cqh = 1% of container height</td>
+                                </tr>
+                                <tr>
+                                    <td><code>cqi</code></td>
+                                    <td>Container Query Inline Size</td>
+                                    <td>Same as cqw for horizontal writing modes</td>
+                                </tr>
+                                <tr>
+                                    <td><code>cqb</code></td>
+                                    <td>Container Query Block Size</td>
+                                    <td>Same as cqh for horizontal writing modes</td>
+                                </tr>
+                                <tr>
+                                    <td><code>cqmin</code></td>
+                                    <td>Smaller of container width or height</td>
+                                    <td>min(cqw, cqh)</td>
+                                </tr>
+                                <tr>
+                                    <td><code>cqmax</code></td>
+                                    <td>Larger of container width or height</td>
+                                    <td>max(cqw, cqh)</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p><strong>Practical Examples:</strong></p>
+                        <div class="code-example">
+                            <pre><code>
+/* Responsive button */
+.button {
+    padding: 1cqw 2cqw;
+    border-radius: 1cqw;
+    font-size: 1.5cqw;
+}
+
+/* Aspect ratio boxes */
+.aspect-box {
+    width: 100%;
+    height: 50cqw; /* Maintain 2:1 aspect ratio */
+}
+
+/* Fluid typography */
+.text {
+    font-size: clamp(1rem, 4cqw, 2rem);
+}
+                            </code></pre>
+                        </div>
+                        <p><strong>Pro Tip:</strong> Combine container queries with <code>clamp()</code> for fluid, responsive components:</p>
+                        <div class="code-example">
+                            <pre><code>
+@container card (min-width: 200px) {
+    .card-title {
+        font-size: clamp(1.2rem, 4cqw, 2rem);
+    }
+}
+                            </code></pre>
+                        </div>
+                        <p><strong>Browser Support:</strong> Excellent in modern browsers (Chrome 105+, Firefox 115+, Safari 16.4+).</p>
+                    </details>
+
+                    <details>
+                        <summary>Component-based responsive design</summary>
+                        <p>Build truly reusable components that adapt to their context — the future of UI development.</p>
+                        <pre><code>
+/* Card component — completely self-contained */
+.card {
+    container-type: inline-size;
+    container-name: card;
+    background-color: rgba(13, 27, 42, 0.7);
+    border: 1px solid rgba(0, 209, 255, 0.2);
+    border-radius: 8px;
+    padding: 20px;
+    color: white;
+}
+
+/* Responsive styling based on container width */
+@container card (min-width: 250px) {
+    .card {
+        padding: 25px;
+    }
+    
+    .card-header {
+        font-size: 1.3rem;
+    }
+}
+
+@container card (min-width: 350px) {
+    .card {
+        padding: 30px;
+        border: 2px solid var(--amber);
+        box-shadow: 0 4px 8px rgba(255, 183, 77, 0.2);
+    }
+    
+    .card-header {
+        font-size: 1.5rem;
+    }
+}
+
+@container card (min-width: 450px) {
+    .card {
+        padding: 35px;
+        border: 3px solid var(--cyan);
+        box-shadow: 0 6px 12px rgba(0, 209, 255, 0.3);
+    }
+    
+    .card-header {
+        font-size: 1.7rem;
+    }
+}
+                        </code></pre>
+                        <div class="container-query-grid">
+                            <div class="container-query-card" style="width: 200px;">
+                                <h3 class="container-query-card-header">Small Card</h3>
+                                <p class="container-query-card-content">This card has limited space — minimal styling.</p>
+                            </div>
+                            
+                            <div class="container-query-card" style="width: 300px;">
+                                <h3 class="container-query-card-header">Medium Card</h3>
+                                <p class="container-query-card-content">This card has more space — enhanced styling.</p>
+                            </div>
+                            
+                            <div class="container-query-card" style="width: 400px;">
+                                <h3 class="container-query-card-header">Large Card</h3>
+                                <p class="container-query-card-content">This card has plenty of space — premium styling.</p>
+                            </div>
+                            
+                            <div class="container-query-card" style="width: 500px;">
+                                <h3 class="container-query-card-header">Extra Large Card</h3>
+                                <p class="container-query-card-content">This card has abundant space — maximum styling.</p>
+                            </div>
+                        </div>
+                        <p><strong>Component Architecture Benefits:</strong></p>
+                        <ul>
+                            <li><strong>Reusability:</strong> One component, infinite contexts</li>
+                            <li><strong>Independence:</strong> No need for wrapper classes or JavaScript</li>
+                            <li><strong>Consistency:</strong> Same component behaves predictably everywhere</li>
+                            <li><strong>Maintainability:</strong> Style changes in one place</li>
+                            <li><strong>Scalability:</strong> Works in any layout system</li>
+                        </ul>
+                        <p><strong>Real-World Example:</strong> A button component that adapts to its container:</p>
+                        <div class="code-example">
+                            <pre><code>
+.btn {
+    container-type: inline-size;
+    container-name: btn;
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+    background-color: #00d1ff;
+    color: #000;
+    cursor: pointer;
+}
+
+@container btn (min-width: 120px) {
+    .btn {
+        padding: 12px 20px;
+        font-size: 1.1rem;
+    }
+}
+
+@container btn (min-width: 180px) {
+    .btn {
+        padding: 15px 25px;
+        font-size: 1.2rem;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+}
+
+@container btn (min-width: 240px) {
+    .btn {
+        padding: 18px 30px;
+        font-size: 1.3rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+}
+                            </code></pre>
+                        </div>
+                        <p><strong>Design System Integration:</strong> This pattern allows you to build a component library where every component is truly responsive and context-aware.</p>
+                    </details>
+
+                    <details>
+                        <summary>Containment context</summary>
+                        <p>Understand how containers establish new layout contexts for their children.</p>
+                        <pre><code>
+/* Establishing a containment context */
+.container {
+    container-type: inline-size;
+    container-name: my-container;
+}
+
+/* Nested containers */
+.nested-container {
+    container-type: inline-size;
+    container-name: nested;
+    /* This creates a new containment context */
+}
+
+/* Inheritance */
+.parent {
+    container-type: inline-size;
+    container-name: parent;
+}
+
+.child {
+    /* Inherits the parent's container context */
+    /* Can also establish its own nested context */
+}
+                        </code></pre>
+                        <div class="container-query-demo">
+                            <div class="card-container" style="width: 500px; padding: 20px;">
+                                <div style="width: 300px; padding: 15px; background-color: rgba(13, 27, 42, 0.7); border: 1px dashed var(--amber); border-radius: 8px; color: white;">
+                                    <h4>Parent Container</h4>
+                                    <p>This container has a width of 300px.</p>
+                                    
+                                    <div style="width: 200px; padding: 10px; background-color: rgba(0, 209, 255, 0.2); border-radius: 5px; margin-top: 10px;">
+                                        <h5>Nested Container</h5>
+                                        <p>This nested container has a width of 200px.</p>
+                                        <p>Its container queries are based on its own 200px width, not the parent's 300px.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <p><strong>Containment Context Rules:</strong></p>
+                        <ul>
+                            <li>Each container establishes its own context</li>
+                            <li>Children inherit parent's context unless they establish their own</li>
+                            <li>Multiple containers can coexist</li>
+                            <li>Querying always refers to the nearest ancestor with container-type</li>
+                        </ul>
+                        <p><strong>Context Hierarchy:</strong></p>
+                        <div class="code-example">
+                            <pre><code>
+&lt;div class="parent" container-type="inline-size"&gt;
+    &lt;div class="child" container-type="inline-size"&gt;
+        &lt;div class="grandchild"&gt;
+            /* This element's container queries refer to 'child' */
+        &lt;/div&gt;
+    &lt;/div&gt;
+&lt;/div&gt;
+                            </code></pre>
+                        </div>
+                        <p><strong>Key Insight:</strong> Containers are hierarchical — each one creates its own universe of measurement.</p>
+                        <p><strong>Pro Tip:</strong> Use meaningful names for containers to make your code readable:</p>
+                        <div class="code-example">
+                            <pre><code>
+.sidebar {
+    container-type: inline-size;
+    container-name: sidebar;
+}
+
+.main-content {
+    container-type: inline-size;
+    container-name: main;
+}
+
+.card {
+    container-type: inline-size;
+    container-name: card;
+}
+                            </code></pre>
+                        </div>
+                        <p><strong>Browser Support:</strong> Excellent in modern browsers — same as container queries.</p>
+                    </details>
+                </section>
+
+                <div class="footer-note">
+                    🌟 Mastery Tip: These advanced techniques aren't just fancy tricks — they're essential tools for modern web development.<br>
+                    Use multi-column for magazine-style text layouts, CSS shapes for creative text wrapping, containment for performance-critical components,<br>
+                    and container queries for truly reusable, context-aware components.<br>
+                    Embrace these technologies now — they represent the future of CSS layout.
+                    <br><br>
+                    Next Module: Animations and Transitions
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Expand/Collapse All
+            document.getElementById('expand-all').addEventListener('click', () => {
+                document.querySelectorAll('details').forEach(detail => {
+                    detail.open = true;
+                });
+            });
+
+            document.getElementById('collapse-all').addEventListener('click', () => {
+                document.querySelectorAll('details').forEach(detail => {
+                    detail.open = false;
+                });
+            });
+
+            // Search functionality
+            document.getElementById('toc-search').addEventListener('input', function(e) {
+                const query = e.target.value.toLowerCase();
+                const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
+                
+                tocItems.forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    if (text.includes(query)) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+
+            // Smooth scrolling for TOC links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+
+            // Highlight active section in TOC as user scrolls
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.toc-item a');
+
+            window.addEventListener('scroll', () => {
+                let current = '';
+                
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+                    if (pageYOffset >= sectionTop - 100) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === '#' + current) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+```

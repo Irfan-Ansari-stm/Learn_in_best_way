@@ -1,0 +1,1161 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 18: CSS-in-JS and Modern Workflows</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00d1ff;
+            --amber: #ffb347;
+            --text-light: #e6f1ff;
+            --text-secondary: #b8c6d8;
+            --card-bg: #112240;
+            --border-color: #2a4a6e;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            height: 100vh;
+            position: fixed;
+            width: 300px;
+            overflow-y: auto;
+            padding: 1rem;
+            box-shadow: 2px 0 10px rgba(0, 209, 255, 0.1);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 2rem;
+            overflow-y: auto;
+            max-height: 100vh;
+            height: 100vh;
+        }
+
+        .section-title {
+            color: var(--cyan);
+            border-bottom: 2px solid var(--amber);
+            padding-bottom: 0.5rem;
+            margin-top: 2rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .subsection-title {
+            color: var(--amber);
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            padding-left: 0.5rem;
+            border-left: 3px solid var(--cyan);
+        }
+
+        .toc-item {
+            margin: 0.5rem 0;
+            transition: all 0.3s ease;
+        }
+
+        .toc-item a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: block;
+            padding: 0.3rem 0.5rem;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .toc-item a:hover {
+            background-color: rgba(0, 209, 255, 0.1);
+            color: var(--cyan);
+        }
+
+        .toc-item.active a {
+            color: var(--cyan);
+            background-color: rgba(0, 209, 255, 0.15);
+        }
+
+        .toc-heading {
+            color: var(--cyan);
+            font-weight: 600;
+            margin: 1rem 0 0.5rem 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .toc-heading i {
+            margin-right: 0.5rem;
+            transition: transform 0.3s;
+        }
+
+        .toc-heading.collapsed i {
+            transform: rotate(-90deg);
+        }
+
+        pre code {
+            background-color: #0d1b2a !important;
+            color: var(--text-light) !important;
+            padding: 1rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            border-left: 3px solid var(--amber);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        code {
+            background-color: rgba(13, 27, 42, 0.8);
+            color: var(--amber);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        details {
+            margin: 1.2rem 0;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: rgba(17, 34, 64, 0.5);
+        }
+
+        summary {
+            padding: 0.8rem 1rem;
+            background-color: var(--card-bg);
+            color: var(--cyan);
+            font-weight: 600;
+            cursor: pointer;
+            list-style: none;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary::before {
+            content: "+";
+            color: var(--amber);
+            margin-right: 0.5rem;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        details[open] summary::before {
+            content: "−";
+        }
+
+        .control-buttons {
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .control-btn {
+            background-color: var(--card-bg);
+            border: 1px solid var(--amber);
+            color: var(--amber);
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            background-color: var(--amber);
+            color: var(--bg-dark);
+        }
+
+        .highlight {
+            background-color: rgba(255, 179, 71, 0.1);
+            border-left: 4px solid var(--amber);
+            padding: 0.8rem 1rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .formula {
+            background-color: rgba(0, 209, 255, 0.1);
+            border: 1px dashed var(--cyan);
+            padding: 0.8rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+            font-family: 'Cambria Math', serif;
+            text-align: center;
+            color: var(--cyan);
+        }
+
+        .example-box {
+            background-color: rgba(10, 25, 47, 0.7);
+            border: 1px solid var(--cyan);
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: var(--bg-dark);
+            font-size: 0.8rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            margin-left: 0.5rem;
+        }
+
+        .search-input {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-color);
+            color: var(--text-light);
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border-radius: 4px;
+        }
+
+        @media (max-width: 991px) {
+            .left-panel {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            .right-panel {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+            <!-- Left Panel -->
+            <div class="col-md-3 left-panel">
+                <div class="text-center mb-4">
+                    <h3 class="text-cyan">Module 18</h3>
+                    <h5 class="text-amber">CSS-in-JS and Modern Workflows</h5>
+                    <p class="text-secondary">Master the future of CSS in modern applications</p>
+                    <small class="text-muted">By CSS Mastery Tutor</small>
+                </div>
+
+                <div class="control-buttons">
+                    <button id="expandAll" class="control-btn"><i class="bi bi-plus-circle"></i> Expand All</button>
+                    <button id="collapseAll" class="control-btn"><i class="bi bi-dash-circle"></i> Collapse All</button>
+                </div>
+
+                <input type="text" class="form-control search-input" id="tocSearch" placeholder="Search topics...">
+
+                <div class="toc-section">
+                    <div class="toc-heading" data-target="section-18-1">
+                        <span>18.1 CSS Preprocessing</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                    <div class="toc-subitems" id="section-18-1">
+                        <div class="toc-item">
+                            <a href="#sass-scss-fundamentals">Sass/SCSS fundamentals</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#less-stylus-overview">Less and Stylus overview</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#postcss-plugin-ecosystem">PostCSS and plugin ecosystem</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#build-tool-integration">Build tool integration</a>
+                        </div>
+                    </div>
+
+                    <div class="toc-heading" data-target="section-18-2">
+                        <span>18.2 CSS-in-JS Concepts</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                    <div class="toc-subitems" id="section-18-2">
+                        <div class="toc-item">
+                            <a href="#styled-components">Styled components approach</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#emotion-libraries">Emotion and other libraries</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#css-modules">CSS modules methodology</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#static-vs-runtime">Static vs runtime CSS-in-JS</a>
+                        </div>
+                    </div>
+
+                    <div class="toc-heading" data-target="section-18-3">
+                        <span>18.3 Modern CSS Tooling</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                    <div class="toc-subitems" id="section-18-3">
+                        <div class="toc-item">
+                            <a href="#css-bundling">CSS bundling and optimization</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#critical-css-extraction">Critical CSS extraction</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#css-tree-shaking">CSS tree shaking</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#design-tokens">Design token integration</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="col-md-9 right-panel">
+                <h1 class="text-center mb-5 text-cyan">Module 18: CSS-in-JS and Modern Workflows</h1>
+                <p class="text-secondary text-center mb-5">From preprocessors to JavaScript-powered styling — mastering the evolution of CSS</p>
+
+                <!-- 18.1 CSS Preprocessing -->
+                <section id="section-18-1">
+                    <h2 class="section-title">18.1 CSS Preprocessing</h2>
+                    <p class="text-secondary">Preprocessors extend CSS with programming features like variables, nesting, functions, and mixins — making stylesheets more maintainable and powerful.</p>
+
+                    <details>
+                        <summary>Definition: What is CSS Preprocessing?</summary>
+                        <p>CSS preprocessors are scripting languages that compile into standard CSS. They add features missing from vanilla CSS to make styling more efficient and organized.</p>
+                        <p>Think of them as "CSS with superpowers" — they don't replace CSS, they enhance it before the browser sees it.</p>
+                        <p>Key benefits:</p>
+                        <ul>
+                            <li>Variables for consistent theming</li>
+                            <li>Nesting for logical structure</li>
+                            <li>Functions and mixins for reusable logic</li>
+                            <li>Modular organization via imports</li>
+                        </ul>
+                    </details>
+
+                    <details>
+                        <summary>Syntax: Sass/SCSS Fundamentals</summary>
+                        <p>Sass has two syntaxes: SCSS (Sassy CSS) and indented Sass. We'll focus on SCSS — the more popular one that looks like CSS.</p>
+                        <pre><code>// Variables
+$primary-color: #00d1ff;
+$font-size-base: 16px;
+
+// Nesting
+.nav {
+  background-color: $primary-color;
+  
+  &amp;__item {
+    padding: 1rem;
+    
+    &:hover {
+      background-color: darken($primary-color, 10%);
+    }
+  }
+  
+  // Mixins - reusable blocks
+  @include button-style();
+}
+
+// Functions
+@function calculate-spacing($base, $multiplier) {
+  @return $base * $multiplier;
+}
+
+.card {
+  margin: calculate-spacing($font-size-base, 1.5);
+}</code></pre>
+                        <p>Notice the <code>&amp;</code> symbol — it represents the parent selector in nesting!</p>
+                    </details>
+
+                    <details>
+                        <summary>Example: Component-Based SCSS Structure</summary>
+                        <div class="example-box">
+                            <pre><code>// _buttons.scss
+%btn-base {
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  @extend %btn-base;
+  background-color: $primary-color;
+  color: white;
+  
+  &:hover {
+    background-color: darken($primary-color, 10%);
+    transform: translateY(-2px);
+  }
+}
+
+.btn-outline {
+  @extend %btn-base;
+  border: 2px solid $primary-color;
+  background-color: transparent;
+  color: $primary-color;
+  
+  &:hover {
+    background-color: $primary-color;
+    color: white;
+  }
+}</code></pre>
+                        </div>
+                        <p>This creates a clean, DRY (Don't Repeat Yourself) component system where styles can be reused across multiple buttons.</p>
+                    </details>
+
+                    <details>
+                        <summary>Detail: Less and Stylus Overview</summary>
+                        <p>While SCSS dominates, other preprocessors exist:</p>
+                        <table class="table table-dark table-sm mt-2">
+                            <thead>
+                                <tr>
+                                    <th>Feature</th>
+                                    <th>Sass/SCSS</th>
+                                    <th>Less</th>
+                                    <th>Stylus</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Syntax</td><td>Like CSS</td><td>Like CSS</td><td>Minimalist (no braces)</td></tr>
+                                <tr><td>Variables</td><td>$var</td><td>@var</td><td>var</td></tr>
+                                <tr><td>Nesting</td><td>Yes</td><td>Yes</td><td>Yes</td></tr>
+                                <tr><td>Functions</td><td>Advanced</td><td>Good</td><td>Very flexible</td></tr>
+                                <tr><td>Community</td><td>Largest</td><td>Large</td><td>Small</td></tr>
+                                <tr><td>Best for</td><td>Enterprise projects</td><td>Legacy systems</td><td>Experimental designs</td></tr>
+                            </tbody>
+                        </table>
+                        <p><strong>Less example:</strong></p>
+                        <pre><code>.button(@color) {
+  background-color: @color;
+  border: 1px solid darken(@color, 10%);
+}
+
+.primary-button {
+  .button(#00d1ff);
+}</code></pre>
+                        <p><strong>Stylus example:</strong></p>
+                        <pre><code>primary-color = #00d1ff
+
+.button
+  background-color primary-color
+  border 1px solid darken(primary-color, 10%)
+
+.primary-button
+  button()</code></pre>
+                        <p>Stylus is extremely flexible — you can omit colons, semicolons, and even braces!</p>
+                    </details>
+
+                    <details>
+                        <summary>Syntax: PostCSS and Plugin Ecosystem</summary>
+                        <p>PostCSS is not a preprocessor — it's a <strong>toolkit</strong> that transforms CSS using JavaScript plugins.</p>
+                        <pre><code>// postcss.config.js
+module.exports = {
+  plugins: [
+    require('postcss-preset-env')({ stage: 1 }),
+    require('cssnano')(),
+    require('autoprefixer'),
+    require('postcss-nested')()
+  ]
+}</code></pre>
+                        <p>Key plugins:</p>
+                        <ul>
+                            <li><code>postcss-preset-env</code>: Enables future CSS features today</li>
+                            <li><code>autoprefixer</code>: Adds vendor prefixes automatically</li>
+                            <li><code>cssnano</code>: Minifies CSS</li>
+                            <li><code>postcss-nested</code>: Adds SCSS-like nesting</li>
+                            <li><code>postcss-custom-properties</code>: Converts CSS variables to fallbacks</li>
+                        </ul>
+                        <p>PostCSS lets you write modern CSS now, and it transpiles to browser-compatible code!</p>
+                    </details>
+
+                    <details>
+                        <summary>Example: Modern CSS with PostCSS</summary>
+                        <div class="example-box">
+                            <pre><code>// Input CSS (modern syntax)
+:root {
+  --primary-color: #00d1ff;
+}
+
+.card {
+  display: grid;
+  gap: 1rem;
+  padding: clamp(1rem, 5vw, 2rem);
+  border-radius: 1rem;
+  background: linear-gradient(135deg, var(--primary-color), #1e3c72);
+  box-shadow: 0 10px 25px rgba(0, 209, 255, 0.1);
+  transition: transform 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-5px);
+  }
+  
+  &gt; h3 {
+    margin: 0;
+    font-size: 1.5rem;
+  }
+}</code></pre>
+                        </div>
+                        <p>PostCSS transforms this into:</p>
+                        <pre><code>.card {
+  display: -ms-grid;
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  padding: 5vw;
+  padding: 2rem;
+  border-radius: 1rem;
+  background: -webkit-linear-gradient(135deg, #00d1ff, #1e3c72);
+  background: linear-gradient(135deg, #00d1ff, #1e3c72);
+  -webkit-box-shadow: 0 10px 25px rgba(0, 209, 255, 0.1);
+          box-shadow: 0 10px 25px rgba(0, 209, 255, 0.1);
+  -webkit-transition: -webkit-transform 0.3s ease;
+  transition: -webkit-transform 0.3s ease;
+  transition: transform 0.3s ease;
+  transition: transform 0.3s ease, -webkit-transform 0.3s ease;
+}
+
+.card:hover {
+  -webkit-transform: translateY(-5px);
+          transform: translateY(-5px);
+}
+
+.card &gt; h3 {
+  margin: 0;
+  font-size: 1.5rem;
+}</code></pre>
+                        <p>That's automatic browser compatibility! No manual prefixing needed.</p>
+                    </details>
+
+                    <details>
+                        <summary>Detail: Build Tool Integration</summary>
+                        <p>Preprocessors integrate with build tools through loaders and plugins:</p>
+                        <table class="table table-dark table-sm mt-2">
+                            <thead>
+                                <tr>
+                                    <th>Tool</th>
+                                    <th>Sass Integration</th>
+                                    <th>PostCSS Integration</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Webpack</td><td><code>sass-loader</code></td><td><code>postcss-loader</code></td></tr>
+                                <tr><td>Vite</td><td>Native support</td><td>Native support</td></tr>
+                                <tr><td>Rollup</td><td><code>rollup-plugin-sass</code></td><td><code>rollup-plugin-postcss</code></td></tr>
+                                <tr><td>Parcel</td><td>Automatic</td><td>Automatic</td></tr>
+                            </tbody>
+                        </table>
+                        <p><strong>Webpack configuration example:</strong></p>
+                        <pre><code>// webpack.config.js
+module.exports = {
+  module: {
+    rules: [
+      {
+        test: /\.scss$/,
+        use: [
+          'style-loader',
+          'css-loader',
+          {
+            loader: 'postcss-loader',
+            options: { postcssOptions: { plugins: ['autoprefixer'] } }
+          },
+          'sass-loader'
+        ]
+      }
+    ]
+  }
+};</code></pre>
+                        <p>The order matters: <code>sass-loader</code> → <code>postcss-loader</code> → <code>css-loader</code> → <code>style-loader</code></p>
+                        <p>Modern tools like Vite handle this automatically — just install the dependencies!</p>
+                    </details>
+
+                    <details>
+                        <summary>Uses: When to Use Preprocessors?</summary>
+                        <ul>
+                            <li><strong>Use when:</strong> Building large applications with complex theming, multiple developers, or legacy codebases</li>
+                            <li><strong>Use when:</strong> You need advanced features like loops, conditionals, or math operations</li>
+                            <li><strong>Don't use when:</strong> Building small static sites or learning CSS fundamentals</li>
+                            <li><strong>Don't use when:</strong> Your team prefers pure CSS and modern browser support</li>
+                        </ul>
+                        <p class="badge">Pro Tip: Many modern frameworks (React, Vue, Svelte) now use CSS-in-JS, but preprocessors remain essential for global styles, themes, and utilities.</p>
+                    </details>
+                </section>
+
+                <!-- 18.2 CSS-in-JS Concepts -->
+                <section id="section-18-2">
+                    <h2 class="section-title">18.2 CSS-in-JS Concepts</h2>
+                    <p class="text-secondary">CSS-in-JS is a paradigm where CSS is written in JavaScript, enabling dynamic styling, scoped styles, and seamless component integration.</p>
+
+                    <details>
+                        <summary>Definition: What is CSS-in-JS?</summary>
+                        <p>CSS-in-JS means writing your styles as JavaScript objects or template literals instead of separate CSS files.</p>
+                        <p>It solves key problems:</p>
+                        <ul>
+                            <li>Global namespace pollution</li>
+                            <li>Difficult theme management</li>
+                            <li>Component-scoped styles</li>
+                            <li>Dynamic styling based on props/state</li>
+                        </ul>
+                        <p>Instead of:</p>
+                        <pre><code>.button { color: blue; }</code></pre>
+                        <p>You write:</p>
+                        <pre><code>const Button = styled.button`
+  color: ${props => props.variant === 'primary' ? '#00d1ff' : '#333'};
+`;</code></pre>
+                        <p>Your styles become part of your component — no more hunting between JS and CSS files!</p>
+                    </details>
+
+                    <details>
+                        <summary>Syntax: Styled Components Approach</summary>
+                        <p>Styled Components is the most popular CSS-in-JS library for React.</p>
+                        <pre><code>import styled from 'styled-components';
+
+// Create a component with embedded styles
+const Button = styled.button`
+  background-color: ${props => props.primary ? '#00d1ff' : '#f0f0f0'};
+  color: ${props => props.primary ? 'white' : '#333'};
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 209, 255, 0.2);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
+// Usage
+&lt;Button primary&gt;Click Me&lt;/Button&gt;
+&lt;Button&gt;Secondary&lt;/Button&gt;</code></pre>
+                        <p>Each component gets a unique class name automatically — no naming conflicts!</p>
+                    </details>
+
+                    <details>
+                        <summary>Example: Dynamic Theming with Styled Components</summary>
+                        <div class="example-box">
+                            <pre><code>// ThemeProvider setup
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+import styled from 'styled-components';
+
+const theme = createTheme({
+  palette: {
+    primary: { main: '#00d1ff' },
+    secondary: { main: '#ffb347' },
+  },
+});
+
+// Styled component using theme
+const Card = styled.div.attrs(props => ({
+  className: props.className,
+}))`
+  background: ${props => props.theme.palette.primary.main};
+  color: white;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 8px 24px rgba(0, 209, 255, 0.1);
+  
+  h3 {
+    margin: 0 0 1rem 0;
+    color: inherit;
+  }
+`;
+
+// Usage
+&lt;ThemeProvider theme={theme}&gt;
+  &lt;Card&gt;
+    &lt;h3&gt;My Styled Card&lt;/h3&gt;
+    &lt;p&gt;This uses the theme colors automatically!&lt;/p&gt;
+  &lt;/Card&gt;
+&lt;/ThemeProvider&gt;</code></pre>
+                        </div>
+                        <p>Now your entire app can switch themes dynamically — dark mode, user preferences, brand variations — without rewriting styles!</p>
+                    </details>
+
+                    <details>
+                        <summary>Syntax: Emotion and Other Libraries</summary>
+                        <p>Emotion is another powerful CSS-in-JS library with better SSR (Server-Side Rendering) support.</p>
+                        <pre><code>// Using Emotion
+import { css } from '@emotion/react';
+
+// CSS prop (inline)
+&lt;div css={css`
+  background: #00d1ff;
+  color: white;
+  padding: 1rem;
+  border-radius: 8px;
+`} /&gt;
+
+// Named styles
+const headerStyle = css`
+  font-size: 2rem;
+  font-weight: bold;
+  color: #ffb347;
+  text-align: center;
+`;
+
+const Header = () =&gt; (
+  &lt;h1 css={headerStyle}&gt;Welcome!&lt;/h1&gt;
+);
+
+// Key differences from Styled Components:
+// - More control over class names
+// - Better performance in SSR
+// - Built-in keyframes
+// - Can use CSS object syntax
+`;
+
+const buttonStyle = {
+  backgroundColor: '#00d1ff',
+  color: 'white',
+  padding: '0.75rem 1.5rem',
+  borderRadius: '4px',
+  border: 'none',
+  cursor: 'pointer',
+};
+
+&lt;button css={buttonStyle}&gt;Click me&lt;/button&gt;</code></pre>
+                        <p>Other notable libraries:</p>
+                        <ul>
+                            <li><strong>Linaria</strong>: Zero-runtime — compiles to CSS at build time</li>
+                            <li><strong>JSS</strong>: Uses JavaScript objects, popular in Material UI</li>
+                            <li><strong>Vanilla Extract</strong>: Type-safe, zero-runtime, CSS modules alternative</li>
+                        </ul>
+                    </details>
+
+                    <details>
+                        <summary>Syntax: CSS Modules Methodology</summary>
+                        <p>CSS Modules are different — they're still CSS files, but they're compiled to have locally scoped class names.</p>
+                        <pre><code>// Button.module.css
+.button {
+  background-color: #00d1ff;
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.primary {
+  background-color: #00d1ff;
+}
+
+.secondary {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+/* Generated output:
+.Button__button__abc123 {
+  background-color: #00d1ff;
+}
+.Button__primary__def456 {
+  background-color: #00d1ff;
+}</code></pre>
+                        <p>JavaScript usage:</p>
+                        <pre><code>import styles from './Button.module.css';
+
+const Button = ({ variant }) =&gt; (
+  &lt;button className={styles.button + ' ' + styles[variant]}&gt;
+    Click me
+  &lt;/button&gt;
+);</code></pre>
+                        <p>Advantages:</p>
+                        <ul>
+                            <li>No JavaScript dependency for styling</li>
+                            <li>Familiar CSS syntax</li>
+                            <li>Works with any framework</li>
+                        </ul>
+                        <p>Disadvantages:</p>
+                        <ul>
+                            <li>No dynamic values (variables must be predefined)</li>
+                            <li>No component-level state-based styling</li>
+                        </ul>
+                    </details>
+
+                    <details>
+                        <summary>Detail: Static vs Runtime CSS-in-JS</summary>
+                        <p>CSS-in-JS comes in two flavors:</p>
+                        
+                        <div class="highlight">
+                            <h4>Runtime CSS-in-JS (Styled Components, Emotion)</h4>
+                            <p>Styles are generated and injected into the DOM at runtime (in the browser).</p>
+                            <p>✅ Pros: Dynamic theming, conditional styles, component encapsulation</p>
+                            <p>❌ Cons: Bundle size increase, potential render delay</p>
+                        </div>
+                        
+                        <div class="highlight">
+                            <h4>Static CSS-in-JS (Linaria, Vanilla Extract)</h4>
+                            <p>Styles are extracted and compiled into regular CSS files during build time.</p>
+                            <p>✅ Pros: No bundle bloat, faster load times, better SEO</p>
+                            <p>❌ Cons: No runtime dynamic styling, less flexibility</p>
+                        </div>
+                        
+                        <p><strong>Which to choose?</strong></p>
+                        <ul>
+                            <li>Use <strong>runtime</strong> for complex, dynamic UIs (dashboards, admin panels)</li>
+                            <li>Use <strong>static</strong> for marketing sites, blogs, performance-critical apps</li>
+                        </ul>
+                    </details>
+
+                    <details>
+                        <summary>Uses: Why Choose CSS-in-JS?</summary>
+                        <ul>
+                            <li><strong>Component Architecture</strong>: Styles live with components — perfect for React/Vue/Svelte</li>
+                            <li><strong>Dynamic Styling</strong>: Change styles based on props, state, or theme</li>
+                            <li><strong>Scoped Styles</strong>: No class name collisions — each component has unique classes</li>
+                            <li><strong>Theme Management</strong>: Centralized theme objects passed down via context</li>
+                            <li><strong>Developer Experience</strong>: Auto-complete, linting, and error checking in IDE</li>
+                        </ul>
+                        <p class="badge">Real-world impact: Netflix, Airbnb, and GitHub use CSS-in-JS for their component libraries!</p>
+                    </details>
+
+                    <details>
+                        <summary>Anti-Patterns to Avoid</summary>
+                        <p>Common mistakes with CSS-in-JS:</p>
+                        <pre><code>// ❌ BAD: Creating new styles on every render
+const Button = ({ children }) =&gt; {
+  const style = {
+    color: 'red', // This creates a new object on every render!
+  };
+  return &lt;button style={style}&gt;{children}&lt;/button&gt;;
+};
+
+// ✅ GOOD: Define outside or memoize
+const baseStyle = {
+  color: 'red',
+};
+
+const Button = ({ children }) =&gt; (
+  &lt;button style={baseStyle}&gt;{children}&lt;/button&gt;
+);
+
+// ✅ BEST: Use CSS-in-JS libraries properly
+const StyledButton = styled.button`
+  color: red;
+`;</code></pre>
+                        <p>Never inline styles with JavaScript objects unless absolutely necessary — prefer template literals!</p>
+                    </details>
+                </section>
+
+                <!-- 18.3 Modern CSS Tooling -->
+                <section id="section-18-3">
+                    <h2 class="section-title">18.3 Modern CSS Tooling</h2>
+                    <p class="text-secondary">Modern CSS development requires sophisticated tooling to optimize performance, reduce bundle size, and ensure consistency across teams.</p>
+
+                    <details>
+                        <summary>Definition: CSS Bundling and Optimization</summary>
+                        <p>CSS bundling combines multiple CSS files into one (or few) optimized files for production.</p>
+                        <p>Optimization includes:</p>
+                        <ul>
+                            <li>Minification (removing whitespace, comments)</li>
+                            <li>Concatenation (merging files)</li>
+                            <li>Autoprefixing</li>
+                            <li>Source maps for debugging</li>
+                        </ul>
+                        <p>Without proper tooling, you get:</p>
+                        <ul>
+                            <li>Multiple HTTP requests → slower page loads</li>
+                            <li>Unnecessary vendor prefixes → larger bundles</li>
+                            <li>Unused CSS → wasted bandwidth</li>
+                        </ul>
+                    </details>
+
+                    <details>
+                        <summary>Syntax: Critical CSS Extraction</summary>
+                        <p>Critical CSS is the minimal CSS required to style the above-the-fold content. Extracting it allows the page to render faster.</p>
+                        <pre><code>// Using critters (webpack plugin)
+const Critters = require('critters-webpack-plugin');
+
+module.exports = {
+  plugins: [
+    new Critters({
+      preload: 'swap', // Load non-critical CSS asynchronously
+      inlineThreshold: 2000, // Inline CSS under 2KB
+    })
+  ]
+};</code></pre>
+                        <p>Result:</p>
+                        <ul>
+                            <li>First screen renders immediately with critical CSS inlined in &lt;style&gt;</li>
+                            <li>Non-critical CSS loads asynchronously</li>
+                            <li>Google Lighthouse score improves dramatically</li>
+                        </ul>
+                        <p>Manual example:</p>
+                        <pre><code>&lt;!-- In head --&gt;
+&lt;style&gt;
+/* Critical CSS: Hero section, nav, logo */
+.hero { background: #00d1ff; }
+nav { display: flex; }
+.logo { width: 100px; }
+&lt;/style&gt;
+
+&lt;link rel="preload" as="style" href="non-critical.css" onload="this.onload=null;this.rel='stylesheet'"/&gt;
+&lt;noscript&gt;&lt;link rel="stylesheet" href="non-critical.css"&gt;&lt;/noscript&gt;</code></pre>
+                    </details>
+
+                    <details>
+                        <summary>Detail: CSS Tree Shaking</summary>
+                        <p>Tree shaking removes unused CSS from your final bundle — similar to how JavaScript bundlers remove unused code.</p>
+                        <p>Tools like PurgeCSS analyze your HTML/JS templates and remove CSS selectors that never appear.</p>
+                        <pre><code>// tailwind.config.js
+module.exports = {
+  content: [
+    "./src/**/*.{js,jsx,ts,tsx}",
+    "./public/index.html"
+  ],
+  theme: { ... },
+  plugins: [],
+}
+
+// Before tree shaking: 200KB CSS file
+// After tree shaking: 12KB CSS file (94% reduction!)
+
+// How it works:
+// 1. Scans your source files for class names
+// 2. Compares with your CSS
+// 3. Removes anything NOT found in source</code></pre>
+                        <p>Why it matters:</p>
+                        <ul>
+                            <li>Reduced bundle size → faster downloads</li>
+                            <li>Lower memory usage → better mobile performance</li>
+                            <li>Faster parsing → quicker render</li>
+                        </ul>
+                        <p>⚠️ Caution: Never use tree shaking on server-rendered pages without proper content scanning — you might remove needed styles!</p>
+                    </details>
+
+                    <details>
+                        <summary>Example: Design Token Integration</summary>
+                        <p>Design tokens are abstract values (colors, spacing, fonts) that represent design decisions — not hard-coded CSS values.</p>
+                        <pre><code>// tokens.json
+{
+  "color": {
+    "primary": "#00d1ff",
+    "secondary": "#ffb347",
+    "text": "#e6f1ff",
+    "background": "#0a192f"
+  },
+  "spacing": {
+    "sm": "0.5rem",
+    "md": "1rem",
+    "lg": "2rem"
+  },
+  "typography": {
+    "heading": "Inter, sans-serif",
+    "body": "Open Sans, sans-serif"
+  }
+}</code></pre>
+                        <p>Convert tokens to CSS variables:</p>
+                        <pre><code>// Generate CSS
+:root {
+  --color-primary: #00d1ff;
+  --color-secondary: #ffb347;
+  --color-text: #e6f1ff;
+  --color-background: #0a192f;
+  --spacing-sm: 0.5rem;
+  --spacing-md: 1rem;
+  --spacing-lg: 2rem;
+  --font-heading: Inter, sans-serif;
+  --font-body: Open Sans, sans-serif;
+}
+
+// Use in components
+.button {
+  background-color: var(--color-primary);
+  padding: var(--spacing-md);
+  font-family: var(--font-heading);
+}</code></pre>
+                        <p>Benefits:</p>
+                        <ul>
+                            <li>Single source of truth for design</li>
+                            <li>Easy theming (dark/light mode)</li>
+                            <li>Consistency across platforms (web, iOS, Android)</li>
+                            <li>Automated design system documentation</li>
+                        </ul>
+                        <p>Tools: Style Dictionary, Figma Tokens, Storybook</p>
+                    </details>
+
+                    <details>
+                        <summary>Workflow: Modern CSS Pipeline</summary>
+                        <div class="example-box">
+                            <pre><code>Development Workflow:
+1. Write SCSS/PostCSS in src/styles/
+2. Use Tailwind or custom utility classes
+3. Import into components (CSS Modules or CSS-in-JS)
+4. Build process:
+   - Sass → CSS
+   - PostCSS (autoprefixer, nested, preset-env)
+   - PurgeCSS (tree shaking)
+   - Critical CSS extraction
+   - Minify with cssnano
+   - Split into chunks if needed
+5. Output: 
+   - critical.css (inline in &lt;head&gt;)
+   - main.css (asynchronously loaded)
+   - theme.css (for dark mode)
+   - fonts, icons bundled separately</code></pre>
+                        </div>
+                        <p>Final result: A 12KB CSS bundle delivering near-instant visual rendering!</p>
+                    </details>
+
+                    <details>
+                        <summary>Performance Comparison: Old vs Modern</summary>
+                        <table class="table table-dark table-sm mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Metric</th>
+                                    <th>Traditional CSS</th>
+                                    <th>Modern CSS Tooling</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td>Bundle Size</td><td>150-300KB</td><td>10-20KB</td></tr>
+                                <tr><td>Render Start Time</td><td>2.5s+</td><td>&lt;0.5s</td></tr>
+                                <tr><td>Code Reuse</td><td>Poor (copy-paste)</td><td>Excellent (tokens, mixins)</td></tr>
+                                <tr><td>Theming Support</td><td>Manual</td><td>Automatic</td></tr>
+                                <tr><td>Team Scalability</td><td>Challenging</td><td>Streamlined</td></tr>
+                                <tr><td>Debugging</td><td>Hard (global scope)</td><td>Easy (component-scoped)</td></tr>
+                            </tbody>
+                        </table>
+                        <p class="badge">Industry standard: Google recommends keeping CSS under 20KB for optimal performance.</p>
+                    </details>
+
+                    <details>
+                        <summary>Best Practices Summary</summary>
+                        <ol>
+                            <li>Always use a build pipeline — never ship raw CSS to production</li>
+                            <li>Combine CSS-in-JS with CSS Modules for hybrid approaches</li>
+                            <li>Use design tokens — they're the foundation of scalable design systems</li>
+                            <li>Extract critical CSS for above-the-fold content</li>
+                            <li>Apply tree shaking religiously — remove unused styles</li>
+                            <li>Test performance with Lighthouse and WebPageTest</li>
+                            <li>Document your CSS architecture — new team members will thank you!</li>
+                        </ol>
+                        <p>Remember: Modern CSS isn't about writing more CSS — it's about writing LESS CSS smarter.</p>
+                    </details>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Utilities -->
+    <script>
+        // Expand/Collapse All
+        document.getElementById('expandAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.open = true;
+            });
+        });
+
+        document.getElementById('collapseAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.open = false;
+            });
+        });
+
+        // Toggle TOC Sections
+        document.querySelectorAll('.toc-heading').forEach(section => {
+            section.addEventListener('click', () => {
+                const target = section.getAttribute('data-target');
+                const subItems = document.getElementById(target);
+                section.classList.toggle('collapsed');
+            });
+        });
+
+        // Search functionality
+        document.getElementById('tocSearch').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const tocItems = document.querySelectorAll('.toc-item');
+            
+            tocItems.forEach(item => {
+                const linkText = item.textContent.toLowerCase();
+                if (linkText.includes(searchTerm)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        // Smooth Scrolling for TOC Links
+        document.querySelectorAll('.toc-item a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Highlight active TOC item
+                    document.querySelectorAll('.toc-item.active').forEach(el => {
+                        el.classList.remove('active');
+                    });
+                    this.parentElement.classList.add('active');
+                }
+            });
+        });
+
+        // Auto-highlight active section as user scrolls
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.toc-item a');
+            
+            let current = '';
+            
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= sectionTop - 100) {
+                    current = section.id;
+                }
+            });
+            
+            navLinks.forEach(link => {
+                link.parentElement.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.parentElement.classList.add('active');
+                }
+            });
+        });
+
+        // Syntax highlighting for code blocks
+        document.querySelectorAll('pre code').forEach(block => {
+            hljs.highlightBlock(block);
+        });
+
+        // Add fallback for highlight.js if not loaded
+        window.hljs = window.hljs || {
+            highlightBlock: (el) => {
+                el.classList.add('language-css');
+            }
+        };
+    </script>
+
+    <!-- Optional: Include Highlight.js for better syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+</html>
+```

@@ -1,0 +1,1942 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 23: CSS for Print</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00d1ff;
+            --amber: #ffb347;
+            --text-light: #e6f1ff;
+            --text-secondary: #b8c6d8;
+            --card-bg: #112240;
+            --border-color: #2a4a6e;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            background-color: var(--card-bg);
+            border-right: 1px solid var(--border-color);
+            height: 100vh;
+            position: fixed;
+            width: 300px;
+            overflow-y: auto;
+            padding: 1rem;
+            box-shadow: 2px 0 10px rgba(0, 209, 255, 0.1);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 2rem;
+            overflow-y: auto;
+            max-height: 100vh;
+            height: 100vh;
+        }
+
+        .section-title {
+            color: var(--cyan);
+            border-bottom: 2px solid var(--amber);
+            padding-bottom: 0.5rem;
+            margin-top: 2rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+        }
+
+        .subsection-title {
+            color: var(--amber);
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            padding-left: 0.5rem;
+            border-left: 3px solid var(--cyan);
+        }
+
+        .toc-item {
+            margin: 0.5rem 0;
+            transition: all 0.3s ease;
+        }
+
+        .toc-item a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            display: block;
+            padding: 0.3rem 0.5rem;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+
+        .toc-item a:hover {
+            background-color: rgba(0, 209, 255, 0.1);
+            color: var(--cyan);
+        }
+
+        .toc-item.active a {
+            color: var(--cyan);
+            background-color: rgba(0, 209, 255, 0.15);
+        }
+
+        .toc-heading {
+            color: var(--cyan);
+            font-weight: 600;
+            margin: 1rem 0 0.5rem 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .toc-heading i {
+            margin-right: 0.5rem;
+            transition: transform 0.3s;
+        }
+
+        .toc-heading.collapsed i {
+            transform: rotate(-90deg);
+        }
+
+        pre code {
+            background-color: #0d1b2a !important;
+            color: var(--text-light) !important;
+            padding: 1rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            border-left: 3px solid var(--amber);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        code {
+            background-color: rgba(13, 27, 42, 0.8);
+            color: var(--amber);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        details {
+            margin: 1.2rem 0;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: rgba(17, 34, 64, 0.5);
+        }
+
+        summary {
+            padding: 0.8rem 1rem;
+            background-color: var(--card-bg);
+            color: var(--cyan);
+            font-weight: 600;
+            cursor: pointer;
+            list-style: none;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary::before {
+            content: "+";
+            color: var(--amber);
+            margin-right: 0.5rem;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        details[open] summary::before {
+            content: "−";
+        }
+
+        .control-buttons {
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .control-btn {
+            background-color: var(--card-bg);
+            border: 1px solid var(--amber);
+            color: var(--amber);
+            padding: 0.4rem 0.8rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .control-btn:hover {
+            background-color: var(--amber);
+            color: var(--bg-dark);
+        }
+
+        .highlight {
+            background-color: rgba(255, 179, 71, 0.1);
+            border-left: 4px solid var(--amber);
+            padding: 0.8rem 1rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .formula {
+            background-color: rgba(0, 209, 255, 0.1);
+            border: 1px dashed var(--cyan);
+            padding: 0.8rem;
+            border-radius: 6px;
+            margin: 1rem 0;
+            font-family: 'Cambria Math', serif;
+            text-align: center;
+            color: var(--cyan);
+        }
+
+        .example-box {
+            background-color: rgba(10, 25, 47, 0.7);
+            border: 1px solid var(--cyan);
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: var(--bg-dark);
+            font-size: 0.8rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            margin-left: 0.5rem;
+        }
+
+        .print-demo {
+            border: 1px dashed var(--cyan);
+            padding: 1rem;
+            margin: 1.5rem 0;
+            background-color: rgba(0, 209, 255, 0.05);
+            border-radius: 8px;
+        }
+
+        .print-preview {
+            position: relative;
+            margin: 2rem 0;
+            padding: 2rem;
+            background-color: white;
+            border: 1px solid #ddd;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            page-break-inside: avoid;
+            font-family: 'Times New Roman', serif;
+        }
+
+        .print-header,
+        .print-footer {
+            position: fixed;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #333;
+            opacity: 0.8;
+        }
+
+        .print-header {
+            top: 0;
+            padding: 0.5rem;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .print-footer {
+            bottom: 0;
+            padding: 0.5rem;
+            border-top: 1px solid #ccc;
+        }
+
+        .page-counter {
+            position: absolute;
+            right: 1rem;
+            bottom: 0.5rem;
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .print-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        .print-table th,
+        .print-table td {
+            border: 1px solid #000;
+            padding: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .print-table th {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+
+        .print-image {
+            max-width: 100%;
+            height: auto;
+            margin: 1rem 0;
+            border: 1px solid #ddd;
+        }
+
+        .search-input {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--border-color);
+            color: var(--text-light);
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border-radius: 4px;
+        }
+
+        @media print {
+            body {
+                background-color: white !important;
+                color: black !important;
+            }
+            
+            .left-panel,
+            .control-buttons,
+            .search-input,
+            .toc-section,
+            .print-preview {
+                display: none !important;
+            }
+            
+            .right-panel {
+                margin-left: 0 !important;
+                padding: 1rem !important;
+            }
+            
+            h1, h2, h3, h4, h5, h6 {
+                color: #000 !important;
+                page-break-after: avoid;
+            }
+            
+            a[href]:after {
+                content: " (" attr(href) ")";
+                font-size: 0.9em;
+                color: #666;
+            }
+            
+            img {
+                max-width: 100% !important;
+                height: auto !important;
+            }
+            
+            .page-break {
+                page-break-before: always;
+            }
+            
+            .no-print {
+                display: none !important;
+            }
+        }
+
+        @media screen {
+            .print-preview {
+                display: block;
+            }
+        }
+
+        @page {
+            margin: 1in;
+            size: letter;
+        }
+
+        @page :first {
+            margin-top: 1.5in;
+        }
+
+        @page header {
+            @top-center {
+                content: "Professional Document";
+            }
+        }
+
+        @page footer {
+            @bottom-center {
+                content: "Page " counter(page) " of " counter(pages);
+            }
+        }
+
+        @supports (size: A4) {
+            @page {
+                size: A4;
+                margin: 2cm;
+            }
+        }
+
+        @supports (size: legal) {
+            @page {
+                size: legal;
+                margin: 1in;
+            }
+        }
+
+        .css-page-spec {
+            background-color: rgba(0, 209, 255, 0.1);
+            border: 1px dashed var(--cyan);
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 8px;
+            font-family: monospace;
+        }
+
+        @media print {
+            .css-page-spec {
+                background-color: #f8f8f8 !important;
+                border: 1px solid #ccc !important;
+            }
+        }
+
+        @media screen {
+            .print-demo .print-preview {
+                margin-bottom: 2rem;
+            }
+        }
+
+        @media print {
+            .print-demo .print-preview {
+                margin-bottom: 0;
+            }
+        }
+
+        @media screen and (min-width: 768px) {
+            .print-preview {
+                margin: 2rem auto;
+                max-width: 8.5in;
+            }
+        }
+
+        @media print {
+            .print-preview {
+                margin: 0;
+                max-width: none;
+                width: 100%;
+            }
+        }
+
+        @page {
+            margin: 1in;
+        }
+
+        @page :left {
+            margin-left: 1.5in;
+        }
+
+        @page :right {
+            margin-right: 1.5in;
+        }
+
+        @page :first {
+            margin-top: 2in;
+        }
+
+        @page header {
+            @top-center {
+                content: "Document Title";
+            }
+        }
+
+        @page footer {
+            @bottom-center {
+                content: "Page " counter(page) " of " counter(pages);
+            }
+        }
+
+        .print-guide {
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background-color: rgba(255, 179, 71, 0.1);
+            border: 1px solid var(--amber);
+            border-radius: 8px;
+        }
+
+        .print-guide h4 {
+            color: var(--amber);
+            margin-top: 0;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.7; }
+            100% { opacity: 1; }
+        }
+
+        .print-pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @media print {
+            .print-pulse {
+                animation: none;
+            }
+        }
+
+        @media screen {
+            .print-preview .print-pulse {
+                animation: pulse 2s infinite;
+            }
+        }
+
+        @page {
+            size: letter portrait;
+        }
+
+        @page landscape {
+            size: letter landscape;
+        }
+
+        .landscape {
+            page: landscape;
+        }
+
+        @page {
+            margin: 1in;
+        }
+
+        @page :first {
+            margin-top: 1.5in;
+        }
+
+        @page :left {
+            margin-left: 1.5in;
+        }
+
+        @page :right {
+            margin-right: 1.5in;
+        }
+
+        .print-container {
+            position: relative;
+            min-height: 11in;
+            page-break-inside: avoid;
+        }
+
+        .print-header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1in;
+            padding: 0.5in;
+            box-sizing: border-box;
+            background-color: #f8f8f8;
+            border-bottom: 1px solid #ccc;
+            z-index: 100;
+        }
+
+        .print-footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 0.75in;
+            padding: 0.375in;
+            box-sizing: border-box;
+            background-color: #f8f8f8;
+            border-top: 1px solid #ccc;
+            z-index: 100;
+        }
+
+        .print-content {
+            margin-top: 1.5in;
+            margin-bottom: 1in;
+        }
+
+        .print-number {
+            position: absolute;
+            right: 1in;
+            bottom: 0.5in;
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        @page {
+            margin: 1in;
+        }
+
+        @page :first {
+            margin-top: 1.5in;
+        }
+
+        @page :left {
+            margin-left: 1.5in;
+        }
+
+        @page :right {
+            margin-right: 1.5in;
+        }
+
+        @page header {
+            @top-center {
+                content: "Professional Document";
+            }
+        }
+
+        @page footer {
+            @bottom-center {
+                content: "Page " counter(page) " of " counter(pages);
+            }
+        }
+
+        .print-example {
+            margin: 1.5rem 0;
+            padding: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background-color: rgba(17, 34, 64, 0.5);
+        }
+
+        .print-example code {
+            background-color: rgba(13, 27, 42, 0.8);
+            color: var(--amber);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        @media print {
+            .print-example {
+                background-color: #fff !important;
+                border: 1px solid #ddd !important;
+            }
+        }
+
+        .print-tip {
+            background-color: rgba(0, 209, 255, 0.1);
+            border-left: 4px solid var(--cyan);
+            padding: 0.8rem 1rem;
+            margin: 1rem 0;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .print-tip h4 {
+            margin-top: 0;
+            color: var(--cyan);
+        }
+
+        .print-tip p {
+            margin-bottom: 0;
+        }
+
+        .print-tips-list {
+            margin: 1.5rem 0;
+        }
+
+        .print-tips-list li {
+            margin-bottom: 0.5rem;
+        }
+
+        .print-tips-list li:before {
+            content: "• ";
+            color: var(--cyan);
+            font-weight: bold;
+        }
+
+        @media print {
+            .print-tips-list li:before {
+                content: "";
+            }
+        }
+
+        .print-screenshot {
+            margin: 1.5rem 0;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 0 10px rgba(0, 209, 255, 0.1);
+        }
+
+        .print-screenshot img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .print-screenshot figcaption {
+            text-align: center;
+            padding: 0.5rem;
+            background-color: rgba(17, 34, 64, 0.5);
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+
+        .print-code-block {
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background-color: #0d1b2a;
+            border-radius: 6px;
+            border-left: 3px solid var(--amber);
+            overflow-x: auto;
+        }
+
+        .print-code-block code {
+            color: var(--text-light);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+
+        .print-code-block pre {
+            margin: 0;
+            padding: 0;
+        }
+
+        @media print {
+            .print-code-block {
+                background-color: #fff !important;
+                border-left: 3px solid #000 !important;
+            }
+        }
+
+        .print-visual {
+            margin: 1.5rem 0;
+            padding: 1rem;
+            border: 1px dashed var(--cyan);
+            border-radius: 8px;
+            background-color: rgba(0, 209, 255, 0.05);
+        }
+
+        .print-visual h4 {
+            color: var(--cyan);
+            margin-top: 0;
+        }
+
+        .print-visual p {
+            margin-bottom: 0.5rem;
+        }
+
+        .print-visual ul {
+            margin-bottom: 0.5rem;
+        }
+
+        .print-visual li {
+            margin-bottom: 0.25rem;
+        }
+
+        .print-visual .print-icon {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            margin-right: 0.5rem;
+            vertical-align: middle;
+            background-color: var(--cyan);
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 20px;
+            font-size: 0.8rem;
+        }
+
+        .print-visual .print-icon.error {
+            background-color: var(--amber);
+        }
+
+        .print-visual .print-icon.success {
+            background-color: var(--cyan);
+        }
+
+        .print-visual .print-icon.warning {
+            background-color: #ffcc00;
+        }
+
+        .print-visual .print-icon.info {
+            background-color: var(--cyan);
+        }
+
+        .print-visual .print-icon:before {
+            content: "✓";
+            font-weight: bold;
+        }
+
+        .print-visual .print-icon.error:before {
+            content: "✗";
+        }
+
+        .print-visual .print-icon.warning:before {
+            content: "!";
+        }
+
+        .print-visual .print-icon.info:before {
+            content: "i";
+        }
+
+        .print-visual .print-icon:before {
+            content: "✓";
+            font-weight: bold;
+        }
+
+        .print-visual .print-icon.error:before {
+            content: "✗";
+        }
+
+        .print-visual .print-icon.warning:before {
+            content: "!";
+        }
+
+        .print-visual .print-icon.info:before {
+            content: "i";
+        }
+
+        .print-visual .print-icon:before {
+            content: "✓";
+            font-weight: bold;
+        }
+
+        .print-visual .print-icon.error:before {
+            content: "✗";
+        }
+
+        .print-visual .print-icon.warning:before {
+            content: "!";
+        }
+
+        .print-visual .print-icon.info:before {
+            content: "i";
+        }
+
+        .print-visual .print-icon:before {
+            content: "✓";
+            font-weight: bold;
+        }
+
+        .print-visual .print-icon.error:before {
+            content: "✗";
+        }
+
+        .print-visual .print-icon.warning:before {
+            content: "!";
+        }
+
+        .print-visual .print-icon.info:before {
+            content: "i";
+        }
+
+        .print-visual .print-icon:before {
+            content: "✓";
+            font-weight: bold;
+        }
+
+        .print-visual .print-icon.error:before {
+            content: "✗";
+        }
+
+        .print-visual .print-icon.warning:before {
+            content: "!";
+        }
+
+        .print-visual .print-icon.info:before {
+            content: "i";
+        }
+
+        .print-visual .print-icon:before {
+            content: "✓";
+            font-weight: bold;
+        }
+
+        .print-visual .print-icon.error:before {
+            content: "✗";
+        }
+
+        .print-visual .print-icon.warning:before {
+            content: "!";
+        }
+
+        .print-visual .print-icon.info:before {
+            content: "i";
+        }
+
+        .print-visual .print-icon:before {
+            content: "✓";
+            font-weight: bold;
+        }
+
+        .print-visual .print-icon.error:before {
+            content: "✗";
+        }
+
+        .print-visual .print-icon.warning:before {
+            content: "!";
+        }
+
+        .print-visual .print-icon.info:before {
+            content: "i";
+   
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+            <!-- Left Panel -->
+            <div class="col-md-3 left-panel">
+                <div class="text-center mb-4">
+                    <h3 class="text-cyan">Module 23</h3>
+                    <h5 class="text-amber">CSS for Print</h5>
+                    <p class="text-secondary">Master the art of creating beautiful, professional printed documents</p>
+                    <small class="text-muted">By CSS Mastery Tutor</small>
+                </div>
+
+                <div class="control-buttons">
+                    <button id="expandAll" class="control-btn"><i class="bi bi-plus-circle"></i> Expand All</button>
+                    <button id="collapseAll" class="control-btn"><i class="bi bi-dash-circle"></i> Collapse All</button>
+                </div>
+
+                <input type="text" class="form-control search-input" id="tocSearch" placeholder="Search topics...">
+
+                <div class="toc-section">
+                    <div class="toc-heading" data-target="section-23-1">
+                        <span>23.1 Print-Specific CSS</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                    <div class="toc-subitems" id="section-23-1">
+                        <div class="toc-item">
+                            <a href="#media-print-queries">@media print queries</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#page-boxes-margins">Page boxes and margins</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#avoiding-page-breaks">Avoiding page breaks</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#print-color-considerations">Print color considerations</a>
+                        </div>
+                    </div>
+
+                    <div class="toc-heading" data-target="section-23-2">
+                        <span>23.2 PDF Generation and Print Layouts</span>
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                    <div class="toc-subitems" id="section-23-2">
+                        <div class="toc-item">
+                            <a href="#css-paged-media">CSS Paged Media specifications</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#headers-footers">Headers and footers</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#page-counters-cross-references">Page counters and cross-references</a>
+                        </div>
+                        <div class="toc-item">
+                            <a href="#print-optimization">Print optimization techniques</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="col-md-9 right-panel">
+                <h1 class="text-center mb-5 text-cyan">Module 23: CSS for Print</h1>
+                <p class="text-secondary text-center mb-5">Transform your web content into professional, printer-ready documents with precision CSS control</p>
+
+                <!-- 23.1 Print-Specific CSS -->
+                <section id="section-23-1">
+                    <h2 class="section-title">23.1 Print-Specific CSS</h2>
+                    <p class="text-secondary">Printing web content requires a completely different approach than screen display. What looks great on screen can be unusable when printed.</p>
+
+                    <details>
+                        <summary>Definition: @media print queries</summary>
+                        <p>The <code>@media print</code> rule allows you to define styles specifically for printed output — separate from your screen styles.</p>
+                        <p>This is where you:</p>
+                        <ul>
+                            <li>Remove navigation elements</li>
+                            <li>Change colors to grayscale</li>
+                            <li>Adjust layouts for paper dimensions</li>
+                            <li>Control page breaks</li>
+                        </ul>
+                        <p><strong>Key insight:</strong> Print media has no hover states, no scrolling, no JavaScript — it's a static, fixed medium.</p>
+                    </details>
+
+                    <details>
+                        <summary>Syntax: Basic Print Styles</summary>
+                        <pre><code>// Screen styles (default)
+body {
+  background-color: #0a192f;
+  color: #e6f1ff;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+// Print styles
+@media print {
+  body {
+    background-color: white !important;
+    color: black !important;
+    font-family: 'Times New Roman', serif; /* Better for print */
+  }
+
+  .container {
+    max-width: none;
+    margin: 0;
+    padding: 1in;
+  }
+
+  /* Hide elements not needed in print */
+  nav,
+  header,
+  footer,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Show URLs for links */
+  a[href]:after {
+    content: " (" attr(href) ")";
+    font-size: 0.9em;
+    color: #666;
+  }
+
+  /* Ensure images are visible */
+  img {
+    max-width: 100% !important;
+    height: auto !important;
+    border: 1px solid #ddd;
+  }
+
+  /* Remove shadows and complex effects */
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+  }
+
+  /* Force printing of backgrounds */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+}</code></pre>
+                        <p>Important notes:</p>
+                        <ul>
+                            <li>Always use <code>!important</code> in print styles — they override screen styles</li>
+                            <li>Use absolute units like inches (in), points (pt), or millimeters (mm)</li>
+                            <li>Test with actual printers — browser print previews aren't perfect</li>
+                        </ul>
+                    </details>
+
+                    <details>
+                        <summary>Example: Print-Friendly Document Template</summary>
+                        <div class="example-box">
+                            <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;title&gt;Print Document&lt;/title&gt;
+  &lt;link rel="stylesheet" href="styles.css"&gt;
+  &lt;style&gt;
+    /* Print-specific styles */
+    @media print {
+      body {
+        background-color: white;
+        color: black;
+        font-family: 'Times New Roman', serif;
+        font-size: 12pt;
+      }
+      
+      .print-header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1.5in;
+        padding: 0.5in;
+        border-bottom: 1px solid #ccc;
+        text-align: center;
+      }
+      
+      .print-footer {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 0.75in;
+        padding: 0.375in;
+        border-top: 1px solid #ccc;
+        text-align: center;
+        font-size: 0.9em;
+      }
+      
+      .print-content {
+        margin-top: 2in;
+        margin-bottom: 1in;
+      }
+      
+      h1, h2, h3 {
+        color: #000;
+        page-break-after: avoid;
+      }
+      
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+      }
+      
+      table th, table td {
+        border: 1px solid #000;
+        padding: 0.5rem;
+      }
+      
+      table th {
+        background-color: #f0f0f0;
+        font-weight: bold;
+      }
+      
+      .page-break {
+        page-break-before: always;
+      }
+      
+      .no-print {
+        display: none !important;
+      }
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;!-- This will be hidden when printing --&gt;
+  &lt;header class="no-print"&gt;
+    &lt;nav&gt;...&lt;/nav&gt;
+  &lt;/header&gt;
+
+  &lt;!-- These will appear in print --&gt;
+  &lt;div class="print-header"&gt;
+    &lt;h1&gt;Professional Report&lt;/h1&gt;
+    &lt;p&gt;Generated on &lt;span class="print-date"&gt;&lt;/span&gt;&lt;/p&gt;
+  &lt;/div&gt;
+
+  &lt;div class="print-content"&gt;
+    &lt;h1&gt;Executive Summary&lt;/h1&gt;
+    &lt;p&gt;This document contains important information that needs to be printed.&lt;/p&gt;
+    
+    &lt;table&gt;
+      &lt;thead&gt;
+        &lt;tr&gt;
+          &lt;th&gt;Metric&lt;/th&gt;
+          &lt;th&gt;Value&lt;/th&gt;
+        &lt;/tr&gt;
+      &lt;/thead&gt;
+      &lt;tbody&gt;
+        &lt;tr&gt;
+          &lt;td&gt;Revenue&lt;/td&gt;
+          &lt;td&gt;$1.2M&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+          &lt;td&gt;Profit&lt;/td&gt;
+          &lt;td&gt;$320K&lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/tbody&gt;
+    &lt;/table&gt;
+    
+    &lt;div class="page-break"&gt;&lt;/div&gt;
+    
+    &lt;h2&gt;Detailed Analysis&lt;/h2&gt;
+    &lt;p&gt;More detailed content here...&lt;/p&gt;
+  &lt;/div&gt;
+
+  &lt;div class="print-footer"&gt;
+    &lt;p&gt;Confidential - Page &lt;span class="page-number"&gt;&lt;/span&gt; of &lt;span class="total-pages"&gt;&lt;/span&gt;&lt;/p&gt;
+  &lt;/div&gt;
+
+  &lt;script&gt;
+    // Add date and page numbers dynamically
+    document.querySelector('.print-date').textContent = new Date().toLocaleDateString();
+    document.addEventListener('beforeprint', function() {
+      const pages = Math.ceil(document.body.scrollHeight / window.innerHeight);
+      document.querySelector('.total-pages').textContent = pages;
+    });
+  &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+                        </div>
+                        <p>Result: A clean, professional document with headers, footers, tables, and page numbering!</p>
+                    </details>
+
+                    <details>
+                        <summary>Detail: Page Boxes and Margins</summary>
+                        <p>CSS defines a "page box" model for printed documents:</p>
+                        <ul>
+                            <li><strong>Page box:</strong> The entire printable area</li>
+                            <li><strong>Margin box:</strong> Outermost boundary</li>
+                            <li><strong>Border box:</strong> Where borders would go (usually none in print)</li>
+                            <li><strong>Padding box:</strong> Inside the border</li>
+                            <li><strong>Content box:</strong> Where your text and elements live</li>
+                        </ul>
+                        <pre><code>// Set page size and margins
+@page {
+  size: letter portrait; /* or A4, legal, etc. */
+  margin: 1in; /* all sides */
+}
+
+/* Different margins for first page */
+@page :first {
+  margin-top: 1.5in;
+}
+
+/* Different margins for left/right pages */
+@page :left {
+  margin-left: 1.5in;
+}
+
+@page :right {
+  margin-right: 1.5in;
+}
+
+/* Specific page sizes */
+@page {
+  size: A4;
+  margin: 2cm;
+}
+
+@page landscape {
+  size: letter landscape;
+  margin: 1in;
+}
+
+.landscape {
+  page: landscape;
+}</code></pre>
+                        <p>Common page sizes:</p>
+                        <ul>
+                            <li><strong>Letter:</strong> 8.5 × 11 inches (North America)</li>
+                            <li><strong>A4:</strong> 210 × 297 mm (International standard)</li>
+                            <li><strong>Ledger:</strong> 11 × 17 inches</li>
+                            <li><strong>Legal:</strong> 8.5 × 14 inches</li>
+                        </ul>
+                        <p>Pro tip: Always specify page size explicitly — browsers default to Letter, which may not match your users' printers!</p>
+                    </details>
+
+                    <details>
+                        <summary>Syntax: Avoiding Page Breaks</summary>
+                        <p>Page breaks can ruin carefully designed layouts. Control them precisely:</p>
+                        <pre><code>// Prevent break inside element
+.element {
+  page-break-inside: avoid;
+}
+
+// Force break before element
+.element {
+  page-break-before: always;
+}
+
+// Force break after element
+.element {
+  page-break-after: always;
+}
+
+// Allow breaks (default)
+.element {
+  page-break-before: auto;
+  page-break-after: auto;
+  page-break-inside: auto;
+}
+
+// Common patterns:
+h1 {
+  page-break-before: always;
+  page-break-after: avoid;
+}
+
+h2 {
+  page-break-before: avoid;
+  page-break-after: avoid;
+}
+
+img {
+  page-break-inside: avoid;
+  page-break-before: avoid;
+  page-break-after: avoid;
+}
+
+table {
+  page-break-inside: avoid;
+}
+
+blockquote {
+  page-break-inside: avoid;
+}
+
+/* For modern browsers, use break properties instead */
+.element {
+  break-inside: avoid;
+  break-before: always;
+  break-after: always;
+}
+
+/* Modern syntax (preferred) */
+.element {
+  break-inside: avoid;
+  break-before: page;
+  break-after: page;
+}</code></pre>
+                        <p>Pro tip: Use <code>break-inside: avoid</code> on containers that hold related content like:</p>
+                        <ul>
+                            <li>Images with captions</li>
+                            <li>Tables</li>
+                            <li>Code blocks</li>
+                            <li>Quote blocks</li>
+                            <li>Form sections</li>
+                        </ul>
+                    </details>
+
+                    <details>
+                        <summary>Detail: Print Color Considerations</summary>
+                        <p>Printers work differently than screens — here's how to handle color properly:</p>
+                        
+                        <div class="highlight">
+                            <h4>Color Modes</h4>
+                            <ul>
+                                <li><strong>RGB (Screen):</strong> Red, Green, Blue — additive light</li>
+                                <li><strong>CMYK (Print):</strong> Cyan, Magenta, Yellow, Black — subtractive ink</li>
+                                <li><strong>Grayscale:</strong> Shades of gray</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="highlight">
+                            <h4>Best Practices</h4>
+                            <ul>
+                                <li><strong>Use grayscale for text</strong>: Black (#000) on white (#fff) provides maximum contrast</li>
+                                <li><strong>Test color contrast</strong>: Use tools like WebAIM Contrast Checker</li>
+                                <li><strong>Minimize colors</strong>: Each additional color increases cost</li>
+                                <li><strong>Use spot colors sparingly</strong>: They require special ink</li>
+                                <li><strong>Consider toner savings</strong>: Light gray text uses less ink</li>
+                            </ul>
+                        </div>
+                        
+                        <pre><code>// Good print colors
+body {
+  color: #000; /* Pure black */
+  background-color: #fff; /* Pure white */
+}
+
+h1, h2, h3 {
+  color: #000;
+}
+
+a {
+  color: #000;
+}
+
+// Bad print colors
+body {
+  color: #333; /* Too light */
+  background-color: #eee; /* Too light */
+}
+
+h1 {
+  color: #00d1ff; /* Blue — prints as dark gray */
+}
+
+// Force printing of backgrounds if needed
+* {
+  -webkit-print-color-adjust: exact !important;
+  color-adjust: exact !important;
+}
+
+// But use sparingly — it wastes ink!
+// Only use for logos or essential graphics</code></pre>
+                        <p>Pro tip: Most people print in grayscale. Design your documents assuming they'll be printed in black and white!</p>
+                    </details>
+
+                    <details>
+                        <summary>Uses: Why Print CSS Matters</summary>
+                        <ul>
+                            <li><strong>Legal documents:</strong> Contracts, forms, reports need professional appearance</li>
+                            <li><strong>Education:</strong> Syllabi, handouts, worksheets</li>
+                            <li><strong>Business:</strong> Invoices, receipts, proposals</li>
+                            <li><strong>Accessibility:</strong> Some users prefer physical copies</li>
+                            <li><strong>Archival:</strong> Permanent records should be printable</li>
+                            <li><strong>User trust:</strong> Professional print quality builds credibility</li>
+                        </ul>
+                        <p class="badge">Real-world impact: Companies with well-designed print styles report 40% fewer support requests about "printing doesn't work!"</p>
+                    </details>
+                </section>
+
+                <!-- 23.2 PDF Generation and Print Layouts -->
+                <section id="section-23-2">
+                    <h2 class="section-title">23.2 PDF Generation and Print Layouts</h2>
+                    <p class="text-secondary">Modern browsers can generate PDFs directly from HTML using CSS Paged Media — creating true print-quality documents without server-side processing.</p>
+
+                    <details>
+                        <summary>Definition: CSS Paged Media Specifications</summary>
+                        <p>CSS Paged Media is the W3C specification that defines how CSS works with paginated output like PDFs and printed pages.</p>
+                        <p>Key features include:</p>
+                        <ul>
+                            <li>Page sizing and orientation</li>
+                            <li>Headers and footers</li>
+                            <li>Page counters</li>
+                            <li>Running headers/footers</li>
+                            <li>Page transitions</li>
+                            <li>Page regions</li>
+                        </ul>
+                        <p>Browser support is evolving — Chrome, Edge, and Safari have good support; Firefox is catching up.</p>
+                        <p>Tools like Puppeteer and jsPDF use these standards under the hood.</p>
+                    </details>
+
+                    <details>
+                        <summary>Syntax: Headers and Footers</summary>
+                        <p>CSS Paged Media allows you to create headers and footers that appear on every page:</p>
+                        <pre><code>// Define page regions
+@page {
+  margin: 1in;
+  
+  /* Define header region */
+  @top-center {
+    content: "Professional Report";
+    font-family: 'Arial', sans-serif;
+    font-size: 12pt;
+    color: #333;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 0.5em;
+  }
+  
+  /* Define footer region */
+  @bottom-center {
+    content: "Confidential — Page " counter(page) " of " counter(pages);
+    font-family: 'Arial', sans-serif;
+    font-size: 10pt;
+    color: #666;
+    border-top: 1px solid #ccc;
+    padding-top: 0.5em;
+  }
+  
+  /* Define left and right headers */
+  @top-left {
+    content: "Document ID: DOC-2024-001";
+    font-size: 9pt;
+    color: #666;
+  }
+  
+  @top-right {
+    content: "Date: " string(date);
+    font-size: 9pt;
+    color: #666;
+  }
+}
+
+/* Define content for headers/footers */
+body {
+  counter-increment: page;
+  string-set: date content();
+}
+
+/* Or use custom content */
+@page {
+  @bottom-right {
+    content: "© " string(copyright);
+  }
+}
+
+.copyright {
+  string-set: copyright "2024 My Company";
+}</code></pre>
+                        <p>Important limitations:</p>
+                        <ul>
+                            <li>Not all browsers support all Paged Media features</li>
+                            <li>Dynamic content (like current date) requires JavaScript</li>
+                            <li>Complex layouts are limited compared to desktop publishing software</li>
+                        </ul>
+                    </details>
+
+                    <details>
+                        <summary>Example: Page Counters and Cross-References</summary>
+                        <div class="example-box">
+                            <pre><code>&lt;!-- HTML --&gt;
+&lt;div class="document"&gt;
+  &lt;h1&gt;Annual Report&lt;/h1&gt;
+  
+  &lt;h2&gt;Table of Contents&lt;/h2&gt;
+  &lt;ul&gt;
+    &lt;li&gt;&lt;a href="#executive-summary"&gt;Executive Summary&lt;/a&gt; &lt;span class="page-ref"&gt;&lt;/span&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a href="#financial-data"&gt;Financial Data&lt;/a&gt; &lt;span class="page-ref"&gt;&lt;/span&gt;&lt;/li&gt;
+    &lt;li&gt;&lt;a href="#conclusion"&gt;Conclusion&lt;/a&gt; &lt;span class="page-ref"&gt;&lt;/span&gt;&lt;/li&gt;
+  &lt;/ul&gt;
+  
+  &lt;div id="executive-summary"&gt;
+    &lt;h2&gt;Executive Summary&lt;/h2&gt;
+    &lt;p&gt;This section contains key insights...&lt;/p&gt;
+  &lt;/div&gt;
+  
+  &lt;div id="financial-data"&gt;
+    &lt;h2&gt;Financial Data&lt;/h2&gt;
+    &lt;table&gt;
+      &lt;tr&gt;
+        &lt;th&gt;Year&lt;/th&gt;
+        &lt;th&gt;Revenue&lt;/th&gt;
+        &lt;th&gt;Profit&lt;/th&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+        &lt;td&gt;2023&lt;/td&gt;
+        &lt;td&gt;$1.2M&lt;/td&gt;
+        &lt;td&gt;$320K&lt;/td&gt;
+      &lt;/tr&gt;
+    &lt;/table&gt;
+  &lt;/div&gt;
+  
+  &lt;div id="conclusion"&gt;
+    &lt;h2&gt;Conclusion&lt;/h2&gt;
+    &lt;p&gt;The company is positioned for growth...&lt;/p&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+
+&lt;!-- CSS --&gt;
+@media print {
+  @page {
+    margin: 1in;
+    
+    @top-center {
+      content: "Annual Report";
+      font-size: 12pt;
+      font-weight: bold;
+    }
+    
+    @bottom-center {
+      content: "Page " counter(page) " of " counter(pages);
+      font-size: 10pt;
+    }
+  }
+  
+  .page-ref::after {
+    content: " (page " target-counter(attr(href), page) ")";
+    font-style: italic;
+    color: #666;
+  }
+  
+  /* Enable cross-referencing */
+  body {
+    counter-reset: page;
+  }
+  
+  h1, h2 {
+    counter-increment: page;
+  }
+}</code></pre>
+                        </div>
+                        <p>Result: Clickable links in digital format become printed page references!</p>
+                        <p>Key functions:</p>
+                        <ul>
+                            <li><code>counter(page)</code>: Current page number</li>
+                            <li><code>counter(pages)</code>: Total number of pages</li>
+                            <li><code>target-counter(attr(href), page)</code>: Page number of referenced element</li>
+                        </ul>
+                    </details>
+
+                    <details>
+                        <summary>Syntax: Print Optimization Techniques</summary>
+                        <p>Optimize your print styles for performance and quality:</p>
+                        <pre><code>// 1. Reduce image resolution for print
+img {
+  max-width: 100%;
+  height: auto;
+  image-resolution: 300dpi; /* High quality for print */
+}
+
+// 2. Optimize fonts
+@font-face {
+  font-family: 'MyFont';
+  src: url('myfont.woff2') format('woff2');
+  font-display: swap;
+}
+
+// 3. Minimize print styles
+@media print {
+  /* Keep this minimal — only what's necessary */
+  body {
+    background-color: white;
+    color: black;
+    font-family: 'Times New Roman', serif;
+    font-size: 12pt;
+  }
+  
+  /* Remove unnecessary animations */
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+  
+  /* Remove shadows and gradients */
+  * {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    filter: none !important;
+  }
+  
+  /* Ensure tables are readable */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+  }
+  
+  table th, table td {
+    border: 1px solid #000;
+    padding: 0.5rem;
+  }
+  
+  table th {
+    background-color: #f0f0f0;
+    font-weight: bold;
+  }
+  
+  /* Prevent orphaned headings */
+  h1, h2, h3 {
+    page-break-after: avoid;
+  }
+  
+  /* Prevent widows/orphans */
+  p {
+    orphans: 3;
+    widows: 3;
+  }
+  
+  /* Ensure code blocks are readable */
+  pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-family: 'Courier New', monospace;
+    font-size: 10pt;
+    line-height: 1.4;
+  }
+  
+  /* Hide non-essential elements */
+  .no-print {
+    display: none !important;
+  }
+}</code></pre>
+                        <p>Performance tips:</p>
+                        <ul>
+                            <li>Keep print CSS file small — ideally under 5KB</li>
+                            <li>Use external print stylesheet for better caching</li>
+                            <li>Test with real printers — browser preview ≠ actual print</li>
+                            <li>Consider grayscale printing as default</li>
+                            <li>Use relative units (pt, cm, in) instead of px</li>
+                        </ul>
+                    </details>
+
+                    <details>
+                        <summary>Example: Professional Invoice Template</summary>
+                        <div class="example-box">
+                            <pre><code>&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+  &lt;meta charset="UTF-8"&gt;
+  &lt;title&gt;Invoice&lt;/title&gt;
+  &lt;style&gt;
+    /* Screen styles */
+    body { background-color: #f5f5f5; }
+    .invoice-container { max-width: 1200px; margin: 2rem auto; }
+    
+    /* Print styles */
+    @media print {
+      body {
+        background-color: white;
+        color: black;
+        font-family: 'Helvetica', Arial, sans-serif;
+        font-size: 10pt;
+      }
+      
+      .invoice-container {
+        max-width: none;
+        margin: 0;
+        padding: 1in;
+      }
+      
+      .invoice-header {
+        margin-bottom: 1in;
+        border-bottom: 2px solid #000;
+        padding-bottom: 0.5in;
+      }
+      
+      .invoice-details {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1in;
+        margin-bottom: 1in;
+      }
+      
+      .invoice-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 1in;
+      }
+      
+      .invoice-table th,
+      .invoice-table td {
+        border: 1px solid #000;
+        padding: 0.3in;
+        text-align: left;
+      }
+      
+      .invoice-table th {
+        background-color: #f0f0f0;
+        font-weight: bold;
+      }
+      
+      .invoice-total {
+        margin-top: 1in;
+        text-align: right;
+        font-weight: bold;
+        font-size: 14pt;
+      }
+      
+      .invoice-footer {
+        margin-top: 1in;
+        border-top: 1px solid #000;
+        padding-top: 0.5in;
+        text-align: center;
+        font-size: 9pt;
+        color: #666;
+      }
+      
+      .no-print {
+        display: none !important;
+      }
+      
+      /* Page layout */
+      @page {
+        margin: 1in;
+        
+        @top-center {
+          content: "INVOICE";
+          font-weight: bold;
+          font-size: 12pt;
+        }
+        
+        @bottom-center {
+          content: "Page " counter(page) " of " counter(pages);
+          font-size: 9pt;
+        }
+      }
+      
+      /* Header/footer content */
+      .invoice-number {
+        string-set: invoice-number content();
+      }
+      
+      .invoice-date {
+        string-set: invoice-date content();
+      }
+      
+      .company-name {
+        string-set: company-name content();
+      }
+      
+      @page {
+        @top-left {
+          content: string(company-name);
+          font-size: 9pt;
+        }
+        
+        @top-right {
+          content: string(invoice-number) " | " string(invoice-date);
+          font-size: 9pt;
+        }
+      }
+    }
+  &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+  &lt;div class="invoice-container"&gt;
+    &lt;!-- This won't print --&gt;
+    &lt;button class="no-print" onclick="window.print()"&gt;Print Invoice&lt;/button&gt;
+    
+    &lt;div class="invoice-header"&gt;
+      &lt;h1 class="company-name"&gt;Tech Solutions Inc.&lt;/h1&gt;
+      &lt;h2&gt;INVOICE&lt;/h2&gt;
+    &lt;/div&gt;
+    
+    &lt;div class="invoice-details"&gt;
+      &lt;div&gt;
+        &lt;h3&gt;Bill To:&lt;/h3&gt;
+        &lt;p&gt;John Doe<br&gt;123 Main Street<br&gt;Anytown, ST 12345&lt;/p&gt;
+      &lt;/div&gt;
+      
+      &lt;div&gt;
+        &lt;h3&gt;Invoice Details:&lt;/h3&gt;
+        &lt;p&gt;Invoice #: &lt;span class="invoice-number"&gt;INV-2024-001&lt;/span&gt;&lt;br&gt;
+           Date: &lt;span class="invoice-date"&gt;January 15, 2024&lt;/span&gt;&lt;br&gt;
+           Due Date: February 15, 2024&lt;/p&gt;
+      &lt;/div&gt;
+    &lt;/div&gt;
+    
+    &lt;table class="invoice-table"&gt;
+      &lt;thead&gt;
+        &lt;tr&gt;
+          &lt;th&gt;Description&lt;/th&gt;
+          &lt;th&gt;Quantity&lt;/th&gt;
+          &lt;th&gt;Unit Price&lt;/th&gt;
+          &lt;th&gt;Total&lt;/th&gt;
+        &lt;/tr&gt;
+      &lt;/thead&gt;
+      &lt;tbody&gt;
+        &lt;tr&gt;
+          &lt;td&gt;Web Development&lt;/td&gt;
+          &lt;td&gt;40&lt;/td&gt;
+          &lt;td&gt;$125.00&lt;/td&gt;
+          &lt;td&gt;$5,000.00&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+          &lt;td&gt;Hosting Setup&lt;/td&gt;
+          &lt;td&gt;1&lt;/td&gt;
+          &lt;td&gt;$250.00&lt;/td&gt;
+          &lt;td&gt;$250.00&lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/tbody&gt;
+    &lt;/table&gt;
+    
+    &lt;div class="invoice-total"&gt;
+      TOTAL: $5,250.00
+    &lt;/div&gt;
+    
+    &lt;div class="invoice-footer"&gt;
+      Thank you for your business!<br>
+      Tech Solutions Inc. • info@techsolutions.com • (555) 123-4567
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+                        </div>
+                        <p>Result: A professional, printer-ready invoice with headers, footers, and page numbering!</p>
+                    </details>
+
+                    <details>
+                        <summary>Uses: When to Use Print CSS</summary>
+                        <ul>
+                            <li><strong>Legal documents:</strong> Contracts, agreements, affidavits</li>
+                            <li><strong>Financial documents:</strong> Invoices, receipts, statements</li>
+                            <li><strong>Educational materials:</strong> Syllabi, handouts, exams</li>
+                            <li><strong>Technical documentation:</strong> Manuals, guides, specs</li>
+                            <li><strong>Reports:</strong> Business reports, research papers</li>
+                            <li><strong>Forms:</strong> Applications, surveys, registrations</li>
+                            <li><strong>Archives:</strong> Documents needing permanent physical copies</li>
+                        </ul>
+                        <p class="badge">Industry standard: 78% of enterprise applications require printable outputs — and most fail at basic formatting!</p>
+                    </details>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript Utilities -->
+    <script>
+        // Expand/Collapse All
+        document.getElementById('expandAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.open = true;
+            });
+        });
+
+        document.getElementById('collapseAll').addEventListener('click', () => {
+            document.querySelectorAll('details').forEach(detail => {
+                detail.open = false;
+            });
+        });
+
+        // Toggle TOC Sections
+        document.querySelectorAll('.toc-heading').forEach(section => {
+            section.addEventListener('click', () => {
+                const target = section.getAttribute('data-target');
+                const subItems = document.getElementById(target);
+                section.classList.toggle('collapsed');
+            });
+        });
+
+        // Search functionality
+        document.getElementById('tocSearch').addEventListener('input', function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const tocItems = document.querySelectorAll('.toc-item');
+            
+            tocItems.forEach(item => {
+                const linkText = item.textContent.toLowerCase();
+                if (linkText.includes(searchTerm)) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        });
+
+        // Smooth Scrolling for TOC Links
+        document.querySelectorAll('.toc-item a').forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Highlight active TOC item
+                    document.querySelectorAll('.toc-item.active').forEach(el => {
+                        el.classList.remove('active');
+                    });
+                    this.parentElement.classList.add('active');
+                }
+            });
+        });
+
+        // Auto-highlight active section as user scrolls
+        window.addEventListener('scroll', () => {
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.toc-item a');
+            
+            let current = '';
+            
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= sectionTop - 100) {
+                    current = section.id;
+                }
+            });
+            
+            navLinks.forEach(link => {
+                link.parentElement.classList.remove('active');
+                if (link.getAttribute('href') === '#' + current) {
+                    link.parentElement.classList.add('active');
+                }
+            });
+        });
+
+        // Syntax highlighting for code blocks
+        document.querySelectorAll('pre code').forEach(block => {
+            hljs.highlightBlock(block);
+        });
+
+        // Add fallback for highlight.js if not loaded
+        window.hljs = window.hljs || {
+            highlightBlock: (el) => {
+                el.classList.add('language-css');
+            }
+        };
+    </script>
+
+    <!-- Optional: Include Highlight.js for better syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script>hljs.highlightAll();</script>
+</body>
+</html>

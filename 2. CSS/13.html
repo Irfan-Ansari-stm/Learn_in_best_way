@@ -1,0 +1,2251 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 11: Media Queries</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00d1ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --text-muted: #b3cde6;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            background-color: rgba(10, 25, 47, 0.9);
+            border-right: 1px solid var(--cyan);
+            height: 100vh;
+            position: fixed;
+            width: 300px;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 5px 0 15px rgba(0, 209, 255, 0.1);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--amber);
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: var(--amber);
+            border-bottom: 2px solid var(--amber);
+        }
+
+        .toc-item {
+            margin: 8px 0;
+            padding-left: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .toc-item a {
+            color: var(--text-muted);
+            text-decoration: none;
+            display: block;
+            transition: color 0.3s;
+        }
+
+        .toc-item a:hover {
+            color: var(--cyan);
+        }
+
+        .toc-subitem {
+            margin-left: 20px;
+            font-size: 0.9em;
+            color: var(--text-muted);
+        }
+
+        .toc-subitem a {
+            color: var(--text-muted);
+        }
+
+        .toc-subitem a:hover {
+            color: var(--cyan);
+        }
+
+        details {
+            margin: 15px 0;
+            border-left: 3px solid var(--amber);
+            padding-left: 15px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border-radius: 0 5px 5px 0;
+        }
+
+        summary {
+            cursor: pointer;
+            color: var(--amber);
+            font-weight: bold;
+            font-size: 1.1rem;
+            list-style: none;
+            padding: 10px;
+            background-color: rgba(0, 209, 255, 0.05);
+            border-radius: 5px;
+            margin-bottom: 5px;
+            transition: all 0.3s ease;
+        }
+
+        summary:hover {
+            background-color: rgba(0, 209, 255, 0.1);
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary::before {
+            content: "▶ ";
+            color: var(--amber);
+        }
+
+        details[open] summary::before {
+            content: "▼ ";
+            color: var(--amber);
+        }
+
+        pre code {
+            display: block;
+            padding: 16px;
+            overflow-x: auto;
+            background-color: #0d1b2a;
+            border-radius: 5px;
+            border-left: 4px solid var(--amber);
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--cyan);
+        }
+
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.1);
+            padding: 2px 5px;
+            border-radius: 3px;
+            color: var(--amber);
+            font-weight: 500;
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: #000;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+
+        .btn-control {
+            background-color: rgba(0, 209, 255, 0.1);
+            border: 1px solid var(--cyan);
+            color: var(--cyan);
+            margin: 10px 0;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .btn-control:hover {
+            background-color: var(--cyan);
+            color: #000;
+            transform: translateY(-2px);
+        }
+
+        .search-box {
+            background-color: rgba(0, 209, 255, 0.1);
+            border: 1px solid var(--cyan);
+            color: var(--text-light);
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            width: 100%;
+        }
+
+        .section-header {
+            border-bottom: 2px dashed var(--cyan);
+            padding-bottom: 10px;
+            margin: 30px 0 20px;
+            color: var(--amber);
+        }
+
+        .media-query-demo {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border: 1px dashed var(--cyan);
+            border-radius: 8px;
+            min-height: 150px;
+            position: relative;
+        }
+
+        .breakpoint-demo {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border: 1px dashed var(--cyan);
+            border-radius: 8px;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .fluid-typography-demo {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border: 1px dashed var(--cyan);
+            border-radius: 8px;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .responsive-spacing-demo {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border: 1px dashed var(--cyan);
+            border-radius: 8px;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .art-direction-demo {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border: 1px dashed var(--cyan);
+            border-radius: 8px;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .color-scheme-demo {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border: 1px dashed var(--cyan);
+            border-radius: 8px;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .resolution-demo {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border: 1px dashed var(--cyan);
+            border-radius: 8px;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .aspect-ratio-demo {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border: 1px dashed var(--cyan);
+            border-radius: 8px;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .fluid-grid-demo {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border: 1px dashed var(--cyan);
+            border-radius: 8px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            min-height: 200px;
+        }
+
+        .fluid-grid-item {
+            background-color: rgba(0, 209, 255, 0.2);
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            color: #000;
+            font-weight: bold;
+            border: 1px dashed var(--cyan);
+        }
+
+        .progressive-enhancement-demo {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border: 1px dashed var(--cyan);
+            border-radius: 8px;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .intrinsic-design-demo {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border: 1px dashed var(--cyan);
+            border-radius: 8px;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .css-lock-demo {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border: 1px dashed var(--cyan);
+            border-radius: 8px;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .accessibility-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: var(--amber);
+            color: #000;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            z-index: 10;
+        }
+
+        .footer-note {
+            margin-top: 50px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid rgba(0, 209, 255, 0.2);
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 991px) {
+            .left-panel {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding: 15px;
+            }
+            .right-panel {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Left Panel -->
+            <div class="col-md-3 left-panel">
+                <h2>Module 11: Media Queries</h2>
+                <p class="text-muted small">Master the art of responsive design — making your websites work beautifully on every device</p>
+                <hr>
+                
+                <div class="mb-3">
+                    <input type="text" class="search-box" id="toc-search" placeholder="Search topics...">
+                </div>
+
+                <button class="btn-control w-100 mb-2" id="expand-all">Expand All</button>
+                <button class="btn-control w-100 mb-3" id="collapse-all">Collapse All</button>
+
+                <h5 class="text-uppercase text-muted fw-bold mb-3">Table of Contents</h5>
+                
+                <div class="toc-item">
+                    <a href="#sec-11-1">11.1 Media Query Fundamentals</a>
+                    <div class="toc-subitem">
+                        <a href="#media-types-features">• Media types and features</a>
+                        <a href="#viewport-meta">• Viewport meta tag importance</a>
+                        <a href="#mobile-desktop-first">• Mobile-first vs desktop-first approaches</a>
+                    </div>
+                </div>
+                
+                <div class="toc-item">
+                    <a href="#sec-11-2">11.2 Advanced Media Query Features</a>
+                    <div class="toc-subitem">
+                        <a href="#resolution-pixel-density">• Resolution and pixel density queries</a>
+                        <a href="#orientation-aspect-ratio">• Orientation and aspect ratio</a>
+                        <a href="#color-gamut-index">• Color gamut and color index</a>
+                        <a href="#user-preferences">• Prefers-color-scheme and user preferences</a>
+                    </div>
+                </div>
+                
+                <div class="toc-item">
+                    <a href="#sec-11-3">11.3 Responsive Design Patterns</a>
+                    <div class="toc-subitem">
+                        <a href="#breakpoint-strategies">• Breakpoint strategies</a>
+                        <a href="#fluid-grids-images">• Fluid grids and flexible images</a>
+                        <a href="#progressive-enhancement">• Progressive enhancement approaches</a>
+                        <a href="#component-responsive">• Component-based responsive design</a>
+                    </div>
+                </div>
+                
+                <div class="toc-item">
+                    <a href="#sec-11-4">11.4 Modern Responsive Techniques</a>
+                    <div class="toc-subitem">
+                        <a href="#intrinsic-web-design">• Intrinsic web design principles</a>
+                        <a href="#css-locks-fluid-typography">• CSS locks and fluid typography</a>
+                        <a href="#responsive-spacing-sizing">• Responsive spacing and sizing</a>
+                        <a href="#art-direction-picture">• Art direction with picture element</a>
+                    </div>
+                </div>
+                
+                <div class="mt-5">
+                    <p class="text-muted small">
+                        <strong>Author:</strong> Web Dev Mentor<br>
+                        <small>For Deep Understanding Only</small>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="col-md-9 right-panel">
+                <h1>Media Queries</h1>
+                <p class="lead text-muted">Create responsive experiences that adapt to any device, screen size, or user preference</p>
+
+                <!-- 11.1 Media Query Fundamentals -->
+                <section id="sec-11-1">
+                    <h2>11.1 Media Query Fundamentals</h2>
+                    <p class="text-muted">The foundation of responsive design — understanding how to target different devices and conditions.</p>
+
+                    <details>
+                        <summary>Media types and features</summary>
+                        <p>Media queries allow you to apply styles based on device characteristics.</p>
+                        <pre><code>
+/* Basic syntax */
+@media media-type and (media-feature) {
+    /* CSS rules */
+}
+
+/* Common media types */
+@media screen {
+    /* Styles for screens */
+}
+
+@media print {
+    /* Styles for printing */
+}
+
+@media handheld {
+    /* Legacy mobile devices */
+}
+
+/* Common media features */
+@media (min-width: 768px) {
+    /* Styles for screens at least 768px wide */
+}
+
+@media (max-width: 1024px) {
+    /* Styles for screens up to 1024px wide */
+}
+
+@media (orientation: portrait) {
+    /* Styles when device is in portrait mode */
+}
+
+@media (prefers-color-scheme: dark) {
+    /* Styles when user prefers dark mode */
+}
+                        </code></pre>
+                        <div class="media-query-demo">
+                            <div style="background-color: rgba(0, 209, 255, 0.2); padding: 20px; border-radius: 8px;">
+                                <p>This is a basic media query demo. Resize your browser window to see how styles change!</p>
+                            </div>
+                        </div>
+                        <p><strong>Media Types:</strong></p>
+                        <table class="table table-dark mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Media Type</th>
+                                    <th>Description</th>
+                                    <th>Use Case</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>all</code></td>
+                                    <td>Applies to all devices</td>
+                                    <td>Default if no type specified</td>
+                                </tr>
+                                <tr>
+                                    <td><code>screen</code></td>
+                                    <td>Computer screens, tablets, smartphones</td>
+                                    <td>✅ Most common for web applications</td>
+                                </tr>
+                                <tr>
+                                    <td><code>print</code></td>
+                                    <td>Printers and print preview</td>
+                                    <td>Optimize printed documents</td>
+                                </tr>
+                                <tr>
+                                    <td><code>speech</code></td>
+                                    <td>Screen readers and speech synthesizers</td>
+                                    <td>Accessibility enhancements</td>
+                                </tr>
+                                <tr>
+                                    <td><code>handheld</code></td>
+                                    <td>Legacy mobile devices</td>
+                                    <td>Deprecated — use screen instead</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p><strong>Media Features:</strong></p>
+                        <ul>
+                            <li><code>width</code>, <code>height</code>: Viewport dimensions</li>
+                            <li><code>min-width</code>, <code>max-width</code>: Minimum/maximum viewport width</li>
+                            <li><code>orientation</code>: Portrait or landscape</li>
+                            <li><code>aspect-ratio</code>: Width-to-height ratio</li>
+                            <li><code>resolution</code>: Pixel density</li>
+                            <li><code>prefers-color-scheme</code>: User's preferred color scheme</li>
+                            <li><code>prefers-reduced-motion</code>: User prefers less motion</li>
+                            <li><code>hover</code>: Device supports hover</li>
+                            <li><code>pointer</code>: Device has precise pointing mechanism</li>
+                        </ul>
+                        <p><strong>Pro Tip:</strong> Always use <code>screen</code> for web applications — it's the most reliable and widely supported.</p>
+                    </details>
+
+                    <details>
+                        <summary>Viewport meta tag importance</summary>
+                        <p>The essential HTML tag that controls how your page is displayed on mobile devices.</p>
+                        <pre><code>
+&lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+                        </code></pre>
+                        <div class="media-query-demo">
+                            <div style="background-color: rgba(255, 183, 77, 0.2); padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+                                <h4>Without viewport meta tag:</h4>
+                                <p>On mobile devices, browsers render pages at a typical desktop screen width (usually 980px), then shrink them to fit. This makes text too small to read without zooming.</p>
+                            </div>
+                            
+                            <div style="background-color: rgba(0, 209, 255, 0.2); padding: 20px; border-radius: 8px;">
+                                <h4>With viewport meta tag:</h4>
+                                <p>Browser sets the viewport width to match the device width, so content renders properly at native scale. Text is readable without zooming.</p>
+                            </div>
+                        </div>
+                        <p><strong>What the viewport tag does:</strong></p>
+                        <ul>
+                            <li><code>width=device-width</code>: Sets the viewport width to match the device's screen width</li>
+                            <li><code>initial-scale=1.0</code>: Sets the initial zoom level to 1:1</li>
+                            <li><code>maximum-scale=1.0</code>: Prevents users from zooming (use cautiously)</li>
+                            <li><code>user-scalable=no</code>: Disables zooming entirely (accessibility violation)</li>
+                        </ul>
+                        <p><strong>Why it matters:</strong></p>
+                        <ul>
+                            <li>Without it, media queries won't work as expected on mobile</li>
+                            <li>Content appears tiny and unreadable on phones</li>
+                            <li>Breakpoints trigger at wrong widths</li>
+                            <li>Bad user experience across mobile devices</li>
+                        </ul>
+                        <p><strong>Best Practice:</strong> Always include this tag in the <code>&lt;head&gt;</code> of every webpage:</p>
+                        <div class="code-example">
+                            <pre><code>
+&lt;!DOCTYPE html&gt;
+&lt;html lang="en"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;!-- Your other head elements --&gt;
+&lt;/head&gt;
+                            </code></pre>
+                        </div>
+                        <p><strong>Accessibility Warning:</strong> Never use <code>user-scalable=no</code> or <code>maximum-scale=1.0</code> — it violates accessibility guidelines and prevents users from zooming when needed.</p>
+                    </details>
+
+                    <details>
+                        <summary>Mobile-first vs desktop-first approaches</summary>
+                        <p>Two philosophies for structuring your responsive CSS.</p>
+                        <pre><code>
+/* Mobile-first approach (recommended) */
+/* Base styles for mobile */
+.container {
+    width: 100%;
+    padding: 10px;
+}
+
+/* Desktop enhancements */
+@media (min-width: 768px) {
+    .container {
+        width: 750px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+}
+
+/* Desktop-first approach (legacy) */
+/* Base styles for desktop */
+.container {
+    width: 1200px;
+    margin: 0 auto;
+    padding: 30px;
+}
+
+/* Mobile adaptations */
+@media (max-width: 767px) {
+    .container {
+        width: 100%;
+        padding: 10px;
+    }
+}
+                        </code></pre>
+                        <div class="media-query-demo">
+                            <div style="display: flex; gap: 20px; margin-bottom: 20px;">
+                                <div style="flex: 1; background-color: rgba(0, 209, 255, 0.2); padding: 20px; border-radius: 8px;">
+                                    <h4 style="color: var(--cyan);">Mobile-First</h4>
+                                    <p>Start with simple mobile styles → Add complexity for larger screens</p>
+                                    <ul>
+                                        <li>Smaller CSS file size</li>
+                                        <li>Faster loading on mobile</li>
+                                        <li>Progressive enhancement</li>
+                                        <li>Easier maintenance</li>
+                                    </ul>
+                                </div>
+                                
+                                <div style="flex: 1; background-color: rgba(255, 183, 77, 0.2); padding: 20px; border-radius: 8px;">
+                                    <h4 style="color: var(--amber);">Desktop-First</h4>
+                                    <p>Start with complex desktop styles → Remove complexity for smaller screens</p>
+                                    <ul>
+                                        <li>Larger CSS file size</li>
+                                        <li>Slower loading on mobile</li>
+                                        <li>Overridden styles</li>
+                                        <li>Harder to maintain</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <p><strong>Why mobile-first wins:</strong></p>
+                        <ol>
+                            <li><strong>Performance:</strong> Mobile users have slower connections — send less CSS initially</li>
+                            <li><strong>Simplicity:</strong> Start with the simplest layout, then enhance</li>
+                            <li><strong>Progressive Enhancement:</strong> Build upon a solid foundation</li>
+                            <li><strong>Maintainability:</strong> Easier to understand and modify</li>
+                            <li><strong>Modern Standard:</strong> Industry best practice since 2015</li>
+                        </ol>
+                        <p><strong>Real-World Example:</strong></p>
+                        <div class="code-example">
+                            <pre><code>
+/* Mobile-first: Simple base */
+.button {
+    display: block;
+    width: 100%;
+    padding: 15px;
+    font-size: 1rem;
+    border-radius: 5px;
+}
+
+/* Tablet enhancement */
+@media (min-width: 768px) {
+    .button {
+        display: inline-block;
+        width: auto;
+        padding: 12px 24px;
+        font-size: 1.1rem;
+        border-radius: 8px;
+    }
+}
+
+/* Desktop enhancement */
+@media (min-width: 1024px) {
+    .button {
+        padding: 15px 30px;
+        font-size: 1.2rem;
+        border-radius: 10px;
+    }
+}
+                            </code></pre>
+                        </div>
+                        <p><strong>Pro Tip:</strong> Use <code>min-width</code> queries for mobile-first — they're more intuitive and scalable.</p>
+                        <p><strong>Mobile-First Workflow:</strong></p>
+                        <ol>
+                            <li>Design for smallest screen first</li>
+                            <li>Write base CSS for mobile</li>
+                            <li>Add breakpoints only when necessary</li>
+                            <li>Test on real devices</li>
+                            <li>Refine for larger screens</li>
+                        </ol>
+                    </details>
+                </section>
+
+                <!-- 11.2 Advanced Media Query Features -->
+                <section id="sec-11-2">
+                    <h2>11.2 Advanced Media Query Features</h2>
+                    <p class="text-muted">Target specific device capabilities and user preferences beyond just screen size.</p>
+
+                    <details>
+                        <summary>Resolution and pixel density queries</summary>
+                        <p>Target high-resolution displays like Retina screens and modern 4K monitors.</p>
+                        <pre><code>
+/* Target high-DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2),
+       (min-resolution: 192dpi) {
+    .logo {
+        background-image: url('logo@2x.png');
+    }
+    
+    .icon {
+        background-image: url('icon@2x.png');
+    }
+}
+
+/* For 3x resolution (modern phones) */
+@media (min-resolution: 288dpi) {
+    .hero-image {
+        background-image: url('hero@3x.jpg');
+    }
+}
+
+/* Using dppx unit (device pixels per px) */
+@media (min-resolution: 2dppx) {
+    .retina-image {
+        background-image: url('image@2x.webp');
+    }
+}
+
+/* Print-specific high resolution */
+@media print and (min-resolution: 300dpi) {
+    .print-image {
+        image-rendering: crisp-edges;
+    }
+}
+                        </code></pre>
+                        <div class="resolution-demo">
+                            <div style="background-color: rgba(0, 209, 255, 0.2); padding: 20px; border-radius: 8px; text-align: center;">
+                                <p>High-resolution display detection</p>
+                                <p style="font-size: 0.8rem; margin-top: 10px;">This content appears differently on retina displays</p>
+                            </div>
+                        </div>
+                        <p><strong>Pixel Density Units:</strong></p>
+                        <table class="table table-dark mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Unit</th>
+                                    <th>Description</th>
+                                    <th>Example</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>dpi</code></td>
+                                    <td>Dots per inch</td>
+                                    <td><code>192dpi</code> = 2x pixel density</td>
+                                </tr>
+                                <tr>
+                                    <td><code>dpcm</code></td>
+                                    <td>Dots per centimeter</td>
+                                    <td><code>75dpcm</code> = 2x pixel density</td>
+                                </tr>
+                                <tr>
+                                    <td><code>dppx</code></td>
+                                    <td>Device pixels per CSS pixel</td>
+                                    <td><code>2dppx</code> = 2x pixel density</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p><strong>Conversion Guide:</strong></p>
+                        <ul>
+                            <li><code>1dppx</code> = <code>96dpi</code></li>
+                            <li><code>2dppx</code> = <code>192dpi</code></li>
+                            <li><code>3dppx</code> = <code>288dpi</code></li>
+                        </ul>
+                        <p><strong>Best Practices:</strong></p>
+                        <ol>
+                            <li>Use <code>dppx</code> instead of <code>dpi</code> — it's more accurate</li>
+                            <li>Always provide fallback images for lower-resolution displays</li>
+                            <li>Use modern formats like WebP for better compression</li>
+                            <li>Consider using <code>&lt;picture&gt;</code> element for art direction</li>
+                        </ol>
+                        <p><strong>Performance Tip:</strong> Don't serve massive images to low-end devices — use media queries to deliver appropriately sized assets.</p>
+                    </details>
+
+                    <details>
+                        <summary>Orientation and aspect ratio</summary>
+                        <p>Adapt layouts based on device orientation and screen proportions.</p>
+                        <pre><code>
+/* Orientation queries */
+@media (orientation: portrait) {
+    /* Styles for portrait mode */
+    .sidebar {
+        display: none;
+    }
+    
+    .main-content {
+        width: 100%;
+    }
+}
+
+@media (orientation: landscape) {
+    /* Styles for landscape mode */
+    .sidebar {
+        display: block;
+        width: 250px;
+    }
+    
+    .main-content {
+        width: calc(100% - 250px);
+    }
+}
+
+/* Aspect ratio queries */
+@media (aspect-ratio: 16/9) {
+    /* Styles for 16:9 screens */
+    .video-player {
+        width: 100%;
+        height: 56.25%; /* 9/16 = 0.5625 */
+    }
+}
+
+@media (min-aspect-ratio: 3/2) {
+    /* Styles for wider screens */
+    .grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-aspect-ratio: 2/1) {
+    /* Styles for narrower screens */
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+                        </code></pre>
+                        <div class="aspect-ratio-demo">
+                            <div style="background-color: rgba(0, 209, 255, 0.2); padding: 20px; border-radius: 8px; text-align: center;">
+                                <p>Aspect Ratio Detection</p>
+                                <p style="font-size: 0.8rem; margin-top: 10px;">Rotate your device to see different layouts!</p>
+                            </div>
+                        </div>
+                        <p><strong>Common Aspect Ratios:</strong></p>
+                        <ul>
+                            <li><code>4/3</code> — Traditional TV (1.33)</li>
+                            <li><code>16/9</code> — Standard widescreen (1.78)</li>
+                            <li><code>21/9</code> — Ultra-wide monitor (2.33)</li>
+                            <li><code>1/1</code> — Square (1.0)</li>
+                            <li><code>3/4</code> — Portrait smartphone (0.75)</li>
+                        </ul>
+                        <p><strong>Practical Use Cases:</strong></p>
+                        <ul>
+                            <li><strong>Portrait:</strong> Hide sidebars, stack content vertically</li>
+                            <li><strong>Landscape:</strong> Show sidebars, use multi-column layouts</li>
+                            <li><strong>Wide screens:</strong> Increase number of columns</li>
+                            <li><strong>Narrow screens:</strong> Reduce number of columns</li>
+                            <li><strong>Video players:</strong> Maintain correct aspect ratio</li>
+                        </ul>
+                        <p><strong>Pro Tip:</strong> Combine orientation with width queries for precise control:</p>
+                        <div class="code-example">
+                            <pre><code>
+/* Phone in portrait */
+@media (max-width: 767px) and (orientation: portrait) {
+    .content {
+        padding: 15px;
+    }
+}
+
+/* Phone in landscape */
+@media (max-width: 767px) and (orientation: landscape) {
+    .content {
+        padding: 10px;
+    }
+}
+
+/* Tablet in portrait */
+@media (min-width: 768px) and (max-width: 1023px) and (orientation: portrait) {
+    .sidebar {
+        display: none;
+    }
+}
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Color gamut and color index</summary>
+                        <p>Target devices with advanced color capabilities for richer visual experiences.</p>
+                        <pre><code>
+/* Color gamut queries */
+@media (color-gamut: srgb) {
+    /* Standard colors — most devices */
+    .gradient {
+        background: linear-gradient(to right, #00d1ff, #00a8ff);
+    }
+}
+
+@media (color-gamut: p3) {
+    /* Wide color gamut — modern displays */
+    .gradient {
+        background: linear-gradient(to right, rgb(0, 209, 255), rgb(0, 168, 255));
+    }
+}
+
+@media (color-gamut: rec2020) {
+    /* Ultra-wide color gamut — professional displays */
+    .gradient {
+        background: linear-gradient(to right, rgb(0, 209, 255), rgb(0, 168, 255));
+        filter: brightness(1.1);
+    }
+}
+
+/* Color index queries */
+@media (monochrome: 0) {
+    /* Color displays */
+    .logo {
+        filter: hue-rotate(15deg);
+    }
+}
+
+@media (monochrome: 1) {
+    /* Grayscale displays */
+    .logo {
+        filter: grayscale(100%);
+    }
+}
+                        </code></pre>
+                        <div class="color-scheme-demo">
+                            <div style="background-color: rgba(0, 209, 255, 0.2); padding: 20px; border-radius: 8px; text-align: center;">
+                                <p>Color Gamut Detection</p>
+                                <p style="font-size: 0.8rem; margin-top: 10px;">Colors appear differently on high-end displays</p>
+                            </div>
+                        </div>
+                        <p><strong>Color Gamuts Explained:</strong></p>
+                        <table class="table table-dark mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Color Gamut</th>
+                                    <th>Range</th>
+                                    <th>Devices</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>srgb</code></td>
+                                    <td>Standard RGB</td>
+                                    <td>Most computers, phones, TVs</td>
+                                </tr>
+                                <tr>
+                                    <td><code>p3</code></td>
+                                    <td>Apple Display P3</td>
+                                    <td>iPhones, iPads, MacBooks, modern Android</td>
+                                </tr>
+                                <tr>
+                                    <td><code>rec2020</code></td>
+                                    <td>Ultra HD</td>
+                                    <td>Professional monitors, high-end TVs</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p><strong>Color Index:</strong></p>
+                        <ul>
+                            <li><code>monochrome: 0</code> — Color display</li>
+                            <li><code>monochrome: 1</code> — Grayscale display</li>
+                            <li><code>monochrome: 2</code> — Monochrome with 2 levels</li>
+                        </ul>
+                        <p><strong>When to use:</strong></p>
+                        <ul>
+                            <li>Use <code>p3</code> for premium experiences on Apple and modern Android devices</li>
+                            <li>Use <code>monochrome</code> for accessibility on grayscale displays</li>
+                            <li>Use <code>rec2020</code> for professional video editing interfaces</li>
+                        </ul>
+                        <p><strong>Pro Tip:</strong> Always provide a fallback for standard color gamut — not all devices support wide gamut!</p>
+                        <div class="code-example">
+                            <pre><code>
+/* Progressive enhancement for color */
+.gradient {
+    /* Fallback for sRGB */
+    background: linear-gradient(to right, #00d1ff, #00a8ff);
+}
+
+/* Enhanced for P3 */
+@media (color-gamut: p3) {
+    .gradient {
+        background: linear-gradient(to right, rgb(0, 209, 255), rgb(0, 168, 255));
+    }
+}
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Prefers-color-scheme and user preferences</summary>
+                        <p>Respect user preferences for accessibility and comfort.</p>
+                        <pre><code>
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-color: #0a192f;
+        --text-color: #e6f1ff;
+        --accent-color: #ffb74d;
+    }
+    
+    body {
+        background-color: var(--bg-color);
+        color: var(--text-color);
+    }
+    
+    .card {
+        background-color: rgba(13, 27, 42, 0.7);
+        border: 1px solid rgba(0, 209, 255, 0.2);
+    }
+}
+
+/* Light mode */
+@media (prefers-color-scheme: light) {
+    :root {
+        --bg-color: #ffffff;
+        --text-color: #333333;
+        --accent-color: #ffa726;
+    }
+    
+    body {
+        background-color: var(--bg-color);
+        color: var(--text-color);
+    }
+    
+    .card {
+        background-color: #f8f9fa;
+        border: 1px solid #dee2e6;
+    }
+}
+
+/* No preference */
+@media (prefers-color-scheme: no-preference) {
+    /* Default theme */
+    :root {
+        --bg-color: #ffffff;
+        --text-color: #333333;
+        --accent-color: #ffa726;
+    }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* High contrast */
+@media (prefers-contrast: high) {
+    body {
+        background-color: #000;
+        color: #fff;
+    }
+    
+    .card {
+        border: 3px solid #fff;
+    }
+}
+
+/* Forced colors */
+@media (forced-colors: active) {
+    body {
+        background-color: Canvas;
+        color: CanvasText;
+    }
+    
+    .card {
+        border: 1px solid ButtonText;
+    }
+}
+                        </code></pre>
+                        <div class="color-scheme-demo">
+                            <div style="background-color: rgba(0, 209, 255, 0.2); padding: 20px; border-radius: 8px; text-align: center;">
+                                <p>System Preferences Detection</p>
+                                <p style="font-size: 0.8rem; margin-top: 10px;">Your system settings determine these styles!</p>
+                            </div>
+                        </div>
+                        <p><strong>Key Preference Queries:</strong></p>
+                        <table class="table table-dark mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Query</th>
+                                    <th>Description</th>
+                                    <th>Importance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>prefers-color-scheme</code></td>
+                                    <td>User's preferred light/dark mode</td>
+                                    <td>✅ Essential for accessibility</td>
+                                </tr>
+                                <tr>
+                                    <td><code>prefers-reduced-motion</code></td>
+                                    <td>User prefers less animation</td>
+                                    <td>✅ Critical for vestibular disorders</td>
+                                </tr>
+                                <tr>
+                                    <td><code>prefers-contrast</code></td>
+                                    <td>User prefers high contrast</td>
+                                    <td>✅ Important for low vision</td>
+                                </tr>
+                                <tr>
+                                    <td><code>forced-colors</code></td>
+                                    <td>Windows High Contrast Mode</td>
+                                    <td>✅ Required for Windows users</td>
+                                </tr>
+                                <tr>
+                                    <td><code>hover</code></td>
+                                    <td>Device supports hover interaction</td>
+                                    <td>Important for touch vs mouse</td>
+                                </tr>
+                                <tr>
+                                    <td><code>pointer</code></td>
+                                    <td>Device has precise pointing mechanism</td>
+                                    <td>Important for touch vs mouse</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p><strong>Why this matters:</strong></p>
+                        <ul>
+                            <li>Respects user autonomy and accessibility needs</li>
+                            <li>Reduces eye strain and fatigue</li>
+                            <li>Improves overall user experience</li>
+                            <li>Required by WCAG accessibility standards</li>
+                        </ul>
+                        <p><strong>Implementation Best Practices:</strong></p>
+                        <ol>
+                            <li>Always implement <code>prefers-color-scheme</code> — it's now expected</li>
+                            <li>Use CSS variables to make theme switching easy</li>
+                            <li>Test with actual system settings enabled</li>
+                            <li>Don't override user preferences unless absolutely necessary</li>
+                            <li>Provide manual toggle for users who want to override system settings</li>
+                        </ol>
+                        <p><strong>Pro Tip:</strong> Combine multiple preferences for comprehensive accessibility:</p>
+                        <div class="code-example">
+                            <pre><code>
+/* Comprehensive theme system */
+@media (prefers-color-scheme: dark) and (prefers-reduced-motion: reduce) {
+    :root {
+        --bg-color: #0a192f;
+        --text-color: #e6f1ff;
+        --accent-color: #ffb74d;
+    }
+    
+    * {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+                            </code></pre>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 11.3 Responsive Design Patterns -->
+                <section id="sec-11-3">
+                    <h2>11.3 Responsive Design Patterns</h2>
+                    <p class="text-muted">Apply proven strategies for creating robust, maintainable responsive designs.</p>
+
+                    <details>
+                        <summary>Breakpoint strategies</summary>
+                        <p>Choose meaningful breakpoints based on content, not devices.</p>
+                        <pre><code>
+/* Content-driven breakpoints */
+@media (min-width: 480px) {
+    /* Small mobile */
+}
+
+@media (min-width: 768px) {
+    /* Tablet */
+}
+
+@media (min-width: 1024px) {
+    /* Small desktop */
+}
+
+@media (min-width: 1200px) {
+    /* Large desktop */
+}
+
+/* Device-based breakpoints (avoid) */
+@media (min-width: 375px) { /* iPhone SE */ }
+@media (min-width: 414px) { /* iPhone Plus */ }
+@media (min-width: 768px) { /* iPad */ }
+@media (min-width: 1024px) { /* iPad Pro */ }
+@media (min-width: 1440px) { /* MacBook Air */ }
+                        </code></pre>
+                        <div class="breakpoint-demo">
+                            <div style="background-color: rgba(0, 209, 255, 0.2); padding: 20px; border-radius: 8px; text-align: center;">
+                                <p>Responsive Breakpoints</p>
+                                <p style="font-size: 0.8rem; margin-top: 10px;">Resize your browser to see how content adapts</p>
+                            </div>
+                        </div>
+                        <p><strong>Content-Driven vs Device-Driven:</strong></p>
+                        <table class="table table-dark mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Approach</th>
+                                    <th>Pros</th>
+                                    <th>Cons</th>
+                                    <th>Recommendation</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Content-Driven</strong></td>
+                                    <td>Based on actual content needs<br>Works on any device<br>Future-proof</td>
+                                    <td>Requires testing<br>More thought required</td>
+                                    <td>✅ Recommended</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Device-Driven</strong></td>
+                                    <td>Easy to implement<br>Matches popular devices</td>
+                                    <td>Becomes outdated quickly<br>Not future-proof<br>Can break on new devices</td>
+                                    <td>❌ Avoid</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p><strong>Recommended Breakpoint Strategy:</strong></p>
+                        <ul>
+                            <li><strong>Base (mobile):</strong> 0–479px</li>
+                            <li><strong>Small tablet:</strong> 480–767px</li>
+                            <li><strong>Large tablet:</strong> 768–1023px</li>
+                            <li><strong>Small desktop:</strong> 1024–1279px</li>
+                            <li><strong>Large desktop:</strong> 1280px+</li>
+                        </ul>
+                        <p><strong>How to determine breakpoints:</strong></p>
+                        <ol>
+                            <li>Start with mobile view</li>
+                            <li>Gradually increase browser width</li>
+                            <li>At each point where content breaks or looks bad, add a breakpoint</li>
+                            <li>Don't guess — test with real content</li>
+                            <li>Use your actual content, not placeholders</li>
+                        </ol>
+                        <p><strong>Real-World Example:</strong></p>
+                        <div class="code-example">
+                            <pre><code>
+/* Blog layout breakpoints */
+.article {
+    padding: 15px;
+}
+
+/* At 500px: Add horizontal padding */
+@media (min-width: 500px) {
+    .article {
+        padding: 20px;
+    }
+}
+
+/* At 700px: Two-column layout */
+@media (min-width: 700px) {
+    .article {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 30px;
+    }
+}
+
+/* At 1000px: Larger typography */
+@media (min-width: 1000px) {
+    .article h1 {
+        font-size: 2.5rem;
+    }
+}
+                            </code></pre>
+                        </div>
+                        <p><strong>Pro Tip:</strong> Use <code>min-width</code> queries consistently with mobile-first approach — it's more scalable and logical.</p>
+                    </details>
+
+                    <details>
+                        <summary>Fluid grids and flexible images</summary>
+                        <p>Create layouts that adapt smoothly to any screen size.</p>
+                        <pre><code>
+/* Fluid grid */
+.container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+/* Flexible images */
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Responsive image containers */
+.image-container {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+}
+
+.image-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Responsive figures */
+figure {
+    margin: 0 0 1rem 0;
+}
+
+figure img {
+    max-width: 100%;
+    height: auto;
+}
+
+figcaption {
+    font-size: 0.9rem;
+    color: #666;
+    text-align: center;
+    margin-top: 0.5rem;
+}
+                        </code></pre>
+                        <div class="fluid-grid-demo">
+                            <div class="fluid-grid-item">Item 1</div>
+                            <div class="fluid-grid-item">Item 2</div>
+                            <div class="fluid-grid-item">Item 3</div>
+                            <div class="fluid-grid-item">Item 4</div>
+                            <div class="fluid-grid-item">Item 5</div>
+                            <div class="fluid-grid-item">Item 6</div>
+                        </div>
+                        <div class="media-query-demo">
+                            <div style="margin-bottom: 20px;">
+                                <img src="image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI1MDAiIGhlaWdodD0iMzAwIj48cmVjdCB3aWR0aD0iNTAwIiBoZWlnaHQ9IjMwMCIgZmlsbD0iIzAwZDFmZiIvPjxjaXJjbGUgY3g9IjI1MCIgY3k9IjE1MCIgcj0iMTIwIiBmaWxsPSIjZmZiNzRkIi8+PC9zdmc+" alt="Responsive Image" style="max-width: 100%; height: auto; border-radius: 8px; display: block;">
+                            </div>
+                            
+                            <div style="width: 100%; aspect-ratio: 16 / 9; background-color: rgba(0, 209, 255, 0.2); border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">
+                                Aspect Ratio Container
+                            </div>
+                        </div>
+                        <p><strong>Fluid Grid Principles:</strong></p>
+                        <ul>
+                            <li>Use <code>auto-fit</code> and <code>minmax()</code> for truly responsive grids</li>
+                            <li>Avoid fixed widths — use percentages or fr units</li>
+                            <li>Use CSS Grid for complex layouts, Flexbox for simpler ones</li>
+                            <li>Set consistent gaps between items</li>
+                        </ul>
+                        <p><strong>Flexible Images Principles:</strong></p>
+                        <ul>
+                            <li>Always use <code>max-width: 100%</code> and <code>height: auto</code></li>
+                            <li>Prevent images from overflowing their containers</li>
+                            <li>Use <code>object-fit: cover</code> for constrained aspect ratios</li>
+                            <li>Use <code>aspect-ratio</code> property to reserve space before image loads</li>
+                        </ul>
+                        <p><strong>Modern Approach with CSS Grid:</strong></p>
+                        <div class="code-example">
+                            <pre><code>
+/* Perfect responsive image gallery */
+.gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+.gallery-item {
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    border-radius: 8px;
+}
+
+.gallery-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+                            </code></pre>
+                        </div>
+                        <p><strong>Pro Tip:</strong> Combine fluid grids with container queries for component-level responsiveness!</p>
+                    </details>
+
+                    <details>
+                        <summary>Progressive enhancement approaches</summary>
+                        <p>Build a solid foundation and enhance it for capable devices — the philosophy of modern web development.</p>
+                        <pre><code>
+/* Base layer: Works everywhere */
+.card {
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: #fff;
+}
+
+/* Enhanced layer: Better visuals */
+@media (min-width: 768px) {
+    .card {
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+}
+
+/* Advanced layer: Modern features */
+@media (min-width: 1024px) and (hover: hover) {
+    .card {
+        border: 2px solid transparent;
+        background-image: linear-gradient(#fff, #fff), 
+                          linear-gradient(45deg, #00d1ff, #00a8ff);
+        background-origin: border-box;
+        background-clip: content-box, border-box;
+    }
+    
+    .card:hover {
+        background-position: 100% 100%, 0 0;
+        background-size: 200% 200%;
+        transition: background-position 0.3s ease;
+    }
+}
+
+/* Experimental layer: Cutting-edge features */
+@supports (mix-blend-mode: multiply) {
+    .card {
+        mix-blend-mode: multiply;
+    }
+}
+                        </code></pre>
+                        <div class="progressive-enhancement-demo">
+                            <div style="padding: 20px; background-color: rgba(0, 209, 255, 0.2); border: 1px solid rgba(0, 209, 255, 0.5); border-radius: 8px; text-align: center; margin-bottom: 20px;">
+                                <h3>Card</h3>
+                                <p>This card demonstrates progressive enhancement</p>
+                            </div>
+                            
+                            <div style="padding: 20px; background-color: rgba(255, 183, 77, 0.2); border: 1px solid rgba(255, 183, 77, 0.5); border-radius: 8px; text-align: center; margin-bottom: 20px;">
+                                <h3>Advanced Card</h3>
+                                <p>This card has enhanced styling on capable devices</p>
+                            </div>
+                        </div>
+                        <p><strong>Progressive Enhancement Layers:</strong></p>
+                        <ol>
+                            <li><strong>Base Layer:</strong> Core functionality that works everywhere</li>
+                            <li><strong>Enhanced Layer:</strong> Improved UX for modern devices</li>
+                            <li><strong>Advanced Layer:</strong> Cutting-edge features for latest browsers</li>
+                            <li><strong>Experimental Layer:</strong> Future features with feature detection</li>
+                        </ol>
+                        <p><strong>Key Principles:</strong></p>
+                        <ul>
+                            <li>Start with semantic HTML — content should be accessible without CSS</li>
+                            <li>Layer CSS enhancements progressively</li>
+                            <li>Use feature detection (<code>@supports</code>) for experimental features</li>
+                            <li>Don't rely on JavaScript for core functionality</li>
+                            <li>Test on slow networks and old devices</li>
+                        </ul>
+                        <p><strong>Real-World Example:</strong></p>
+                        <div class="code-example">
+                            <pre><code>
+/* Base: Functional button */
+.btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #00d1ff;
+    color: #000;
+    text-decoration: none;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+/* Enhanced: Better appearance */
+@media (min-width: 768px) {
+    .btn {
+        padding: 12px 24px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+}
+
+/* Advanced: Interactive effects */
+@media (hover: hover) {
+    .btn:hover {
+        background-color: #00a8ff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+}
+
+/* Experimental: Animation */
+@supports (animation-name: fadeIn) {
+    .btn {
+        animation: fadeIn 0.3s ease-out;
+    }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+                            </code></pre>
+                        </div>
+                        <p><strong>Benefits of Progressive Enhancement:</strong></p>
+                        <ul>
+                            <li>Works on all devices and browsers</li>
+                            <li>Fast loading on slow connections</li>
+                            <li>Accessible to assistive technologies</li>
+                            <li>Future-proof — adds features as they become available</li>
+                            <li>Reduced maintenance costs</li>
+                        </ul>
+                        <p><strong>Pro Tip:</strong> Think of it as building a house — start with a strong foundation, then add rooms and decorations as resources allow.</p>
+                    </details>
+
+                    <details>
+                        <summary>Component-based responsive design</summary>
+                        <p>Build components that adapt to their container size, not the viewport.</p>
+                        <pre><code>
+/* Component with its own responsiveness */
+.card {
+    container-type: inline-size;
+    container-name: card;
+    padding: 15px;
+    border: 1px solid rgba(0, 209, 255, 0.2);
+    border-radius: 8px;
+    background-color: rgba(13, 27, 42, 0.7);
+    color: white;
+}
+
+/* Component responds to its container */
+@container card (min-width: 250px) {
+    .card {
+        padding: 20px;
+        border-radius: 10px;
+    }
+    
+    .card-title {
+        font-size: 1.3rem;
+    }
+}
+
+@container card (min-width: 350px) {
+    .card {
+        padding: 25px;
+        border-radius: 12px;
+        border: 2px solid var(--amber);
+        box-shadow: 0 4px 8px rgba(255, 183, 77, 0.2);
+    }
+    
+    .card-title {
+        font-size: 1.5rem;
+    }
+    
+    .card-content {
+        font-size: 1.1rem;
+    }
+}
+
+@container card (min-width: 450px) {
+    .card {
+        padding: 30px;
+        border-radius: 15px;
+        border: 3px solid var(--cyan);
+        box-shadow: 0 6px 12px rgba(0, 209, 255, 0.3);
+    }
+    
+    .card-title {
+        font-size: 1.7rem;
+    }
+    
+    .card-content {
+        font-size: 1.2rem;
+    }
+}
+                        </code></pre>
+                        <div class="fluid-grid-demo" style="margin: 20px 0;">
+                            <div class="fluid-grid-item" style="width: 200px; padding: 15px; background-color: rgba(13, 27, 42, 0.7); border: 1px solid rgba(0, 209, 255, 0.2); border-radius: 8px; color: white;">
+                                <h3 class="card-title">Card Title</h3>
+                                <p class="card-content">This card is 200px wide — minimal styling</p>
+                            </div>
+                            
+                            <div class="fluid-grid-item" style="width: 300px; padding: 15px; background-color: rgba(13, 27, 42, 0.7); border: 1px solid rgba(0, 209, 255, 0.2); border-radius: 8px; color: white;">
+                                <h3 class="card-title">Card Title</h3>
+                                <p class="card-content">This card is 300px wide — enhanced styling</p>
+                            </div>
+                            
+                            <div class="fluid-grid-item" style="width: 400px; padding: 15px; background-color: rgba(13, 27, 42, 0.7); border: 1px solid rgba(0, 209, 255, 0.2); border-radius: 8px; color: white;">
+                                <h3 class="card-title">Card Title</h3>
+                                <p class="card-content">This card is 400px wide — premium styling</p>
+                            </div>
+                            
+                            <div class="fluid-grid-item" style="width: 500px; padding: 15px; background-color: rgba(13, 27, 42, 0.7); border: 1px solid rgba(0, 209, 255, 0.2); border-radius: 8px; color: white;">
+                                <h3 class="card-title">Card Title</h3>
+                                <p class="card-content">This card is 500px wide — maximum styling</p>
+                            </div>
+                        </div>
+                        <p><strong>Why component-based design matters:</strong></p>
+                        <ul>
+                            <li>Components are reusable anywhere — sidebar, main content, footer</li>
+                            <li>No need for wrapper classes or context-dependent selectors</li>
+                            <li>Identical components behave consistently regardless of context</li>
+                            <li>Design systems become truly modular</li>
+                            <li>Eliminates "desktop-only" bugs</li>
+                        </ul>
+                        <p><strong>Traditional Approach Problems:</strong></p>
+                        <div class="code-example">
+                            <pre><code>
+/* Problem: Context-dependent styles */
+.sidebar .card {
+    /* Different styles for cards in sidebar */
+}
+
+.main-content .card {
+    /* Different styles for cards in main content */
+}
+
+/* Hard to maintain, prone to errors */
+                        </code></pre>
+                        </div>
+                        <p><strong>Modern Solution:</strong></p>
+                        <div class="code-example">
+                            <pre><code>
+/* Solution: Component self-containment */
+.card {
+    container-type: inline-size;
+    container-name: card;
+    /* All styling happens here */
+}
+
+@container card (min-width: 250px) {
+    .card { /* Styles for larger contexts */ }
+}
+
+@container card (min-width: 350px) {
+    .card { /* Styles for even larger contexts */ }
+}
+                            </code></pre>
+                        </div>
+                        <p><strong>Pro Tip:</strong> Combine component-based design with container queries and CSS locks for the ultimate responsive component library.</p>
+                        <p><strong>Real-World Impact:</strong> This approach allows you to build a design system where every component adapts perfectly to its environment — whether it's in a narrow sidebar, a wide hero section, or a full-page modal.</p>
+                    </details>
+                </section>
+
+                <!-- 11.4 Modern Responsive Techniques -->
+                <section id="sec-11-4">
+                    <h2>11.4 Modern Responsive Techniques</h2>
+                    <p class="text-muted">Implement cutting-edge techniques for truly adaptive, intrinsic web design.</p>
+
+                    <details>
+                        <summary>Intrinsic web design principles</summary>
+                        <p>Design based on content's natural dimensions rather than arbitrary breakpoints.</p>
+                        <pre><code>
+/* Intrinsic design example */
+.article {
+    max-width: 65ch; /* Natural reading width */
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Typography based on content */
+.heading {
+    font-size: clamp(1.5rem, 5vw, 3rem);
+    line-height: 1.2;
+}
+
+.paragraph {
+    font-size: clamp(1rem, 3vw, 1.5rem);
+    line-height: 1.6;
+    margin-bottom: 1.6rem;
+}
+
+/* Grid based on content width */
+.gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+}
+
+/* Flexible images */
+img {
+    max-width: 100%;
+    height: auto;
+    aspect-ratio: attr(data-aspect-ratio);
+}
+                        </code></pre>
+                        <div class="intrinsic-design-demo">
+                            <div style="background-color: rgba(0, 209, 255, 0.2); padding: 20px; border-radius: 8px; text-align: center; max-width: 65ch; margin: 0 auto;">
+                                <h3 style="font-size: clamp(1.5rem, 5vw, 3rem); line-height: 1.2;">Intrinsic Design Demo</h3>
+                                <p style="font-size: clamp(1rem, 3vw, 1.5rem); line-height: 1.6; margin: 1.6rem 0;">This content adapts naturally to its container size, not arbitrary breakpoints. The text scales smoothly from mobile to desktop, always maintaining optimal readability.</p>
+                            </div>
+                        </div>
+                        <p><strong>Core Principles of Intrinsic Web Design:</strong></p>
+                        <ol>
+                            <li><strong>Content First:</strong> Design around what the content needs, not the device</li>
+                            <li><strong>Fluidity:</strong> Allow elements to flow and resize naturally</li>
+                            <li><strong>Constraints:</strong> Use minimum/maximum limits to prevent extremes</li>
+                            <li><strong>Modularity:</strong> Components should adapt independently</li>
+                            <li><strong>Typography:</strong> Let text size adjust based on container width</li>
+                        </ol>
+                        <p><strong>Contrast with Traditional Design:</strong></p>
+                        <table class="table table-dark mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Traditional</th>
+                                    <th>Intrinsic</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Fixed breakpoints</td>
+                                    <td>Fluid scaling</td>
+                                </tr>
+                                <tr>
+                                    <td>Device-focused</td>
+                                    <td>Content-focused</td>
+                                </tr>
+                                <tr>
+                                    <td>Manual overrides</td>
+                                    <td>Automatic adaptation</td>
+                                </tr>
+                                <tr>
+                                    <td>Static layouts</td>
+                                    <td>Dynamic layouts</td>
+                                </tr>
+                                <tr>
+                                    <td>One-size-fits-all</td>
+                                    <td>Context-aware</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p><strong>Key Concepts:</strong></p>
+                        <ul>
+                            <li><code>max-width: 65ch</code> — Optimal reading width for paragraphs</li>
+                            <li><code>clamp()</code> — Fluid typography with bounds</li>
+                            <li><code>minmax()</code> — Flexible track sizing</li>
+                            <li><code>aspect-ratio</code> — Preserve proportions</li>
+                            <li><code>auto-fit</code> — Adaptive grid columns</li>
+                        </ul>
+                        <p><strong>Pro Tip:</strong> Intrinsic design isn't about removing breakpoints — it's about using them wisely as fallbacks, not primary controls.</p>
+                        <div class="code-example">
+                            <pre><code>
+/* Intrinsic design with fallbacks */
+.hero {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Fallback for older browsers */
+@supports not (grid-template-columns: repeat(auto-fit, minmax(300px, 1fr))) {
+    .hero {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    
+    .hero > * {
+        flex: 1 1 300px;
+    }
+}
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>CSS locks and fluid typography</summary>
+                        <p>Create typography that scales smoothly between minimum and maximum sizes.</p>
+                        <pre><code>
+/* CSS Lock Formula */
+.clamp-typography {
+    font-size: clamp(min-size, preferred-size, max-size);
+}
+
+/* Practical examples */
+.h1 {
+    font-size: clamp(1.5rem, 5vw, 3rem);
+}
+
+.h2 {
+    font-size: clamp(1.25rem, 4vw, 2.5rem);
+}
+
+.h3 {
+    font-size: clamp(1.125rem, 3.5vw, 2rem);
+}
+
+.p {
+    font-size: clamp(1rem, 3vw, 1.5rem);
+}
+
+/* More complex lock */
+.complex-lock {
+    font-size: clamp(
+        16px,      /* Minimum: readable on mobile */
+        4vw + 12px, /* Preferred: scales with viewport */
+        48px       /* Maximum: prevents huge text on large screens */
+    );
+}
+
+/* With custom properties */
+:root {
+    --font-size-base: 1rem;
+    --font-size-scaling: 1.2;
+}
+
+.text {
+    font-size: clamp(
+        calc(var(--font-size-base) * 0.8),
+        calc(var(--font-size-base) * var(--font-size-scaling)),
+        calc(var(--font-size-base) * 2)
+    );
+}
+                        </code></pre>
+                        <div class="css-lock-demo">
+                            <div style="background-color: rgba(0, 209, 255, 0.2); padding: 20px; border-radius: 8px; text-align: center;">
+                                <h1 style="font-size: clamp(1.5rem, 5vw, 3rem); margin: 0 0 10px 0;">CSS Lock Demo</h1>
+                                <p style="font-size: clamp(1rem, 3vw, 1.5rem); margin: 0;">This text scales smoothly from 16px on mobile to 24px on desktop, never going below 16px or above 24px.</p>
+                            </div>
+                        </div>
+                        <p><strong>Why CSS locks matter:</strong></p>
+                        <ul>
+                            <li>Eliminate the need for multiple media queries</li>
+                            <li>Smooth transitions between sizes</li>
+                            <li>Perfect for headlines and important text</li>
+                            <li>Improves readability across all devices</li>
+                        </ul>
+                        <p><strong>Formula Components:</strong></p>
+                        <ul>
+                            <li><strong>Minimum:</strong> Smallest readable size (typically 16px for body text)</li>
+                            <li><strong>Preferred:</strong> Scales with viewport — use vw units</li>
+                            <li><strong>Maximum:</strong> Largest acceptable size (prevents text from becoming too large)</li>
+                        </ul>
+                        <p><strong>Recommended Values:</strong></p>
+                        <table class="table table-dark mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Element</th>
+                                    <th>Minimum</th>
+                                    <th>Preferred</th>
+                                    <th>Maximum</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>h1</code></td>
+                                    <td>1.5rem</td>
+                                    <td>5vw</td>
+                                    <td>3rem</td>
+                                </tr>
+                                <tr>
+                                    <td><code>h2</code></td>
+                                    <td>1.25rem</td>
+                                    <td>4vw</td>
+                                    <td>2.5rem</td>
+                                </tr>
+                                <tr>
+                                    <td><code>h3</code></td>
+                                    <td>1.125rem</td>
+                                    <td>3.5vw</td>
+                                    <td>2rem</td>
+                                </tr>
+                                <tr>
+                                    <td><code>p</code></td>
+                                    <td>1rem</td>
+                                    <td>3vw</td>
+                                    <td>1.5rem</td>
+                                </tr>
+                                <tr>
+                                    <td><code>caption</code></td>
+                                    <td>0.875rem</td>
+                                    <td>2.5vw</td>
+                                    <td>1.125rem</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p><strong>Pro Tip:</strong> Use <code>clamp()</code> for all typography — it's the modern standard for responsive text.</p>
+                        <p><strong>Advanced Technique:</strong> Combine with container queries for component-level fluid typography:</p>
+                        <div class="code-example">
+                            <pre><code>
+@container card (min-width: 300px) {
+    .card-title {
+        font-size: clamp(1.3rem, 4vw, 1.8rem);
+    }
+    
+    .card-content {
+        font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+    }
+}
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Responsive spacing and sizing</summary>
+                        <p>Apply proportional spacing that scales with viewport size.</p>
+                        <pre><code>
+/* Responsive spacing with CSS locks */
+:root {
+    --spacing-unit: clamp(0.5rem, 2vw, 1.5rem);
+    --spacing-small: clamp(0.25rem, 1vw, 0.75rem);
+    --spacing-large: clamp(1rem, 4vw, 3rem);
+}
+
+/* Apply spacing consistently */
+.container {
+    padding: var(--spacing-unit);
+    margin: var(--spacing-unit);
+}
+
+.card {
+    padding: var(--spacing-large);
+    margin-bottom: var(--spacing-large);
+}
+
+.button {
+    padding: var(--spacing-small) var(--spacing-unit);
+    margin: var(--spacing-small);
+}
+
+/* Responsive font sizes */
+:root {
+    --font-size-xs: clamp(0.75rem, 2vw, 1rem);
+    --font-size-sm: clamp(0.875rem, 2.5vw, 1.125rem);
+    --font-size-base: clamp(1rem, 3vw, 1.5rem);
+    --font-size-lg: clamp(1.125rem, 3.5vw, 1.75rem);
+    --font-size-xl: clamp(1.25rem, 4vw, 2rem);
+    --font-size-xxl: clamp(1.5rem, 5vw, 3rem);
+}
+
+/* Responsive grid */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(calc(200px + 10vw), 1fr));
+    gap: var(--spacing-unit);
+}
+
+/* Responsive borders */
+.border {
+    border-width: clamp(1px, 0.1vw, 3px);
+    border-radius: clamp(4px, 0.5vw, 10px);
+}
+                        </code></pre>
+                        <div class="responsive-spacing-demo">
+                            <div style="background-color: rgba(0, 209, 255, 0.2); padding: 20px; border-radius: 8px; text-align: center;">
+                                <h3>Responsive Spacing Demo</h3>
+                                <p style="margin: 1rem 0;">All spacing values scale proportionally with viewport size</p>
+                            </div>
+                        </div>
+                        <p><strong>Why responsive spacing matters:</strong></p>
+                        <ul>
+                            <li>Creates harmonious, balanced layouts</li>
+                            <li>Improves readability across devices</li>
+                            <li>Reduces the need for numerous breakpoints</li>
+                            <li>Provides consistent visual rhythm</li>
+                        </ul>
+                        <p><strong>Spacing System Philosophy:</strong></p>
+                        <ol>
+                            <li>Define a single spacing scale based on viewport</li>
+                            <li>Use it consistently throughout your application</li>
+                            <li>Never use fixed pixel values for spacing</li>
+                            <li>Let spacing scale naturally with content</li>
+                        </ol>
+                        <p><strong>Pro Tip:</strong> Combine responsive spacing with CSS variables for a unified design system:</p>
+                        <div class="code-example">
+                            <pre><code>
+:root {
+    --spacing-xs: clamp(0.25rem, 1vw, 0.75rem);
+    --spacing-sm: clamp(0.5rem, 2vw, 1rem);
+    --spacing-md: clamp(0.75rem, 3vw, 1.25rem);
+    --spacing-lg: clamp(1rem, 4vw, 1.5rem);
+    --spacing-xl: clamp(1.25rem, 5vw, 2rem);
+    --spacing-xxl: clamp(1.5rem, 6vw, 3rem);
+}
+
+/* Usage */
+.component {
+    padding: var(--spacing-md);
+    margin: var(--spacing-lg);
+    border-radius: var(--spacing-sm);
+}
+                            </code></pre>
+                        </div>
+                        <p><strong>Advanced Technique:</strong> Use mathematical relationships to create harmonic spacing:</p>
+                        <div class="code-example">
+                            <pre><code>
+:root {
+    --base-font-size: 1rem;
+    --spacing-unit: calc(var(--base-font-size) * 1.5);
+    --spacing-scale: 1.618; /* Golden ratio */
+    
+    --spacing-1: var(--spacing-unit);
+    --spacing-2: calc(var(--spacing-unit) * var(--spacing-scale));
+    --spacing-3: calc(var(--spacing-unit) * var(--spacing-scale) * var(--spacing-scale));
+    --spacing-4: calc(var(--spacing-unit) * var(--spacing-scale) * var(--spacing-scale) * var(--spacing-scale));
+}
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>Art direction with picture element</summary>
+                        <p>Deliver different images for different contexts — not just different sizes.</p>
+                        <pre><code>
+/* Art direction: Different images for different contexts */
+&lt;picture&gt;
+    &lt;source media="(min-width: 1200px)" srcset="hero-desktop.webp" type="image/webp"&gt;
+    &lt;source media="(min-width: 768px)" srcset="hero-tablet.webp" type="image/webp"&gt;
+    &lt;source media="(max-width: 767px)" srcset="hero-mobile.webp" type="image/webp"&gt;
+    &lt;img src="hero-fallback.jpg" alt="Hero image" loading="lazy"&gt;
+&lt;/picture&gt;
+
+/* Art direction with aspect ratio */
+&lt;picture&gt;
+    &lt;source media="(min-aspect-ratio: 16/9)" srcset="wide-hero.webp" type="image/webp"&gt;
+    &lt;source media="(max-aspect-ratio: 4/3)" srcset="square-hero.webp" type="image/webp"&gt;
+    &lt;img src="default-hero.jpg" alt="Hero image" loading="lazy"&gt;
+&lt;/picture&gt;
+
+/* Art direction with color scheme */
+&lt;picture&gt;
+    &lt;source media="(prefers-color-scheme: dark)" srcset="hero-dark.webp" type="image/webp"&gt;
+    &lt;source media="(prefers-color-scheme: light)" srcset="hero-light.webp" type="image/webp"&gt;
+    &lt;img src="hero-default.jpg" alt="Hero image" loading="lazy"&gt;
+&lt;/picture&gt;
+
+/* Multiple sources for performance */
+&lt;picture&gt;
+    &lt;source srcset="hero.avif" type="image/avif"&gt;
+    &lt;source srcset="hero.webp" type="image/webp"&gt;
+    &lt;img src="hero.jpg" alt="Hero image" loading="lazy"&gt;
+&lt;/picture&gt;
+                        </code></pre>
+                        <div class="art-direction-demo">
+                            <div style="background-color: rgba(0, 209, 255, 0.2); padding: 20px; border-radius: 8px; text-align: center;">
+                                <p>Art Direction Demo</p>
+                                <p style="font-size: 0.8rem; margin-top: 10px;">Different images load based on device, orientation, and user preferences</p>
+                            </div>
+                        </div>
+                        <p><strong>What is Art Direction?</strong></p>
+                        <p>Changing the actual image content based on context — not just resizing it.</p>
+                        <p><strong>Traditional vs Art Direction:</strong></p>
+                        <table class="table table-dark mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Traditional</th>
+                                    <th>Art Direction</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Same image, resized</td>
+                                    <td>Different image composition</td>
+                                </tr>
+                                <tr>
+                                    <td>Focus on central subject</td>
+                                    <td>Reframe for context</td>
+                                </tr>
+                                <tr>
+                                    <td>Uniform across devices</td>
+                                    <td>Context-aware composition</td>
+                                </tr>
+                                <tr>
+                                    <td>File size optimization</td>
+                                    <td>Visual impact optimization</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p><strong>When to use Art Direction:</strong></p>
+                        <ul>
+                            <li>Hero banners — crop differently for mobile vs desktop</li>
+                            <li>Product images — focus on different features</li>
+                            <li>Portrait photos — reframe for vertical screens</li>
+                            <li>Infographics — simplify for small screens</li>
+                            <li>Dark/light mode — different color treatments</li>
+                        </ul>
+                        <p><strong>Picture Element Structure:</strong></p>
+                        <ol>
+                            <li><code>&lt;picture&gt;</code> — Container element</li>
+                            <li><code>&lt;source&gt;</code> — Define conditions and sources</li>
+                            <li><code>&lt;img&gt;</code> — Fallback for unsupported browsers</li>
+                        </ol>
+                        <p><strong>Source Attributes:</strong></p>
+                        <ul>
+                            <li><code>media</code>: Media query condition</li>
+                            <li><code>srcset</code>: Image source URL</li>
+                            <li><code>type</code>: MIME type (for format selection)</li>
+                        </ul>
+                        <p><strong>Pro Tip:</strong> Always include a fallback <code>&lt;img&gt;</code> — it's required for accessibility and compatibility!</p>
+                        <p><strong>Modern Best Practice:</strong></p>
+                        <div class="code-example">
+                            <pre><code>
+&lt;picture&gt;
+    &lt;source media="(max-width: 767px)" srcset="hero-mobile.avif" type="image/avif"&gt;
+    &lt;source media="(max-width: 767px)" srcset="hero-mobile.webp" type="image/webp"&gt;
+    &lt;source media="(max-width: 767px)" srcset="hero-mobile.jpg" type="image/jpeg"&gt;
+    
+    &lt;source media="(min-width: 768px)" srcset="hero-desktop.avif" type="image/avif"&gt;
+    &lt;source media="(min-width: 768px)" srcset="hero-desktop.webp" type="image/webp"&gt;
+    &lt;source media="(min-width: 768px)" srcset="hero-desktop.jpg" type="image/jpeg"&gt;
+    
+    &lt;img src="hero-default.jpg" alt="Hero image" loading="lazy"&gt;
+&lt;/picture&gt;
+                            </code></pre>
+                        </div>
+                        <p><strong>Performance Optimization:</strong></p>
+                        <ul>
+                            <li>Use modern formats: AVIF > WebP > JPEG</li>
+                            <li>Always specify <code>type</code> attribute</li>
+                            <li>Use <code>loading="lazy"</code> for below-the-fold images</li>
+                            <li>Specify explicit <code>width</code> and <code>height</code> attributes</li>
+                            <li>Use <code>decoding="async"</code> for better rendering</li>
+                        </ul>
+                        <p><strong>Accessibility Note:</strong> Always provide meaningful <code>alt</code> text — don't forget this critical requirement!</p>
+                    </details>
+                </section>
+
+                <div class="footer-note">
+                    🌟 Mastery Tip: Responsive design isn't about targeting devices — it's about serving content effectively.<br>
+                    Use media queries to respect user preferences, not to force layouts.<br>
+                    Adopt intrinsic design principles — let content dictate layout, not arbitrary breakpoints.<br>
+                    Implement component-based responsiveness — components should adapt to their container, not the viewport.<br>
+                    Master CSS locks and fluid typography — they're the future of responsive text.
+                    <br><br>
+                    Next Module: Animations and Transitions
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Expand/Collapse All
+            document.getElementById('expand-all').addEventListener('click', () => {
+                document.querySelectorAll('details').forEach(detail => {
+                    detail.open = true;
+                });
+            });
+
+            document.getElementById('collapse-all').addEventListener('click', () => {
+                document.querySelectorAll('details').forEach(detail => {
+                    detail.open = false;
+                });
+            });
+
+            // Search functionality
+            document.getElementById('toc-search').addEventListener('input', function(e) {
+                const query = e.target.value.toLowerCase();
+                const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
+                
+                tocItems.forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    if (text.includes(query)) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+
+            // Smooth scrolling for TOC links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+
+            // Highlight active section in TOC as user scrolls
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.toc-item a');
+
+            window.addEventListener('scroll', () => {
+                let current = '';
+                
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+                    if (pageYOffset >= sectionTop - 100) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === '#' + current) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+```

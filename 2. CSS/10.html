@@ -1,0 +1,1792 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 8: Flexbox Layout</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00d1ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --text-muted: #b3cde6;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            background-color: rgba(10, 25, 47, 0.9);
+            border-right: 1px solid var(--cyan);
+            height: 100vh;
+            position: fixed;
+            width: 300px;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 5px 0 15px rgba(0, 209, 255, 0.1);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--amber);
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: var(--amber);
+            border-bottom: 2px solid var(--amber);
+        }
+
+        .toc-item {
+            margin: 8px 0;
+            padding-left: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .toc-item a {
+            color: var(--text-muted);
+            text-decoration: none;
+            display: block;
+            transition: color 0.3s;
+        }
+
+        .toc-item a:hover {
+            color: var(--cyan);
+        }
+
+        .toc-subitem {
+            margin-left: 20px;
+            font-size: 0.9em;
+            color: var(--text-muted);
+        }
+
+        .toc-subitem a {
+            color: var(--text-muted);
+        }
+
+        .toc-subitem a:hover {
+            color: var(--cyan);
+        }
+
+        details {
+            margin: 15px 0;
+            border-left: 3px solid var(--amber);
+            padding-left: 15px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border-radius: 0 5px 5px 0;
+        }
+
+        summary {
+            cursor: pointer;
+            color: var(--amber);
+            font-weight: bold;
+            font-size: 1.1rem;
+            list-style: none;
+            padding: 10px;
+            background-color: rgba(0, 209, 255, 0.05);
+            border-radius: 5px;
+            margin-bottom: 5px;
+            transition: all 0.3s ease;
+        }
+
+        summary:hover {
+            background-color: rgba(0, 209, 255, 0.1);
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary::before {
+            content: "▶ ";
+            color: var(--amber);
+        }
+
+        details[open] summary::before {
+            content: "▼ ";
+            color: var(--amber);
+        }
+
+        pre code {
+            display: block;
+            padding: 16px;
+            overflow-x: auto;
+            background-color: #0d1b2a;
+            border-radius: 5px;
+            border-left: 4px solid var(--amber);
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--cyan);
+        }
+
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.1);
+            padding: 2px 5px;
+            border-radius: 3px;
+            color: var(--amber);
+            font-weight: 500;
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: #000;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+
+        .btn-control {
+            background-color: rgba(0, 209, 255, 0.1);
+            border: 1px solid var(--cyan);
+            color: var(--cyan);
+            margin: 10px 0;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .btn-control:hover {
+            background-color: var(--cyan);
+            color: #000;
+            transform: translateY(-2px);
+        }
+
+        .search-box {
+            background-color: rgba(0, 209, 255, 0.1);
+            border: 1px solid var(--cyan);
+            color: var(--text-light);
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            width: 100%;
+        }
+
+        .section-header {
+            border-bottom: 2px dashed var(--cyan);
+            padding-bottom: 10px;
+            margin: 30px 0 20px;
+            color: var(--amber);
+        }
+
+        .flex-demo {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border: 1px dashed var(--cyan);
+            border-radius: 8px;
+            min-height: 150px;
+            position: relative;
+        }
+
+        .flex-container {
+            display: flex;
+            margin: 15px 0;
+            padding: 15px;
+            background-color: rgba(13, 27, 42, 0.7);
+            border: 1px solid var(--amber);
+            border-radius: 5px;
+        }
+
+        .flex-item {
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            color: white;
+            font-weight: bold;
+            margin: 5px;
+            min-width: 100px;
+        }
+
+        .item-1 { background-color: #00d1ff; }
+        .item-2 { background-color: #ffa726; }
+        .item-3 { background-color: #00a8ff; }
+        .item-4 { background-color: #007fff; }
+        .item-5 { background-color: #0052ff; }
+
+        .axis-diagram {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border: 1px dashed var(--cyan);
+            border-radius: 8px;
+            text-align: center;
+            position: relative;
+            height: 200px;
+        }
+
+        .axis-label {
+            position: absolute;
+            color: var(--amber);
+            font-weight: bold;
+            font-size: 0.9rem;
+            background-color: rgba(0, 0, 0, 0.5);
+            padding: 3px 8px;
+            border-radius: 4px;
+        }
+
+        .centering-demo {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border: 1px dashed var(--cyan);
+            border-radius: 8px;
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .equal-height-demo {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border: 1px dashed var(--cyan);
+            border-radius: 8px;
+            display: flex;
+            gap: 20px;
+        }
+
+        .card-layout {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border: 1px dashed var(--cyan);
+            border-radius: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .card {
+            flex: 1;
+            min-width: 250px;
+            padding: 20px;
+            border-radius: 8px;
+            background-color: rgba(13, 27, 42, 0.7);
+            border: 1px solid rgba(0, 209, 255, 0.2);
+            color: white;
+        }
+
+        .media-object {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border: 1px dashed var(--cyan);
+            border-radius: 8px;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+
+        .media-object img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .nav-bar {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border: 1px dashed var(--cyan);
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-item {
+            padding: 10px 15px;
+            border-radius: 5px;
+            background-color: rgba(0, 209, 255, 0.2);
+            color: white;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+
+        .nav-item:hover {
+            background-color: rgba(0, 209, 255, 0.4);
+        }
+
+        .responsive-pattern {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border: 1px dashed var(--cyan);
+            border-radius: 8px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .responsive-item {
+            flex: 1 1 calc(33.333% - 15px);
+            min-width: 200px;
+            padding: 15px;
+            background-color: rgba(13, 27, 42, 0.7);
+            border-radius: 5px;
+            border: 1px solid rgba(0, 209, 255, 0.2);
+            color: white;
+            text-align: center;
+        }
+
+        .footer-note {
+            margin-top: 50px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid rgba(0, 209, 255, 0.2);
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 991px) {
+            .left-panel {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding: 15px;
+            }
+            .right-panel {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Left Panel -->
+            <div class="col-md-3 left-panel">
+                <h2>Module 8: Flexbox Layout</h2>
+                <p class="text-muted small">The modern solution for one-dimensional layouts — flexible, intuitive, and powerful</p>
+                <hr>
+                
+                <div class="mb-3">
+                    <input type="text" class="search-box" id="toc-search" placeholder="Search topics...">
+                </div>
+
+                <button class="btn-control w-100 mb-2" id="expand-all">Expand All</button>
+                <button class="btn-control w-100 mb-3" id="collapse-all">Collapse All</button>
+
+                <h5 class="text-uppercase text-muted fw-bold mb-3">Table of Contents</h5>
+                
+                <div class="toc-item">
+                    <a href="#sec-8-1">8.1 Flexbox Fundamentals</a>
+                    <div class="toc-subitem">
+                        <a href="#flex-container-items">• Flex container and flex items</a>
+                        <a href="#main-cross-axis">• Main axis vs cross axis</a>
+                        <a href="#flex-direction-wrap">• Flex direction and flex wrap</a>
+                    </div>
+                </div>
+                
+                <div class="toc-item">
+                    <a href="#sec-8-2">8.2 Flex Container Properties</a>
+                    <div class="toc-subitem">
+                        <a href="#justify-content">• justify-content for main axis alignment</a>
+                        <a href="#align-items">• align-items for cross axis alignment</a>
+                        <a href="#align-content">• align-content for wrapped lines</a>
+                        <a href="#gap-property">• gap property for spacing</a>
+                    </div>
+                </div>
+                
+                <div class="toc-item">
+                    <a href="#sec-8-3">8.3 Flex Item Properties</a>
+                    <div class="toc-subitem">
+                        <a href="#flex-grow-shrink-basis">• flex-grow, flex-shrink, flex-basis</a>
+                        <a href="#flex-shorthand">• flex shorthand property</a>
+                        <a href="#align-self">• align-self for individual alignment</a>
+                        <a href="#order-property">• order property for visual reordering</a>
+                    </div>
+                </div>
+                
+                <div class="toc-item">
+                    <a href="#sec-8-4">8.4 Flexbox Patterns and Use Cases</a>
+                    <div class="toc-subitem">
+                        <a href="#centering-content">• Centering content</a>
+                        <a href="#equal-height-columns">• Equal height columns</a>
+                        <a href="#flexible-navigation">• Flexible navigation bars</a>
+                        <a href="#card-layouts">• Card layouts and media objects</a>
+                        <a href="#responsive-flexbox">• Responsive flexbox patterns</a>
+                    </div>
+                </div>
+                
+                <div class="mt-5">
+                    <p class="text-muted small">
+                        <strong>Author:</strong> Web Dev Mentor<br>
+                        <small>For Deep Understanding Only</small>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="col-md-9 right-panel">
+                <h1>Flexbox Layout</h1>
+                <p class="lead text-muted">Master the modern layout system that revolutionized web design</p>
+
+                <!-- 8.1 Flexbox Fundamentals -->
+                <section id="sec-8-1">
+                    <h2>8.1 Flexbox Fundamentals</h2>
+                    <p class="text-muted">Understand the core concepts that make Flexbox work — containers, items, and axes.</p>
+
+                    <details>
+                        <summary>Flex container and flex items</summary>
+                        <p>Flexbox requires two key elements: a container and its children.</p>
+                        <pre><code>
+/* Make a container a flex container */
+.flex-container {
+    display: flex;
+}
+
+/* Children become flex items automatically */
+.flex-item {
+    /* No special properties needed */
+}
+                        </code></pre>
+                        <div class="flex-demo">
+                            <div class="flex-container">
+                                <div class="flex-item item-1">Item 1</div>
+                                <div class="flex-item item-2">Item 2</div>
+                                <div class="flex-item item-3">Item 3</div>
+                            </div>
+                        </div>
+                        <p><strong>Key Concepts:</strong></p>
+                        <ul>
+                            <li><strong>Flex Container:</strong> Element with <code>display: flex;</code></li>
+                            <li><strong>Flex Items:</strong> Direct children of the flex container</li>
+                            <li><strong>Implicit Behavior:</strong> All direct children become flex items automatically</li>
+                            <li><strong>Non-Flex Items:</strong> Elements nested deeper than direct children are not affected by flex properties</li>
+                        </ul>
+                        <p><strong>Important Note:</strong> Flexbox only affects direct children — it doesn't cascade down like regular CSS.</p>
+                        <div class="code-example">
+                            <pre><code>
+&lt;div class="flex-container"&gt;
+    &lt;div class="flex-item"&gt;Item 1&lt;/div&gt;
+    &lt;div class="flex-item"&gt;
+        &lt;div class="nested"&gt;This is NOT a flex item!&lt;/div&gt;
+    &lt;/div&gt;
+    &lt;div class="flex-item"&gt;Item 3&lt;/div&gt;
+&lt;/div&gt;
+                            </code></pre>
+                        </div>
+                        <p><strong>Pro Tip:</strong> Always use semantic HTML — don't add unnecessary divs just to create flex containers.</p>
+                    </details>
+
+                    <details>
+                        <summary>Main axis vs cross axis</summary>
+                        <p>Flexbox works in two dimensions: the main axis and the cross axis.</p>
+                        <div class="axis-diagram">
+                            <div style="display: flex; justify-content: center; align-items: center; height: 100%; width: 100%;">
+                                <div style="display: flex; flex-direction: row; gap: 10px;">
+                                    <div style="background-color: #00d1ff; width: 60px; height: 60px; border-radius: 5px;"></div>
+                                    <div style="background-color: #ffa726; width: 60px; height: 60px; border-radius: 5px;"></div>
+                                    <div style="background-color: #00a8ff; width: 60px; height: 60px; border-radius: 5px;"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="axis-label" style="top: 10px; left: 50%; transform: translateX(-50%);">Main Axis (row)</div>
+                            <div class="axis-label" style="top: 50%; left: 10px; transform: translateY(-50%) rotate(90deg);">Cross Axis (column)</div>
+                        </div>
+                        <p><strong>Main Axis:</strong> The primary direction of your layout — determined by <code>flex-direction</code>.</p>
+                        <p><strong>Cross Axis:</strong> Perpendicular to the main axis — always runs across your items.</p>
+                        <table class="table table-dark mt-3">
+                            <thead>
+                                <tr>
+                                    <th>flex-direction</th>
+                                    <th>Main Axis</th>
+                                    <th>Cross Axis</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>row</code> (default)</td>
+                                    <td>Left to right</td>
+                                    <td>Top to bottom</td>
+                                </tr>
+                                <tr>
+                                    <td><code>row-reverse</code></td>
+                                    <td>Right to left</td>
+                                    <td>Top to bottom</td>
+                                </tr>
+                                <tr>
+                                    <td><code>column</code></td>
+                                    <td>Top to bottom</td>
+                                    <td>Left to right</td>
+                                </tr>
+                                <tr>
+                                    <td><code>column-reverse</code></td>
+                                    <td>Bottom to top</td>
+                                    <td>Left to right</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p><strong>Memory Trick:</strong> Think of the main axis as the "direction you're flowing" and the cross axis as the "direction you're stacking".</p>
+                        <p><strong>Why it matters:</strong> Every flex property targets either the main axis or the cross axis:</p>
+                        <ul>
+                            <li><code>justify-content</code> → main axis</li>
+                            <li><code>align-items</code> → cross axis</li>
+                            <li><code>flex-direction</code> → determines which is which</li>
+                        </ul>
+                    </details>
+
+                    <details>
+                        <summary>Flex direction and flex wrap</summary>
+                        <p>Control the flow direction and whether items wrap to new lines.</p>
+                        <pre><code>
+/* Flex direction */
+.row-direction {
+    flex-direction: row; /* Default */
+}
+
+.column-direction {
+    flex-direction: column;
+}
+
+.row-reverse-direction {
+    flex-direction: row-reverse;
+}
+
+.column-reverse-direction {
+    flex-direction: column-reverse;
+}
+
+/* Flex wrap */
+.no-wrap {
+    flex-wrap: nowrap; /* Default */
+}
+
+.wrap {
+    flex-wrap: wrap;
+}
+
+.wrap-reverse {
+    flex-wrap: wrap-reverse;
+}
+
+/* Combined */
+.combined {
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+                        </code></pre>
+                        <div class="flex-demo">
+                            <h4>flex-direction: row (default)</h4>
+                            <div class="flex-container" style="flex-direction: row; margin: 10px 0;">
+                                <div class="flex-item item-1">Item 1</div>
+                                <div class="flex-item item-2">Item 2</div>
+                                <div class="flex-item item-3">Item 3</div>
+                            </div>
+                            
+                            <h4>flex-direction: column</h4>
+                            <div class="flex-container" style="flex-direction: column; margin: 10px 0;">
+                                <div class="flex-item item-1">Item 1</div>
+                                <div class="flex-item item-2">Item 2</div>
+                                <div class="flex-item item-3">Item 3</div>
+                            </div>
+                            
+                            <h4>flex-wrap: wrap</h4>
+                            <div class="flex-container" style="flex-wrap: wrap; width: 250px; margin: 10px 0;">
+                                <div class="flex-item item-1">Item 1</div>
+                                <div class="flex-item item-2">Item 2</div>
+                                <div class="flex-item item-3">Item 3</div>
+                                <div class="flex-item item-4">Item 4</div>
+                                <div class="flex-item item-5">Item 5</div>
+                            </div>
+                            
+                            <h4>flex-direction: row + flex-wrap: wrap</h4>
+                            <div class="flex-container" style="flex-direction: row; flex-wrap: wrap; width: 250px; margin: 10px 0;">
+                                <div class="flex-item item-1">Item 1</div>
+                                <div class="flex-item item-2">Item 2</div>
+                                <div class="flex-item item-3">Item 3</div>
+                                <div class="flex-item item-4">Item 4</div>
+                                <div class="flex-item item-5">Item 5</div>
+                            </div>
+                        </div>
+                        <p><strong>Wrap Behavior:</strong></p>
+                        <ul>
+                            <li><code>nowrap</code>: All items on single line (may overflow)</li>
+                            <li><code>wrap</code>: Items wrap to new lines from top to bottom</li>
+                            <li><code>wrap-reverse</code>: Items wrap to new lines from bottom to top</li>
+                        </ul>
+                        <p><strong>When to use wrap:</strong> Always use <code>flex-wrap: wrap</code> for responsive layouts!</p>
+                        <p><strong>Pro Tip:</strong> Combine <code>flex-direction</code> and <code>flex-wrap</code> using the shorthand <code>flex-flow</code>:</p>
+                        <pre><code>
+.flex-flow {
+    flex-flow: row wrap; /* Equivalent to flex-direction: row; flex-wrap: wrap; */
+}
+                        </code></pre>
+                    </details>
+                </section>
+
+                <!-- 8.2 Flex Container Properties -->
+                <section id="sec-8-2">
+                    <h2>8.2 Flex Container Properties</h2>
+                    <p class="text-muted">Control how flex items are aligned and spaced within the container.</p>
+
+                    <details>
+                        <summary>justify-content for main axis alignment</summary>
+                        <p>Distribute space along the main axis — how items are arranged horizontally (or vertically if column).</p>
+                        <pre><code>
+.justify-start {
+    justify-content: flex-start; /* Default */
+}
+
+.justify-end {
+    justify-content: flex-end;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+.justify-space-between {
+    justify-content: space-between;
+}
+
+.justify-space-around {
+    justify-content: space-around;
+}
+
+.justify-space-evenly {
+    justify-content: space-evenly;
+}
+                        </code></pre>
+                        <div class="flex-demo">
+                            <h4>justify-content: flex-start (default)</h4>
+                            <div class="flex-container" style="justify-content: flex-start; margin: 10px 0;">
+                                <div class="flex-item item-1">Item 1</div>
+                                <div class="flex-item item-2">Item 2</div>
+                                <div class="flex-item item-3">Item 3</div>
+                            </div>
+                            
+                            <h4>justify-content: center</h4>
+                            <div class="flex-container" style="justify-content: center; margin: 10px 0;">
+                                <div class="flex-item item-1">Item 1</div>
+                                <div class="flex-item item-2">Item 2</div>
+                                <div class="flex-item item-3">Item 3</div>
+                            </div>
+                            
+                            <h4>justify-content: space-between</h4>
+                            <div class="flex-container" style="justify-content: space-between; margin: 10px 0;">
+                                <div class="flex-item item-1">Item 1</div>
+                                <div class="flex-item item-2">Item 2</div>
+                                <div class="flex-item item-3">Item 3</div>
+                            </div>
+                            
+                            <h4>justify-content: space-around</h4>
+                            <div class="flex-container" style="justify-content: space-around; margin: 10px 0;">
+                                <div class="flex-item item-1">Item 1</div>
+                                <div class="flex-item item-2">Item 2</div>
+                                <div class="flex-item item-3">Item 3</div>
+                            </div>
+                            
+                            <h4>justify-content: space-evenly</h4>
+                            <div class="flex-container" style="justify-content: space-evenly; margin: 10px 0;">
+                                <div class="flex-item item-1">Item 1</div>
+                                <div class="flex-item item-2">Item 2</div>
+                                <div class="flex-item item-3">Item 3</div>
+                            </div>
+                        </div>
+                        <p><strong>Behavior Comparison:</strong></p>
+                        <table class="table table-dark mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Value</th>
+                                    <th>First Item</th>
+                                    <th>Last Item</th>
+                                    <th>Spacing</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>flex-start</code></td>
+                                    <td>Aligned to start</td>
+                                    <td>Aligned to start</td>
+                                    <td>No extra space</td>
+                                </tr>
+                                <tr>
+                                    <td><code>flex-end</code></td>
+                                    <td>Aligned to end</td>
+                                    <td>Aligned to end</td>
+                                    <td>No extra space</td>
+                                </tr>
+                                <tr>
+                                    <td><code>center</code></td>
+                                    <td>Centered</td>
+                                    <td>Centered</td>
+                                    <td>Equal space on both sides</td>
+                                </tr>
+                                <tr>
+                                    <td><code>space-between</code></td>
+                                    <td>At start</td>
+                                    <td>At end</td>
+                                    <td>Equal space between items</td>
+                                </tr>
+                                <tr>
+                                    <td><code>space-around</code></td>
+                                    <td>Half space from edge</td>
+                                    <td>Half space from edge</td>
+                                    <td>Equal space around items</td>
+                                </tr>
+                                <tr>
+                                    <td><code>space-evenly</code></td>
+                                    <td>Equal space from edge</td>
+                                    <td>Equal space from edge</td>
+                                    <td>Equal space between and around</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p><strong>Best Practice:</strong> Use <code>space-between</code> for navigation bars, <code>center</code> for modals, <code>space-evenly</code> for evenly distributed icons.</p>
+                    </details>
+
+                    <details>
+                        <summary>align-items for cross axis alignment</summary>
+                        <p>Align items along the cross axis — perpendicular to the main axis.</p>
+                        <pre><code>
+.align-start {
+    align-items: flex-start; /* Default for row */
+}
+
+.align-end {
+    align-items: flex-end;
+}
+
+.align-center {
+    align-items: center;
+}
+
+.align-stretch {
+    align-items: stretch; /* Default for column */
+}
+
+.align-baseline {
+    align-items: baseline;
+}
+                        </code></pre>
+                        <div class="flex-demo">
+                            <h4>align-items: stretch (default)</h4>
+                            <div class="flex-container" style="align-items: stretch; height: 100px; margin: 10px 0;">
+                                <div class="flex-item item-1" style="padding: 10px;">Short</div>
+                                <div class="flex-item item-2" style="padding: 20px 10px;">Medium length text</div>
+                                <div class="flex-item item-3" style="padding: 30px 10px;">Very long text that wraps to multiple lines</div>
+                            </div>
+                            
+                            <h4>align-items: center</h4>
+                            <div class="flex-container" style="align-items: center; height: 100px; margin: 10px 0;">
+                                <div class="flex-item item-1" style="padding: 10px;">Short</div>
+                                <div class="flex-item item-2" style="padding: 20px 10px;">Medium length text</div>
+                                <div class="flex-item item-3" style="padding: 30px 10px;">Very long text that wraps to multiple lines</div>
+                            </div>
+                            
+                            <h4>align-items: flex-start</h4>
+                            <div class="flex-container" style="align-items: flex-start; height: 100px; margin: 10px 0;">
+                                <div class="flex-item item-1" style="padding: 10px;">Short</div>
+                                <div class="flex-item item-2" style="padding: 20px 10px;">Medium length text</div>
+                                <div class="flex-item item-3" style="padding: 30px 10px;">Very long text that wraps to multiple lines</div>
+                            </div>
+                            
+                            <h4>align-items: flex-end</h4>
+                            <div class="flex-container" style="align-items: flex-end; height: 100px; margin: 10px 0;">
+                                <div class="flex-item item-1" style="padding: 10px;">Short</div>
+                                <div class="flex-item item-2" style="padding: 20px 10px;">Medium length text</div>
+                                <div class="flex-item item-3" style="padding: 30px 10px;">Very long text that wraps to multiple lines</div>
+                            </div>
+                            
+                            <h4>align-items: baseline</h4>
+                            <div class="flex-container" style="align-items: baseline; height: 100px; margin: 10px 0;">
+                                <div class="flex-item item-1" style="padding: 10px; font-size: 14px;">Short</div>
+                                <div class="flex-item item-2" style="padding: 20px 10px; font-size: 16px;">Medium length text</div>
+                                <div class="flex-item item-3" style="padding: 30px 10px; font-size: 18px;">Very long text that wraps to multiple lines</div>
+                            </div>
+                        </div>
+                        <p><strong>Key Insight:</strong> When <code>flex-direction: row</code>, cross axis is vertical — so <code>align-items</code> controls vertical alignment.</p>
+                        <p><strong>When <code>flex-direction: column</code>, cross axis is horizontal — so <code>align-items</code> controls horizontal alignment.</strong></p>
+                        <div class="code-example">
+                            <pre><code>
+/* Column direction */
+.column-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centers items horizontally */
+}
+
+/* Row direction */
+.row-container {
+    display: flex;
+    align-items: center; /* Centers items vertically */
+}
+                            </code></pre>
+                        </div>
+                        <p><strong>Pro Tip:</strong> Use <code>align-items: center</code> for vertical centering in row layouts — it's the most common pattern.</p>
+                    </details>
+
+                    <details>
+                        <summary>align-content for wrapped lines</summary>
+                        <p>Only works when there are multiple lines (flex-wrap: wrap). Controls spacing between lines.</p>
+                        <pre><code>
+.align-content-start {
+    align-content: flex-start;
+}
+
+.align-content-end {
+    align-content: flex-end;
+}
+
+.align-content-center {
+    align-content: center;
+}
+
+.align-content-space-between {
+    align-content: space-between;
+}
+
+.align-content-space-around {
+    align-content: space-around;
+}
+
+.align-content-space-evenly {
+    align-content: space-evenly;
+}
+                        </code></pre>
+                        <div class="flex-demo">
+                            <h4>align-content: flex-start (default)</h4>
+                            <div class="flex-container" style="flex-wrap: wrap; align-content: flex-start; width: 300px; height: 150px; margin: 10px 0;">
+                                <div class="flex-item item-1" style="width: 80px; height: 40px;">Item 1</div>
+                                <div class="flex-item item-2" style="width: 80px; height: 40px;">Item 2</div>
+                                <div class="flex-item item-3" style="width: 80px; height: 40px;">Item 3</div>
+                                <div class="flex-item item-4" style="width: 80px; height: 40px;">Item 4</div>
+                                <div class="flex-item item-5" style="width: 80px; height: 40px;">Item 5</div>
+                                <div class="flex-item item-6" style="width: 80px; height: 40px;">Item 6</div>
+                            </div>
+                            
+                            <h4>align-content: center</h4>
+                            <div class="flex-container" style="flex-wrap: wrap; align-content: center; width: 300px; height: 150px; margin: 10px 0;">
+                                <div class="flex-item item-1" style="width: 80px; height: 40px;">Item 1</div>
+                                <div class="flex-item item-2" style="width: 80px; height: 40px;">Item 2</div>
+                                <div class="flex-item item-3" style="width: 80px; height: 40px;">Item 3</div>
+                                <div class="flex-item item-4" style="width: 80px; height: 40px;">Item 4</div>
+                                <div class="flex-item item-5" style="width: 80px; height: 40px;">Item 5</div>
+                                <div class="flex-item item-6" style="width: 80px; height: 40px;">Item 6</div>
+                            </div>
+                            
+                            <h4>align-content: space-between</h4>
+                            <div class="flex-container" style="flex-wrap: wrap; align-content: space-between; width: 300px; height: 150px; margin: 10px 0;">
+                                <div class="flex-item item-1" style="width: 80px; height: 40px;">Item 1</div>
+                                <div class="flex-item item-2" style="width: 80px; height: 40px;">Item 2</div>
+                                <div class="flex-item item-3" style="width: 80px; height: 40px;">Item 3</div>
+                                <div class="flex-item item-4" style="width: 80px; height: 40px;">Item 4</div>
+                                <div class="flex-item item-5" style="width: 80px; height: 40px;">Item 5</div>
+                                <div class="flex-item item-6" style="width: 80px; height: 40px;">Item 6</div>
+                            </div>
+                            
+                            <h4>align-content: space-around</h4>
+                            <div class="flex-container" style="flex-wrap: wrap; align-content: space-around; width: 300px; height: 150px; margin: 10px 0;">
+                                <div class="flex-item item-1" style="width: 80px; height: 40px;">Item 1</div>
+                                <div class="flex-item item-2" style="width: 80px; height: 40px;">Item 2</div>
+                                <div class="flex-item item-3" style="width: 80px; height: 40px;">Item 3</div>
+                                <div class="flex-item item-4" style="width: 80px; height: 40px;">Item 4</div>
+                                <div class="flex-item item-5" style="width: 80px; height: 40px;">Item 5</div>
+                                <div class="flex-item item-6" style="width: 80px; height: 40px;">Item 6</div>
+                            </div>
+                        </div>
+                        <p><strong>Important:</strong> <code>align-content</code> has no effect when there's only one line!</p>
+                        <p><strong>When to use:</strong> Grid-like layouts with multiple rows/columns where you want to control the distribution between lines.</p>
+                        <p><strong>Pro Tip:</strong> Combine with <code>justify-content</code> for perfect grid layouts:</p>
+                        <div class="code-example">
+                            <pre><code>
+.grid-layout {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-content: space-between;
+}
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>gap property for spacing</summary>
+                        <p>The modern way to add consistent spacing between flex items — no more margin hacks!</p>
+                        <pre><code>
+.gap-10 {
+    gap: 10px;
+}
+
+.gap-20 {
+    gap: 20px;
+}
+
+.gap-horizontal-vertical {
+    gap: 10px 20px; /* row-gap column-gap */
+}
+
+.gap-row-column {
+    row-gap: 10px;
+    column-gap: 20px;
+}
+                        </code></pre>
+                        <div class="flex-demo">
+                            <h4>Without gap (using margins)</h4>
+                            <div class="flex-container" style="margin: 10px 0;">
+                                <div class="flex-item item-1" style="margin-right: 10px;">Item 1</div>
+                                <div class="flex-item item-2" style="margin-right: 10px;">Item 2</div>
+                                <div class="flex-item item-3">Item 3</div>
+                            </div>
+                            
+                            <h4>With gap (modern approach)</h4>
+                            <div class="flex-container" style="gap: 10px; margin: 10px 0;">
+                                <div class="flex-item item-1">Item 1</div>
+                                <div class="flex-item item-2">Item 2</div>
+                                <div class="flex-item item-3">Item 3</div>
+                            </div>
+                            
+                            <h4>Gap with wrapping</h4>
+                            <div class="flex-container" style="gap: 15px; flex-wrap: wrap; width: 300px; margin: 10px 0;">
+                                <div class="flex-item item-1" style="width: 80px;">Item 1</div>
+                                <div class="flex-item item-2" style="width: 80px;">Item 2</div>
+                                <div class="flex-item item-3" style="width: 80px;">Item 3</div>
+                                <div class="flex-item item-4" style="width: 80px;">Item 4</div>
+                                <div class="flex-item item-5" style="width: 80px;">Item 5</div>
+                            </div>
+                        </div>
+                        <p><strong>Why gap is revolutionary:</strong></p>
+                        <ul>
+                            <li>Removes need for complex margin calculations</li>
+                            <li>Doesn't affect first/last items</li>
+                            <li>Works consistently with wrapping</li>
+                            <li>Can be set independently for rows and columns</li>
+                            <li>More readable and maintainable</li>
+                        </ul>
+                        <p><strong>Pro Tip:</strong> Use <code>gap</code> instead of <code>margin</code> for spacing between flex items — it's cleaner and more predictable.</p>
+                        <p><strong>Browser Support:</strong> Excellent in modern browsers (Chrome 84+, Firefox 84+, Safari 14+).</p>
+                    </details>
+                </section>
+
+                <!-- 8.3 Flex Item Properties -->
+                <section id="sec-8-3">
+                    <h2>8.3 Flex Item Properties</h2>
+                    <p class="text-muted">Control individual behavior of flex items within their container.</p>
+
+                    <details>
+                        <summary>flex-grow, flex-shrink, flex-basis</summary>
+                        <p>The three components that determine how flex items distribute available space.</p>
+                        <pre><code>
+.item-grow {
+    flex-grow: 1; /* Expand to fill available space */
+}
+
+.item-shrink {
+    flex-shrink: 1; /* Shrink when space is limited */
+}
+
+.item-basis {
+    flex-basis: 200px; /* Initial size before growing/shrinking */
+}
+
+/* Individual values */
+.complex-item {
+    flex-grow: 2;
+    flex-shrink: 1;
+    flex-basis: 150px;
+}
+                        </code></pre>
+                        <div class="flex-demo">
+                            <h4>flex-grow: 0 (default)</h4>
+                            <div class="flex-container" style="margin: 10px 0;">
+                                <div class="flex-item item-1" style="flex-grow: 0; width: 100px;">Fixed Width</div>
+                                <div class="flex-item item-2" style="flex-grow: 0; width: 100px;">Fixed Width</div>
+                                <div class="flex-item item-3" style="flex-grow: 0; width: 100px;">Fixed Width</div>
+                            </div>
+                            
+                            <h4>flex-grow: 1</h4>
+                            <div class="flex-container" style="margin: 10px 0;">
+                                <div class="flex-item item-1" style="flex-grow: 1;">Grow 1</div>
+                                <div class="flex-item item-2" style="flex-grow: 1;">Grow 1</div>
+                                <div class="flex-item item-3" style="flex-grow: 1;">Grow 1</div>
+                            </div>
+                            
+                            <h4>flex-grow: 2 vs flex-grow: 1</h4>
+                            <div class="flex-container" style="margin: 10px 0;">
+                                <div class="flex-item item-1" style="flex-grow: 2;">Grow 2</div>
+                                <div class="flex-item item-2" style="flex-grow: 1;">Grow 1</div>
+                                <div class="flex-item item-3" style="flex-grow: 1;">Grow 1</div>
+                            </div>
+                            
+                            <h4>flex-basis: 200px</h4>
+                            <div class="flex-container" style="margin: 10px 0;">
+                                <div class="flex-item item-1" style="flex-basis: 200px;">Basis 200px</div>
+                                <div class="flex-item item-2" style="flex-basis: 200px;">Basis 200px</div>
+                                <div class="flex-item item-3" style="flex-basis: 200px;">Basis 200px</div>
+                            </div>
+                            
+                            <h4>flex-basis: auto</h4>
+                            <div class="flex-container" style="margin: 10px 0;">
+                                <div class="flex-item item-1" style="flex-basis: auto; width: 100px;">Auto Basis</div>
+                                <div class="flex-item item-2" style="flex-basis: auto; width: 150px;">Auto Basis</div>
+                                <div class="flex-item item-3" style="flex-basis: auto; width: 120px;">Auto Basis</div>
+                            </div>
+                        </div>
+                        <p><strong>How they work together:</strong></p>
+                        <ol>
+                            <li><strong>flex-basis:</strong> Sets the initial size (like width/height)</li>
+                            <li><strong>flex-grow:</strong> How much to expand beyond basis when space is available</li>
+                            <li><strong>flex-shrink:</strong> How much to shrink below basis when space is limited</li>
+                        </ol>
+                        <p><strong>Visual Formula:</strong></p>
+                        <pre><code>
+Available Space = Container Width - Total Flex-Basis
+
+Item Size = Flex-Basis + (Available Space × Flex-Grow Ratio)
+                        </code></pre>
+                        <p><strong>Example:</strong> Three items with flex-grow: 1, 2, 1 in a 800px container with flex-basis: 100px each:</p>
+                        <ul>
+                            <li>Total basis: 300px</li>
+                            <li>Available space: 500px</li>
+                            <li>Total grow factor: 4 (1+2+1)</li>
+                            <li>Item 1: 100 + (500 × 1/4) = 225px</li>
+                            <li>Item 2: 100 + (500 × 2/4) = 350px</li>
+                            <li>Item 3: 100 + (500 × 1/4) = 225px</li>
+                        </ul>
+                        <p><strong>Pro Tip:</strong> Set <code>flex-basis: 0</code> when you want items to grow equally regardless of content size.</p>
+                    </details>
+
+                    <details>
+                        <summary>flex shorthand property</summary>
+                        <p>Combine flex-grow, flex-shrink, and flex-basis into one convenient property.</p>
+                        <pre><code>
+/* Common flex values */
+.flex-auto {
+    flex: auto; /* 1 1 auto */
+}
+
+.flex-none {
+    flex: none; /* 0 0 auto */
+}
+
+.flex-initial {
+    flex: initial; /* 0 1 auto */
+}
+
+.flex-1 {
+    flex: 1; /* 1 1 0% */
+}
+
+.flex-2 {
+    flex: 2; /* 2 1 0% */
+}
+
+/* Explicit values */
+.flex-custom {
+    flex: 1 1 200px;
+}
+
+/* Most common pattern */
+.flex-growth {
+    flex: 1;
+}
+                        </code></pre>
+                        <div class="flex-demo">
+                            <h4>flex: 1 (most common)</h4>
+                            <div class="flex-container" style="margin: 10px 0;">
+                                <div class="flex-item item-1" style="flex: 1;">Flexible Item</div>
+                                <div class="flex-item item-2" style="flex: 1;">Flexible Item</div>
+                                <div class="flex-item item-3" style="flex: 1;">Flexible Item</div>
+                            </div>
+                            
+                            <h4>flex: 2 vs flex: 1</h4>
+                            <div class="flex-container" style="margin: 10px 0;">
+                                <div class="flex-item item-1" style="flex: 2;">Grow 2x</div>
+                                <div class="flex-item item-2" style="flex: 1;">Grow 1x</div>
+                                <div class="flex-item item-3" style="flex: 1;">Grow 1x</div>
+                            </div>
+                            
+                            <h4>flex: 0 0 150px</h4>
+                            <div class="flex-container" style="margin: 10px 0;">
+                                <div class="flex-item item-1" style="flex: 0 0 150px;">Fixed 150px</div>
+                                <div class="flex-item item-2" style="flex: 0 0 150px;">Fixed 150px</div>
+                                <div class="flex-item item-3" style="flex: 0 0 150px;">Fixed 150px</div>
+                            </div>
+                        </div>
+                        <p><strong>Shorthand Values Explained:</strong></p>
+                        <table class="table table-dark mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Value</th>
+                                    <th>flex-grow</th>
+                                    <th>flex-shrink</th>
+                                    <th>flex-basis</th>
+                                    <th>Equivalent</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>auto</code></td>
+                                    <td>1</td>
+                                    <td>1</td>
+                                    <td>auto</td>
+                                    <td><code>1 1 auto</code></td>
+                                </tr>
+                                <tr>
+                                    <td><code>none</code></td>
+                                    <td>0</td>
+                                    <td>0</td>
+                                    <td>auto</td>
+                                    <td><code>0 0 auto</code></td>
+                                </tr>
+                                <tr>
+                                    <td><code>initial</code></td>
+                                    <td>0</td>
+                                    <td>1</td>
+                                    <td>auto</td>
+                                    <td><code>0 1 auto</code></td>
+                                </tr>
+                                <tr>
+                                    <td><code>1</code></td>
+                                    <td>1</td>
+                                    <td>1</td>
+                                    <td>0%</td>
+                                    <td><code>1 1 0%</code></td>
+                                </tr>
+                                <tr>
+                                    <td><code>0</code></td>
+                                    <td>0</td>
+                                    <td>1</td>
+                                    <td>0%</td>
+                                    <td><code>0 1 0%</code></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p><strong>Best Practice:</strong> Use <code>flex: 1</code> for equal distribution — it's the most common pattern in modern web design.</p>
+                        <p><strong>Pro Tip:</strong> You can still override individual properties even when using shorthand:</p>
+                        <div class="code-example">
+                            <pre><code>
+.item {
+    flex: 1;
+    flex-basis: 200px; /* Overrides the basis from shorthand */
+}
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>align-self for individual alignment</summary>
+                        <p>Override the container's <code>align-items</code> setting for individual items.</p>
+                        <pre><code>
+.self-start {
+    align-self: flex-start;
+}
+
+.self-end {
+    align-self: flex-end;
+}
+
+.self-center {
+    align-self: center;
+}
+
+.self-stretch {
+    align-self: stretch;
+}
+
+.self-baseline {
+    align-self: baseline;
+}
+                        </code></pre>
+                        <div class="flex-demo">
+                            <h4>Container align-items: center</h4>
+                            <div class="flex-container" style="align-items: center; height: 100px; margin: 10px 0;">
+                                <div class="flex-item item-1" style="padding: 10px;">Normal</div>
+                                <div class="flex-item item-2" style="padding: 20px 10px; align-self: flex-start;">align-self: flex-start</div>
+                                <div class="flex-item item-3" style="padding: 30px 10px; align-self: flex-end;">align-self: flex-end</div>
+                                <div class="flex-item item-4" style="padding: 15px 10px; align-self: center;">align-self: center</div>
+                            </div>
+                            
+                            <h4>Container align-items: flex-start</h4>
+                            <div class="flex-container" style="align-items: flex-start; height: 100px; margin: 10px 0;">
+                                <div class="flex-item item-1" style="padding: 10px;">Normal</div>
+                                <div class="flex-item item-2" style="padding: 20px 10px; align-self: center;">align-self: center</div>
+                                <div class="flex-item item-3" style="padding: 30px 10px; align-self: flex-end;">align-self: flex-end</div>
+                                <div class="flex-item item-4" style="padding: 15px 10px; align-self: stretch;">align-self: stretch</div>
+                            </div>
+                        </div>
+                        <p><strong>When to use:</strong></p>
+                        <ul>
+                            <li>Need one item to behave differently from others</li>
+                            <li>Vertical alignment in a row layout</li>
+                            <li>Overriding default alignment for specific components</li>
+                        </ul>
+                        <p><strong>Pro Tip:</strong> <code>align-self: stretch</code> is useful when you want an item to fill the full height of its container even when other items are smaller.</p>
+                    </details>
+
+                    <details>
+                        <summary>order property for visual reordering</summary>
+                        <p>Change the visual order of flex items without changing HTML structure.</p>
+                        <pre><code>
+.order-1 {
+    order: 1;
+}
+
+.order-2 {
+    order: 2;
+}
+
+.order-0 {
+    order: 0; /* Default */
+}
+
+.order-negative {
+    order: -1;
+}
+                        </code></pre>
+                        <div class="flex-demo">
+                            <h4>Default order (0)</h4>
+                            <div class="flex-container" style="margin: 10px 0;">
+                                <div class="flex-item item-1">Item 1</div>
+                                <div class="flex-item item-2">Item 2</div>
+                                <div class="flex-item item-3">Item 3</div>
+                            </div>
+                            
+                            <h4>Reordered with order property</h4>
+                            <div class="flex-container" style="margin: 10px 0;">
+                                <div class="flex-item item-1" style="order: 2;">Item 1 (order: 2)</div>
+                                <div class="flex-item item-2" style="order: 1;">Item 2 (order: 1)</div>
+                                <div class="flex-item item-3" style="order: 3;">Item 3 (order: 3)</div>
+                            </div>
+                            
+                            <h4>Negative order</h4>
+                            <div class="flex-container" style="margin: 10px 0;">
+                                <div class="flex-item item-1" style="order: 2;">Item 1 (order: 2)</div>
+                                <div class="flex-item item-2" style="order: -1;">Item 2 (order: -1)</div>
+                                <div class="flex-item item-3" style="order: 1;">Item 3 (order: 1)</div>
+                            </div>
+                        </div>
+                        <p><strong>Key Points:</strong></p>
+                        <ul>
+                            <li>Items are ordered numerically from lowest to highest</li>
+                            <li>Default order is 0</li>
+                            <li>Negative numbers come before positive numbers</li>
+                            <li>Items with same order value maintain source order</li>
+                        </ul>
+                        <p><strong>Use Cases:</strong></p>
+                        <ul>
+                            <li>Mobile-first design — reorder content for different screen sizes</li>
+                            <li>Accessibility — visually reorder without affecting screen reader order</li>
+                            <li>Hero sections — move important content to front on desktop</li>
+                        </ul>
+                        <p><strong>Accessibility Note:</strong> Screen readers follow HTML order, not visual order — this is often desirable!</p>
+                        <div class="code-example">
+                            <pre><code>
+/* Mobile-first approach */
+.sidebar {
+    order: 2;
+}
+
+.content {
+    order: 1;
+}
+
+@media (min-width: 768px) {
+    .sidebar {
+        order: 1;
+    }
+    
+    .content {
+        order: 2;
+    }
+}
+                            </code></pre>
+                        </div>
+                    </details>
+                </section>
+
+                <!-- 8.4 Flexbox Patterns and Use Cases -->
+                <section id="sec-8-4">
+                    <h2>8.4 Flexbox Patterns and Use Cases</h2>
+                    <p class="text-muted">Apply Flexbox to solve real-world layout challenges with elegant solutions.</p>
+
+                    <details>
+                        <summary>Centering content</summary>
+                        <p>One of Flexbox's greatest strengths — easily center elements both horizontally and vertically.</p>
+                        <pre><code>
+/* Perfect centering */
+.center-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+/* Horizontal centering only */
+.h-center {
+    display: flex;
+    justify-content: center;
+}
+
+/* Vertical centering only */
+.v-center {
+    display: flex;
+    align-items: center;
+    height: 100vh;
+}
+                        </code></pre>
+                        <div class="centering-demo">
+                            <div style="text-align: center;">Perfectly Centered Content</div>
+                        </div>
+                        <p><strong>Why this works:</strong></p>
+                        <ul>
+                            <li><code>justify-content: center</code> centers along main axis (horizontal in row)</li>
+                            <li><code>align-items: center</code> centers along cross axis (vertical in row)</li>
+                            <li>No need for positioning or transforms!</li>
+                        </ul>
+                        <p><strong>Real-World Example:</strong> Modal dialog centering:</p>
+                        <div class="code-example">
+                            <pre><code>
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: #0a192f;
+    padding: 30px;
+    border-radius: 10px;
+    max-width: 600px;
+    width: 100%;
+}
+                            </code></pre>
+                        </div>
+                        <p><strong>Pro Tip:</strong> Combine with <code>max-width</code> and <code>width: 100%</code> for responsive modal dialogs.</p>
+                    </details>
+
+                    <details>
+                        <summary>Equal height columns</summary>
+                        <p>Solve the classic problem of columns having different heights.</p>
+                        <pre><code>
+.equal-height-container {
+    display: flex;
+}
+
+.equal-height-column {
+    flex: 1;
+    padding: 20px;
+    border: 1px solid rgba(0, 209, 255, 0.2);
+}
+                        </code></pre>
+                        <div class="equal-height-demo">
+                            <div class="flex-item item-1" style="flex: 1; padding: 20px; border: 1px solid rgba(0, 209, 255, 0.2);">
+                                <h4>Column 1</h4>
+                                <p>Short content</p>
+                            </div>
+                            <div class="flex-item item-2" style="flex: 1; padding: 20px; border: 1px solid rgba(0, 209, 255, 0.2);">
+                                <h4>Column 2</h4>
+                                <p>Longer content here that takes up more space and makes this column taller than the others.</p>
+                                <p>Even more content to demonstrate the equal height effect.</p>
+                            </div>
+                            <div class="flex-item item-3" style="flex: 1; padding: 20px; border: 1px solid rgba(0, 209, 255, 0.2);">
+                                <h4>Column 3</h4>
+                                <p>Medium content</p>
+                                <p>Some additional content</p>
+                            </div>
+                        </div>
+                        <p><strong>How it works:</strong></p>
+                        <ul>
+                            <li><code>display: flex</code> creates a flex container</li>
+                            <li><code>flex: 1</code> makes each item grow equally</li>
+                            <li>By default, flex items stretch to match the tallest item (<code>align-items: stretch</code>)</li>
+                        </ul>
+                        <p><strong>Advanced Pattern:</strong> Add gaps and borders without breaking layout:</p>
+                        <div class="code-example">
+                            <pre><code>
+.equal-height-container {
+    display: flex;
+    gap: 20px;
+}
+
+.equal-height-column {
+    flex: 1;
+    padding: 20px;
+    border: 1px solid rgba(0, 209, 255, 0.2);
+    border-radius: 8px;
+}
+                            </code></pre>
+                        </div>
+                        <p><strong>Pro Tip:</strong> This eliminates the need for JavaScript libraries like MatchHeight!</p>
+                    </details>
+
+                    <details>
+                        <summary>Flexible navigation bars</summary>
+                        <p>Create responsive, adaptable navigation menus that work on all devices.</p>
+                        <pre><code>
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background-color: #0a192f;
+}
+
+.logo {
+    flex: 0 0 auto;
+}
+
+.menu {
+    display: flex;
+    gap: 20px;
+}
+
+.menu-item {
+    text-decoration: none;
+    color: white;
+}
+
+.menu-item:hover {
+    color: var(--amber);
+}
+                        </code></pre>
+                        <div class="nav-bar">
+                            <div class="logo" style="font-weight: bold; color: var(--cyan);">Logo</div>
+                            <div class="menu">
+                                <a href="#" class="menu-item">Home</a>
+                                <a href="#" class="menu-item">About</a>
+                                <a href="#" class="menu-item">Services</a>
+                                <a href="#" class="menu-item">Contact</a>
+                            </div>
+                            <div class="cta" style="background-color: var(--amber); color: #000; padding: 8px 16px; border-radius: 5px; font-weight: bold;">Get Started</div>
+                        </div>
+                        <p><strong>Breakdown:</strong></p>
+                        <ul>
+                            <li><code>justify-content: space-between</code>: Logo on left, menu on right</li>
+                            <li><code>align-items: center</code>: Vertically centers all items</li>
+                            <li><code>flex: 0 0 auto</code> on logo: Prevents shrinking</li>
+                            <li><code>gap: 20px</code> on menu: Clean spacing between links</li>
+                        </ul>
+                        <p><strong>Responsive Enhancement:</strong></p>
+                        <div class="code-example">
+                            <pre><code>
+@media (max-width: 768px) {
+    .navbar {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .menu {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+}
+                            </code></pre>
+                        </div>
+                        <p><strong>Modern Navigation Pattern:</strong> This approach replaces old float-based navbars and is now industry standard.</p>
+                    </details>
+
+                    <details>
+                        <summary>Card layouts and media objects</summary>
+                        <p>Build beautiful card components and media objects with minimal code.</p>
+                        <pre><code>
+.card {
+    display: flex;
+    flex-direction: column;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.card-content {
+    flex: 1;
+    padding: 20px;
+}
+
+.card-title {
+    margin: 0 0 10px 0;
+}
+
+.card-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+                        </code></pre>
+                        <div class="card-layout">
+                            <div class="card" style="flex: 1; min-width: 250px; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+                                <img src="image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIj48cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzAwZDFmZiIvPjxjaXJjbGUgY3g9IjE1MCIgY3k9IjEwMCIgcj0iNDAiIGZpbGw9IiNmZmI3NGQiLz48L3N2Zz4=" alt="Card image" class="card-image">
+                                <div class="card-content" style="padding: 20px; background-color: #0a192f; color: white;">
+                                    <h3 class="card-title">Card Title</h3>
+                                    <p class="card-description">This is a description of the card content. It can be any length and will adapt beautifully.</p>
+                                    <div class="card-actions" style="display: flex; gap: 10px; margin-top: 15px;">
+                                        <button style="background-color: #00d1ff; color: #000; border: none; padding: 8px 16px; border-radius: 5px;">Learn More</button>
+                                        <button style="background-color: transparent; color: #00d1ff; border: 1px solid #00d1ff; padding: 8px 16px; border-radius: 5px;">View Details</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card" style="flex: 1; min-width: 250px; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+                                <img src="image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIj48cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzAwZDFmZiIvPjxjaXJjbGUgY3g9IjE1MCIgY3k9IjEwMCIgcj0iNDAiIGZpbGw9IiNmZmI3NGQiLz48L3N2Zz4=" alt="Card image" class="card-image">
+                                <div class="card-content" style="padding: 20px; background-color: #0a192f; color: white;">
+                                    <h3 class="card-title">Another Card</h3>
+                                    <p class="card-description">Shorter description.</p>
+                                    <div class="card-actions" style="display: flex; gap: 10px; margin-top: 15px;">
+                                        <button style="background-color: #00d1ff; color: #000; border: none; padding: 8px 16px; border-radius: 5px;">Learn More</button>
+                                        <button style="background-color: transparent; color: #00d1ff; border: 1px solid #00d1ff; padding: 8px 16px; border-radius: 5px;">View Details</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="card" style="flex: 1; min-width: 250px; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+                                <img src="image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIzMDAiIGhlaWdodD0iMjAwIj48cmVjdCB3aWR0aD0iMzAwIiBoZWlnaHQ9IjIwMCIgZmlsbD0iIzAwZDFmZiIvPjxjaXJjbGUgY3g9IjE1MCIgY3k9IjEwMCIgcj0iNDAiIGZpbGw9IiNmZmI3NGQiLz48L3N2Zz4=" alt="Card image" class="card-image">
+                                <div class="card-content" style="padding: 20px; background-color: #0a192f; color: white;">
+                                    <h3 class="card-title">Third Card</h3>
+                                    <p class="card-description">This card has even more content and demonstrates how flexbox handles variable content gracefully.</p>
+                                    <div class="card-actions" style="display: flex; gap: 10px; margin-top: 15px;">
+                                        <button style="background-color: #00d1ff; color: #000; border: none; padding: 8px 16px; border-radius: 5px;">Learn More</button>
+                                        <button style="background-color: transparent; color: #00d1ff; border: 1px solid #00d1ff; padding: 8px 16px; border-radius: 5px;">View Details</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <h4>Media Object Pattern</h4>
+                        <div class="media-object">
+                            <img src="image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iIzAwZDFmZiIvPjwvc3ZnPg==" alt="Avatar">
+                            <div style="flex: 1;">
+                                <h4>John Doe</h4>
+                                <p style="margin: 5px 0;">Senior Developer at TechCorp</p>
+                                <p style="margin: 5px 0;">john.doe@example.com</p>
+                            </div>
+                            <button style="background-color: var(--amber); color: #000; border: none; padding: 8px 16px; border-radius: 5px;">Follow</button>
+                        </div>
+                        <p><strong>Media Object Breakdown:</strong></p>
+                        <ul>
+                            <li><code>display: flex</code> with <code>align-items: center</code></li>
+                            <li>Image has fixed size</li>
+                            <li>Text content uses <code>flex: 1</code> to take remaining space</li>
+                            <li>Action button stays at fixed size</li>
+                        </ul>
+                        <p><strong>Pro Tip:</strong> Use <code>object-fit: cover</code> on images to maintain aspect ratio while filling space.</p>
+                    </details>
+
+                    <details>
+                        <summary>Responsive flexbox patterns</summary>
+                        <p>Build layouts that adapt seamlessly across all device sizes.</p>
+                        <pre><code>
+.responsive-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.responsive-item {
+    flex: 1 1 calc(33.333% - 15px);
+    min-width: 200px;
+}
+
+@media (max-width: 768px) {
+    .responsive-item {
+        flex: 1 1 calc(50% - 15px);
+    }
+}
+
+@media (max-width: 480px) {
+    .responsive-item {
+        flex: 1 1 100%;
+    }
+}
+                        </code></pre>
+                        <div class="responsive-pattern">
+                            <div class="responsive-item">Item 1</div>
+                            <div class="responsive-item">Item 2</div>
+                            <div class="responsive-item">Item 3</div>
+                            <div class="responsive-item">Item 4</div>
+                            <div class="responsive-item">Item 5</div>
+                            <div class="responsive-item">Item 6</div>
+                        </div>
+                        <p><strong>Understanding the math:</strong></p>
+                        <ul>
+                            <li><code>calc(33.333% - 15px)</code>: Each item takes 1/3 of container minus gap</li>
+                            <li><code>flex: 1 1</code>: Allow growth and shrinkage</li>
+                            <li><code>min-width: 200px</code>: Prevent items from becoming too narrow</li>
+                        </ul>
+                        <p><strong>Breakpoint Strategy:</strong></p>
+                        <table class="table table-dark mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Device</th>
+                                    <th>Layout</th>
+                                    <th>Flex Property</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Desktop</td>
+                                    <td>3 columns</td>
+                                    <td><code>flex: 1 1 calc(33.333% - 15px)</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Tablet</td>
+                                    <td>2 columns</td>
+                                    <td><code>flex: 1 1 calc(50% - 15px)</code></td>
+                                </tr>
+                                <tr>
+                                    <td>Mobile</td>
+                                    <td>1 column</td>
+                                    <td><code>flex: 1 1 100%</code></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p><strong>Advanced Pattern: Fluid Grid with Minimum Width</strong></p>
+                        <div class="code-example">
+                            <pre><code>
+/* Modern approach */
+.grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.item {
+    flex: 1 1 200px; /* Grow, shrink, minimum width */
+}
+
+/* Or with percentage */
+.item {
+    flex: 1 1 33.333%; /* 3 columns */
+    min-width: 250px; /* Prevent extreme squeezing */
+}
+                            </code></pre>
+                        </div>
+                        <p><strong>Pro Tip:</strong> Use <code>min-width</code> instead of fixed widths for truly responsive designs — it adapts better to content.</p>
+                        <p><strong>Performance Note:</strong> Flexbox is highly performant — use it instead of JavaScript-based grid systems!</p>
+                    </details>
+                </section>
+
+                <div class="footer-note">
+                    🌟 Mastery Tip: Flexbox isn't about memorizing properties — it's about understanding axes.<br>
+                    Master the relationship between main axis and cross axis — everything else follows naturally.<br>
+                    Use <code>flex: 1</code> for equal distribution, <code>gap</code> for spacing, and <code>flex-wrap</code> for responsiveness.<br>
+                    Avoid floats for layout — Flexbox is the modern standard for one-dimensional layouts.
+                    <br><br>
+                    Next Module: CSS Grid Layout
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Expand/Collapse All
+            document.getElementById('expand-all').addEventListener('click', () => {
+                document.querySelectorAll('details').forEach(detail => {
+                    detail.open = true;
+                });
+            });
+
+            document.getElementById('collapse-all').addEventListener('click', () => {
+                document.querySelectorAll('details').forEach(detail => {
+                    detail.open = false;
+                });
+            });
+
+            // Search functionality
+            document.getElementById('toc-search').addEventListener('input', function(e) {
+                const query = e.target.value.toLowerCase();
+                const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
+                
+                tocItems.forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    if (text.includes(query)) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+
+            // Smooth scrolling for TOC links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+
+            // Highlight active section in TOC as user scrolls
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.toc-item a');
+
+            window.addEventListener('scroll', () => {
+                let current = '';
+                
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+                    if (pageYOffset >= sectionTop - 100) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === '#' + current) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+```

@@ -1,0 +1,1477 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 7: Layout Basics</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00d1ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --text-muted: #b3cde6;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            background-color: rgba(10, 25, 47, 0.9);
+            border-right: 1px solid var(--cyan);
+            height: 100vh;
+            position: fixed;
+            width: 300px;
+            overflow-y: auto;
+            padding: 20px;
+            box-shadow: 5px 0 15px rgba(0, 209, 255, 0.1);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 30px;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--amber);
+            padding-bottom: 5px;
+            margin-top: 30px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            color: var(--amber);
+            border-bottom: 2px solid var(--amber);
+        }
+
+        .toc-item {
+            margin: 8px 0;
+            padding-left: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .toc-item a {
+            color: var(--text-muted);
+            text-decoration: none;
+            display: block;
+            transition: color 0.3s;
+        }
+
+        .toc-item a:hover {
+            color: var(--cyan);
+        }
+
+        .toc-subitem {
+            margin-left: 20px;
+            font-size: 0.9em;
+            color: var(--text-muted);
+        }
+
+        .toc-subitem a {
+            color: var(--text-muted);
+        }
+
+        .toc-subitem a:hover {
+            color: var(--cyan);
+        }
+
+        details {
+            margin: 15px 0;
+            border-left: 3px solid var(--amber);
+            padding-left: 15px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border-radius: 0 5px 5px 0;
+        }
+
+        summary {
+            cursor: pointer;
+            color: var(--amber);
+            font-weight: bold;
+            font-size: 1.1rem;
+            list-style: none;
+            padding: 10px;
+            background-color: rgba(0, 209, 255, 0.05);
+            border-radius: 5px;
+            margin-bottom: 5px;
+            transition: all 0.3s ease;
+        }
+
+        summary:hover {
+            background-color: rgba(0, 209, 255, 0.1);
+        }
+
+        summary::-webkit-details-marker {
+            display: none;
+        }
+
+        summary::before {
+            content: "▶ ";
+            color: var(--amber);
+        }
+
+        details[open] summary::before {
+            content: "▼ ";
+            color: var(--amber);
+        }
+
+        pre code {
+            display: block;
+            padding: 16px;
+            overflow-x: auto;
+            background-color: #0d1b2a;
+            border-radius: 5px;
+            border-left: 4px solid var(--amber);
+            font-family: 'Fira Code', 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--cyan);
+        }
+
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.1);
+            padding: 2px 5px;
+            border-radius: 3px;
+            color: var(--amber);
+            font-weight: 500;
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: #000;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+
+        .btn-control {
+            background-color: rgba(0, 209, 255, 0.1);
+            border: 1px solid var(--cyan);
+            color: var(--cyan);
+            margin: 10px 0;
+            padding: 8px 15px;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .btn-control:hover {
+            background-color: var(--cyan);
+            color: #000;
+            transform: translateY(-2px);
+        }
+
+        .search-box {
+            background-color: rgba(0, 209, 255, 0.1);
+            border: 1px solid var(--cyan);
+            color: var(--text-light);
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            width: 100%;
+        }
+
+        .section-header {
+            border-bottom: 2px dashed var(--cyan);
+            padding-bottom: 10px;
+            margin: 30px 0 20px;
+            color: var(--amber);
+        }
+
+        .layout-demo {
+            margin: 20px 0;
+            padding: 20px;
+            background-color: rgba(10, 25, 47, 0.6);
+            border: 1px dashed var(--cyan);
+            border-radius: 8px;
+            min-height: 150px;
+            position: relative;
+        }
+
+        .display-demo {
+            margin: 15px 0;
+            padding: 15px;
+            background-color: rgba(13, 27, 42, 0.7);
+            border: 1px solid var(--amber);
+            border-radius: 5px;
+            display: inline-block;
+        }
+
+        .position-demo {
+            margin: 15px 0;
+            padding: 15px;
+            background-color: rgba(13, 27, 42, 0.7);
+            border: 1px solid var(--amber);
+            border-radius: 5px;
+            position: relative;
+        }
+
+        .float-demo {
+            margin: 15px 0;
+            padding: 15px;
+            background-color: rgba(13, 27, 42, 0.7);
+            border: 1px solid var(--amber);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .overflow-demo {
+            margin: 15px 0;
+            padding: 15px;
+            background-color: rgba(13, 27, 42, 0.7);
+            border: 1px solid var(--amber);
+            border-radius: 5px;
+            overflow: hidden;
+            height: 100px;
+        }
+
+        .clipping-demo {
+            margin: 15px 0;
+            padding: 15px;
+            background-color: rgba(13, 27, 42, 0.7);
+            border: 1px solid var(--amber);
+            border-radius: 5px;
+            overflow: hidden;
+            height: 150px;
+        }
+
+        .scrollable-area {
+            margin: 15px 0;
+            padding: 15px;
+            background-color: rgba(13, 27, 42, 0.7);
+            border: 1px solid var(--amber);
+            border-radius: 5px;
+            overflow-y: auto;
+            height: 150px;
+        }
+
+        .accessibility-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: var(--amber);
+            color: #000;
+            font-weight: bold;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            z-index: 10;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .grid-item {
+            background-color: rgba(0, 209, 255, 0.1);
+            padding: 15px;
+            border-radius: 5px;
+            text-align: center;
+            border: 1px dashed var(--cyan);
+        }
+
+        .footer-note {
+            margin-top: 50px;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            text-align: center;
+            padding: 20px;
+            border-top: 1px solid rgba(0, 209, 255, 0.2);
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 991px) {
+            .left-panel {
+                width: 100%;
+                height: auto;
+                position: relative;
+                padding: 15px;
+            }
+            .right-panel {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Left Panel -->
+            <div class="col-md-3 left-panel">
+                <h2>Module 7: Layout Basics</h2>
+                <p class="text-muted small">Master the foundational tools that control how elements occupy space on the page</p>
+                <hr>
+                
+                <div class="mb-3">
+                    <input type="text" class="search-box" id="toc-search" placeholder="Search topics...">
+                </div>
+
+                <button class="btn-control w-100 mb-2" id="expand-all">Expand All</button>
+                <button class="btn-control w-100 mb-3" id="collapse-all">Collapse All</button>
+
+                <h5 class="text-uppercase text-muted fw-bold mb-3">Table of Contents</h5>
+                
+                <div class="toc-item">
+                    <a href="#sec-7-1">7.1 Display Property</a>
+                    <div class="toc-subitem">
+                        <a href="#block-inline">• Block vs inline elements</a>
+                        <a href="#inline-block">• Inline-block display</a>
+                        <a href="#none-contents">• None and contents values</a>
+                        <a href="#accessibility-implications">• Display and accessibility implications</a>
+                    </div>
+                </div>
+                
+                <div class="toc-item">
+                    <a href="#sec-7-2">7.2 Position Property</a>
+                    <div class="toc-subitem">
+                        <a href="#static-positioning">• Static positioning (default)</a>
+                        <a href="#relative-positioning">• Relative positioning</a>
+                        <a href="#absolute-positioning">• Absolute positioning</a>
+                        <a href="#fixed-positioning">• Fixed positioning</a>
+                        <a href="#sticky-positioning">• Sticky positioning</a>
+                    </div>
+                </div>
+                
+                <div class="toc-item">
+                    <a href="#sec-7-3">7.3 Float and Clear</a>
+                    <div class="toc-subitem">
+                        <a href="#understanding-floats">• Understanding floats (historical context)</a>
+                        <a href="#clearing-floats">• Clearing floats</a>
+                        <a href="#clearfix-techniques">• Clearfix techniques</a>
+                        <a href="#when-floats-still-useful">• When floats are still useful</a>
+                    </div>
+                </div>
+                
+                <div class="toc-item">
+                    <a href="#sec-7-4">7.4 Overflow and Clipping</a>
+                    <div class="toc-subitem">
+                        <a href="#overflow-values">• Overflow property values</a>
+                        <a href="#text-overflow-ellipsis">• Text overflow and ellipsis</a>
+                        <a href="#clip-clip-path">• Clip and clip-path properties</a>
+                        <a href="#scrollable-areas">• Creating scrollable areas</a>
+                    </div>
+                </div>
+                
+                <div class="mt-5">
+                    <p class="text-muted small">
+                        <strong>Author:</strong> Web Dev Mentor<br>
+                        <small>For Deep Understanding Only</small>
+                    </p>
+                </div>
+            </div>
+
+            <!-- Right Panel -->
+            <div class="col-md-9 right-panel">
+                <h1>Layout Basics</h1>
+                <p class="lead text-muted">The fundamental concepts that determine how elements arrange themselves on the page</p>
+
+                <!-- 7.1 Display Property -->
+                <section id="sec-7-1">
+                    <h2>7.1 Display Property</h2>
+                    <p class="text-muted">The most important property for layout — it defines how an element generates boxes in the document flow.</p>
+
+                    <details>
+                        <summary>Block vs inline elements</summary>
+                        <p>Every element has a default display value that determines its behavior in the document flow.</p>
+                        <table class="table table-dark mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Property</th>
+                                    <th>Block Elements</th>
+                                    <th>Inline Elements</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Box Model</strong></td>
+                                    <td>Takes full width, starts on new line</td>
+                                    <td>Only takes needed width, flows with text</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Width/Height</strong></td>
+                                    <td>Respects width and height properties</td>
+                                    <td>Width and height ignored</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Margin/Padding</strong></td>
+                                    <td>All sides respected</td>
+                                    <td>Horizontal margin/padding respected, vertical ignored</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Examples</strong></td>
+                                    <td>&lt;div&gt;, &lt;p&gt;, &lt;h1&gt;-&lt;h6&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;section&gt;</td>
+                                    <td>&lt;span&gt;, &lt;a&gt;, &lt;strong&gt;, &lt;em&gt;, &lt;img&gt;, &lt;code&gt;</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <pre><code>
+/* Block elements */
+div {
+    display: block; /* Default */
+}
+
+/* Inline elements */
+span {
+    display: inline; /* Default */
+}
+                        </code></pre>
+                        <div class="layout-demo">
+                            <div style="background-color: rgba(0, 209, 255, 0.2); padding: 15px; margin: 10px 0;">This is a DIV (block element)</div>
+                            <span style="background-color: rgba(255, 183, 77, 0.2); padding: 5px 10px; margin: 10px 0;">This is a SPAN (inline element)</span>
+                            <span style="background-color: rgba(255, 183, 77, 0.2); padding: 5px 10px; margin: 10px 0;">Another SPAN</span>
+                            <div style="background-color: rgba(0, 209, 255, 0.2); padding: 15px; margin: 10px 0;">Another DIV (block element)</div>
+                        </div>
+                        <p><strong>Key Insight:</strong> Block elements create "sections" while inline elements create "fragments" within text.</p>
+                        <p><strong>Pro Tip:</strong> You can change display properties to transform elements:</p>
+                        <pre><code>
+/* Make a div behave like inline */
+.inline-div {
+    display: inline;
+}
+
+/* Make a span behave like block */
+.block-span {
+    display: block;
+}
+                        </code></pre>
+                    </details>
+
+                    <details>
+                        <summary>Inline-block display</summary>
+                        <p>A hybrid display type that combines characteristics of both block and inline elements.</p>
+                        <pre><code>
+/* Inline-block elements */
+.inline-block-element {
+    display: inline-block;
+    width: 100px;
+    height: 100px;
+    margin: 10px;
+    background-color: #00d1ff;
+    vertical-align: top;
+}
+                        </code></pre>
+                        <div class="layout-demo">
+                            <div class="display-demo" style="display: inline-block; width: 100px; height: 100px; background-color: #00d1ff; margin: 10px; text-align: center; line-height: 100px; color: white;">IB 1</div>
+                            <div class="display-demo" style="display: inline-block; width: 100px; height: 100px; background-color: #ffa726; margin: 10px; text-align: center; line-height: 100px; color: #000;">IB 2</div>
+                            <div class="display-demo" style="display: inline-block; width: 100px; height: 100px; background-color: #00a8ff; margin: 10px; text-align: center; line-height: 100px; color: white;">IB 3</div>
+                            <span style="background-color: rgba(255, 255, 255, 0.1); padding: 5px;">This text flows around inline-block elements</span>
+                        </div>
+                        <p><strong>Characteristics:</strong></p>
+                        <ul>
+                            <li>Behaves like inline: stays on same line as adjacent content</li>
+                            <li>Behaves like block: respects width, height, margin, padding</li>
+                            <li>Vertical alignment matters: use <code>vertical-align</code> to align</li>
+                            <li>Creates whitespace issues: extra space between elements due to line breaks</li>
+                        </ul>
+                        <p><strong>Solving Whitespace Issue:</strong></p>
+                        <pre><code>
+/* Option 1: Remove HTML whitespace */
+&lt;div class="ib"&gt;Item 1&lt;/div&gt;&lt;div class="ib"&gt;Item 2&lt;/div&gt;
+
+/* Option 2: Set font-size: 0 on parent */
+.parent {
+    font-size: 0;
+}
+
+.child {
+    display: inline-block;
+    font-size: 16px;
+}
+
+/* Option 3: Use negative margins */
+.child {
+    display: inline-block;
+    margin-right: -4px;
+}
+                        </code></pre>
+                        <p><strong>Use Cases:</strong></p>
+                        <ul>
+                            <li>Navigation menus</li>
+                            <li>Button groups</li>
+                            <li>Image galleries</li>
+                            <li>Card layouts (before Flexbox/Grid)</li>
+                        </ul>
+                    </details>
+
+                    <details>
+                        <summary>None and contents values</summary>
+                        <p>Special display values that remove elements from normal layout flow.</p>
+                        <pre><code>
+/* Hide element completely */
+.hidden {
+    display: none;
+}
+
+/* Remove container but keep children */
+.contents {
+    display: contents;
+}
+
+/* Practical example */
+.container {
+    display: contents;
+}
+
+/* This structure: */
+&lt;div class="container"&gt;
+    &lt;div class="item"&gt;Item 1&lt;/div&gt;
+    &lt;div class="item"&gt;Item 2&lt;/div&gt;
+&lt;/div&gt;
+
+/* Behaves as if container doesn't exist: */
+&lt;div class="item"&gt;Item 1&lt;/div&gt;
+&lt;div class="item"&gt;Item 2&lt;/div&gt;
+                        </code></pre>
+                        <div class="layout-demo">
+                            <div style="background-color: rgba(0, 209, 255, 0.2); padding: 15px; margin: 10px 0;">Visible Div</div>
+                            <div style="display: none; background-color: rgba(0, 209, 255, 0.2); padding: 15px; margin: 10px 0;">Hidden Div (display: none)</div>
+                            
+                            <div style="display: contents; background-color: rgba(255, 183, 77, 0.2); padding: 15px; margin: 10px 0;">
+                                <div style="background-color: rgba(0, 209, 255, 0.2); padding: 10px; margin: 5px;">Child 1</div>
+                                <div style="background-color: rgba(0, 209, 255, 0.2); padding: 10px; margin: 5px;">Child 2</div>
+                                <div style="background-color: rgba(0, 209, 255, 0.2); padding: 10px; margin: 5px;">Child 3</div>
+                            </div>
+                            <p style="margin-top: 10px;">This paragraph appears after the contents container — the container itself is invisible in layout!</p>
+                        </div>
+                        <p><strong>display: none:</strong></p>
+                        <ul>
+                            <li>Removes element from document flow entirely</li>
+                            <li>Doesn't take up any space</li>
+                            <li>Not accessible to screen readers</li>
+                            <li>Cannot be animated</li>
+                        </ul>
+                        <p><strong>display: contents:</strong></p>
+                        <ul>
+                            <li>Removes the container from layout but keeps children</li>
+                            <li>Children inherit styles from parent container</li>
+                            <li>Perfect for semantic HTML without affecting layout</li>
+                            <li>Useful with CSS Grid/Flexbox</li>
+                        </ul>
+                        <p><strong>Accessibility Note:</strong> Never use <code>display: none</code> to hide content meant for screen readers. Use <code>visibility: hidden</code> or <code>aria-hidden</code> instead.</p>
+                    </details>
+
+                    <details>
+                        <summary>Display and accessibility implications</summary>
+                        <p>Display properties affect how assistive technologies interpret your content.</p>
+                        <pre><code>
+/* BAD: Hiding content from screen readers */
+.accessible-content {
+    display: none; /* Screen readers ignore this */
+}
+
+/* GOOD: Visually hiding but accessible */
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+/* GOOD: Semantic hiding */
+.sr-only {
+    border: 0 !important;
+    clip: rect(1px, 1px, 1px, 1px) !important;
+    -webkit-clip-path: inset(50%) !important;
+    clip-path: inset(50%) !important;
+    height: 1px !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    padding: 0 !important;
+    position: absolute !important;
+    white-space: nowrap !important;
+    width: 1px !important;
+}
+                        </code></pre>
+                        <div class="layout-demo">
+                            <p>This text is visible to everyone.</p>
+                            <p class="visually-hidden">This text is only for screen readers</p>
+                            <p>This text is also visible to everyone.</p>
+                        </div>
+                        <p><strong>Accessibility Best Practices:</strong></p>
+                        <ol>
+                            <li>Never use <code>display: none</code> for content that should be accessible</li>
+                            <li>Use <code>visibility: hidden</code> when you want to hide visually but keep in layout</li>
+                            <li>Use the <code>.sr-only</code> class pattern for screen reader-only content</li>
+                            <li>Ensure interactive elements remain focusable even when visually hidden</li>
+                            <li>Test with screen readers and keyboard navigation</li>
+                        </ol>
+                        <p><strong>Common Accessibility Mistakes:</strong></p>
+                        <ul>
+                            <li>Hiding form labels with <code>display: none</code> → screen readers can't read them</li>
+                            <li>Using <code>display: none</code> for tab panels → users can't navigate to them</li>
+                            <li>Setting <code>display: none</code> on navigation links → users can't access them</li>
+                        </ul>
+                        <p><strong>Pro Tip:</strong> Always ask: "Can a keyboard user reach this? Can a screen reader understand this?"</p>
+                    </details>
+                </section>
+
+                <!-- 7.2 Position Property -->
+                <section id="sec-7-2">
+                    <h2>7.2 Position Property</h2>
+                    <p class="text-muted">Control an element's placement relative to its normal position or viewport.</p>
+
+                    <details>
+                        <summary>Static positioning (default)</summary>
+                        <p>The default positioning mode — elements follow the normal document flow.</p>
+                        <pre><code>
+/* This is the default — no need to specify */
+.element {
+    position: static; /* Default value */
+}
+                        </code></pre>
+                        <div class="layout-demo">
+                            <div style="background-color: rgba(0, 209, 255, 0.2); padding: 15px; margin: 10px 0;">Normal block element</div>
+                            <div style="background-color: rgba(255, 183, 77, 0.2); padding: 15px; margin: 10px 0;">Another normal block element</div>
+                            <div style="background-color: rgba(0, 209, 255, 0.2); padding: 15px; margin: 10px 0;">Yet another normal block element</div>
+                        </div>
+                        <p><strong>Characteristics:</strong></p>
+                        <ul>
+                            <li>Elements appear in order they're written in HTML</li>
+                            <li>Top/right/bottom/left properties have no effect</li>
+                            <li>z-index has no effect</li>
+                            <li>Follows normal document flow</li>
+                        </ul>
+                        <p><strong>Why it matters:</strong> Everything starts here. Positioning becomes meaningful only when you change from static.</p>
+                    </details>
+
+                    <details>
+                        <summary>Relative positioning</summary>
+                        <p>Position an element relative to its normal position in the document flow.</p>
+                        <pre><code>
+.relative-element {
+    position: relative;
+    top: -10px;
+    left: 20px;
+    /* Moves element 10px up and 20px right from original position */
+}
+                        </code></pre>
+                        <div class="layout-demo">
+                            <div style="background-color: rgba(0, 209, 255, 0.2); padding: 15px; margin: 10px 0;">Normal element</div>
+                            <div style="position: relative; top: -20px; left: 30px; background-color: rgba(255, 183, 77, 0.2); padding: 15px; margin: 10px 0;">Relative element (moved)</div>
+                            <div style="background-color: rgba(0, 209, 255, 0.2); padding: 15px; margin: 10px 0;">Normal element below</div>
+                        </div>
+                        <p><strong>Key Characteristics:</strong></p>
+                        <ul>
+                            <li>Element remains in normal document flow — space preserved</li>
+                            <li>Can be moved using top, right, bottom, left properties</li>
+                            <li>z-index works — can stack over other elements</li>
+                            <li>Perfect for fine-tuning positions</li>
+                        </ul>
+                        <p><strong>Real-World Use Case:</strong> Adjusting a tooltip slightly from its anchor point:</p>
+                        <div class="code-example">
+                            <pre><code>
+.tooltip-anchor {
+    position: relative;
+}
+
+.tooltip {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #00d1ff;
+    color: #000;
+    padding: 5px 10px;
+    border-radius: 5px;
+    white-space: nowrap;
+}
+                            </code></pre>
+                        </div>
+                        <p><strong>Pro Tip:</strong> Relative positioning is often used as a reference point for absolutely positioned children.</p>
+                    </details>
+
+                    <details>
+                        <summary>Absolute positioning</summary>
+                        <p>Remove an element from normal document flow and position it relative to its nearest positioned ancestor.</p>
+                        <pre><code>
+.parent {
+    position: relative; /* Creates positioning context */
+}
+
+.child {
+    position: absolute;
+    top: 0;
+    right: 0;
+    /* Positioned relative to parent, not viewport */
+}
+                        </code></pre>
+                        <div class="layout-demo">
+                            <div style="position: relative; background-color: rgba(0, 209, 255, 0.2); padding: 20px; margin: 10px 0; height: 150px;">
+                                Parent Container
+                                <div style="position: absolute; top: 10px; right: 10px; background-color: rgba(255, 183, 77, 0.2); padding: 10px; border-radius: 5px;">Absolute Child</div>
+                            </div>
+                            <div style="background-color: rgba(0, 209, 255, 0.2); padding: 15px; margin: 10px 0;">Normal element below</div>
+                        </div>
+                        <p><strong>Key Characteristics:</strong></p>
+                        <ul>
+                            <li>Removed from normal document flow — space collapsed</li>
+                            <li>Positioned relative to nearest positioned ancestor (not static)</li>
+                            <li>If no positioned ancestor, uses viewport</li>
+                            <li>z-index works — can be layered above/below other elements</li>
+                            <li>Width/height can be set independently of content</li>
+                        </ul>
+                        <p><strong>Positioning Reference Points:</strong></p>
+                        <pre><code>
+/* Top-right corner */
+.top-right {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+/* Bottom-left corner */
+.bottom-left {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+}
+
+/* Centered horizontally */
+.center-horizontal {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+/* Centered vertically */
+.center-vertical {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* Perfect center */
+.perfect-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+                        </code></pre>
+                        <p><strong>Common Use Cases:</strong></p>
+                        <ul>
+                            <li>Modal dialogs</li>
+                            <li>Tooltips and popovers</li>
+                            <li>Dropdown menus</li>
+                            <li>Sticky headers/footers</li>
+                            <li>Overlay icons</li>
+                        </ul>
+                    </details>
+
+                    <details>
+                        <summary>Fixed positioning</summary>
+                        <p>Position an element relative to the viewport — it stays in place during scrolling.</p>
+                        <pre><code>
+.fixed-element {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    /* Stays in same position even when page scrolls */
+}
+                        </code></pre>
+                        <div class="layout-demo" style="height: 600px; overflow-y: auto; padding: 20px;">
+                            <div style="height: 400px; background-color: rgba(0, 209, 255, 0.2); margin-bottom: 20px; padding: 20px;">
+                                Scrollable Content<br><br>
+                                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
+                            </div>
+                            <div style="position: fixed; top: 10px; right: 10px; background-color: rgba(255, 183, 77, 0.2); padding: 10px; border-radius: 5px; z-index: 100;">Fixed Element</div>
+                        </div>
+                        <p><strong>Key Characteristics:</strong></p>
+                        <ul>
+                            <li>Removed from normal document flow</li>
+                            <li>Always positioned relative to viewport (browser window)</li>
+                            <li>Stays in place during scrolling</li>
+                            <li>z-index works — ideal for navigation bars</li>
+                            <li>Can overlap other content</li>
+                        </ul>
+                        <p><strong>Real-World Examples:</strong></p>
+                        <ul>
+                            <li>Navigation bars</li>
+                            <li>Back-to-top buttons</li>
+                            <li>Chat widgets</li>
+                            <li>Notification banners</li>
+                            <li>Sticky sidebars</li>
+                        </ul>
+                        <p><strong>Important Caveat:</strong> On mobile devices, fixed elements can cause usability issues. Consider using sticky positioning instead.</p>
+                    </details>
+
+                    <details>
+                        <summary>Sticky positioning</summary>
+                        <p>A hybrid between relative and fixed positioning — behaves normally until scrolled to a threshold.</p>
+                        <pre><code>
+.sticky-element {
+    position: sticky;
+    top: 0;
+    /* Sticks to top when scrolling past it */
+}
+                        </code></pre>
+                        <div class="layout-demo" style="height: 600px; overflow-y: auto; padding: 20px;">
+                            <div style="height: 100px; background-color: rgba(0, 209, 255, 0.2); margin-bottom: 20px; padding: 20px;">Scroll down...</div>
+                            <div style="position: sticky; top: 0; background-color: rgba(255, 183, 77, 0.2); padding: 15px; margin-bottom: 20px; border-radius: 5px;">Sticky Header</div>
+                            <div style="height: 300px; background-color: rgba(0, 209, 255, 0.2); margin-bottom: 20px; padding: 20px;">More content to scroll through...</div>
+                        </div>
+                        <p><strong>Key Characteristics:</strong></p>
+                        <ul>
+                            <li>Behaves like relative until scroll threshold reached</li>
+                            <li>Then behaves like fixed</li>
+                            <li>Remains in document flow — doesn't collapse space</li>
+                            <li>Requires a threshold (top, bottom, left, or right)</li>
+                            <li>Excellent for headers, navbars, sidebars</li>
+                        </ul>
+                        <p><strong>Modern Best Practice:</strong> Use sticky positioning for headers instead of fixed!</p>
+                        <div class="code-example">
+                            <pre><code>
+header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: #0a192f;
+    padding: 15px;
+    border-bottom: 1px solid rgba(0, 209, 255, 0.2);
+}
+
+.sidebar {
+    position: sticky;
+    top: 20px;
+    height: calc(100vh - 40px);
+    overflow-y: auto;
+}
+                            </code></pre>
+                        </div>
+                        <p><strong>Browser Support:</strong> Excellent in modern browsers (Chrome 56+, Firefox 54+, Safari 11+).</p>
+                        <p><strong>Pro Tip:</strong> Always set <code>z-index</code> with sticky elements to ensure they appear above content.</p>
+                    </details>
+                </section>
+
+                <!-- 7.3 Float and Clear -->
+                <section id="sec-7-3">
+                    <h2>7.3 Float and Clear</h2>
+                    <p class="text-muted">Historical layout technique — now largely replaced by Flexbox and Grid, but still relevant.</p>
+
+                    <details>
+                        <summary>Understanding floats (historical context)</summary>
+                        <p>Float was the primary method for creating multi-column layouts before Flexbox and Grid.</p>
+                        <pre><code>
+.float-left {
+    float: left;
+}
+
+.float-right {
+    float: right;
+}
+
+.float-none {
+    float: none; /* Default */
+}
+                        </code></pre>
+                        <div class="layout-demo">
+                            <div style="float: left; width: 100px; height: 100px; background-color: rgba(0, 209, 255, 0.2); margin-right: 15px; text-align: center; line-height: 100px; color: white;">Float Left</div>
+                            <div style="float: left; width: 100px; height: 100px; background-color: rgba(255, 183, 77, 0.2); margin-right: 15px; text-align: center; line-height: 100px; color: #000;">Float Left</div>
+                            <div style="float: left; width: 100px; height: 100px; background-color: rgba(0, 209, 255, 0.2); margin-right: 15px; text-align: center; line-height: 100px; color: white;">Float Left</div>
+                            <p style="margin-top: 15px;">This text wraps around the floated elements. Float was originally designed for text wrapping around images!</p>
+                        </div>
+                        <p><strong>Original Purpose:</strong> Float was created for text wrapping around images in newspapers and magazines.</p>
+                        <p><strong>How it worked:</strong> Floated elements were removed from normal flow and pushed to one side, allowing content to wrap around them.</p>
+                        <p><strong>Legacy Usage:</strong> Before Flexbox, we'd create layouts like this:</p>
+                        <pre><code>
+/* Two-column layout with floats */
+.sidebar {
+    float: left;
+    width: 250px;
+}
+
+.content {
+    float: right;
+    width: calc(100% - 250px);
+}
+                        </code></pre>
+                        <p><strong>Why it's outdated:</strong></p>
+                        <ul>
+                            <li>Complex clearing required</li>
+                            <li>Difficult to equalize column heights</li>
+                            <li>Unpredictable behavior with different content lengths</li>
+                            <li>Poor responsive behavior</li>
+                        </ul>
+                        <p><strong>Modern Alternative:</strong> Use Flexbox or Grid instead!</p>
+                    </details>
+
+                    <details>
+                        <summary>Clearing floats</summary>
+                        <p>Prevent content from wrapping around floated elements.</p>
+                        <pre><code>
+.clearfix {
+    clear: both;
+}
+
+.clear-left {
+    clear: left;
+}
+
+.clear-right {
+    clear: right;
+}
+
+.clear-none {
+    clear: none; /* Default */
+}
+                        </code></pre>
+                        <div class="layout-demo">
+                            <div style="float: left; width: 100px; height: 100px; background-color: rgba(0, 209, 255, 0.2); margin-right: 15px; text-align: center; line-height: 100px; color: white;">Float Left</div>
+                            <div style="float: left; width: 100px; height: 100px; background-color: rgba(255, 183, 77, 0.2); margin-right: 15px; text-align: center; line-height: 100px; color: #000;">Float Left</div>
+                            <div style="clear: both; height: 20px;"></div>
+                            <p>This paragraph will appear below the floated elements because of clear: both.</p>
+                        </div>
+                        <p><strong>Clearing Problem:</strong> Without clearing, content can flow into unexpected places:</p>
+                        <div class="layout-demo">
+                            <div style="float: left; width: 100px; height: 150px; background-color: rgba(0, 209, 255, 0.2); margin-right: 15px; text-align: center; line-height: 150px; color: white;">Tall Float</div>
+                            <div style="float: left; width: 100px; height: 80px; background-color: rgba(255, 183, 77, 0.2); margin-right: 15px; text-align: center; line-height: 80px; color: #000;">Short Float</div>
+                            <p style="margin-top: 15px;">This text wraps around the short float but not the tall one, creating a messy layout!</p>
+                        </div>
+                        <p><strong>Why clearing matters:</strong> Prevents unintended wrapping and ensures predictable layout flow.</p>
+                    </details>
+
+                    <details>
+                        <summary>Clearfix techniques</summary>
+                        <p>Methods to automatically clear floats without adding extra markup.</p>
+                        <pre><code>
+/* Method 1: Overflow auto (modern) */
+.clearfix {
+    overflow: auto;
+}
+
+/* Method 2: Flexbox clearfix */
+.clearfix {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+/* Method 3: Pseudo-element clearfix (classic) */
+.clearfix::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+/* Method 4: Grid clearfix */
+.clearfix {
+    display: grid;
+}
+                        </code></pre>
+                        <div class="layout-demo">
+                            <div class="clearfix" style="border: 1px dashed var(--cyan); padding: 10px;">
+                                <div style="float: left; width: 100px; height: 100px; background-color: rgba(0, 209, 255, 0.2); margin-right: 15px; text-align: center; line-height: 100px; color: white;">Float Left</div>
+                                <div style="float: left; width: 100px; height: 100px; background-color: rgba(255, 183, 77, 0.2); margin-right: 15px; text-align: center; line-height: 100px; color: #000;">Float Left</div>
+                                <div style="float: left; width: 100px; height: 100px; background-color: rgba(0, 209, 255, 0.2); margin-right: 15px; text-align: center; line-height: 100px; color: white;">Float Left</div>
+                                <p style="margin-top: 15px;">This text now appears below the floats thanks to clearfix!</p>
+                            </div>
+                        </div>
+                        <p><strong>Classic Clearfix (Recommended):</strong></p>
+                        <pre><code>
+.clearfix::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+                        </code></pre>
+                        <p><strong>Why it works:</strong></p>
+                        <ul>
+                            <li><code>content: ""</code>: Creates pseudo-element</li>
+                            <li><code>display: table</code>: Makes it a block-level element</li>
+                            <li><code>clear: both</code>: Forces it to clear all floats</li>
+                        </ul>
+                        <p><strong>Modern Approach:</strong> Avoid floats entirely! Use Flexbox:</p>
+                        <div class="code-example">
+                            <pre><code>
+.flex-container {
+    display: flex;
+    gap: 15px;
+}
+
+.flex-item {
+    flex: 1;
+    min-width: 100px;
+}
+                            </code></pre>
+                        </div>
+                    </details>
+
+                    <details>
+                        <summary>When floats are still useful</summary>
+                        <p>Despite being outdated for layout, floats still have valid use cases.</p>
+                        <p><strong>1. Text Wrapping Around Images:</strong></p>
+                        <pre><code>
+img {
+    float: left;
+    margin-right: 15px;
+    margin-bottom: 15px;
+}
+
+img.right {
+    float: right;
+    margin-left: 15px;
+    margin-bottom: 15px;
+}
+                        </code></pre>
+                        <div class="layout-demo">
+                            <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMDAiIGhlaWdodD0iMTAwIj48Y2lyY2xlIGN4PSI1MCIgY3k9IjUwIiByPSI0MCIgZmlsbD0iIzAwZDFmZiIgc3Ryb2tlPSIjZmZiNzRkIiBzdHJva2Utd2lkdGg9IjIiLz48L3N2Zz4=" alt="Example image" style="float: left; margin-right: 15px; margin-bottom: 15px; border-radius: 5px;">
+                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
+                        </div>
+                        
+                        <p><strong>2. Horizontal Navigation Menus (Legacy Sites):</strong></p>
+                        <pre><code>
+.nav-menu {
+    overflow: hidden;
+}
+
+.nav-menu li {
+    float: left;
+}
+
+.nav-menu a {
+    display: block;
+    padding: 10px 15px;
+}
+                        </code></pre>
+                        
+                        <p><strong>3. Multi-column Text Layouts:</strong></p>
+                        <pre><code>
+.columns {
+    column-count: 3;
+    column-gap: 20px;
+}
+
+/* But if you need more control... */
+.column {
+    float: left;
+    width: calc(100% / 3 - 20px);
+    margin-right: 20px;
+}
+                        </code></pre>
+                        
+                        <p><strong>4. Image Galleries (Simple Cases):</strong></p>
+                        <pre><code>
+.gallery img {
+    float: left;
+    width: 25%;
+    margin: 0 1% 1% 0;
+}
+                        </code></pre>
+                        
+                        <p><strong>Modern Alternatives:</strong></p>
+                        <ul>
+                            <li><strong>Text wrapping:</strong> Use <code>shape-outside</code> property</li>
+                            <li><strong>Navigation:</strong> Use Flexbox</li>
+                            <li><strong>Columns:</strong> Use CSS Columns or Grid</li>
+                            <li><strong>Galleries:</strong> Use Flexbox or Grid</li>
+                        </ul>
+                        <p><strong>Final Recommendation:</strong> Learn floats for legacy code maintenance, but never use them for new projects.</p>
+                    </details>
+                </section>
+
+                <!-- 7.4 Overflow and Clipping -->
+                <section id="sec-7-4">
+                    <h2>7.4 Overflow and Clipping</h2>
+                    <p class="text-muted">Control what happens when content exceeds its container boundaries.</p>
+
+                    <details>
+                        <summary>Overflow property values</summary>
+                        <p>Determine how content behaves when it overflows its container.</p>
+                        <pre><code>
+.overflow-visible {
+    overflow: visible; /* Default */
+}
+
+.overflow-hidden {
+    overflow: hidden;
+}
+
+.overflow-scroll {
+    overflow: scroll;
+}
+
+.overflow-auto {
+    overflow: auto;
+}
+                        </code></pre>
+                        <div class="layout-demo">
+                            <div class="overflow-demo" style="overflow: visible; border: 1px dashed var(--cyan);">
+                                Visible: The content extends beyond the container boundary!
+                                <div style="width: 200px; height: 100px; background-color: rgba(0, 209, 255, 0.2);">Large child element</div>
+                            </div>
+                            
+                            <div class="overflow-demo" style="overflow: hidden; border: 1px dashed var(--cyan);">
+                                Hidden: Content is clipped and invisible outside container
+                                <div style="width: 200px; height: 100px; background-color: rgba(0, 209, 255, 0.2);">Large child element</div>
+                            </div>
+                            
+                            <div class="overflow-demo" style="overflow: scroll; border: 1px dashed var(--cyan);">
+                                Scroll: Always shows scrollbars, even when not needed
+                                <div style="width: 200px; height: 100px; background-color: rgba(0, 209, 255, 0.2);">Large child element</div>
+                            </div>
+                            
+                            <div class="overflow-demo" style="overflow: auto; border: 1px dashed var(--cyan);">
+                                Auto: Shows scrollbars only when content overflows
+                                <div style="width: 200px; height: 100px; background-color: rgba(0, 209, 255, 0.2);">Large child element</div>
+                            </div>
+                        </div>
+                        <p><strong>Behavior Summary:</strong></p>
+                        <table class="table table-dark mt-3">
+                            <thead>
+                                <tr>
+                                    <th>Value</th>
+                                    <th>Content Visibility</th>
+                                    <th>Scrollbars</th>
+                                    <th>Best For</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><code>visible</code></td>
+                                    <td>Always visible</td>
+                                    <td>Never shown</td>
+                                    <td>Overlays, tooltips</td>
+                                </tr>
+                                <tr>
+                                    <td><code>hidden</code></td>
+                                    <td>Clipped</td>
+                                    <td>Never shown</td>
+                                    <td>Cards, modals, containers</td>
+                                </tr>
+                                <tr>
+                                    <td><code>scroll</code></td>
+                                    <td>Clipped</td>
+                                    <td>Always shown</td>
+                                    <td>Fixed-height containers</td>
+                                </tr>
+                                <tr>
+                                    <td><code>auto</code></td>
+                                    <td>Clipped</td>
+                                    <td>Shown only when needed</td>
+                                    <td>✅ Recommended for most cases</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <p><strong>Pro Tip:</strong> Use <code>overflow: auto</code> unless you have a specific reason not to.</p>
+                    </details>
+
+                    <details>
+                        <summary>Text overflow and ellipsis</summary>
+                        <p>Truncate long text with an ellipsis (...) for clean UI design.</p>
+                        <pre><code>
+.text-ellipsis {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+                        </code></pre>
+                        <div class="layout-demo">
+                            <div class="overflow-demo" style="width: 200px; border: 1px dashed var(--cyan);">
+                                <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                    This is a very long text string that will be truncated with an ellipsis when it exceeds the container width.
+                                </p>
+                            </div>
+                        </div>
+                        <p><strong>Three Properties Required:</strong></p>
+                        <ol>
+                            <li><code>white-space: nowrap;</code> — Prevents line breaks</li>
+                            <li><code>overflow: hidden;</code> — Hides overflowing content</li>
+                            <li><code>text-overflow: ellipsis;</code> — Replaces overflow with "..."</li>
+                        </ol>
+                        <p><strong>Multi-line Ellipsis (CSS Grid/Flexbox):</strong></p>
+                        <pre><code>
+.multi-line-ellipsis {
+    display: -webkit-box;
+    -webkit-line-clamp: 3; /* Number of lines to show */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+                        </code></pre>
+                        <div class="layout-demo">
+                            <div class="overflow-demo" style="width: 200px; border: 1px dashed var(--cyan);">
+                                <p style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;">
+                                    This is a very long text string that will be truncated after three lines with an ellipsis. It's perfect for product descriptions, article previews, and comments.
+                                </p>
+                            </div>
+                        </div>
+                        <p><strong>Browser Support:</strong> <code>-webkit-line-clamp</code> works in Chrome, Safari, Edge, and newer Firefox versions.</p>
+                        <p><strong>Use Cases:</strong></p>
+                        <ul>
+                            <li>Product titles in catalogs</li>
+                            <li>Article headlines</li>
+                            <li>Email subject lines</li>
+                            <li>File names in file managers</li>
+                            <li>Comment previews</li>
+                        </ul>
+                    </details>
+
+                    <details>
+                        <summary>Clip and clip-path properties</summary>
+                        <p>Advanced methods for masking content shapes.</p>
+                        <pre><code>
+/* Deprecated: clip property */
+.old-clip {
+    position: absolute;
+    clip: rect(0px, 60px, 60px, 0px);
+}
+
+/* Modern: clip-path */
+.modern-clip {
+    clip-path: circle(50% at 50% 50%);
+}
+
+/* Various clip-path shapes */
+.clip-circle {
+    clip-path: circle();
+}
+
+.clip-ellipse {
+    clip-path: ellipse(50% 50% at 50% 50%);
+}
+
+.clip-polygon {
+    clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+
+.clip-rounded {
+    clip-path: inset(10px round 20px);
+}
+                        </code></pre>
+                        <div class="clipping-demo">
+                            <div style="width: 150px; height: 150px; background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIj48cmVjdCB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgZmlsbD0iIzAwZDFmZiIvPjxjaXJjbGUgY3g9Ijc1IiBjeT0iNzUiIHI9IjQwIiBmaWxsPSIjZmZiNzRkIi8+PC9zdmc+'); background-repeat: no-repeat; margin-bottom: 15px;">
+                                Original Image
+                            </div>
+                            
+                            <div style="width: 150px; height: 150px; background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIj48cmVjdCB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgZmlsbD0iIzAwZDFmZiIvPjxjaXJjbGUgY3g9Ijc1IiBjeT0iNzUiIHI9IjQwIiBmaWxsPSIjZmZiNzRkIi8+PC9zdmc+'); background-repeat: no-repeat; margin-bottom: 15px; clip-path: circle();">
+                                Circle Clip
+                            </div>
+                            
+                            <div style="width: 150px; height: 150px; background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIj48cmVjdCB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgZmlsbD0iIzAwZDFmZiIvPjxjaXJjbGUgY3g9Ijc1IiBjeT0iNzUiIHI9IjQwIiBmaWxsPSIjZmZiNzRkIi8+PC9zdmc+'); background-repeat: no-repeat; margin-bottom: 15px; clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%); ">
+                                Diamond Shape
+                            </div>
+                            
+                            <div style="width: 150px; height: 150px; background-image: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxNTAiIGhlaWdodD0iMTUwIj48cmVjdCB3aWR0aD0iMTUwIiBoZWlnaHQ9IjE1MCIgZmlsbD0iIzAwZDFmZiIvPjxjaXJjbGUgY3g9Ijc1IiBjeT0iNzUiIHI9IjQwIiBmaWxsPSIjZmZiNzRkIi8+PC9zdmc+'); background-repeat: no-repeat; margin-bottom: 15px; clip-path: inset(20px round 10px);">
+                                Rounded Rectangle
+                            </div>
+                        </div>
+                        <p><strong>clip-path Values:</strong></p>
+                        <ul>
+                            <li><code>circle()</code>: Circular shape</li>
+                            <li><code>ellipse()</code>: Elliptical shape</li>
+                            <li><code>polygon()</code>: Any polygon shape</li>
+                            <li><code>inset()</code>: Rectangle with rounded corners</li>
+                            <li><code>path()</code>: SVG path data</li>
+                        </ul>
+                        <p><strong>Modern Use Cases:</strong></p>
+                        <ul>
+                            <li>Profile pictures with custom shapes</li>
+                            <li>Interactive image galleries</li>
+                            <li>Unique card designs</li>
+                            <li>Animated clipping effects</li>
+                        </ul>
+                        <p><strong>Performance Note:</strong> Complex clip-paths can be expensive — test on low-end devices.</p>
+                    </details>
+
+                    <details>
+                        <summary>Creating scrollable areas</summary>
+                        <p>Build controlled scrolling experiences for better UX.</p>
+                        <pre><code>
+.scrollable-container {
+    overflow-y: auto;
+    max-height: 300px;
+}
+
+/* Custom scrollbar styling */
+.scrollable-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.scrollable-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.scrollable-container::-webkit-scrollbar-thumb {
+    background: rgba(0, 209, 255, 0.3);
+    border-radius: 10px;
+}
+
+.scrollable-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 209, 255, 0.5);
+}
+
+/* Horizontal scrolling */
+.horizontal-scroll {
+    overflow-x: auto;
+    white-space: nowrap;
+}
+
+/* Scroll snap points */
+.snap-container {
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+}
+
+.snap-item {
+    scroll-snap-align: start;
+    flex-shrink: 0;
+}
+                        </code></pre>
+                        <div class="scrollable-area">
+                            <p>Scrollable content area with custom scrollbar styling.</p>
+                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+                            <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+                            <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                        </div>
+                        
+                        <div class="layout-demo" style="margin: 20px 0;">
+                            <div style="display: flex; overflow-x: auto; white-space: nowrap; gap: 10px; padding: 10px; background-color: rgba(10, 25, 47, 0.6); border: 1px dashed var(--cyan);">
+                                <div style="min-width: 150px; height: 100px; background-color: rgba(0, 209, 255, 0.2); border-radius: 5px; display: flex; align-items: center; justify-content: center; color: white;">Item 1</div>
+                                <div style="min-width: 150px; height: 100px; background-color: rgba(255, 183, 77, 0.2); border-radius: 5px; display: flex; align-items: center; justify-content: center; color: #000;">Item 2</div>
+                                <div style="min-width: 150px; height: 100px; background-color: rgba(0, 209, 255, 0.2); border-radius: 5px; display: flex; align-items: center; justify-content: center; color: white;">Item 3</div>
+                                <div style="min-width: 150px; height: 100px; background-color: rgba(255, 183, 77, 0.2); border-radius: 5px; display: flex; align-items: center; justify-content: center; color: #000;">Item 4</div>
+                                <div style="min-width: 150px; height: 100px; background-color: rgba(0, 209, 255, 0.2); border-radius: 5px; display: flex; align-items: center; justify-content: center; color: white;">Item 5</div>
+                                <div style="min-width: 150px; height: 100px; background-color: rgba(255, 183, 77, 0.2); border-radius: 5px; display: flex; align-items: center; justify-content: center; color: #000;">Item 6</div>
+                            </div>
+                        </div>
+                        
+                        <p><strong>Scroll Behavior:</strong></p>
+                        <pre><code>
+/* Smooth scrolling */
+.smooth-scroll {
+    scroll-behavior: smooth;
+}
+
+/* Scroll snapping */
+.snap-container {
+    scroll-snap-type: y mandatory;
+}
+
+.snap-item {
+    scroll-snap-align: start;
+}
+                        </code></pre>
+                        <p><strong>Accessibility Considerations:</strong></p>
+                        <ul>
+                            <li>Ensure scrollable areas are keyboard navigable</li>
+                            <li>Provide visual indicators that content is scrollable</li>
+                            <li>Don't disable native scrolling on touch devices</li>
+                            <li>Consider reducing motion preferences</li>
+                        </ul>
+                        <p><strong>Modern Pattern:</strong> Use Flexbox + horizontal scrolling for carousels instead of JavaScript libraries.</p>
+                    </details>
+                </section>
+
+                <div class="footer-note">
+                    🌟 Mastery Tip: Layout is about understanding relationships — not just positioning.<br>
+                    Master display first, then position, then overflow — these are the foundation of all CSS layout.<br>
+                    Avoid floats for layout — use Flexbox and Grid instead.<br>
+                    Always consider accessibility: can users navigate your content? Can screen readers understand it?<br>
+                    Your layout should serve content, not distract from it.
+                    <br><br>
+                    Next Module: Flexbox Layout System
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Expand/Collapse All
+            document.getElementById('expand-all').addEventListener('click', () => {
+                document.querySelectorAll('details').forEach(detail => {
+                    detail.open = true;
+                });
+            });
+
+            document.getElementById('collapse-all').addEventListener('click', () => {
+                document.querySelectorAll('details').forEach(detail => {
+                    detail.open = false;
+                });
+            });
+
+            // Search functionality
+            document.getElementById('toc-search').addEventListener('input', function(e) {
+                const query = e.target.value.toLowerCase();
+                const tocItems = document.querySelectorAll('.toc-item, .toc-subitem');
+                
+                tocItems.forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    if (text.includes(query)) {
+                        item.style.display = 'block';
+                    } else {
+                        item.style.display = 'none';
+                    }
+                });
+            });
+
+            // Smooth scrolling for TOC links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetId = this.getAttribute('href');
+                    const targetElement = document.querySelector(targetId);
+                    
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 80,
+                            behavior: 'smooth'
+                        });
+                    }
+                });
+            });
+
+            // Highlight active section in TOC as user scrolls
+            const sections = document.querySelectorAll('section');
+            const navLinks = document.querySelectorAll('.toc-item a');
+
+            window.addEventListener('scroll', () => {
+                let current = '';
+                
+                sections.forEach(section => {
+                    const sectionTop = section.offsetTop;
+                    const sectionHeight = section.clientHeight;
+                    if (pageYOffset >= sectionTop - 100) {
+                        current = section.getAttribute('id');
+                    }
+                });
+
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === '#' + current) {
+                        link.classList.add('active');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
+```

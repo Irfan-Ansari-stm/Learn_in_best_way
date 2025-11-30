@@ -1,0 +1,1166 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Module 15: Advanced Visual Effects | Deep Learning Notes</title>
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom Styles -->
+    <style>
+        :root {
+            --bg-dark: #0a192f;
+            --cyan: #00f5ff;
+            --amber: #ffb74d;
+            --text-light: #e6f1ff;
+            --text-muted: #a0c8e0;
+            --border-color: #1e3a5f;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-light);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .left-panel {
+            background-color: #0b1a30;
+            border-right: 1px solid var(--border-color);
+            height: 100vh;
+            position: fixed;
+            width: 300px;
+            overflow-y: auto;
+            padding: 1rem;
+            box-shadow: 2px 0 10px rgba(0, 245, 255, 0.1);
+        }
+
+        .right-panel {
+            margin-left: 300px;
+            padding: 2rem;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--cyan);
+            border-bottom: 1px solid var(--amber);
+            padding-bottom: 0.3rem;
+            margin-top: 2rem;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+        }
+
+        h3 {
+            font-size: 1.5rem;
+            color: var(--amber);
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-style: italic;
+            margin-bottom: 1.5rem;
+        }
+
+        .author-info {
+            color: var(--amber);
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .toc-item {
+            margin: 0.5rem 0;
+        }
+
+        .toc-item a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.3s ease;
+            display: block;
+            padding: 0.4rem 0.6rem;
+            border-radius: 4px;
+            margin-left: 10px;
+        }
+
+        .toc-item a:hover {
+            color: var(--cyan);
+            background-color: rgba(0, 245, 255, 0.1);
+        }
+
+        .toc-subitem {
+            margin-left: 1.5rem;
+            color: var(--text-muted);
+        }
+
+        .toc-subitem a {
+            padding-left: 1rem;
+            font-size: 0.9rem;
+        }
+
+        details {
+            margin: 1rem 0;
+            border-left: 3px solid var(--amber);
+            padding-left: 1rem;
+            background-color: rgba(11, 26, 48, 0.5);
+            border-radius: 0 6px 6px 0;
+        }
+
+        summary {
+            cursor: pointer;
+            list-style: none;
+            color: var(--cyan);
+            font-weight: 600;
+            font-size: 1.1rem;
+            padding: 0.7rem 1rem;
+            background-color: rgba(0, 245, 255, 0.08);
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        summary::before {
+            content: "▶";
+            margin-right: 0.5rem;
+            font-size: 0.8rem;
+            transition: transform 0.3s ease;
+        }
+
+        details[open] summary::before {
+            transform: rotate(90deg);
+        }
+
+        pre code {
+            display: block;
+            padding: 1rem;
+            background-color: #091425;
+            border-radius: 6px;
+            overflow-x: auto;
+            border-left: 3px solid var(--amber);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--cyan);
+        }
+
+        .highlight {
+            background-color: rgba(255, 183, 77, 0.1);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-weight: 600;
+            color: var(--amber);
+        }
+
+        .code-inline {
+            background-color: rgba(9, 20, 37, 0.7);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-family: 'Courier New', Courier, monospace;
+            color: var(--cyan);
+            font-size: 0.9rem;
+        }
+
+        .formula {
+            background-color: rgba(255, 183, 77, 0.1);
+            padding: 0.5rem;
+            border-radius: 6px;
+            display: inline-block;
+            margin: 0.5rem 0;
+            font-family: 'Cambria Math', serif;
+            color: var(--amber);
+        }
+
+        .badge {
+            background-color: var(--amber);
+            color: #000;
+            font-weight: bold;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            margin-left: 0.5rem;
+        }
+
+        .btn-control {
+            background-color: rgba(0, 245, 255, 0.1);
+            color: var(--cyan);
+            border: 1px solid var(--amber);
+            margin: 1rem 0;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .btn-control:hover {
+            background-color: rgba(0, 245, 255, 0.3);
+            color: white;
+        }
+
+        .search-input {
+            background-color: rgba(0, 245, 255, 0.1);
+            border: 1px solid var(--amber);
+            color: var(--text-light);
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+            border-radius: 4px;
+            width: 100%;
+        }
+
+        .search-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .demo-container {
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background-color: rgba(11, 26, 48, 0.3);
+            border: 1px dashed var(--cyan);
+            border-radius: 8px;
+            text-align: center;
+            min-height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .demo-box {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, var(--cyan), var(--amber));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 12px rgba(0, 245, 255, 0.3);
+            transition: all 0.4s ease;
+            position: relative;
+        }
+
+        .filter-demo {
+            filter: brightness(1) contrast(1) saturate(1) hue-rotate(0deg);
+        }
+
+        .blend-demo {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 1rem auto;
+        }
+
+        .blend-layer {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        .blend-layer:nth-child(1) {
+            background: radial-gradient(circle, #00f5ff, transparent);
+            mix-blend-mode: screen;
+        }
+
+        .blend-layer:nth-child(2) {
+            background: radial-gradient(circle, #ffb74d, transparent);
+            mix-blend-mode: multiply;
+            top: 20px;
+            left: 20px;
+        }
+
+        .mask-demo {
+            width: 200px;
+            height: 200px;
+            margin: 1rem auto;
+            background: linear-gradient(45deg, #00f5ff, #ffb74d);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .clip-path-demo {
+            width: 200px;
+            height: 200px;
+            margin: 1rem auto;
+            background: linear-gradient(45deg, #00f5ff, #ffb74d);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            position: relative;
+        }
+
+        .shadow-demo {
+            width: 180px;
+            height: 180px;
+            margin: 1rem auto;
+            background: linear-gradient(135deg, #00f5ff, #ffb74d);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            position: relative;
+        }
+
+        .text-shadow-demo {
+            font-size: 3rem;
+            font-weight: bold;
+            margin: 1.5rem auto;
+            text-align: center;
+            color: transparent;
+            text-shadow: 
+                2px 2px 0 #ffb74d,
+                4px 4px 0 #00f5ff,
+                6px 6px 0 #fff;
+            letter-spacing: 2px;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .scroll-indicator {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: rgba(0, 245, 255, 0.1);
+            color: var(--cyan);
+            padding: 0.5rem;
+            border-radius: 50%;
+            font-size: 0.8rem;
+            opacity: 0.7;
+            z-index: 1000;
+        }
+
+        @media (max-width: 991px) {
+            .left-panel {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+            }
+            .right-panel {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Left Panel -->
+        <div class="col-md-3 left-panel">
+            <h1>Module 15</h1>
+            <h2>Advanced Visual Effects</h2>
+            <p class="subtitle">Create Stunning, Professional Visuals with CSS</p>
+            <p class="author-info">By Your AI Tutor — Designed for Deep Understanding</p>
+
+            <input type="text" class="search-input" id="searchToc" placeholder="Search TOC...">
+
+            <div class="d-grid gap-2">
+                <button class="btn-control" id="expandAll">Expand All</button>
+                <button class="btn-control" id="collapseAll">Collapse All</button>
+            </div>
+
+            <nav id="toc">
+                <ul class="list-unstyled">
+                    <li class="toc-item">
+                        <a href="#section-15-1">15.1 CSS Filters</a>
+                        <ul class="list-unstyled">
+                            <li class="toc-subitem"><a href="#blur">blur()</a></li>
+                            <li class="toc-subitem"><a href="#brightness">brightness(), contrast()</a></li>
+                            <li class="toc-subitem"><a href="#saturate">saturate(), hue-rotate(), invert()</a></li>
+                            <li class="toc-subitem"><a href="#drop-shadow">drop-shadow() vs box-shadow</a></li>
+                            <li class="toc-subitem"><a href="#svg-filters">Custom filters with SVG</a></li>
+                        </ul>
+                    </li>
+                    <li class="toc-item">
+                        <a href="#section-15-2">15.2 Blend Modes and Compositing</a>
+                        <ul class="list-unstyled">
+                            <li class="toc-subitem"><a href="#mix-blend-mode">mix-blend-mode property</a></li>
+                            <li class="toc-subitem"><a href="#background-blend">background-blend-mode</a></li>
+                            <li class="toc-subitem"><a href="#stacking-contexts">Isolation and stacking contexts</a></li>
+                            <li class="toc-subitem"><a href="#creative-blends">Creative blend mode techniques</a></li>
+                        </ul>
+                    </li>
+                    <li class="toc-item">
+                        <a href="#section-15-3">15.3 CSS Masks and Clipping</a>
+                        <ul class="list-unstyled">
+                            <li class="toc-subitem"><a href="#mask-image">mask-image and mask-size</a></li>
+                            <li class="toc-subitem"><a href="#mask-position">mask-position and mask-repeat</a></li>
+                            <li class="toc-subitem"><a href="#clip-path">clip-path for complex shapes</a></li>
+                            <li class="toc-subitem"><a href="#mask-vs-clip">Masking vs clipping differences</a></li>
+                        </ul>
+                    </li>
+                    <li class="toc-item">
+                        <a href="#section-15-4">15.4 Advanced Shadow Techniques</a>
+                        <ul class="list-unstyled">
+                            <li class="toc-subitem"><a href="#multiple-shadows">Multiple box-shadows</a></li>
+                            <li class="toc-subitem"><a href="#inset-shadows">Inset shadows</a></li>
+                            <li class="toc-subitem"><a href="#creative-shadows">Creative shadow effects</a></li>
+                            <li class="toc-subitem"><a href="#text-shadow">text-shadow advanced techniques</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+
+        <!-- Right Panel -->
+        <div class="col-md-9 right-panel">
+            <section id="section-15-1">
+                <h2>15.1 CSS Filters</h2>
+                <p class="text-muted">CSS filters apply graphical effects like blurring or color shifting to elements. They're powerful tools for creating mood, focus, and visual hierarchy.</p>
+
+                <details>
+                    <summary>blur(), brightness(), contrast()</summary>
+                    <p><strong>Definition:</strong> Basic filters that modify the appearance of an element through pixel manipulation.</p>
+                    <p><strong>Detail:</strong> 
+                        <ul>
+                            <li><strong>blur(radius):</strong> Applies Gaussian blur - higher values = more blur</li>
+                            <li><strong>brightness(amount):</strong> Multiplies pixel values - 0% = black, 100% = original, >100% = brighter</li>
+                            <li><strong>contrast(amount):</strong> Adjusts difference between light and dark areas - 0% = gray, 100% = original, >100% = higher contrast</li>
+                        </ul>
+                    </p>
+                    <p><strong>Syntax:</strong></p>
+                    <pre><code>filter: blur(5px);
+filter: brightness(1.5);
+filter: contrast(180%);
+filter: blur(3px) brightness(1.2) contrast(1.3);</code></pre>
+                    <p><strong>Example:</strong></p>
+                    <div class="demo-container">
+                        <div class="demo-box filter-demo" style="filter: blur(4px) brightness(1.1) contrast(1.2);">Blurred & Enhanced</div>
+                    </div>
+                    <pre><code>.card {
+  filter: blur(2px);
+}
+
+.card:hover {
+  filter: blur(0px);
+}</code></pre>
+                    <p><strong>Uses:</strong> Creating depth (blurred backgrounds), subtle highlights (brightened buttons), and visual emphasis (high-contrast elements).</p>
+                    <p class="highlight">💡 Pro Tip: Use <code>backdrop-filter: blur()</code> for frosted glass effects on containers behind other elements!</p>
+                </details>
+
+                <details>
+                    <summary>saturate(), hue-rotate(), invert()</summary>
+                    <p><strong>Definition:</strong> Color-manipulating filters that alter the chromatic properties of elements.</p>
+                    <p><strong>Detail:</strong> 
+                        <ul>
+                            <li><strong>saturate(amount):</strong> Controls color intensity - 0% = grayscale, 100% = normal, >100% = oversaturated</li>
+                            <li><strong>hue-rotate(angle):</strong> Rotates colors around the color wheel - 0deg = no change, 360deg = full circle</li>
+                            <li><strong>invert(amount):</strong> Inverts pixel values - 0% = unchanged, 100% = complete negative</li>
+                        </ul>
+                    </p>
+                    <p><strong>Syntax:</strong></p>
+                    <pre><code>filter: saturate(200%);
+filter: hue-rotate(180deg);
+filter: invert(100%);
+filter: saturate(150%) hue-rotate(90deg) invert(20%);</code></pre>
+                    <p><strong>Example:</strong></p>
+                    <div class="demo-container">
+                        <div class="demo-box" style="filter: saturate(180%) hue-rotate(120deg);">Vibrant & Hue-shifted</div>
+                    </div>
+                    <pre><code>.theme-toggle {
+  filter: hue-rotate(180deg);
+}
+
+.theme-toggle.active {
+  filter: hue-rotate(0deg);
+}</code></pre>
+                    <p><strong>Uses:</strong> Dark/light mode toggles, color theme variations, artistic effects, and accessibility adjustments.</p>
+                    <p class="highlight">💡 Pro Tip: Combine <code>hue-rotate(180deg)</code> with <code>invert(100%)</code> for instant dark mode conversion!</p>
+                </details>
+
+                <details>
+                    <summary>drop-shadow() vs box-shadow</summary>
+                    <p><strong>Definition:</strong> Two different ways to create shadows with distinct behaviors.</p>
+                    <p><strong>Detail:</strong> 
+                        <ul>
+                            <li><strong>box-shadow:</strong> Rectangular shadow based on element's bounding box</li>
+                            <li><strong>drop-shadow():</strong> Pixel-perfect shadow following actual shape (including transparency)</li>
+                        </ul>
+                    </p>
+                    <p><strong>Syntax:</strong></p>
+                    <pre><code>/* box-shadow */
+box-shadow: 10px 10px 15px rgba(0,0,0,0.3);
+
+/* drop-shadow */
+filter: drop-shadow(10px 10px 15px rgba(0,0,0,0.3));</code></pre>
+                    <p><strong>Example:</strong></p>
+                    <div class="demo-container" style="display: flex; justify-content: space-around; align-items: center;">
+                        <div class="demo-box" style="box-shadow: 10px 10px 15px rgba(0,0,0,0.3);">Box Shadow</div>
+                        <div class="demo-box" style="filter: drop-shadow(10px 10px 15px rgba(0,0,0,0.3));">Drop Shadow</div>
+                    </div>
+                    <p><strong>Key Differences:</strong></p>
+                    <table class="table table-dark mt-3">
+                        <thead>
+                            <tr>
+                                <th>Feature</th>
+                                <th>box-shadow</th>
+                                <th>drop-shadow()</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Shape</td>
+                                <td>Rectangular</td>
+                                <td>Follows actual pixels</td>
+                            </tr>
+                            <tr>
+                                <td>Transparency</td>
+                                <td>Ignored</td>
+                                <td>Honored</td>
+                            </tr>
+                            <tr>
+                                <td>Performance</td>
+                                <td>Faster</td>
+                                <td>Slower (pixel processing)</td>
+                            </tr>
+                            <tr>
+                                <td>Blur Control</td>
+                                <td>Yes</td>
+                                <td>Yes</td>
+                            </tr>
+                            <tr>
+                                <td>Multiple Shadows</td>
+                                <td>Yes</td>
+                                <td>Yes</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p><strong>Uses:</strong> <code>box-shadow</code> for simple UI elements, <code>drop-shadow()</code> for icons, logos, and irregular shapes.</p>
+                    <p class="highlight">💡 Pro Tip: Use <code>drop-shadow()</code> for any element with rounded corners or transparency - it looks infinitely more professional.</p>
+                </details>
+
+                <details>
+                    <summary>Custom filters with SVG</summary>
+                    <p><strong>Definition:</strong> Using SVG filter primitives to create complex, custom visual effects beyond standard CSS filters.</p>
+                    <p><strong>Detail:</strong> SVG filters support advanced operations like:
+                        <ul>
+                            <li><code>&lt;feGaussianBlur&gt;</code> - blur</li>
+                            <li><code>&lt;feColorMatrix&gt;</code> - color manipulation</li>
+                            <li><code>&lt;feConvolveMatrix&gt;</code> - edge detection</li>
+                            <li><code>&lt;feDisplacementMap&gt;</code> - warping</li>
+                            <li><code>&lt;feTurbulence&gt;</code> - noise patterns</li>
+                        </ul>
+                    </p>
+                    <p><strong>Syntax:</strong></p>
+                    <pre><code>&lt;svg xmlns="http://www.w3.org/2000/svg" version="1.1"&gt;
+  &lt;defs&gt;
+    &lt;filter id="glow"&gt;
+      &lt;feGaussianBlur stdDeviation="3" result="blur"/&gt;
+      &lt;feMerge&gt;
+        &lt;feMergeNode in="blur"/&gt;
+        &lt;feMergeNode in="SourceGraphic"/&gt;
+      &lt;/feMerge&gt;
+    &lt;/filter&gt;
+  &lt;/defs&gt;
+&lt;/svg&gt;
+
+.element {
+  filter: url(#glow);
+}</code></pre>
+                    <p><strong>Example:</strong></p>
+                    <div class="demo-container">
+                        <div class="demo-box" style="filter: url(#glow-filter);">SVG Glow Effect</div>
+                    </div>
+                    <pre><code>&lt;!-- Hidden SVG definition --&gt;
+&lt;svg style="position: absolute; width: 0; height: 0;"&gt;
+  &lt;defs&gt;
+    &lt;filter id="glow-filter"&gt;
+      &lt;feGaussianBlur stdDeviation="5" result="blur"/&gt;
+      &lt;feMerge&gt;
+        &lt;feMergeNode in="blur"/&gt;
+        &lt;feMergeNode in="SourceGraphic"/&gt;
+      &lt;/feMerge&gt;
+    &lt;/filter&gt;
+  &lt;/defs&gt;
+&lt;/svg&gt;
+
+.glow-button {
+  filter: url(#glow-filter);
+}</code></pre>
+                    <p><strong>Uses:</strong> Neon text effects, stylized images, artistic filters, and custom visual treatments impossible with CSS alone.</p>
+                    <p class="highlight">💡 Pro Tip: SVG filters work across browsers and can be animated using SMIL or CSS animations!</p>
+                </details>
+            </section>
+
+            <section id="section-15-2">
+                <h2>15.2 Blend Modes and Compositing</h2>
+                <p class="text-muted">Blend modes control how overlapping elements interact visually. They're inspired by Photoshop layer blending and create stunning composite effects.</p>
+
+                <details>
+                    <summary>mix-blend-mode property</summary>
+                    <p><strong>Definition:</strong> Determines how an element blends with its background and underlying content.</p>
+                    <p><strong>Detail:</strong> Common values:
+                        <ul>
+                            <li><code>normal</code> - default (no blending)</li>
+                            <li><code>multiply</code> - darkens image (like ink on paper)</li>
+                            <li><code>screen</code> - lightens image (like slide projector)</li>
+                            <li><code>overlay</code> - combines multiply and screen</li>
+                            <li><code>darken</code> - takes darker pixels from both</li>
+                            <li><code>lighten</code> - takes lighter pixels from both</li>
+                            <li><code>color-dodge</code> - brightens base color</li>
+                            <li><code>color-burn</code> - darkens base color</li>
+                        </ul>
+                    </p>
+                    <p><strong>Syntax:</strong></p>
+                    <pre><code>.layer {
+  mix-blend-mode: multiply;
+}</code></pre>
+                    <p><strong>Example:</strong></p>
+                    <div class="blend-demo">
+                        <div class="blend-layer">Screen</div>
+                        <div class="blend-layer">Multiply</div>
+                    </div>
+                    <pre><code>.blend-layer:nth-child(1) {
+  mix-blend-mode: screen;
+}
+
+.blend-layer:nth-child(2) {
+  mix-blend-mode: multiply;
+}</code></pre>
+                    <p><strong>Uses:</strong> Creating luminous text effects, layered graphics, artistic overlays, and modern web design aesthetics.</p>
+                    <p class="highlight">💡 Pro Tip: Always set a background color on the container when using mix-blend-mode — otherwise it blends with the page!</p>
+                </details>
+
+                <details>
+                    <summary>background-blend-mode</summary>
+                    <p><strong>Definition:</strong> Blends multiple background images or colors within a single element.</p>
+                    <p><strong>Detail:</strong> Works with multiple background layers defined with comma-separated values.</p>
+                    <p><strong>Syntax:</strong></p>
+                    <pre><code>.element {
+  background: 
+    linear-gradient(45deg, #00f5ff, #ffb74d),
+    url('pattern.png');
+  background-blend-mode: overlay;
+}</code></pre>
+                    <p><strong>Example:</strong></p>
+                    <div class="demo-container" style="background: 
+          linear-gradient(45deg, rgba(0, 245, 255, 0.6), rgba(255, 183, 77, 0.6)),
+          radial-gradient(circle at center, rgba(255, 255, 255, 0.2) 0%, transparent 70%);
+          background-blend-mode: overlay;
+          border-radius: 16px;
+          width: 200px;
+          height: 200px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: white;
+          font-weight: bold;">
+                      Gradient Overlay
+                    </div>
+                    <pre><code>.hero-section {
+  background: 
+    linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
+    url('background.jpg');
+  background-blend-mode: overlay;
+  color: white;
+}</code></pre>
+                    <p><strong>Uses:</strong> Text over images with readable contrast, modern hero sections, and dynamic gradient effects.</p>
+                    <p class="highlight">💡 Pro Tip: Combine <code>background-blend-mode: overlay</code> with a semi-transparent gradient to make text pop over photos!</p>
+                </details>
+
+                <details>
+                    <summary>Isolation and stacking contexts</summary>
+                    <p><strong>Definition:</strong> How elements are organized in the rendering stack and how blend modes interact with their surroundings.</p>
+                    <p><strong>Detail:</strong> 
+                        <ul>
+                            <li><strong>Stacking context:</strong> A group of elements that render as a single unit</li>
+                            <li><strong>isolation: isolate;</strong> Creates a new stacking context, preventing blend modes from affecting parent elements</li>
+                        </ul>
+                    </p>
+                    <p><strong>Syntax:</strong></p>
+                    <pre><code>.container {
+  isolation: isolate;
+}
+
+.parent {
+  mix-blend-mode: multiply;
+}
+
+.child {
+  mix-blend-mode: screen;
+  isolation: isolate; /* Isolates this child from parent's blend mode */
+}</code></pre>
+                    <p><strong>Example:</strong></p>
+                    <div class="demo-container" style="background: #1e3a5f; padding: 2rem; display: flex; gap: 2rem;">
+                        <div style="background: #00f5ff; width: 100px; height: 100px; mix-blend-mode: multiply; display: flex; align-items: center; justify-content: center; color: white;">Parent Blend</div>
+                        <div style="background: #ffb74d; width: 100px; height: 100px; mix-blend-mode: screen; isolation: isolate; display: flex; align-items: center; justify-content: center; color: white;">Isolated Child</div>
+                    </div>
+                    <p><strong>Uses:</strong> Complex UIs with nested blended elements, avoiding unintended visual artifacts, and precise control over composition.</p>
+                    <p class="highlight">💡 Pro Tip: Use <code>isolation: isolate;</code> whenever you want a blended element to behave independently from its parent's blending.</p>
+                </details>
+
+                <details>
+                    <summary>Creative blend mode techniques</summary>
+                    <p><strong>Definition:</strong> Advanced applications of blend modes for artistic and functional effects.</p>
+                    <p><strong>Detail:</strong> Creative techniques include:
+                        <ul>
+                            <li><strong>Text glow:</strong> <code>mix-blend-mode: screen</code> on text with colored background</li>
+                            <li><strong>Color grading:</strong> Layer colored overlays with <code>multiply</code> or <code>overlay</code> to adjust image tone</li>
+                            <li><strong>Texture overlays:</strong> Add noise textures with <code>overlay</code> for film-like quality</li>
+                            <li><strong>Interactive color shifts:</strong> Animate <code>hue-rotate()</code> + <code>mix-blend-mode</code> for dynamic interfaces</li>
+                        </ul>
+                    </p>
+                    <p><strong>Example: Text Glow Effect</strong></p>
+                    <div class="demo-container" style="background: #0a192f; display: flex; justify-content: center; align-items: center; height: 150px;">
+                        <h1 style="font-size: 3rem; font-weight: bold; color: #ffb74d; mix-blend-mode: screen; text-shadow: 0 0 20px #00f5ff;">GLOWING TEXT</h1>
+                    </div>
+                    <pre><code>&lt;div class="glow-container"&gt;
+  &lt;h1 class="glow-text"&gt;Glowing Text&lt;/h1&gt;
+&lt;/div&gt;
+
+.glow-container {
+  background: #0a192f;
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.glow-text {
+  color: #ffb74d;
+  mix-blend-mode: screen;
+  text-shadow: 0 0 20px #00f5ff;
+  font-size: 3rem;
+}</code></pre>
+                    <p><strong>Uses:</strong> Modern web design trends, video game UIs, digital art websites, and immersive experiences.</p>
+                    <p class="highlight">💡 Pro Tip: Try combining <code>mix-blend-mode: difference</code> with animation for psychedelic color cycling effects!</p>
+                </details>
+            </section>
+
+            <section id="section-15-3">
+                <h2>15.3 CSS Masks and Clipping</h2>
+                <p class="text-muted">Masks and clipping allow you to reveal or hide portions of an element based on shapes or images — perfect for creative layouts and image treatments.</p>
+
+                <details>
+                    <summary>mask-image and mask-size</summary>
+                    <p><strong>Definition:</strong> <code>mask-image</code> uses an image or gradient to define what parts of an element are visible. <code>mask-size</code> controls its dimensions.</p>
+                    <p><strong>Detail:</strong> 
+                        <ul>
+                            <li>Black areas = invisible</li>
+                            <li>White areas = fully visible</li>
+                            <li>Grayscale = partial transparency</li>
+                            <li>Alpha channel = opacity control</li>
+                        </ul>
+                    </p>
+                    <p><strong>Syntax:</strong></p>
+                    <pre><code>.element {
+  mask-image: url('mask.svg');
+  mask-size: cover;
+  mask-repeat: no-repeat;
+  mask-position: center;
+}</code></pre>
+                    <p><strong>Example:</strong></p>
+                    <div class="mask-demo" style="mask-image: radial-gradient(circle at center, black 60%, transparent 100%);">
+                        Masked Gradient
+                    </div>
+                    <pre><code>.profile-photo {
+  mask-image: radial-gradient(circle at center, black 70%, transparent 100%);
+  mask-size: cover;
+  mask-repeat: no-repeat;
+  background: url('photo.jpg') center/cover;
+}</code></pre>
+                    <p><strong>Uses:</strong> Circular profile pictures, fade-out gradients, custom-shaped containers, and image vignettes.</p>
+                    <p class="highlight">💡 Pro Tip: Use SVG masks for precision control — they scale perfectly and support animation!</p>
+                </details>
+
+                <details>
+                    <summary>mask-position and mask-repeat</summary>
+                    <p><strong>Definition:</strong> Control positioning and repetition of mask images, similar to background properties.</p>
+                    <p><strong>Detail:</strong> These properties work exactly like their background counterparts:
+                        <ul>
+                            <li><code>mask-position</code>: Where the mask starts (<code>center</code>, <code>top left</code>, <code>50% 30%</code>)</li>
+                            <li><code>mask-repeat</code>: Whether to repeat (<code>repeat</code>, <code>no-repeat</code>, <code>round</code>, <code>space</code>)</li>
+                        </ul>
+                    </p>
+                    <p><strong>Syntax:</strong></p>
+                    <pre><code>.element {
+  mask-image: url('pattern-mask.svg');
+  mask-position: center;
+  mask-repeat: repeat-x;
+  mask-size: 200% 100%;
+}</code></pre>
+                    <p><strong>Example:</strong></p>
+                    <div class="demo-container" style="height: 120px; background: linear-gradient(135deg, #00f5ff, #ffb74d); mask-image: repeating-linear-gradient(to right, black 0px, transparent 10px, black 20px); mask-size: 40px 100%; mask-position: center;">
+                        Repeating Mask Pattern
+                    </div>
+                    <pre><code>.striped-effect {
+  mask-image: repeating-linear-gradient(
+    to right,
+    black, black 10px,
+    transparent 10px, transparent 20px
+  );
+  mask-size: 40px 100%;
+  background: linear-gradient(135deg, #00f5ff, #ffb74d);
+}</code></pre>
+                    <p><strong>Uses:</strong> Stripe patterns, window blinds effects, textured reveals, and animated mask transitions.</p>
+                    <p class="highlight">💡 Pro Tip: Combine <code>mask-position</code> with animation to create sliding reveal effects!</p>
+                </details>
+
+                <details>
+                    <summary>clip-path for complex shapes</summary>
+                    <p><strong>Definition:</strong> <code>clip-path</code> cuts out a specific shape from an element, revealing only the portion inside the path.</p>
+                    <p><strong>Detail:</strong> Supports:
+                        <ul>
+                            <li>Basic shapes: <code>circle()</code>, <code>ellipse()</code>, <code>polygon()</code>, <code>inset()</code></li>
+                            <li>SVG paths</li>
+                            <li>URL references to SVG clip paths</li>
+                        </ul>
+                    </p>
+                    <p><strong>Syntax:</strong></p>
+                    <pre><code>.element {
+  clip-path: circle(50% at center);
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+  clip-path: inset(20px round 10px);
+}</code></pre>
+                    <p><strong>Example:</strong></p>
+                    <div class="clip-path-demo" style="clip-path: polygon(50% 0%, 100% 35%, 80% 100%, 20% 100%, 0% 35%);">Star Shape</div>
+                    <pre><code>.hexagon {
+  clip-path: polygon(30% 0%, 70% 0%, 100% 50%, 70% 100%, 30% 100%, 0% 50%);
+  background: linear-gradient(135deg, #00f5ff, #ffb74d);
+  width: 200px;
+  height: 200px;
+}</code></pre>
+                    <p><strong>Uses:</strong> Custom shaped cards, interactive UI elements, product showcases, and modern web design.</p>
+                    <p class="highlight">💡 Pro Tip: Use <code>clip-path: inset(10px round 15px);</code> for easy rounded rectangles without border-radius!</p>
+                </details>
+
+                <details>
+                    <summary>Masking vs clipping differences</summary>
+                    <p><strong>Definition:</strong> Understanding when to use masking versus clipping for visual effects.</p>
+                    <p><strong>Detail:</strong> Key differences:</p>
+                    <table class="table table-dark mt-3">
+                        <thead>
+                            <tr>
+                                <th>Feature</th>
+                                <th>Masking</th>
+                                <th>Clipping</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>What it does</td>
+                                <td>Controls transparency</td>
+                                <td>Cuts out shape</td>
+                            </tr>
+                            <tr>
+                                <td>Opacity handling</td>
+                                <td>Respects alpha channel</td>
+                                <td>Hard cut - no partial transparency</td>
+                            </tr>
+                            <tr>
+                                <td>Performance</td>
+                                <td>Higher (complex pixel ops)</td>
+                                <td>Lower (simple geometry)</td>
+                            </tr>
+                            <tr>
+                                <td>Use case</td>
+                                <td>Gradient fades, texture reveals</td>
+                                <td>Geometric shapes, hard edges</td>
+                            </tr>
+                            <tr>
+                                <td>Animation</td>
+                                <td>Can animate mask-position</td>
+                                <td>Can animate clip-path points</td>
+                            </tr>
+                            <tr>
+                                <td>Browser support</td>
+                                <td>Good (modern browsers)</td>
+                                <td>Excellent</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p><strong>Example Comparison:</strong></p>
+                    <div class="demo-container" style="display: flex; gap: 2rem; align-items: center;">
+                        <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #00f5ff, #ffb74d); mask-image: radial-gradient(circle at center, black 60%, transparent 100%);"></div>
+                        <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #00f5ff, #ffb74d); clip-path: circle(50%);"></div>
+                    </div>
+                    <p><strong>When to use which:</strong></p>
+                    <ul>
+                        <li>Use <code>mask-image</code> for soft edges, gradients, and photographic effects</li>
+                        <li>Use <code>clip-path</code> for sharp geometric shapes and performance-critical designs</li>
+                    </ul>
+                    <p class="highlight">💡 Pro Tip: For responsive designs, prefer <code>clip-path: polygon()</code> with percentage values — they adapt better than fixed pixel values!</p>
+                </details>
+            </section>
+
+            <section id="section-15-4">
+                <h2>15.4 Advanced Shadow Techniques</h2>
+                <p class="text-muted">Shadows aren't just for depth — they're powerful tools for creating volume, motion, and artistic effects in modern web design.</p>
+
+                <details>
+                    <summary>Multiple box-shadows</summary>
+                    <p><strong>Definition:</strong> Applying several shadows to a single element by separating them with commas.</p>
+                    <p><strong>Detail:</strong> Each shadow is defined as: <code>offset-x offset-y blur-radius spread-radius color</code></p>
+                    <p><strong>Syntax:</strong></p>
+                    <pre><code>.element {
+  box-shadow: 
+    0 0 10px rgba(0,0,0,0.2),
+    0 0 20px rgba(0,0,0,0.1),
+    0 0 30px rgba(0,0,0,0.05);
+}</code></pre>
+                    <p><strong>Example:</strong></p>
+                    <div class="shadow-demo" style="box-shadow: 
+      0 0 10px rgba(0, 245, 255, 0.3),
+      0 0 20px rgba(255, 183, 77, 0.2),
+      0 0 40px rgba(0, 245, 255, 0.15);">
+                        Multiple Shadows
+                    </div>
+                    <pre><code>.neon-button {
+  box-shadow: 
+    0 0 5px #00f5ff,
+    0 0 10px #00f5ff,
+    0 0 15px #00f5ff,
+    0 0 20px #00f5ff;
+}</code></pre>
+                    <p><strong>Uses:</strong> Neon effects, floating cards, layered depth, and glowing UI components.</p>
+                    <p class="highlight">💡 Pro Tip: Use multiple shadows to simulate volumetric lighting — outer shadows should be softer and larger!</p>
+                </details>
+
+                <details>
+                    <summary>Inset shadows</summary>
+                    <p><strong>Definition:</strong> Shadows drawn inside an element rather than outside.</p>
+                    <p><strong>Detail:</strong> Add the keyword <code>inset</code> before the shadow values.</p>
+                    <p><strong>Syntax:</strong></p>
+                    <pre><code>.element {
+  box-shadow: inset 0 0 10px rgba(0,0,0,0.3);
+  box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2);
+}</code></pre>
+                    <p><strong>Example:</strong></p>
+                    <div class="demo-container" style="display: flex; justify-content: center; gap: 2rem;">
+                        <div style="width: 120px; height: 120px; background: #1e3a5f; box-shadow: inset 0 0 15px rgba(0, 245, 255, 0.3); display: flex; align-items: center; justify-content: center; color: var(--cyan);">Inset Glow</div>
+                        <div style="width: 120px; height: 120px; background: #1e3a5f; box-shadow: inset 0 0 15px rgba(255, 183, 77, 0.3); display: flex; align-items: center; justify-content: center; color: var(--amber);">Inset Amber</div>
+                    </div>
+                    <pre><code>.card {
+  background: #0b1a30;
+  box-shadow: inset 0 0 20px rgba(0, 245, 255, 0.1);
+}
+
+.button {
+  background: #00f5ff;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.2);
+  color: #000;
+}</code></pre>
+                    <p><strong>Uses:</strong> Embedded buttons, recessed panels, inner glows, and depth illusions.</p>
+                    <p class="highlight">💡 Pro Tip: Combine inset shadows with border-radius for beautiful "glass panel" effects!</p>
+                </details>
+
+                <details>
+                    <summary>Creative shadow effects</summary>
+                    <p><strong>Definition:</strong> Advanced shadow techniques that go beyond basic depth to create artistic and functional visual effects.</p>
+                    <p><strong>Detail:</strong> Creative techniques include:
+                        <ul>
+                            <li><strong>Double shadows:</strong> Outer glow + inner glow for volumetric objects</li>
+                            <li><strong>Shadow gradients:</strong> Multiple shadows with varying colors to simulate light sources</li>
+                            <li><strong>Animated shadows:</strong> Moving shadows for parallax effects</li>
+                            <li><strong>Text shadows as outlines:</strong> Create stroke effects with multiple offsets</li>
+                        </ul>
+                    </p>
+                    <p><strong>Example: Floating Card with Double Shadow</strong></p>
+                    <div class="demo-container" style="background: #0a192f; display: flex; justify-content: center; align-items: center; height: 150px;">
+                        <div style="width: 180px; height: 120px; background: #0b1a30; border-radius: 16px; 
+                          box-shadow: 
+                            0 10px 30px rgba(0, 245, 255, 0.2),
+                            0 5px 15px rgba(255, 183, 77, 0.1),
+                            inset 0 0 15px rgba(0, 245, 255, 0.1); 
+                          display: flex; align-items: center; justify-content: center; color: var(--cyan); font-weight: bold;">
+                            Floating Card
+                        </div>
+                    </div>
+                    <pre><code>.floating-card {
+  background: #0b1a30;
+  border-radius: 16px;
+  box-shadow: 
+    0 10px 30px rgba(0, 245, 255, 0.2),     /* Main glow */
+    0 5px 15px rgba(255, 183, 77, 0.1),     /* Secondary glow */
+    inset 0 0 15px rgba(0, 245, 255, 0.1);  /* Inner highlight */
+}</code></pre>
+                    <p><strong>Uses:</strong> Modern UI design, dashboard widgets, premium app interfaces, and immersive web experiences.</p>
+                    <p class="highlight">💡 Pro Tip: Use <code>box-shadow</code> to simulate ambient occlusion — darker shadows where surfaces meet!</p>
+                </details>
+
+                <details>
+                    <summary>text-shadow advanced techniques</summary>
+                    <p><strong>Definition:</strong> Advanced applications of text-shadow beyond simple outlines.</p>
+                    <p><strong>Detail:</strong> Can create:
+                        <ul>
+                            <li>Multiple outlines with different colors</li>
+                            <li>Text glow effects</li>
+                            <li>3D extrusion effects</li>
+                            <li>Stylized typography</li>
+                        </ul>
+                    </p>
+                    <p><strong>Syntax:</strong></p>
+                    <pre><code>.element {
+  text-shadow: 
+    2px 2px 0 #00f5ff,
+    4px 4px 0 #ffb74d,
+    6px 6px 0 #fff;
+}</code></pre>
+                    <p><strong>Example:</strong></p>
+                    <div class="text-shadow-demo">ADVANCED TEXT</div>
+                    <pre><code>.glowing-title {
+  color: transparent;
+  text-shadow: 
+    0 0 10px rgba(0, 245, 255, 0.8),
+    0 0 20px rgba(0, 245, 255, 0.6),
+    0 0 30px rgba(0, 245, 255, 0.4);
+  font-size: 4rem;
+  font-weight: bold;
+  letter-spacing: 3px;
+}</code></pre>
+                    <p><strong>Example: 3D Text Extrusion</strong></p>
+                    <pre><code>.extruded-text {
+  color: #fff;
+  text-shadow: 
+    1px 1px 0 #00f5ff,
+    2px 2px 0 #00f5ff,
+    3px 3px 0 #00f5ff,
+    4px 4px 0 #00f5ff,
+    5px 5px 0 #00f5ff,
+    6px 6px 0 #00f5ff;
+  font-size: 3rem;
+  font-weight: bold;
+}</code></pre>
+                    <p><strong>Uses:</strong> Headlines, banners, neon signs, gaming interfaces, and attention-grabbing CTAs.</p>
+                    <p class="highlight">💡 Pro Tip: For best performance, use <code>color: transparent;</code> with text-shadow instead of colored text — reduces repaints!</p>
+                </details>
+            </section>
+        </div>
+    </div>
+</div>
+
+<!-- Scroll Indicator -->
+<div class="scroll-indicator" id="scrollIndicator">↓</div>
+
+<!-- Bootstrap JS Bundle with Popper -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Custom JavaScript -->
+<script>
+    // Expand/Collapse All
+    document.getElementById('expandAll').addEventListener('click', () => {
+        document.querySelectorAll('details').forEach(detail => {
+            detail.open = true;
+        });
+    });
+
+    document.getElementById('collapseAll').addEventListener('click', () => {
+        document.querySelectorAll('details').forEach(detail => {
+            detail.open = false;
+        });
+    });
+
+    // Search TOC
+    document.getElementById('searchToc').addEventListener('input', function(e) {
+        const query = e.target.value.toLowerCase();
+        const links = document.querySelectorAll('#toc a');
+        
+        links.forEach(link => {
+            const text = link.textContent.toLowerCase();
+            if (text.includes(query)) {
+                link.parentElement.style.display = '';
+            } else {
+                link.parentElement.style.display = 'none';
+            }
+        });
+    });
+
+    // Smooth scrolling for TOC links
+    document.querySelectorAll('#toc a').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+            
+            if (targetElement) {
+                window.scrollTo({
+                    top: targetElement.offsetTop - 80,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+
+    // Scroll indicator
+    const scrollIndicator = document.getElementById('scrollIndicator');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 100) {
+            scrollIndicator.style.opacity = '1';
+        } else {
+            scrollIndicator.style.opacity = '0.7';
+        }
+    });
+
+    // Syntax highlighting for code blocks
+    document.querySelectorAll('pre code').forEach(block => {
+        hljs.highlightElement(block);
+    });
+
+    // Optional: Highlight current section in TOC
+    window.addEventListener('scroll', () => {
+        const sections = document.querySelectorAll('section');
+        const navLinks = document.querySelectorAll('#toc a');
+        
+        let currentSection = '';
+        
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop - 100;
+            const sectionHeight = section.clientHeight;
+            if (window.pageYOffset >= sectionTop && window.pageYOffset < sectionTop + sectionHeight) {
+                currentSection = section.id;
+            }
+        });
+        
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === '#' + currentSection) {
+                link.classList.add('active');
+                link.style.color = '#fff';
+                link.style.fontWeight = 'bold';
+            } else {
+                link.style.color = '';
+                link.style.fontWeight = '';
+            }
+        });
+    });
+</script>
+
+<!-- Include highlight.js for syntax highlighting -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/darkula.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>hljs.highlightAll();</script>
+
+</body>
+</html>
+```
